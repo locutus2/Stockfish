@@ -29,6 +29,14 @@
 #include "search.h"
 #include "types.h"
 
+struct AugmentedMove {
+
+   Move move;
+   Depth depth;
+
+   AugmentedMove(Move m = MOVE_NONE, Depth d = DEPTH_ZERO) : move(m), depth(d) {}
+   operator Move() const { return move; }
+};
 
 /// The Stats struct stores moves statistics. According to the template parameter
 /// the class can store History and Countermoves. History records how often
@@ -46,7 +54,13 @@ struct Stats {
   T* operator[](Piece pc) { return table[pc]; }
   void clear() { std::memset(table, 0, sizeof(table)); }
 
-  void update(Piece pc, Square to, Move m) { table[pc][to] = m; }
+  void update(Piece pc, Square to, Move m, Depth d) {
+
+    if(d >= table[pc][to].depth)
+        table[pc][to] = {m, d};
+    else
+        table[pc][to].depth -= ONE_PLY;
+  }
 
   void update(Piece pc, Square to, Value v) {
 
@@ -61,7 +75,7 @@ private:
   T table[PIECE_NB][SQUARE_NB];
 };
 
-typedef Stats<Move> MoveStats;
+typedef Stats<AugmentedMove> MoveStats;
 typedef Stats<Value, false> HistoryStats;
 typedef Stats<Value,  true> CounterMoveStats;
 typedef Stats<CounterMoveStats> CounterMoveHistoryStats;
