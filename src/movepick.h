@@ -59,7 +59,7 @@ struct Stats {
     if(d >= table[pc][to].depth)
         table[pc][to] = {m, d};
     else
-        table[pc][to].depth -= ONE_PLY;
+        table[pc][to].depth -= 2 * ONE_PLY;
   }
 
   void update(Piece pc, Square to, Value v) {
