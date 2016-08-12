@@ -59,7 +59,7 @@ struct Stats {
     if(d >= table[pc][to].depth)
         table[pc][to] = {m, d};
     else
-        table[pc][to].depth /= 4;
+        table[pc][to].depth = table[pc][to].depth * 3 / 4;
   }
 
   void update(Piece pc, Square to, Value v) {
