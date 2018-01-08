@@ -487,6 +487,7 @@ namespace {
 
     const bool PvNode = NT == PV;
     const bool rootNode = PvNode && ss->ply == 0;
+    const bool useSecondBest = rootNode;
 
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || (alpha == beta - 1));
@@ -500,7 +501,7 @@ namespace {
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
-    Value bestValue, value, ttValue, eval;
+    Value bestValue, secondBestValue, value, ttValue, eval;
     bool ttHit, inCheck, givesCheck, singularExtensionNode, improving;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, skipQuiets, ttCapture, pvExact;
     Piece movedPiece;
@@ -511,7 +512,7 @@ namespace {
     inCheck = pos.checkers();
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     ss->statScore = 0;
-    bestValue = -VALUE_INFINITE;
+    bestValue = secondBestValue = -VALUE_INFINITE;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -1034,6 +1035,7 @@ moves_loop: // When in check search starts from here
 
       if (value > bestValue)
       {
+          secondBestValue = bestValue;
           bestValue = value;
 
           if (value > alpha)
@@ -1044,13 +1046,20 @@ moves_loop: // When in check search starts from here
                   update_pv(ss->pv, move, (ss+1)->pv);
 
               if (PvNode && value < beta) // Update alpha! Always alpha < beta
-                  alpha = value;
+                  alpha = useSecondBest ? alpha : value;
               else
               {
                   assert(value >= beta); // Fail high
                   break;
               }
           }
+      }
+      else if (useSecondBest && value > secondBestValue)
+      {
+          secondBestValue = value;
+
+          if (value > alpha)
+              alpha = value;
       }
 
       if (!captureOrPromotion && move != bestMove && quietCount < 64)
