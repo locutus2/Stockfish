@@ -1009,7 +1009,7 @@ moves_loop: // When in check search starts from here
                                     thisThread->rootMoves.end(), move);
 
           // PV move or new best move ?
-          if (moveCount == 1 || value > alpha)
+          if (moveCount == 1 || (value > alpha && value > bestValue))
           {
               rm.score = value;
               rm.selDepth = thisThread->selDepth;
