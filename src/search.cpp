@@ -289,7 +289,10 @@ void Thread::search() {
   for (int i = 4; i > 0; i--)
   {
       Move lastMove = rootPos.nth_last_move(i);
-      (ss-i)->contHistory = &this->contHistory[rootPos.piece_on(to_sq(lastMove))][to_sq(lastMove)];
+      if (lastMove == MOVE_NONE)
+          (ss-i)->contHistory = &this->contHistory[NO_PIECE][0]; // Use as sentinel
+      else
+          (ss-i)->contHistory = &this->contHistory[rootPos.piece_on(to_sq(lastMove))][to_sq(lastMove)];
   }
 
   bestValue = delta = alpha = -VALUE_INFINITE;
