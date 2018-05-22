@@ -745,10 +745,11 @@ namespace {
     // Step 9. Null move search with verification search (~40 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-        && (ss-1)->statScore + (ss-3)->statScore < 45000
+        && (ss-1)->statScore < 22500
         &&  eval >= beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
         && !excludedMove
+        && (*(ss-2)->contHistory)[pos.piece_on(prevSq)][prevSq] < 15000
         &&  pos.non_pawn_material(pos.side_to_move())
         && (ss->ply >= thisThread->nmp_ply || ss->ply % 2 != thisThread->nmp_odd))
     {
