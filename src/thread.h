@@ -57,6 +57,8 @@ public:
   void start_searching();
   void wait_for_search_finished();
 
+  inline size_t getID() const { return idx; }
+
   Pawns::Table pawnsTable;
   Material::Table materialTable;
   Endgames endgames;
@@ -73,6 +75,7 @@ public:
   CapturePieceToHistory captureHistory;
   ContinuationHistory contHistory;
   Score contempt;
+  bool doNullMovePruning;
 };
 
 
