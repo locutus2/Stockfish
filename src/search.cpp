@@ -737,9 +737,8 @@ namespace {
 
     // Step 9. Null move search with verification search (~40 Elo)
     if (   !PvNode
-        && thisThread->doNullMovePruning
         && (ss-1)->currentMove != MOVE_NULL
-        && (ss-1)->statScore < 22500
+        && (ss-1)->statScore < thisThread->nullMovePruningThreshold
         &&  eval >= beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
         && !excludedMove

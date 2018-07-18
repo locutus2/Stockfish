@@ -194,7 +194,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
       th->nodes = th->tbHits = th->nmpMinPly = 0;
       th->rootDepth = th->completedDepth = DEPTH_ZERO;
       th->rootMoves = rootMoves;
-      th->doNullMovePruning = th->getID() % 8 != 7; // Disable null move pruning for each 8th thread
+      th->nullMovePruningThreshold = 22500 - th->getID() * 1000;
       th->rootPos.set(pos.fen(), pos.is_chess960(), &setupStates->back(), th);
   }
 
