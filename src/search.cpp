@@ -1440,7 +1440,7 @@ moves_loop: // When in check, search starts from here
 
     for (int i = 1; i <= 4; ++i)
         if (is_ok((ss-i)->currentMove))
-            (*(ss-i)->continuationHistory)[pc][to] << (bonus / (i == 3 ? 8 : 1));
+            (*(ss-i)->continuationHistory)[pc][to] << (bonus / (i == 3 ? 4 : 1));
   }
 
 
