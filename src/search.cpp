@@ -443,6 +443,7 @@ void Thread::search() {
 
          if(!rootPos.capture_or_promotion(rootMoves[0].pv[0]))
          {
+             bestMoves[2] = bestMoves[1];
              bestMoves[1] = bestMoves[0];
              bestMoves[0] = rootMoves[0].pv[0];
          }
@@ -856,7 +857,7 @@ moves_loop: // When in check, search starts from here
                                       &thisThread->captureHistory,
                                       contHist,
                                       countermove,
-                                      rootNode ? thisThread->bestMoves : ss->killers);
+                                      rootNode ? thisThread->bestMoves+1 : ss->killers);
 
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     moveCountPruning = false;
