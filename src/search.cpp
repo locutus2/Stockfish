@@ -857,7 +857,7 @@ moves_loop: // When in check, search starts from here
                                       &thisThread->captureHistory,
                                       contHist,
                                       countermove,
-                                      rootNode ? thisThread->bestMoves+1 : ss->killers);
+                                      rootNode ? thisThread->bestMoves + pos.capture_or_promotion(thisThread->bestMoves[0]) : ss->killers);
 
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     moveCountPruning = false;
