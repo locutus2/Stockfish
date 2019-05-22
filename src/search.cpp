@@ -1061,8 +1061,8 @@ moves_loop: // When in check, search starts from here
               r -= ss->statScore / 20000 * ONE_PLY;
           }
 
-          // Increase reduction if the previous move was a non-capture with good stats and the moved piece is captured
-          else if(!capturedPiece && to_sq(move) == to_sq((ss-1)->currentMove) && (ss-1)->statScore > 0)
+          // Increase reduction at CUT nodes if the previous move was a non-capture and the moved piece is captured
+          else if(cutNode && !capturedPiece && to_sq(move) == to_sq((ss-1)->currentMove))
               r += ONE_PLY;
 
           Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
