@@ -1070,7 +1070,7 @@ moves_loop: // When in check, search starts from here
           Depth r = reduction(improving, depth, moveCount);
 
           // Reduction if other threads are searching this position.
-	  if (th.marked())
+          if (th.marked())
               r += ONE_PLY;
 
           // Decrease reduction if position is or has been on the PV
@@ -1079,6 +1079,10 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
+              r -= ONE_PLY;
+
+          // Decrease reduction if in Prob-Cut search
+          if (probCut)
               r -= ONE_PLY;
 
           // Decrease reduction if move has been singularly extended
@@ -1117,9 +1121,6 @@ moves_loop: // When in check, search starts from here
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
               r -= ss->statScore / 20000 * ONE_PLY;
           }
-
-          else if (probCut)
-              r -= ONE_PLY;
 
           Depth d = clamp(newDepth - r, ONE_PLY, newDepth);
 
