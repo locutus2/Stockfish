@@ -1067,7 +1067,7 @@ moves_loop: // When in check, search starts from here
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha))
       {
-          Depth r = reduction(improving, depth, moveCount - probCut);
+          Depth r = reduction(improving, depth - probCut * ONE_PLY, moveCount);
 
           // Reduction if other threads are searching this position.
 	  if (th.marked())
