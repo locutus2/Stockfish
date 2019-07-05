@@ -1081,9 +1081,9 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
 
-          // Decrease reduction if move has the same target square as the tt move
-          if (ttMove && to_sq(ttMove) == to_sq(move))
-              r -= ONE_PLY;
+          // Increase reduction if move has the same starting square as the tt move
+          if (ttMove && from_sq(ttMove) == from_sq(move))
+              r += ONE_PLY;
 
           // Decrease reduction if move has been singularly extended
           r -= singularLMR * ONE_PLY;
