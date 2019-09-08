@@ -428,6 +428,8 @@ void Thread::search() {
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
           int failedHighCnt = 0;
+          research = 0;
+
           while (true)
           {
               Depth adjustedDepth = std::max(ONE_PLY, rootDepth - failedHighCnt * ONE_PLY);
@@ -478,6 +480,7 @@ void Thread::search() {
               }
 
               delta += delta / 4 + 5;
+              ++research;
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
           }
@@ -1087,6 +1090,10 @@ moves_loop: // When in check, search starts from here
           // Reduction if other threads are searching this position.
           if (th.marked())
               r += ONE_PLY;
+
+          // Decrease reduction if in research
+          if (thisThread->research)
+              r -= ONE_PLY;
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
