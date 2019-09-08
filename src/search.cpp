@@ -1075,7 +1075,7 @@ moves_loop: // When in check, search starts from here
       // Step 16. Reduced depth search (LMR). If the move fails high it will be
       // re-searched at full depth.
       if (    depth >= 3 * ONE_PLY
-          &&  moveCount > 1 + 2 * rootNode
+          &&  moveCount > 1 + (1 + !bestMove) * rootNode
           && (!rootNode || thisThread->best_move_count(move) == 0)
           && (  !captureOrPromotion
               || moveCountPruning
@@ -1087,10 +1087,6 @@ moves_loop: // When in check, search starts from here
           // Reduction if other threads are searching this position.
           if (th.marked())
               r += ONE_PLY;
-
-          // Decrease reduction at root if no best move found
-          if (rootNode && !bestMove)
-              r -= ONE_PLY;
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
