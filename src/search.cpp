@@ -1091,8 +1091,8 @@ moves_loop: // When in check, search starts from here
           if (th.marked())
               r += ONE_PLY;
 
-          // Decrease reduction at root if in research
-          if (rootNode && thisThread->research)
+          // Decrease reduction at ply < 2 if in research
+          if (ss->ply < 2 && thisThread->research)
               r -= ONE_PLY;
 
           // Decrease reduction if position is or has been on the PV
