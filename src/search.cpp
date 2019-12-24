@@ -1108,8 +1108,8 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction(improving, depth, moveCount);
 
-          // Decrease reduction if tt move is not best move
-          if (cutNode && ttMove && ttMove != bestMove)
+          // At ALL nodes decrease reduction if tt move is not best move
+          if (!PvNode && !cutNode && ttMove)
               r--;
 
           // Decrease reduction if the ttHit running average is large
