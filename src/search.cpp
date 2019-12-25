@@ -1169,7 +1169,10 @@ moves_loop: // When in check, search starts from here
               r -= ss->statScore / 16384;
           }
 
-          else if (!cutNode && moveCountPruning && type_of(movedPiece) != PAWN && !givesCheck)
+          else if (    moveCountPruning
+                   && !cutNode
+                   && !givesCheck
+                   &&  ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha)
               r++;
 
           Depth d = clamp(newDepth - r, 1, newDepth);
