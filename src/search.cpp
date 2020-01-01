@@ -1011,7 +1011,7 @@ moves_loop: // When in check, search starts from here
                   &&  thisThread->mainHistory[us][from_to(move)]
                     + (*contHist[0])[movedPiece][to_sq(move)]
                     + (*contHist[1])[movedPiece][to_sq(move)]
-                    + (*contHist[3])[movedPiece][to_sq(move)] < 40000)
+                    + (*contHist[3])[movedPiece][to_sq(move)] < 30000)
                   continue;
           }
           else if (!pos.see_ge(move, Value(-194) * depth)) // (~20 Elo)
