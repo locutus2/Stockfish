@@ -78,7 +78,7 @@ void Thread::clear() {
 
   for (bool inCheck : { false, true })
     for (StatsType c : { NoCaptures, Captures })
-      continuationHistory[inCheck][c][NO_PIECE][0]->fill(Search::CounterMovePruneThreshold - 1);
+      continuationHistory[inCheck][c][NO_PIECE][0]->fill(-1);
 }
 
 /// Thread::start_searching() wakes up the thread that will start the search
