@@ -1177,9 +1177,9 @@ moves_loop: // When in check, search starts from here
 
               // Decrease/increase reduction by comparing opponent's stat score (~10 Elo)
               if (ss->statScore >= -102 && (ss-1)->statScore < -114)
-                  r -= 1 + PvNode;
+                  r--;
 
-              else if ((ss-1)->statScore >= -116 && ss->statScore < -154)
+              else if (!PvNode && (ss-1)->statScore >= -116 && ss->statScore < -154)
                   r++;
 
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
