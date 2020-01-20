@@ -1160,7 +1160,7 @@ moves_loop: // When in check, search starts from here
               // hence break make_move(). (~2 Elo)
               else if (    type_of(move) == NORMAL
                        && !pos.see_ge(reverse_move(move)))
-                  r -= 1 + PvNode;
+                  r -= 2;
 
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]
@@ -1188,7 +1188,7 @@ moves_loop: // When in check, search starts from here
 
           // Increase reduction for captures/promotions if late move and at low depth
           else if (depth < 8 && moveCount > 2)
-              r++;
+              r += 2 - PvNode;
 
           Depth d = clamp(newDepth - r, 1, newDepth);
 
