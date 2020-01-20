@@ -1127,7 +1127,7 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 500 * ttHitAverageResolution * ttHitAverageWindow / 1024)
-              r -= 1 + PvNode;
+              r--;
 
           // Reduction if other threads are searching this position.
           if (th.marked())
@@ -1139,7 +1139,7 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if opponent's move count is high (~5 Elo)
           if ((ss-1)->moveCount > 14)
-              r--;
+              r -= 1 + PvNode;
 
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
           if (singularLMR)
