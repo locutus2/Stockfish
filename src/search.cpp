@@ -1649,14 +1649,9 @@ moves_loop: // When in check, search starts from here
 
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
-    for (int i : {1, 2, 3, 4, 5, 6})
-        if (is_ok((ss-i)->currentMove))
-        {
-            if (i != 3 && i != 5)
-               (*(ss-i)->continuationHistory)[pc][to] << bonus;
-        }
-        else if (i % 2 == 1)
-            break;
+    for (int i : {1, 2, 4, 6})
+        if (is_ok((ss-i)->currentMove) && (i == 1 || is_ok((ss+1-i)->currentMove)))
+            (*(ss-i)->continuationHistory)[pc][to] << bonus;
   }
 
 
