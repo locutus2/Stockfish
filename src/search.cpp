@@ -1143,8 +1143,9 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction(improving, depth, moveCount);
 
-          // Decrease reduction once in the middle of the search tree.
-          if (ss->ply == thisThread->rootDepth / 2)
+          // Decrease reduction at the first and second third of the search tree.
+          if (   ss->ply == thisThread->rootDepth / 3
+              || ss->ply == thisThread->rootDepth * 2 / 3)
               r--;
 
           // Decrease reduction if the ttHit running average is large
