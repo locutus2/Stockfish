@@ -1141,7 +1141,11 @@ moves_loop: // When in check, search starts from here
               || cutNode
               || thisThread->ttHitAverage < 375 * ttHitAverageResolution * ttHitAverageWindow / 1024))
       {
-          Depth r = reduction(improving, depth, moveCount) + (ss->ply % 8 == 7);
+          Depth r = reduction(improving, depth, moveCount);
+
+          // Increase reduction once in the middle of the search tree.
+          if (ss->ply == thisThread->rootDepth / 2)
+              r++;
 
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 500 * ttHitAverageResolution * ttHitAverageWindow / 1024)
