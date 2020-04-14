@@ -1176,8 +1176,8 @@ moves_loop: // When in check, search starts from here
               r -= 1 + formerPv;
 
 
-          // Decrease reduction for checks at root node
-          if (rootNode && givesCheck)
+          // Decrease reduction for pawn moves at root node
+          if (rootNode && type_of(movedPiece) == PAWN)
               r--;
 
           if (!captureOrPromotion)
