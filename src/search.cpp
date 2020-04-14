@@ -1175,6 +1175,11 @@ moves_loop: // When in check, search starts from here
           if (singularLMR)
               r -= 1 + formerPv;
 
+
+          // Decrease reduction for checks at root node
+          if (rootNode && givesCheck)
+              r--;
+
           if (!captureOrPromotion)
           {
               // Increase reduction if ttMove is a capture (~5 Elo)
@@ -1218,10 +1223,6 @@ moves_loop: // When in check, search starts from here
             if (   !givesCheck
                 && ss->staticEval + PieceValue[EG][pos.captured_piece()] + 200 * depth <= alpha)
                 r++;
-
-            // Decrease reduction for captures/promotions at root node
-            if (rootNode)
-                r--;
           }
 
           Depth d = Utility::clamp(newDepth - r, 1, newDepth);
