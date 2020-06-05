@@ -677,7 +677,7 @@ namespace {
 
     (ss+1)->ply = ss->ply + 1;
     (ss+1)->excludedMove = bestMove = MOVE_NONE;
-    if (priorCapture)
+    if (ss->inCheck)
         (ss+1)->killers[0] = (ss+1)->killers[1] = MOVE_NONE;
     else
         (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
