@@ -1224,7 +1224,7 @@ moves_loop: // When in check, search starts from here
 
           didLMR = true;
 
-          if (move == ss->killers[1] && !captureOrPromotion && value <= alpha && !priorCapture)
+          if (move == ss->killers[1] && !captureOrPromotion && value <= alpha && (ss-1)->currentMove != MOVE_NULL)
               ss->killers[1] = MOVE_NONE;
       }
       else
