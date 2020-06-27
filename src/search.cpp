@@ -667,7 +667,8 @@ namespace {
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
-    ttPv = PvNode || (ttHit && tte->is_pv());
+    ss->ttPv = PvNode || (ttHit && tte->is_pv());
+    ttPv = ss->ttPv || ((ss-1)->ttPv && (ss-1)->moveCount == 1);
     formerPv = ttPv && !PvNode;
 
     if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !priorCapture && is_ok((ss-1)->currentMove))
