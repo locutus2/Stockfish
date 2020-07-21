@@ -1196,6 +1196,10 @@ moves_loop: // When in check, search starts from here
           if (singularQuietLMR)
               r -= 1 + formerPv;
 
+          // Decrease reduction for extended check moves
+          if (extension && givesCheck && !cutNode && !moveCountPruning && !ttCapture)
+              r--;
+
           if (!captureOrPromotion)
           {
               // Increase reduction if ttMove is a capture (~5 Elo)
