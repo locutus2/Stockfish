@@ -1156,7 +1156,7 @@ moves_loop: // When in check, search starts from here
       if (    depth >= 3
           &&  moveCount > 1 + 2 * rootNode
           && (  !captureOrPromotion
-              || (   (!priorCapture || prevSq != to_sq(move))
+              || (   (!PvNode || !priorCapture || prevSq != to_sq(move))
                   && (   moveCountPruning
                       || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
                       || cutNode
