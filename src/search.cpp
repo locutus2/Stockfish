@@ -365,6 +365,7 @@ void Thread::search() {
                           : -make_score(ct, ct / 2));
 
   int searchAgainCounter = 0;
+  int researches = 0;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -404,9 +405,10 @@ void Thread::search() {
           if (rootDepth >= 4)
           {
               Value prev = rootMoves[pvIdx].previousScore;
-              delta = Value(17);
+              delta = Value(17 + researches);
               alpha = std::max(prev - delta,-VALUE_INFINITE);
               beta  = std::min(prev + delta, VALUE_INFINITE);
+              researches = 0;
 
               // Adjust contempt based on root move's previousScore (dynamic contempt)
               int dct = ct + (113 - ct / 2) * prev / (abs(prev) + 147);
@@ -466,6 +468,7 @@ void Thread::search() {
                   break;
 
               delta += delta / 4 + 5;
+              ++researches;
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
           }
