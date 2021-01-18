@@ -839,7 +839,7 @@ namespace {
     // Step 8. Null move search with verification search (~40 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-        && (priorCapture || (ss-1)->statScore < 22977)
+        && (ss-1)->statScore < 22977
         &&  eval >= beta
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 30 * depth - 28 * improving + 84 * ss->ttPv + 168
@@ -850,7 +850,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = (1015 + 85 * depth) / 256 + std::min(int(eval - beta) / 191, 3);
+        Depth R = (1015 + 85 * depth) / 256 + priorCapture + std::min(int(eval - beta) / 191, 3);
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
