@@ -1192,6 +1192,9 @@ moves_loop: // When in check, search starts from here
           if (singularQuietLMR)
               r--;
 
+          if (!PvNode && !cutNode && moveCountPruning && ttCapture && priorCapture && !givesCheck)
+              r++;
+
           if (captureOrPromotion)
           {
               // Unless giving check, this capture is likely bad
