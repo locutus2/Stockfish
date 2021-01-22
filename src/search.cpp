@@ -1192,7 +1192,7 @@ moves_loop: // When in check, search starts from here
           if (singularQuietLMR)
               r--;
 
-          if (!PvNode && !cutNode && moveCountPruning && ttCapture && priorCapture && !givesCheck)
+          if (!PvNode && !cutNode && formerPv && ttCapture && priorCapture && !givesCheck)
               r++;
 
           if (captureOrPromotion)
