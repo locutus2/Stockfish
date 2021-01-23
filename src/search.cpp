@@ -1202,8 +1202,8 @@ moves_loop: // When in check, search starts from here
           else
           {
               // Increase reduction if ttMove is a capture (~5 Elo)
-              if (ttCapture)
-                  r += 1 + (ss->inCheck && !givesCheck);
+              if (ttCapture && !givesCheck)
+                  r++;
 
               // Increase reduction at root if failing high
               r += rootNode ? thisThread->failedHighCnt * thisThread->failedHighCnt * moveCount / 512 : 0;
