@@ -1337,7 +1337,15 @@ moves_loop: // When in check, search starts from here
                   update_pv(ss->pv, move, (ss+1)->pv);
 
               if (PvNode && value < beta) // Update alpha! Always alpha < beta
+              {
                   alpha = value;
+
+                  if (!captureOrPromotion && (ss+2)->killers[0] != move)
+                  {
+                      (ss+2)->killers[1] = (ss+2)->killers[0];
+                      (ss+2)->killers[0] = move;
+                  }
+              }
               else
               {
                   assert(value >= beta); // Fail high
