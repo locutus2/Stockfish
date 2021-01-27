@@ -1340,7 +1340,7 @@ moves_loop: // When in check, search starts from here
               {
                   alpha = value;
 
-                  if (!captureOrPromotion && (ss+2)->killers[0] != move)
+                  if (!ss->inCheck && !captureOrPromotion && (ss+2)->killers[0] != move)
                   {
                       (ss+2)->killers[1] = (ss+2)->killers[0];
                       (ss+2)->killers[0] = move;
