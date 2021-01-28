@@ -1340,11 +1340,8 @@ moves_loop: // When in check, search starts from here
               {
                   alpha = value;
 
-                  if (!ss->inCheck && !captureOrPromotion && (ss+2)->killers[0] != move)
-                  {
-                      (ss+2)->killers[1] = (ss+2)->killers[0];
+                  if (!ss->inCheck && !captureOrPromotion && from_sq((ss+2)->killers[0]) == from_sq(move) && (ss+2)->killers[1] != move)
                       (ss+2)->killers[0] = move;
-                  }
               }
               else
               {
