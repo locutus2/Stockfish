@@ -1072,7 +1072,10 @@ moves_loop: // When in check, search starts from here
 
               // Prune moves with negative SEE (~20 Elo)
               if (!pos.see_ge(move, Value(-(30 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
+              {
+                  ss->moveCount = --moveCount;
                   continue;
+              }
           }
       }
 
