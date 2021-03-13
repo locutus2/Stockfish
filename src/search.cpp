@@ -1418,8 +1418,9 @@ moves_loop: // When in check, search starts from here
         update_all_stats(pos, ss, bestMove, bestValue, beta, prevSq,
                          quietsSearched, quietCount, capturesSearched, captureCount, depth);
 
-        if (secondBestMove && !pos.capture_or_promotion(secondBestMove))
-            update_continuation_histories(ss, pos.moved_piece(secondBestMove), to_sq(secondBestMove), stat_bonus(depth));
+        if (secondBestMove && pos.capture_or_promotion(secondBestMove))
+            captureHistory[pos.moved_piece(secondBestMove)][to_sq(secondBestMove)]
+                          [type_of(pos.piece_on(to_sq(secondBestMove)))] << stat_bonus(depth);
     }
 
     // Bonus for prior countermove that caused the fail low
