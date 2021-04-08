@@ -715,6 +715,7 @@ namespace {
             {
                 int penalty = -stat_bonus(depth);
                 thisThread->mainHistory[ss->priorCapture][us][from_to(ttMove)] << penalty;
+                thisThread->mainHistory[!ss->priorCapture][us][from_to(ttMove)] << penalty / 2;
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -821,6 +822,7 @@ namespace {
     {
         int bonus = std::clamp(-depth * 4 * int((ss-1)->staticEval + ss->staticEval - 2 * Tempo), -1000, 1000);
         thisThread->mainHistory[(ss-1)->priorCapture][~us][from_to((ss-1)->currentMove)] << bonus;
+        thisThread->mainHistory[!(ss-1)->priorCapture][~us][from_to((ss-1)->currentMove)] << bonus / 2;
     }
 
     // Set up improving flag that is used in various pruning heuristics
@@ -1760,6 +1762,7 @@ moves_loop: // When in check, search starts from here
         for (int i = 0; i < quietCount; ++i)
         {
             thisThread->mainHistory[ss->priorCapture][us][from_to(quietsSearched[i])] << -bonus2;
+            thisThread->mainHistory[!ss->priorCapture][us][from_to(quietsSearched[i])] << -bonus2 / 2;
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1813,11 +1816,15 @@ moves_loop: // When in check, search starts from here
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
     thisThread->mainHistory[ss->priorCapture][us][from_to(move)] << bonus;
+    thisThread->mainHistory[!ss->priorCapture][us][from_to(move)] << bonus / 2;
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Penalty for reversed move in case of moved piece not being a pawn
     if (type_of(pos.moved_piece(move)) != PAWN)
+    {
         thisThread->mainHistory[ss->priorCapture][us][from_to(reverse_move(move))] << -bonus;
+        thisThread->mainHistory[!ss->priorCapture][us][from_to(reverse_move(move))] << -bonus / 2;
+    }
 
     // Update countermove history
     if (is_ok((ss-1)->currentMove))
