@@ -1152,6 +1152,9 @@ moves_loop: // When in check, search starts from here
               if (value >= beta)
                   return beta;
           }
+
+          else
+              extension = 1;
       }
 
       // Add extension to new depth
