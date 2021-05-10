@@ -1153,7 +1153,7 @@ moves_loop: // When in check, search starts from here
                   return beta;
           }
 
-          else
+          else if (thisThread->nodes & 1)
               extension = 1;
       }
 
