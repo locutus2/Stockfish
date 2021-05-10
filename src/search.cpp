@@ -1131,7 +1131,7 @@ moves_loop: // When in check, search starts from here
               extension = 1;
               singularQuietLMR = !ttCapture;
               if (!PvNode && value < singularBeta - 140)
-                  singularQuietLMR--;
+                  extension = 2;
           }
 
           // Multi-cut pruning
@@ -1153,6 +1153,9 @@ moves_loop: // When in check, search starts from here
               if (value >= beta)
                   return beta;
           }
+
+          else
+              singularQuietLMR = -1;
       }
 
       // Add extension to new depth
