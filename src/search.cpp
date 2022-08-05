@@ -1685,12 +1685,12 @@ moves_loop: // When in check, search starts here
     CapturePieceToHistory& captureHistory = thisThread->captureHistory;
     Piece moved_piece = pos.moved_piece(bestMove);
     PieceType captured = type_of(pos.piece_on(to_sq(bestMove)));
-    int bonus1 = stat_bonus(depth + 1) * (2 + extraBonus) / 2;
+    int bonus1 = stat_bonus(depth + 1) * (4 + extraBonus) / 4;
 
     if (!pos.capture(bestMove))
     {
         int bonus2 = bestValue > beta + PawnValueMg ? bonus1               // larger bonus
-                                                    : stat_bonus(depth) * (2 + extraBonus) / 2;   // smaller bonus
+                                                    : stat_bonus(depth) * (4 + extraBonus) / 4;   // smaller bonus
 
         // Increase stats for the best move in case it was a quiet move
         update_quiet_stats(pos, ss, bestMove, bonus2);
