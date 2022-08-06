@@ -106,6 +106,11 @@ typedef Stats<int16_t, 29952, PIECE_NB, SQUARE_NB> PieceToHistory;
 typedef Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB> ContinuationHistory;
 
 
+inline int node_type(bool PvNode, bool cutNode)
+{
+    return 2 * PvNode + cutNode;
+}
+
 /// MovePicker class is used to pick one pseudo-legal move at a time from the
 /// current position. The most important method is next_move(), which returns a
 /// new pseudo-legal move each time it is called, until there are no moves left,
