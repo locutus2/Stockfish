@@ -108,7 +108,7 @@ typedef Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB> ContinuationHistory
 
 inline int node_type(bool PvNode, bool cutNode)
 {
-    return 2 * PvNode + cutNode;
+    return PvNode || cutNode;
 }
 
 /// MovePicker class is used to pick one pseudo-legal move at a time from the
