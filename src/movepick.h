@@ -94,10 +94,10 @@ typedef Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)> Butterfl
 typedef Stats<Move, NOT_USED, PIECE_NB, SQUARE_NB> CounterMoveHistory;
 
 /// CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
-typedef Stats<int16_t, 10692, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB> CapturePieceToHistory;
+typedef Stats<int16_t, 9623, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB> CapturePieceToHistory;
 
 /// PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
-typedef Stats<int16_t, 23962, PIECE_NB, SQUARE_NB> PieceToHistory;
+typedef Stats<int16_t, 26957, PIECE_NB, SQUARE_NB> PieceToHistory;
 
 /// ContinuationHistory is the combined history of a given pair of moves, usually
 /// the current one given a previous one. The nested history table is based on
