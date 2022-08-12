@@ -313,7 +313,7 @@ void Thread::search() {
   optimism[ us] = Value(39);
   optimism[~us] = -optimism[us];
 
-  int searchAgainCounter = 0;
+  searchAgainCounter = 0;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -373,9 +373,8 @@ void Thread::search() {
           int failedHighCnt = 0;
           while (true)
           {
-              // Adjust the effective depth searched, but ensuring at least one effective increment for every
-              // four searchAgain steps (see issue #2717).
-              Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - 3 * (searchAgainCounter + 1) / 4);
+              // Adjust the effective depth searched.
+              Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt);
               bestValue = Stockfish::search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
               // Bring the best move to the front. It is critical that sorting
@@ -1184,6 +1183,8 @@ moves_loop: // When in check, search starts here
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
           r -= ss->statScore / 15914;
+
+          r += thisThread->searchAgainCounter;
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
