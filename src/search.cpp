@@ -1169,8 +1169,13 @@ moves_loop: // When in check, search starts here
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
 
-          if (!PvNode && !priorCapture && !ss->inCheck && capture)
+          if (cutNode && !priorCapture && !ss->inCheck && capture)
+          {
               r--;
+              dbg_mean_of(100);
+          }
+          else
+              dbg_mean_of(0);
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                          + (*contHist[0])[movedPiece][to_sq(move)]
