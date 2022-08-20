@@ -1169,7 +1169,7 @@ moves_loop: // When in check, search starts here
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
 
-          if (!improving && PvNode)
+          if (!priorCapture && ss->inCheck)
           {
               r--;
               dbg_mean_of(100);
