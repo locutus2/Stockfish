@@ -1153,9 +1153,6 @@ moves_loop: // When in check, search starts here
           if (cutNode)
               r += 2;
 
-          if (moveCountPruning)
-              r--;
-
           // Increase reduction if ttMove is a capture (~3 Elo)
           if (ttCapture)
               r++;
@@ -1179,7 +1176,7 @@ moves_loop: // When in check, search starts here
                          - 4334;
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-          r -= ss->statScore / 15914;
+          r -= (ss->statScore + 138 * moveCount) / 15914;
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
