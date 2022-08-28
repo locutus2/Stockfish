@@ -28,21 +28,21 @@ namespace Stockfish {
 ///
 /// key        16 bit
 /// depth       8 bit
-/// generation  6 bit
-/// bound type  2 bit
+/// generation  7 bit
+/// pv node     1 bit
 /// move       16 bit
 /// value      16 bit
-/// eval value 15 bit
-/// pv node     1 bit
+/// eval value 14 bit
+/// bound type  2 bit
 
 struct TTEntry {
 
   Move  move()  const { return (Move )move16; }
   Value value() const { return (Value)value16; }
-  Value eval()  const { return (Value)(eval16 & ~0x1); }
+  Value eval()  const { return (Value)(eval16 & ~0x3); }
   Depth depth() const { return (Depth)depth8 + DEPTH_OFFSET; }
-  bool is_pv()  const { return (bool)(eval16 & 0x1); }
-  Bound bound() const { return (Bound)(genBound8 & 0x3); }
+  bool is_pv()  const { return (bool)(genBound8 & 0x1); }
+  Bound bound() const { return (Bound)(eval16 & 0x3); }
   void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
 
 private:
@@ -75,7 +75,7 @@ class TranspositionTable {
   static_assert(sizeof(Cluster) == 32, "Unexpected Cluster size");
 
   // Constants used to refresh the hash table periodically
-  static constexpr unsigned GENERATION_BITS  = 2;                                // nb of bits reserved for other things
+  static constexpr unsigned GENERATION_BITS  = 1;                                // nb of bits reserved for other things
   static constexpr int      GENERATION_DELTA = (1 << GENERATION_BITS);           // increment for generation field
   static constexpr int      GENERATION_CYCLE = 255 + (1 << GENERATION_BITS);     // cycle length
   static constexpr int      GENERATION_MASK  = (0xFF << GENERATION_BITS) & 0xFF; // mask to pull out generation number
