@@ -1061,7 +1061,7 @@ moves_loop: // When in check, search starts here
               && (tte->bound() & BOUND_LOWER)
               &&  tte->depth() >= depth - 3)
           {
-              if (ttSingular)
+              if (ttSingular && depth % 2 == 0)
               {
                   extension = 1;
                   singularQuietLMR = !ttCapture;
