@@ -39,7 +39,7 @@ struct TTEntry {
 
   Move  move()  const { return (Move )move16; }
   Value value() const { return (Value)value16; }
-  Value eval()  const { return (Value)(eval16 & 0xFE); }
+  Value eval()  const { return (Value)(eval16 & 0xFFFE); }
   Depth depth() const { return (Depth)depth8 + DEPTH_OFFSET; }
   bool is_pv()  const { return (bool)(eval16 & 0x1); }
   Bound bound() const { return (Bound)(genBound8 & 0x3); }
