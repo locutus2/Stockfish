@@ -138,8 +138,8 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
       // is needed to keep the unrelated lowest n bits from affecting
       // the result) to calculate the entry age correctly even after
       // generation8 overflows into the next cycle.
-      if (   replace->is_pv() > tte[i].is_pv()
-          || (    replace->is_pv() == tte[i].is_pv()
+      if (   (replace->bound() == BOUND_EXACT && tte[i].bound() != BOUND_EXACT)
+          || (   (replace->bound() == BOUND_EXACT || tte[i].bound() != BOUND_EXACT)
               &&  replace->depth8 - ((GENERATION_CYCLE + generation8 - replace->genBound8) & GENERATION_MASK)
                 >   tte[i].depth8 - ((GENERATION_CYCLE + generation8 -   tte[i].genBound8) & GENERATION_MASK)))
           replace = &tte[i];
