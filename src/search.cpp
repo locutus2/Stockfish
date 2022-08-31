@@ -558,10 +558,10 @@ namespace {
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
-    bool givesCheck, improving, priorCapture, singularQuietLMR;
+    bool givesCheck, improving, priorCapture;
     bool capture, moveCountPruning, ttCapture;
     Piece movedPiece;
-    int moveCount, captureCount, quietCount, improvement, complexity;
+    int moveCount, captureCount, quietCount, improvement, complexity, singularQuietLMR;
 
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
@@ -940,7 +940,8 @@ moves_loop: // When in check, search starts here
                                       ss->killers);
 
     value = bestValue;
-    moveCountPruning = singularQuietLMR = false;
+    moveCountPruning = false;
+    singularQuietLMR = 0;
 
     // Indicate PvNodes that will probably fail low if the node was searched
     // at a depth equal or greater than the current depth, and the result of this search was a fail low.
@@ -1070,7 +1071,7 @@ moves_loop: // When in check, search starts here
               if (value < singularBeta)
               {
                   extension = 1;
-                  singularQuietLMR = !ttCapture && thisThread->id() % 2 == 0;
+                  singularQuietLMR = !ttCapture * (1 + (thisThread->id() % 2 == 1));
 
                   // Avoid search explosion by limiting the number of double extensions
                   if (  !PvNode
@@ -1161,10 +1162,6 @@ moves_loop: // When in check, search starts here
           if (PvNode)
               r -= 1 + 15 / (3 + depth);
 
-          // Decrease reduction if ttMove has been singularly extended (~1 Elo)
-          if (singularQuietLMR)
-              r--;
-
           // Increase reduction if next ply has a lot of fail high else reset count to 0
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
@@ -1176,7 +1173,8 @@ moves_loop: // When in check, search starts here
                          - 4334;
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-          r -= ss->statScore / 15914;
+          // and decrease reduction if ttMove has been singularly extended (~1 Elo)
+          r -= ss->statScore / 15914 + singularQuietLMR;
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
