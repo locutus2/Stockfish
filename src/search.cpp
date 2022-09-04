@@ -1159,7 +1159,10 @@ moves_loop: // When in check, search starts here
 
           // Decrease reduction for PvNodes based on depth
           if (PvNode)
-              r -= 15 / (3 + depth) + (thisThread->id() + 1) % 3;
+              r -= 1 + 15 / (3 + depth);
+
+          if (thisThread->id() % 2 == 1 && capture)
+              r--;
 
           // Decrease reduction if ttMove has been singularly extended (~1 Elo)
           if (singularQuietLMR)
