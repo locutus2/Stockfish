@@ -138,10 +138,8 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found, int threadId) con
       // is needed to keep the unrelated lowest n bits from affecting
       // the result) to calculate the entry age correctly even after
       // generation8 overflows into the next cycle.
-      if (   (threadId % 2 == 1 && replace->is_pv() > tte[i].is_pv())
-          || (    (threadId % 2 == 0 || replace->is_pv() == tte[i].is_pv())
-              &&  replace->depth8 - ((GENERATION_CYCLE + generation8 - replace->genBound8) & GENERATION_MASK)
-                >   tte[i].depth8 - ((GENERATION_CYCLE + generation8 -   tte[i].genBound8) & GENERATION_MASK)))
+      if (  replace->depth8 * (1 + threadId % 2) - ((GENERATION_CYCLE + generation8 - replace->genBound8) & GENERATION_MASK)
+          >   tte[i].depth8 * (1 + threadId % 2) - ((GENERATION_CYCLE + generation8 -   tte[i].genBound8) & GENERATION_MASK))
           replace = &tte[i];
 
   return found = false, replace;
