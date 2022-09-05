@@ -1161,8 +1161,8 @@ moves_loop: // When in check, search starts here
           if (PvNode)
               r -= 1 + 15 / (3 + depth);
 
-          if (capture && alpha > VALUE_DRAW)
-              r--;
+          if (capture)
+              r -= 2;
 
           // Decrease reduction if ttMove has been singularly extended (~1 Elo)
           if (singularQuietLMR)
