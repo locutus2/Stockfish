@@ -34,10 +34,10 @@ namespace {
 
   // partial_insertion_sort() sorts moves in descending order up to and including
   // a given limit. The order of moves smaller than the limit is left unspecified.
-  void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
+  void partial_insertion_sort(ExtMove* begin, ExtMove* end, std::function<bool(const ExtMove&)> filter = nullptr) {
 
     for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
-        if (p->value >= limit)
+        if (filter == nullptr || filter(*p))
         {
             ExtMove tmp = *p, *q;
             *p = *++sortedEnd;
@@ -201,7 +201,7 @@ top:
       endMoves = generate<CAPTURES>(pos, cur);
 
       score<CAPTURES>();
-      partial_insertion_sort(cur, endMoves, -3000 * depth);
+      partial_insertion_sort(cur, endMoves, [this](const auto& m)->bool { return m.value >= -3000 * depth; } );
       ++stage;
       goto top;
 
@@ -239,7 +239,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, -3000 * depth);
+          partial_insertion_sort(cur, endMoves, [this](const auto& m)->bool { return m.value >= -3000 * depth; } );
       }
 
       ++stage;
@@ -267,11 +267,13 @@ top:
       endMoves = generate<EVASIONS>(pos, cur);
 
       score<EVASIONS>();
+      partial_insertion_sort(cur, endMoves, [this](const auto& m)->bool { return pos.capture(m); } );
+
       ++stage;
       [[fallthrough]];
 
   case EVASION:
-      return select<Best>([](){ return true; });
+      return select<Next>([](){ return true; });
 
   case PROBCUT:
       return select<Next>([&](){ return pos.see_ge(*cur, threshold); });
