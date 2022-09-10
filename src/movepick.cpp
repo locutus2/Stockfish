@@ -27,7 +27,7 @@ namespace {
 
   enum Stages {
     MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
-    EVASION_TT, EVASION_INIT, EVASION,
+    EVASION_TT, EVASION_REFUTATION_INIT, EVASION_REFUTATION, EVASION_INIT, EVASION,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
   };
@@ -69,6 +69,9 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 
   stage = (pos.checkers() ? EVASION_TT : MAIN_TT) +
           !(ttm && pos.pseudo_legal(ttm));
+
+  if (pos.checkers())
+      refutations[0].move = cm;
 }
 
 /// MovePicker constructor for quiescence search
@@ -84,6 +87,9 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
           !(   ttm
             && (pos.checkers() || depth > DEPTH_QS_RECAPTURES || to_sq(ttm) == recaptureSquare)
             && pos.pseudo_legal(ttm));
+
+  if (pos.checkers())
+      refutations[0].move = MOVE_NONE;
 }
 
 /// MovePicker constructor for ProbCut: we generate captures with SEE greater
@@ -262,6 +268,20 @@ top:
   case BAD_CAPTURE:
       return select<Next>([](){ return true; });
 
+  case EVASION_REFUTATION_INIT:
+      cur = std::begin(refutations);
+      endMoves = cur + 1;
+      ++stage;
+      [[fallthrough]];
+
+  case EVASION_REFUTATION:
+      if (select<Next>([&](){ return    *cur != MOVE_NONE
+                                    && !pos.capture(*cur)
+                                    &&  pos.pseudo_legal(*cur); }))
+          return *(cur - 1);
+      ++stage;
+      [[fallthrough]];
+
   case EVASION_INIT:
       cur = moves;
       endMoves = generate<EVASIONS>(pos, cur);
@@ -271,7 +291,7 @@ top:
       [[fallthrough]];
 
   case EVASION:
-      return select<Best>([](){ return true; });
+      return select<Best>([&](){ return *cur != refutations[0].move; });
 
   case PROBCUT:
       return select<Next>([&](){ return pos.see_ge(*cur, threshold); });
