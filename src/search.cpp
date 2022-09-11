@@ -81,7 +81,7 @@ namespace {
 
   // History and stats update bonus, based on depth
   int stat_bonus(Depth d) {
-    return std::min((10 * d + 235) * d - 290 , 1328);
+    return std::min((12 * d + 282) * d - 349 , 1594);
   }
 
   // Add a small random component to draw evaluations to avoid 3-fold blindness
@@ -776,8 +776,7 @@ namespace {
     // Step 7. Razoring.
     // If eval is really low check with qsearch if it can exceed alpha, if it can't,
     // return a fail low.
-    if (   !PvNode
-        && depth <= 7
+    if (   depth <= 7
         && eval < alpha - 369 - 254 * depth * depth)
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
@@ -1060,7 +1059,7 @@ moves_loop: // When in check, search starts here
               && (tte->bound() & BOUND_LOWER)
               &&  tte->depth() >= depth - 3)
           {
-              Value singularBeta = ttValue - 3 * depth;
+              Value singularBeta = ttValue - (3 + (ss->ttPv && !PvNode)) * depth;
               Depth singularDepth = (depth - 1) / 2;
 
               ss->excludedMove = move;
