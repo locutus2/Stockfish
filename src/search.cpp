@@ -355,23 +355,26 @@ void Thread::search() {
               Value prev = rootMoves[pvIdx].averageScore;
               delta = Value(10) + int(prev) * prev / 15620;
 
-              int n = 0, score;
-              double sum = 0, sqr = 0;
-              for (Thread* th : Threads)
+              if (id() % 2 == 1)
               {
-                  score = th->rootMoves[pvIdx].averageScore;
-                  if (std::abs(score) < VALUE_KNOWN_WIN)
+                  int n = 0, score;
+                  double sum = 0, sqr = 0;
+                  for (Thread* th : Threads)
                   {
-                      sum += score;
-                      sqr += score * score;
-                      ++n;
+                      score = th->rootMoves[pvIdx].averageScore;
+                      if (std::abs(score) < VALUE_KNOWN_WIN)
+                      {
+                          sum += score;
+                          sqr += score * score;
+                          ++n;
+                      }
                   }
-              }
 
-              if (n > 1)
-              {
-                  double stddev = std::sqrt((sqr - sum * sum / n) / n);
-                  delta += stddev / 10 - 4;
+                  if (n > 1)
+                  {
+                      double stddev = std::sqrt((sqr - sum * sum / n) / n);
+                      delta += stddev / 10;
+                  }
               }
 
               alpha = std::max(prev - delta,-VALUE_INFINITE);
