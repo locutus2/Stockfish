@@ -371,7 +371,7 @@ void Thread::search() {
               if (n > 1)
               {
                   double stddev = std::sqrt((sqr - sum * sum / n) / n);
-                  delta += stddev / 20 - 2;
+                  delta += stddev / 10 - 4;
               }
 
               alpha = std::max(prev - delta,-VALUE_INFINITE);
