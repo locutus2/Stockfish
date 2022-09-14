@@ -371,7 +371,7 @@ void Thread::search() {
               if (n > 1)
               {
                   double stddev = std::sqrt((sqr - sum * sum / n) / n);
-                  delta += stddev / 10 - 4;
+                  delta += stddev / 10 * id() / Threads.size();
               }
 
               alpha = std::max(prev - delta,-VALUE_INFINITE);
