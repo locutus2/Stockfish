@@ -373,7 +373,7 @@ void Thread::search() {
                   if (n > 1)
                   {
                       double stddev = std::sqrt((sqr - sum * sum / n) / n);
-                      delta += stddev / 10;
+                      delta += stddev / 10 - 4;
                   }
               }
 
