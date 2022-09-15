@@ -1168,7 +1168,8 @@ moves_loop: // When in check, search starts here
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
 
-          if (   thisThread->rootMoves.size() >= 2 + thisThread->pvIdx
+          if (   ss->ply <= 1
+              && thisThread->rootMoves.size() >= 2 + thisThread->pvIdx
               && thisThread->rootMoves[thisThread->pvIdx + 1].averageScore != VALUE_INFINITE
               && thisThread->rootMoves[thisThread->pvIdx].averageScore > 200 + thisThread->rootMoves[thisThread->pvIdx + 1].averageScore)
               r++;
