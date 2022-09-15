@@ -1169,7 +1169,7 @@ moves_loop: // When in check, search starts here
               r++;
 
           if (   PvNode
-              && ss->ply < depth
+              && !capture
               && thisThread->rootMoves.size() >= 2 + thisThread->pvIdx
               && thisThread->rootMoves[thisThread->pvIdx + 1].averageScore != VALUE_INFINITE
               && thisThread->rootMoves[thisThread->pvIdx].averageScore > 200 + thisThread->rootMoves[thisThread->pvIdx + 1].averageScore)
