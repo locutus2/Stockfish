@@ -631,7 +631,10 @@ namespace {
             : ss->ttHit    ? tte->move() : MOVE_NONE;
     ttCapture = ttMove && pos.capture(ttMove);
     if (!excludedMove)
+    {
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
+        ss->pvDistance = PvNode ? 0 : 1 + (ss-1)->pvDistance;
+    }
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -1168,7 +1171,7 @@ moves_loop: // When in check, search starts here
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
 
-          if (   ss->ttPv
+          if (   ss->pvDistance <= 1
               && thisThread->rootMoves.size() >= 2 + thisThread->pvIdx
               && thisThread->rootMoves[thisThread->pvIdx + 1].averageScore != VALUE_INFINITE
               && thisThread->rootMoves[thisThread->pvIdx].averageScore > 200 + thisThread->rootMoves[thisThread->pvIdx + 1].averageScore)
