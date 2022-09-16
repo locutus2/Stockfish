@@ -1169,9 +1169,10 @@ moves_loop: // When in check, search starts here
               r++;
 
           if (   PvNode
+              && ss->ply % 2 == 0
               && thisThread->rootMoves.size() >= 2 + thisThread->pvIdx
               && thisThread->rootMoves[thisThread->pvIdx + 1].averageScore != VALUE_INFINITE
-              && thisThread->rootMoves[thisThread->pvIdx].averageScore > 300 + thisThread->rootMoves[thisThread->pvIdx + 1].averageScore)
+              && thisThread->rootMoves[thisThread->pvIdx].averageScore > 200 + thisThread->rootMoves[thisThread->pvIdx + 1].averageScore)
               r++;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
