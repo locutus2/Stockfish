@@ -1134,7 +1134,10 @@ moves_loop: // When in check, search starts here
           &&  moveCount > 1 + (PvNode && ss->ply <= 1)
           && (   !ss->ttPv
               || !capture
-              || (cutNode && (ss-1)->moveCount > 1)))
+              || (cutNode && (ss-1)->moveCount > 1)
+              || (   PvNode
+                  && thisThread->rootMoves.size() >= 2 + thisThread->pvIdx
+                  && thisThread->rootMoves[thisThread->pvIdx].averageScore > 200 + thisThread->rootMoves[thisThread->pvIdx + 1].averageScore)))
       {
           Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
@@ -1166,12 +1169,6 @@ moves_loop: // When in check, search starts here
 
           // Increase reduction if next ply has a lot of fail high else reset count to 0
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
-              r++;
-
-          if (   PvNode
-              && !givesCheck
-              && thisThread->rootMoves.size() >= 2 + thisThread->pvIdx
-              && thisThread->rootMoves[thisThread->pvIdx].averageScore > 200 + thisThread->rootMoves[thisThread->pvIdx + 1].averageScore)
               r++;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
