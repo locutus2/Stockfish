@@ -1170,8 +1170,8 @@ moves_loop: // When in check, search starts here
 
           if (   PvNode
               && thisThread->rootMoves.size() >= 2 + thisThread->pvIdx
-              && thisThread->rootMoves[thisThread->pvIdx + 1].score != VALUE_INFINITE
-              && thisThread->rootMoves[thisThread->pvIdx].score > 200 + thisThread->rootMoves[thisThread->pvIdx + 1].score)
+              && thisThread->rootMoves[thisThread->pvIdx + 1].previousScore != VALUE_INFINITE
+              && thisThread->rootMoves[thisThread->pvIdx].previousScore > 200 + thisThread->rootMoves[thisThread->pvIdx + 1].previousScore)
               r++;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
