@@ -1135,8 +1135,7 @@ moves_loop: // When in check, search starts here
           && (   !ss->ttPv
               || !capture
               || (cutNode && (ss-1)->moveCount > 1)
-              || (   rootNode
-                  && thisThread->rootMoves.size() >= 2 + thisThread->pvIdx
+              || (   thisThread->rootMoves.size() >= 2 + thisThread->pvIdx
                   && thisThread->rootMoves[thisThread->pvIdx].averageScore > 200 + thisThread->rootMoves[thisThread->pvIdx + 1].averageScore)))
       {
           Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
