@@ -1131,8 +1131,9 @@ moves_loop: // When in check, search starts here
       // cases where we extend a son if it has good chances to be "interesting".
       if (    depth >= 2
           &&  moveCount > 1 + (PvNode && ss->ply <= 1)
-          && (   !(PvNode || (ss->ttPv && (ss-1)->moveCount <= 1))
-              || !capture))
+          && (   !(PvNode || (ss->ttPv && (ss-1)->ttPv))
+              || !capture
+              || (cutNode && (ss-1)->moveCount > 1)))
       {
           Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
