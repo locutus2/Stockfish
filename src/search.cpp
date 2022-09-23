@@ -929,7 +929,8 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-4)->continuationHistory,
                                           nullptr                   , (ss-6)->continuationHistory };
 
-    Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
+    Move countermove  = thisThread->counterMoves[0][pos.piece_on(prevSq)][prevSq];
+    Move countermove2 = thisThread->counterMoves[1][pos.piece_on(prevSq)][prevSq];
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
@@ -1166,6 +1167,9 @@ moves_loop: // When in check, search starts here
           // Increase reduction if next ply has a lot of fail high else reset count to 0
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
+
+          if (move == countermove2)
+              r--;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                          + (*contHist[0])[movedPiece][to_sq(move)]
@@ -1742,7 +1746,11 @@ moves_loop: // When in check, search starts here
     if (is_ok((ss-1)->currentMove))
     {
         Square prevSq = to_sq((ss-1)->currentMove);
-        thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] = move;
+        if (thisThread->counterMoves[0][pos.piece_on(prevSq)][prevSq] != move)
+        {
+            thisThread->counterMoves[1][pos.piece_on(prevSq)][prevSq] = thisThread->counterMoves[0][pos.piece_on(prevSq)][prevSq];
+            thisThread->counterMoves[0][pos.piece_on(prevSq)][prevSq] = move;
+        }
     }
   }
 
