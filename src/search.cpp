@@ -1272,7 +1272,7 @@ moves_loop: // When in check, search starts here
 
           if (value > alpha)
           {
-              if (PvNode && bestMove)
+              if (PvNode && move != ttMove)
                   bestMoveChanged = true;
 
               bestMove = move;
