@@ -946,6 +946,7 @@ moves_loop: // When in check, search starts here
                          && ttMove
                          && (tte->bound() & BOUND_UPPER)
                          && tte->depth() >= depth;
+    bool bestMoveChanged = false;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -990,7 +991,9 @@ moves_loop: // When in check, search starts here
       // Step 14. Pruning at shallow depth (~98 Elo). Depth conditions are important for mate finding.
       if (  !rootNode
           && pos.non_pawn_material(us)
-          && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
+          && bestValue > VALUE_TB_LOSS_IN_MAX_PLY
+          && (!PvNode || !bestMoveChanged))
+
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~7 Elo)
           moveCountPruning = moveCount >= futility_move_count(improving, depth);
@@ -1268,6 +1271,9 @@ moves_loop: // When in check, search starts here
 
           if (value > alpha)
           {
+              if (PvNode && bestMove)
+                  bestMoveChanged = true;
+
               bestMove = move;
 
               if (PvNode && !rootNode) // Update pv even in fail-high case
