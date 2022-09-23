@@ -946,6 +946,7 @@ moves_loop: // When in check, search starts here
                          && ttMove
                          && (tte->bound() & BOUND_UPPER)
                          && tte->depth() >= depth;
+    bool bestMoveChanged = false;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1167,6 +1168,9 @@ moves_loop: // When in check, search starts here
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
 
+          if (PvNode && bestMoveChanged)
+              r--;
+
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                          + (*contHist[0])[movedPiece][to_sq(move)]
                          + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1268,6 +1272,9 @@ moves_loop: // When in check, search starts here
 
           if (value > alpha)
           {
+              if (PvNode && bestMove)
+                  bestMoveChanged = true;
+
               bestMove = move;
 
               if (PvNode && !rootNode) // Update pv even in fail-high case
