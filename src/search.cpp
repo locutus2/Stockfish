@@ -1167,7 +1167,7 @@ moves_loop: // When in check, search starts here
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
 
-          if (capture && depth >= 12)
+          if (capture && depth >= 11)
               r++;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
