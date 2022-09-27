@@ -561,6 +561,7 @@ namespace {
     bool capture, moveCountPruning, ttCapture;
     Piece movedPiece;
     int moveCount, captureCount, quietCount, improvement, complexity;
+    MovePicker mp(pos);
 
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
@@ -861,7 +862,7 @@ namespace {
     {
         assert(probCutBeta < VALUE_INFINITE);
 
-        MovePicker mp(pos, ttMove, probCutBeta - ss->staticEval, depth - 3, &captureHistory);
+        mp.init(ttMove, probCutBeta - ss->staticEval, depth - 3, &captureHistory);
 
         while ((move = mp.next_move()) != MOVE_NONE)
             if (move != excludedMove && pos.legal(move))
@@ -931,11 +932,11 @@ moves_loop: // When in check, search starts here
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
-                                      &captureHistory,
-                                      contHist,
-                                      countermove,
-                                      ss->killers);
+    mp.init(ttMove, depth, &thisThread->mainHistory,
+                           &captureHistory,
+                           contHist,
+                           countermove,
+                           ss->killers);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
@@ -1392,6 +1393,7 @@ moves_loop: // When in check, search starts here
     Value bestValue, value, ttValue, futilityValue, futilityBase;
     bool pvHit, givesCheck, capture;
     int moveCount;
+    MovePicker mp(pos);
 
     if (PvNode)
     {
@@ -1481,10 +1483,10 @@ moves_loop: // When in check, search starts here
     // queen promotions, and other checks (only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
     Square prevSq = to_sq((ss-1)->currentMove);
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
-                                      &thisThread->captureHistory,
-                                      contHist,
-                                      prevSq);
+    mp.init(ttMove, depth, &thisThread->mainHistory,
+                           &thisThread->captureHistory,
+                           contHist,
+                           prevSq);
 
     int quietCheckEvasions = 0;
 

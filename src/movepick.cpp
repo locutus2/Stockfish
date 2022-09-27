@@ -29,7 +29,8 @@ namespace {
     MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
     EVASION_TT, EVASION_INIT, EVASION,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
-    QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
+    QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK,
+    STAGE_UNDEFINED = -1
   };
 
   // partial_insertion_sort() sorts moves in descending order up to and including
@@ -56,29 +57,46 @@ namespace {
 /// search captures, promotions, and some checks) and how important good move
 /// ordering is at the current node.
 
-/// MovePicker constructor for the main search
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
-                                                             const CapturePieceToHistory* cph,
-                                                             const PieceToHistory** ch,
-                                                             Move cm,
-                                                             const Move* killers)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
+MovePicker::MovePicker(const Position& p) : pos(p), stage(STAGE_UNDEFINED) {}
+
+/// MovePicker init for the main search
+void MovePicker::init(Move ttm, Depth d, const ButterflyHistory* mh,
+                                           const CapturePieceToHistory* cph,
+                                           const PieceToHistory** ch,
+                                           Move cm,
+                                           const Move* killers)
 {
   assert(d > 0);
+
+  mainHistory = mh;
+  captureHistory = cph;
+  continuationHistory = ch;
+  ttMove = ttm;
+  refutations[0] = {killers[0], 0};
+  refutations[1] = {killers[1], 0};
+  refutations[2] = {cm, 0};
+  depth = d;
 
   stage = (pos.checkers() ? EVASION_TT : MAIN_TT) +
           !(ttm && pos.pseudo_legal(ttm));
 }
 
-/// MovePicker constructor for quiescence search
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
-                                                             const CapturePieceToHistory* cph,
-                                                             const PieceToHistory** ch,
-                                                             Square rs)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), recaptureSquare(rs), depth(d)
+
+
+/// MovePicker init for quiescence search
+void MovePicker::init(Move ttm, Depth d, const ButterflyHistory* mh,
+                                         const CapturePieceToHistory* cph,
+                                         const PieceToHistory** ch,
+                                         Square rs)
 {
   assert(d <= 0);
+
+  mainHistory = mh;
+  captureHistory = cph;
+  continuationHistory = ch;
+  ttMove = ttm;
+  recaptureSquare = rs;
+  depth = d;
 
   stage = (pos.checkers() ? EVASION_TT : QSEARCH_TT) +
           !(   ttm
@@ -86,12 +104,16 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
             && pos.pseudo_legal(ttm));
 }
 
-/// MovePicker constructor for ProbCut: we generate captures with SEE greater
+/// MovePicker init for ProbCut: we generate captures with SEE greater
 /// than or equal to the given threshold.
-MovePicker::MovePicker(const Position& p, Move ttm, Value th, Depth d, const CapturePieceToHistory* cph)
-           : pos(p), captureHistory(cph), ttMove(ttm), threshold(th), depth(d)
+void MovePicker::init(Move ttm, Value th, Depth d, const CapturePieceToHistory* cph)
 {
   assert(!pos.checkers());
+
+  captureHistory = cph;
+  ttMove = ttm;
+  threshold = th;
+  depth = d;
 
   stage = PROBCUT_TT + !(ttm && pos.capture(ttm)
                              && pos.pseudo_legal(ttm)
