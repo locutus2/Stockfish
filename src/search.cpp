@@ -1024,11 +1024,7 @@ moves_loop: // When in check, search starts here
               // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 5
                   && history < -3875 * (depth - 1))
-              {
-                  if (quietCount < 64)
-                      quietsSearched[quietCount++] = move;
                   continue;
-              }
 
               history += 2 * thisThread->mainHistory[us][from_to(move)];
 
@@ -1036,7 +1032,11 @@ moves_loop: // When in check, search starts here
               if (   !ss->inCheck
                   && lmrDepth < 13
                   && ss->staticEval + 106 + 145 * lmrDepth + history / 52 <= alpha)
+              {
+                  if (quietCount < 64)
+                      quietsSearched[quietCount++] = move;
                   continue;
+              }
 
               // Prune moves with negative SEE (~3 Elo)
               if (!pos.see_ge(move, Value(-24 * lmrDepth * lmrDepth - 15 * lmrDepth)))
