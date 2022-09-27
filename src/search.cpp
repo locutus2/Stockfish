@@ -1024,7 +1024,11 @@ moves_loop: // When in check, search starts here
               // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 5
                   && history < -3875 * (depth - 1))
+              {
+                  if (quietCount < 64)
+                      quietsSearched[quietCount++] = move;
                   continue;
+              }
 
               history += 2 * thisThread->mainHistory[us][from_to(move)];
 
