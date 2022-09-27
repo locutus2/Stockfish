@@ -217,10 +217,11 @@ top:
       cur = endBadCaptures = moves;
 
       if (!reuseCaptures)
+      {
           endMoves = generate<CAPTURES>(pos, cur);
-
-      score<CAPTURES>();
-      partial_insertion_sort(cur, endMoves, -3000 * depth);
+          score<CAPTURES>();
+          partial_insertion_sort(cur, endMoves, -3000 * depth);
+      }
       ++stage;
       goto top;
 
