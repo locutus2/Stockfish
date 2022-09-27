@@ -61,10 +61,10 @@ MovePicker::MovePicker(const Position& p) : pos(p), stage(STAGE_UNDEFINED) {}
 
 /// MovePicker init for the main search
 void MovePicker::init(Move ttm, Depth d, const ButterflyHistory* mh,
-                                           const CapturePieceToHistory* cph,
-                                           const PieceToHistory** ch,
-                                           Move cm,
-                                           const Move* killers)
+                                         const CapturePieceToHistory* cph,
+                                         const PieceToHistory** ch,
+                                         Move cm,
+                                         const Move* killers)
 {
   assert(d > 0);
 
