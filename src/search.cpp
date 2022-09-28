@@ -1009,15 +1009,15 @@ moves_loop: // When in check, search starts here
                   && !ss->inCheck
                   && ss->staticEval + 180 + 201 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))]
                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 6 < alpha)
-                  continue;
-
-              // SEE based pruning (~9 Elo)
-              if (!pos.see_ge(move, Value(-222) * depth))
               {
-                  if (capture && captureCount < 32)
+                  if (captureCount < 32)
                       capturesSearched[captureCount++] = move;
                   continue;
               }
+
+              // SEE based pruning (~9 Elo)
+              if (!pos.see_ge(move, Value(-222) * depth))
+                  continue;
           }
           else
           {
