@@ -1013,7 +1013,11 @@ moves_loop: // When in check, search starts here
 
               // SEE based pruning (~9 Elo)
               if (!pos.see_ge(move, Value(-222) * depth))
+              {
+                  if (capture && captureCount < 32)
+                      capturesSearched[captureCount++] = move;
                   continue;
+              }
           }
           else
           {
@@ -1036,11 +1040,7 @@ moves_loop: // When in check, search starts here
 
               // Prune moves with negative SEE (~3 Elo)
               if (!pos.see_ge(move, Value(-24 * lmrDepth * lmrDepth - 15 * lmrDepth)))
-              {
-                  if (history > 0 && quietCount < 64)
-                      quietsSearched[quietCount++] = move;
                   continue;
-              }
           }
       }
 
