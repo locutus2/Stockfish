@@ -297,7 +297,7 @@ void Thread::search() {
               mainThread->iterValue[i] = mainThread->bestPreviousScore;
   }
 
-  mainHistory.age();
+  captureHistory.age();
 
   size_t multiPV = size_t(Options["MultiPV"]);
   Skill skill(Options["Skill Level"], Options["UCI_LimitStrength"] ? int(Options["UCI_Elo"]) : 0);
