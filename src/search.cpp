@@ -1009,11 +1009,7 @@ moves_loop: // When in check, search starts here
                   && !ss->inCheck
                   && ss->staticEval + 180 + 201 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))]
                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 6 < alpha)
-              {
-                  if (captureCount < 32)
-                      capturesSearched[captureCount++] = move;
                   continue;
-              }
 
               // SEE based pruning (~9 Elo)
               if (!pos.see_ge(move, Value(-222) * depth))
@@ -1040,7 +1036,11 @@ moves_loop: // When in check, search starts here
 
               // Prune moves with negative SEE (~3 Elo)
               if (!pos.see_ge(move, Value(-24 * lmrDepth * lmrDepth - 15 * lmrDepth)))
+              {
+                  if (history > 0 && depth > 1 && quietCount < 64)
+                      quietsSearched[quietCount++] = move;
                   continue;
+              }
           }
       }
 
