@@ -29,6 +29,10 @@
 
 namespace Stockfish {
 
+/// In stats table, D=0 means that the template parameter is not used
+enum StatsParams { NOT_USED = 0 };
+enum StatsType { NoCaptures, Captures };
+
 /// StatsEntry stores the stat table value. It is usually a number but could
 /// be a move or even a nested history. We use a class instead of naked value
 /// to directly call history update operator<<() on the entry so to use stats
@@ -43,6 +47,7 @@ public:
   T* operator&() { return &entry; }
   T* operator->() { return &entry; }
   operator const T&() const { return entry; }
+  static constexpr int maxValue() { return D; }
 
   void operator<<(int bonus) {
     assert(abs(bonus) <= D); // Ensure range is [-D, D]
@@ -64,6 +69,13 @@ struct Stats : public std::array<Stats<T, D, Sizes...>, Size>
 {
   typedef Stats<T, D, Size, Sizes...> stats;
 
+  static constexpr int maxValue() {
+      if constexpr(D == NOT_USED)
+          return T::maxValue();
+      else
+          return D;
+  }
+
   void fill(const T& v) {
 
     // For standard-layout 'this' points to first struct member
@@ -77,10 +89,6 @@ struct Stats : public std::array<Stats<T, D, Sizes...>, Size>
 
 template <typename T, int D, int Size>
 struct Stats<T, D, Size> : public std::array<StatsEntry<T, D>, Size> {};
-
-/// In stats table, D=0 means that the template parameter is not used
-enum StatsParams { NOT_USED = 0 };
-enum StatsType { NoCaptures, Captures };
 
 /// ButterflyHistory records how often quiet moves have been successful or
 /// unsuccessful during the current search, and is used for reduction and move
