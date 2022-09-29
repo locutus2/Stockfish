@@ -47,7 +47,6 @@ public:
   T* operator&() { return &entry; }
   T* operator->() { return &entry; }
   operator const T&() const { return entry; }
-  static constexpr int maxValue() { return D; }
 
   void operator<<(int bonus) {
     assert(abs(bonus) <= D); // Ensure range is [-D, D]
@@ -88,7 +87,9 @@ struct Stats : public std::array<Stats<T, D, Sizes...>, Size>
 };
 
 template <typename T, int D, int Size>
-struct Stats<T, D, Size> : public std::array<StatsEntry<T, D>, Size> {};
+struct Stats<T, D, Size> : public std::array<StatsEntry<T, D>, Size> {
+  static constexpr int maxValue() { return D; }
+};
 
 /// ButterflyHistory records how often quiet moves have been successful or
 /// unsuccessful during the current search, and is used for reduction and move
