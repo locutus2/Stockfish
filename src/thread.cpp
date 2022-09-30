@@ -59,7 +59,7 @@ void Thread::clear() {
 
   counterMoves.fill(MOVE_NONE);
   mainHistory.fill(0);
-  captureHistory.fill(captureHistory.maxValue() / 2);
+  captureHistory.fill(captureHistory.maxValue() / 4);
   previousDepth = 0;
   
   for (bool inCheck : { false, true })
