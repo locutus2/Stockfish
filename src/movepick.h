@@ -45,6 +45,8 @@ public:
   operator const T&() const { return entry; }
 
   void operator<<(int bonus) {
+    bonus += 55;
+
     assert(abs(bonus) <= D); // Ensure range is [-D, D]
     static_assert(D <= std::numeric_limits<T>::max(), "D overflows T");
 
