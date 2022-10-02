@@ -774,7 +774,7 @@ namespace {
     evalImprovement =  (ss-2)->eval != VALUE_NONE ? ss->eval - (ss-2)->eval
                      : (ss-4)->eval != VALUE_NONE ? ss->eval - (ss-4)->eval
                      :                              168;
-    improving = improvement > 0 || evalImprovement > 0;
+    improving = improvement + evalImprovement > 0;
 
     // Step 7. Razoring.
     // If eval is really low check with qsearch if it can exceed alpha, if it can't,
