@@ -787,9 +787,9 @@ namespace {
     // The depth condition is important for mate finding.
     if (   !ss->ttPv
         &&  depth < 8
-        &&  eval - futility_margin(depth, improving) - (ss-1)->statScore / 303 >= beta
+        &&  eval - futility_margin(depth, improving) - (ss-1)->statScore / 301 >= beta
         &&  eval >= beta
-        &&  eval < 28031) // larger than VALUE_KNOWN_WIN, but smaller than TB wins.
+        &&  eval < 28692) // larger than VALUE_KNOWN_WIN, but smaller than TB wins
         return eval;
 
     // Step 9. Null move search with verification search (~22 Elo)
@@ -1163,7 +1163,12 @@ moves_loop: // When in check, search starts here
           if (singularQuietLMR)
               r--;
 
-          // Increase reduction if next ply has a lot of fail high else reset count to 0
+          // Dicrease reduction if we move a threatened piece (~1 Elo)
+          if (   depth > 9
+              && (mp.threatenedPieces & from_sq(move)))
+              r--;
+
+          // Increase reduction if next ply has a lot of fail high
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
 
@@ -1174,7 +1179,7 @@ moves_loop: // When in check, search starts here
                          - 4433;
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-          r -= ss->statScore / 13628;
+          r -= (ss->statScore + 5 * alpha) / 15448;
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
