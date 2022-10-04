@@ -808,6 +808,7 @@ namespace {
         // Null move dynamic reduction based on depth, eval and complexity of position
         Depth R = std::min(int(eval - beta) / 168, 7) + depth / 3 + 4 - (complexity > 861);
 
+        (ss+1)->fractionalReduction = ss->fractionalReduction;
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
 
@@ -868,6 +869,7 @@ namespace {
             {
                 assert(pos.capture(move) || promotion_type(move) == QUEEN);
 
+                (ss+1)->fractionalReduction = ss->fractionalReduction;
                 ss->currentMove = move;
                 ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
                                                                           [true]
@@ -1179,7 +1181,9 @@ moves_loop: // When in check, search starts here
                          - 4433;
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-          r -= (ss->statScore + 5 * alpha) / 15448;
+          int fractionalR = ss->fractionalReduction - (ss->statScore + 5 * alpha) * FRACTIONAL_PLIES / 15448;
+          r += fractionalR / FRACTIONAL_PLIES;
+          (ss+1)->fractionalReduction = fractionalR % FRACTIONAL_PLIES;
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
@@ -1207,7 +1211,8 @@ moves_loop: // When in check, search starts here
       // Step 18. Full depth search when LMR is skipped
       else if (!PvNode || moveCount > 1)
       {
-              value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth, !cutNode);
+          (ss+1)->fractionalReduction = ss->fractionalReduction;
+          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth, !cutNode);
       }
 
       // For PV nodes only, do a full PV search on the first move or after a fail
@@ -1217,6 +1222,7 @@ moves_loop: // When in check, search starts here
       {
           (ss+1)->pv = pv;
           (ss+1)->pv[0] = MOVE_NONE;
+          (ss+1)->fractionalReduction = ss->fractionalReduction;
 
           value = -search<PV>(pos, ss+1, -beta, -alpha,
                               std::min(maxNextDepth, newDepth), false);
