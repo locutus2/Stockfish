@@ -1183,7 +1183,7 @@ moves_loop: // When in check, search starts here
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
           int fractionalR = ss->fractionalReduction - (ss->statScore + 5 * alpha) * FRACTIONAL_PLIES / 15448;
           r += fractionalR / FRACTIONAL_PLIES;
-          (ss+1)->fractionalReduction = fractionalR % FRACTIONAL_PLIES;
+          (ss+1)->fractionalReduction = (fractionalR - 47) % FRACTIONAL_PLIES;
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
