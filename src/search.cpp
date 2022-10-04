@@ -1118,6 +1118,7 @@ moves_loop: // When in check, search starts here
       prefetch(TT.first_entry(pos.key_after(move)));
 
       // Update the current move (this must be done after singular extension search)
+      (ss+1)->fractionalReduction = ss->fractionalReduction;
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
                                                                 [capture]
@@ -1137,9 +1138,11 @@ moves_loop: // When in check, search starts here
               || !capture
               || (cutNode && (ss-1)->moveCount > 1)))
       {
-          int fractionalR = ss->fractionalReduction + reduction(improving, depth, moveCount, delta, thisThread->rootDelta, FRACTIONAL_PLIES) - 134;
-          Depth r = fractionalR / FRACTIONAL_PLIES;
-          (ss+1)->fractionalReduction = fractionalR % FRACTIONAL_PLIES;
+          (ss+1)->fractionalReduction += reduction(improving, depth, moveCount, delta, thisThread->rootDelta, FRACTIONAL_PLIES);
+          Depth r = (ss+1)->fractionalReduction / FRACTIONAL_PLIES;
+
+          (ss+1)->fractionalReduction %= FRACTIONAL_PLIES;
+          (ss+1)->fractionalReduction -= 134;
 
           // Decrease reduction if position is or has been on the PV
           // and node is not likely to fail low. (~3 Elo)
@@ -1211,7 +1214,6 @@ moves_loop: // When in check, search starts here
       // Step 18. Full depth search when LMR is skipped
       else if (!PvNode || moveCount > 1)
       {
-          (ss+1)->fractionalReduction = ss->fractionalReduction;
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth, !cutNode);
       }
 
