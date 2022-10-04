@@ -69,9 +69,9 @@ namespace {
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
-  Depth reduction(bool i, Depth d, int mn, Value delta, Value rootDelta) {
+  Depth reduction(bool i, Depth d, int mn, Value delta, Value rootDelta, int resolution = 1) {
     int r = Reductions[d] * Reductions[mn];
-    return (r + 1642 - int(delta) * 1024 / int(rootDelta)) / 1024 + (!i && r > 916);
+    return (r + 1642 - int(delta) * 1024 / int(rootDelta)) * resolution / 1024 + (!i && r > 916) * resolution;
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
@@ -1137,7 +1137,9 @@ moves_loop: // When in check, search starts here
               || !capture
               || (cutNode && (ss-1)->moveCount > 1)))
       {
-          Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
+          int fractionalR = ss->fractionalReduction + reduction(improving, depth, moveCount, delta, thisThread->rootDelta, FRACTIONAL_PLIES);
+          Depth r = fractionalR / FRACTIONAL_PLIES;
+          (ss+1)->fractionalReduction = fractionalR % FRACTIONAL_PLIES;
 
           // Decrease reduction if position is or has been on the PV
           // and node is not likely to fail low. (~3 Elo)
@@ -1181,9 +1183,7 @@ moves_loop: // When in check, search starts here
                          - 4433;
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-          int fractionalR = ss->fractionalReduction - (ss->statScore + 5 * alpha) * FRACTIONAL_PLIES / 15448;
-          r += fractionalR / FRACTIONAL_PLIES;
-          (ss+1)->fractionalReduction = (fractionalR - 47) % FRACTIONAL_PLIES;
+          r -= (ss->statScore + 5 * alpha) / 15448;
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
