@@ -1137,7 +1137,7 @@ moves_loop: // When in check, search starts here
               || !capture
               || (cutNode && (ss-1)->moveCount > 1)))
       {
-          int fractionalR = ss->fractionalReduction + reduction(improving, depth, moveCount, delta, thisThread->rootDelta, FRACTIONAL_PLIES);
+          int fractionalR = ss->fractionalReduction + reduction(improving, depth, moveCount, delta, thisThread->rootDelta, FRACTIONAL_PLIES) - 134;
           Depth r = fractionalR / FRACTIONAL_PLIES;
           (ss+1)->fractionalReduction = fractionalR % FRACTIONAL_PLIES;
 
