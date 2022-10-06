@@ -1133,8 +1133,7 @@ moves_loop: // When in check, search starts here
           &&  moveCount > 1 + (PvNode && ss->ply <= 1)
           && (   !ss->ttPv
               || !capture
-              || (cutNode && (ss-1)->moveCount > 1))
-          &&  bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
+              || (cutNode && (ss-1)->moveCount > 1)))
       {
           Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
@@ -1171,6 +1170,9 @@ moves_loop: // When in check, search starts here
 
           // Increase reduction if next ply has a lot of fail high
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
+              r++;
+
+          if (bestValue >= VALUE_TB_WIN_IN_MAX_PLY)
               r++;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
