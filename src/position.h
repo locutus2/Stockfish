@@ -96,6 +96,7 @@ public:
   Bitboard pieces(Color c) const;
   Bitboard pieces(Color c, PieceType pt) const;
   Bitboard pieces(Color c, PieceType pt1, PieceType pt2) const;
+  Bitboard blocked_pawns(Color c) const;
   Piece piece_on(Square s) const;
   Square ep_square() const;
   bool empty(Square s) const;
@@ -326,6 +327,14 @@ inline bool Position::pawn_passed(Color c, Square s) const {
 
 inline int Position::pawns_on_same_color_squares(Color c, Square s) const {
   return popcount(pieces(c, PAWN) & ((DarkSquares & s) ? DarkSquares : ~DarkSquares));
+}
+
+inline Bitboard Position::blocked_pawns(Color c) const {
+  return   pieces(c, PAWN)
+         & (c == WHITE ?   shift<SOUTH>(pieces(~c, PAWN))
+                        & ~pawn_attacks_bb<BLACK>(pieces(~c, PAWN))
+                       :   shift<NORTH>(pieces(~c, PAWN))
+                        & ~pawn_attacks_bb<WHITE>(pieces(~c, PAWN)));
 }
 
 inline Key Position::key() const {
