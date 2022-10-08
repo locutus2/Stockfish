@@ -284,6 +284,8 @@ void Thread::search() {
 
   ss->pv = pv;
 
+  captureHistory.age();
+
   bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
 
@@ -503,9 +505,6 @@ void Thread::search() {
       mainThread->iterValue[iterIdx] = bestValue;
       iterIdx = (iterIdx + 1) & 3;
   }
-
-  initValueCaptureHistory /= 2;
-  captureHistory.age(initValueCaptureHistory);
 
   if (!mainThread)
       return;

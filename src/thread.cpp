@@ -57,11 +57,9 @@ Thread::~Thread() {
 
 void Thread::clear() {
 
-  initValueCaptureHistory = captureHistory.maxValue();
-
   counterMoves.fill(MOVE_NONE);
   mainHistory.fill(0);
-  captureHistory.fill(initValueCaptureHistory);
+  captureHistory.fill(captureHistory.maxValue());
   previousDepth = 0;
 
   for (bool inCheck : { false, true })

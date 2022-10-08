@@ -58,8 +58,8 @@ public:
     assert(abs(entry) <= D);
   }
 
-  void age(T v) {
-      entry = std::max(v, entry);
+  void age() {
+      entry = std::max(entry, T(0));
   }
 
 };
@@ -81,14 +81,14 @@ struct Stats : public std::array<Stats<T, D, Sizes...>, Size>
           return D;
   }
 
-  void age(const T& v) {
+  void age() {
 
     // For standard-layout 'this' points to first struct member
     assert(std::is_standard_layout<stats>::value);
 
     typedef StatsEntry<T, D> entry;
     entry* p = reinterpret_cast<entry*>(this);
-    std::for_each(p, p + sizeof(*this) / sizeof(entry), [v](entry& e) { e.age(v); });
+    std::for_each(p, p + sizeof(*this) / sizeof(entry), [](entry& e) { e.age(); });
   }
 
   void fill(const T& v) {
