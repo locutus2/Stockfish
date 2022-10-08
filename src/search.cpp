@@ -1015,7 +1015,7 @@ moves_loop: // When in check, search starts here
               if (!pos.see_ge(move, Value(-222) * depth))
                   continue;
           }
-          else
+          else if (!PvNode || move != (ss+2)->killers[0])
           {
               int history =   (*contHist[0])[movedPiece][to_sq(move)]
                             + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1171,9 +1171,6 @@ moves_loop: // When in check, search starts here
           // Increase reduction if next ply has a lot of fail high
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
-
-          if (PvNode && !capture && move == (ss+2)->killers[0])
-              r--;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                          + (*contHist[0])[movedPiece][to_sq(move)]
