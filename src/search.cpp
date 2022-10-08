@@ -504,6 +504,9 @@ void Thread::search() {
       iterIdx = (iterIdx + 1) & 3;
   }
 
+  initValueCaptureHistory /= 2;
+  captureHistory.age(initValueCaptureHistory);
+
   if (!mainThread)
       return;
 
