@@ -61,7 +61,7 @@ void Thread::clear() {
   mainHistory.fill(mainHistory.maxValue() / 2);
   captureHistory.fill(0);
   previousDepth = 0;
-  
+
   for (bool inCheck : { false, true })
       for (StatsType c : { NoCaptures, Captures })
       {
