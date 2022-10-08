@@ -284,6 +284,9 @@ void Thread::search() {
 
   ss->pv = pv;
 
+  if (rootPos.captured_piece())
+      captureHistory.fill(captureHistory.maxValue());
+
   bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
 
