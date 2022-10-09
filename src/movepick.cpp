@@ -26,7 +26,7 @@ namespace Stockfish {
 namespace {
 
   enum Stages {
-    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
+    MAIN_TT, GOOD_REFUTATION, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
     EVASION_TT, EVASION_INIT, EVASION,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
@@ -185,6 +185,21 @@ top:
       ++stage;
       return ttMove;
 
+  case GOOD_REFUTATION:
+      cur = std::begin(refutations);
+      endMoves = std::end(refutations);
+      score<QUIETS>();
+      ++stage;
+
+      if (select<Next>([&](){ return    *cur != MOVE_NONE
+                                    && !pos.capture(*cur)
+                                    &&  cur->value > 30000
+                                    &&  pos.pseudo_legal(*cur); }))
+          return goodRefutation = *(cur - 1);
+
+      goodRefutation = MOVE_NONE;
+      [[fallthrough]];
+
   case CAPTURE_INIT:
   case PROBCUT_INIT:
   case QCAPTURE_INIT:
@@ -218,6 +233,7 @@ top:
   case REFUTATION:
       if (select<Next>([&](){ return    *cur != MOVE_NONE
                                     && !pos.capture(*cur)
+                                    &&  *cur != goodRefutation
                                     &&  pos.pseudo_legal(*cur); }))
           return *(cur - 1);
       ++stage;
