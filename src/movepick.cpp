@@ -193,7 +193,7 @@ top:
 
       if (select<Next>([&](){ return    *cur != MOVE_NONE
                                     && !pos.capture(*cur)
-                                    &&  cur->value > 30000
+                                    &&  cur->value > 60000
                                     &&  pos.pseudo_legal(*cur); }))
           return goodRefutation = *(cur - 1);
 
