@@ -284,7 +284,7 @@ void Thread::search() {
 
   ss->pv = pv;
 
-  captureHistory.age();
+  captureHistory.reinit();
 
   bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
