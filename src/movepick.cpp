@@ -125,35 +125,38 @@ void MovePicker::score() {
       safeKnightAttacksOnQueen = 0;
       safeBishopAttacksOnQueen = 0;
       safeRookAttacksOnQueen = 0;
-      Bitboard b = pos.pieces(~us, QUEEN);
-      while (b)
+      if (depth >= 8)
       {
-          Square sq = pop_lsb(b);
-          safeKnightAttacksOnQueen |=  attacks_bb<KNIGHT>(sq)
-                                     & pos.attacks_by<KNIGHT>(us)
-                                     & ~threatenedByRook
-                                     & (  pos.attacks_by<PAWN>(us)
-                                        | pos.attacks_by<KNIGHT>(us)
-                                        | pos.attacks_by<ROOK>(us)
-                                        | pos.attacks_by<QUEEN>(us)
-                                        | pos.attacks_by<KING>(us)
-                                        | ~pos.attacks_by<KING>(~us));
-          safeBishopAttacksOnQueen |=  attacks_bb<BISHOP>(sq, pos.pieces())
-                                     & pos.attacks_by<BISHOP>(us)
-                                     & ~threatenedByRook
-                                     & (  pos.attacks_by<PAWN>(us)
-                                        | pos.attacks_by<KNIGHT>(us)
-                                        | pos.attacks_by<ROOK>(us)
-                                        | pos.attacks_by<QUEEN>(us)
-                                        | pos.attacks_by<KING>(us));
-          safeRookAttacksOnQueen |=  attacks_bb<ROOK>(sq, pos.pieces())
-                                   & pos.attacks_by<ROOK>(us)
-                                   & ~threatenedByRook
-                                   & (  pos.attacks_by<PAWN>(us)
-                                      | pos.attacks_by<KNIGHT>(us)
-                                      | pos.attacks_by<BISHOP>(us)
-                                      | pos.attacks_by<QUEEN>(us)
-                                      | pos.attacks_by<KING>(us));
+          Bitboard b = pos.pieces(~us, QUEEN);
+          while (b)
+          {
+              Square sq = pop_lsb(b);
+              safeKnightAttacksOnQueen |=  attacks_bb<KNIGHT>(sq)
+                                         & pos.attacks_by<KNIGHT>(us)
+                                         & ~threatenedByRook
+                                         & (  pos.attacks_by<PAWN>(us)
+                                            | pos.attacks_by<KNIGHT>(us)
+                                            | pos.attacks_by<ROOK>(us)
+                                            | pos.attacks_by<QUEEN>(us)
+                                            | pos.attacks_by<KING>(us)
+                                            | ~pos.attacks_by<KING>(~us));
+              safeBishopAttacksOnQueen |=  attacks_bb<BISHOP>(sq, pos.pieces())
+                                         & pos.attacks_by<BISHOP>(us)
+                                         & ~threatenedByRook
+                                         & (  pos.attacks_by<PAWN>(us)
+                                            | pos.attacks_by<KNIGHT>(us)
+                                            | pos.attacks_by<ROOK>(us)
+                                            | pos.attacks_by<QUEEN>(us)
+                                            | pos.attacks_by<KING>(us));
+              safeRookAttacksOnQueen |=  attacks_bb<ROOK>(sq, pos.pieces())
+                                       & pos.attacks_by<ROOK>(us)
+                                       & ~threatenedByRook
+                                       & (  pos.attacks_by<PAWN>(us)
+                                          | pos.attacks_by<KNIGHT>(us)
+                                          | pos.attacks_by<BISHOP>(us)
+                                          | pos.attacks_by<QUEEN>(us)
+                                          | pos.attacks_by<KING>(us));
+          }
       }
   }
 
@@ -174,9 +177,10 @@ void MovePicker::score() {
                           :                                         !(to_sq(m) & threatenedByPawn)  ? 15000
                           :                                                                           0)
                           :                                                                           0)
-                   +     (  type_of(pos.moved_piece(m)) == ROOK   && (safeRookAttacksOnQueen   & to_sq(m)) ? 40000
-                          : type_of(pos.moved_piece(m)) == BISHOP && (safeBishopAttacksOnQueen & to_sq(m)) ? 40000
-                          : type_of(pos.moved_piece(m)) == KNIGHT && (safeKnightAttacksOnQueen & to_sq(m)) ? 40000
+                   +     (  depth < 8                                                                      ? 0
+                          : type_of(pos.moved_piece(m)) == ROOK   && (safeRookAttacksOnQueen   & to_sq(m)) ? 20000
+                          : type_of(pos.moved_piece(m)) == BISHOP && (safeBishopAttacksOnQueen & to_sq(m)) ? 20000
+                          : type_of(pos.moved_piece(m)) == KNIGHT && (safeKnightAttacksOnQueen & to_sq(m)) ? 20000
                           :                                                                                  0)
                    +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384;
       else // Type == EVASIONS
