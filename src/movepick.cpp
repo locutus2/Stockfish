@@ -125,7 +125,7 @@ void MovePicker::score() {
       safeKnightAttacksOnQueen = 0;
       safeBishopAttacksOnQueen = 0;
       safeRookAttacksOnQueen = 0;
-      if (depth >= 8)
+      if (depth < 8)
       {
           Bitboard b = pos.pieces(~us, QUEEN);
           while (b)
@@ -177,7 +177,7 @@ void MovePicker::score() {
                           :                                         !(to_sq(m) & threatenedByPawn)  ? 15000
                           :                                                                           0)
                           :                                                                           0)
-                   +     (  depth < 8                                                                      ? 0
+                   +     (  depth >= 8                                                                     ? 0
                           : type_of(pos.moved_piece(m)) == ROOK   && (safeRookAttacksOnQueen   & to_sq(m)) ? 20000
                           : type_of(pos.moved_piece(m)) == BISHOP && (safeBishopAttacksOnQueen & to_sq(m)) ? 20000
                           : type_of(pos.moved_piece(m)) == KNIGHT && (safeKnightAttacksOnQueen & to_sq(m)) ? 20000
