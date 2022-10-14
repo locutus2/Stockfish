@@ -107,8 +107,8 @@ void MovePicker::score() {
 
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-  [[maybe_unused]] Bitboard threatenedByPawn, threatenedByMinor, threatenedByRook;
-  if constexpr (Type == QUIETS)
+  [[maybe_unused]] Bitboard threatenedByPawn = 0, threatenedByMinor = 0, threatenedByRook = 0;
+  if (Type == QUIETS && stage != GOOD_REFUTATION)
   {
       Color us = pos.side_to_move();
 
