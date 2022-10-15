@@ -1174,13 +1174,7 @@ moves_loop: // When in check, search starts here
           if (    move == reverse_move((ss-2)->currentMove)
               && !capture
               && !ss->priorCapture
-              && !(ss-1)->priorCapture
-              && !givesCheck
-              && !ss->inCheck
-              && !(ss-1)->inCheck
-              && !(ss-2)->inCheck
-              && type_of((ss-1)->currentMove) != PROMOTION
-              && type_of((ss-2)->currentMove) != PROMOTION)
+              && !(ss-1)->priorCapture)
               r++;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
