@@ -1179,9 +1179,7 @@ moves_loop: // When in check, search starts here
               && !ss->inCheck
               && !(ss-1)->inCheck
               && !(ss-2)->inCheck
-              &&  type_of(move) != PROMOTION
-              &&  type_of((ss-1)->currentMove) != PROMOTION
-              &&  type_of((ss-2)->currentMove) != PROMOTION)
+              && bestValue >= VALUE_DRAW)
               r++;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
