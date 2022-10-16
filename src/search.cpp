@@ -1150,7 +1150,7 @@ moves_loop: // When in check, search starts here
               r += 2;
 
           // Increase reduction if ttMove is a capture (~3 Elo)
-          if (ttCapture)
+          if (ttCapture && moveCount < 32)
               r++;
 
           // Decrease reduction for PvNodes based on depth
@@ -1167,7 +1167,7 @@ moves_loop: // When in check, search starts here
               r--;
 
           // Increase reduction if next ply has a lot of fail high
-          if ((ss+1)->cutoffCnt > 3 && !PvNode && moveCount < 32)
+          if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
