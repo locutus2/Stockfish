@@ -122,7 +122,7 @@ public:
   MovePicker(const Position&, Move, Depth, const ButterflyHistory*,
                                            const CapturePieceToHistory*,
                                            const PieceToHistory**,
-                                           Move,
+                                           const Move*,
                                            const Move*);
   MovePicker(const Position&, Move, Depth, const ButterflyHistory*,
                                            const CapturePieceToHistory*,
@@ -149,6 +149,7 @@ private:
   Square recaptureSquare;
   Value threshold;
   Depth depth;
+  const Move* countermove;
   ExtMove moves[MAX_MOVES];
 };
 
