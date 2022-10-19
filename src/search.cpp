@@ -1287,6 +1287,11 @@ moves_loop: // When in check, search starts here
                       && alpha > -VALUE_KNOWN_WIN)
                      depth -= 1;
 
+                  if (!capture && move != ss->killers[0])
+                  {
+                      ss->killers[1] = ss->killers[0];
+                      ss->killers[0] = move;
+                  }
                   assert(depth > 0);
               }
               else
