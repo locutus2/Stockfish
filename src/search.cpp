@@ -1142,7 +1142,10 @@ moves_loop: // When in check, search starts here
               r -= 2;
 
           // Decrease reduction if opponent's move count is high (~1 Elo)
-          if ((ss-1)->moveCount > 7)
+          if ((ss-1)->moveCount > 38)
+              r++;
+
+          else if ((ss-1)->moveCount > 7)
               r--;
 
           // Increase reduction for cut nodes (~3 Elo)
@@ -1168,9 +1171,6 @@ moves_loop: // When in check, search starts here
 
           // Increase reduction if next ply has a lot of fail high
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
-              r++;
-
-          if ((ss-2)->moveCount > 44)
               r++;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
