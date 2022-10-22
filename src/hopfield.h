@@ -13,8 +13,10 @@ namespace Stockfish
 
     class Hopfield 
     {
+        static constexpr int RESOLUTION = 4096;
+
         int learnedPatterns;
-        std::vector<std::vector<double>> weight;
+        std::vector<std::vector<int>> weight;
 
         public:
         const int N;
@@ -27,7 +29,7 @@ namespace Stockfish
         void retrievePattern(Pattern& input) const;
     };
 
-    Hopfield::Hopfield(int n, int n_fixed) : learnedPatterns(0), weight(n, std::vector<double>(n, 0)), N(n), N_FIXED(n_fixed)
+    Hopfield::Hopfield(int n, int n_fixed) : learnedPatterns(0), weight(n, std::vector<int>(n, 0)), N(n), N_FIXED(n_fixed)
     {
     }
 
@@ -45,7 +47,7 @@ namespace Stockfish
         for (int i = 0; i < N; ++i)
             for (int j = 0; j < N; ++j)
                 if (i != j)
-                   weight[i][j] = ((N - 1) * weight[i][j] + pattern[i] * pattern[j]) / N;
+                   weight[i][j] = ((N - 1) * weight[i][j] + pattern[i] * pattern[j] * RESOLUTION) / N;
 
     }
 
@@ -70,7 +72,7 @@ namespace Stockfish
 
             for(int i = 0; i < int(index.size()); ++i)
             {
-                double sum = 0;
+                int sum = 0;
                 for(int j = 0; j < N; ++j)
                     sum += input[j] * weight[index[i]][j];
                 int out = (sum > 0 ? 1 : -1);
