@@ -35,7 +35,11 @@
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
+#include "hopfield.h"
+
 namespace Stockfish {
+
+Hopfield hopfield(36);
 
 namespace Search {
 
@@ -946,6 +950,8 @@ moves_loop: // When in check, search starts here
                          && (tte->bound() & BOUND_UPPER)
                          && tte->depth() >= depth;
 
+    Move hopfieldMove = getMove(hopfield, (ss-2)->currentMove, (ss-1)->currentMove);
+
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
@@ -1123,6 +1129,7 @@ moves_loop: // When in check, search starts here
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
 
+      bool CC = false;
       // Step 17. Late moves reduction / extension (LMR, ~98 Elo)
       // We use various heuristics for the sons of a node after the first son has
       // been searched. In general we would like to reduce them, but there are many
@@ -1135,6 +1142,8 @@ moves_loop: // When in check, search starts here
       {
           Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
+          //CC = !capture && (move != ss->killers[0] && move != ss->killers[1] && move != countermove);
+          CC = !capture;
           // Decrease reduction if position is or has been on the PV
           // and node is not likely to fail low. (~3 Elo)
           if (   ss->ttPv
@@ -1265,6 +1274,17 @@ moves_loop: // When in check, search starts here
               rm.score = -VALUE_INFINITE;
       }
 
+
+      if(CC)
+      {
+          //bool C = move == hopfieldMove;
+          bool C = move == ss->killers[0] || move == ss->killers[1] || move == countermove;
+          //C = C && (move != ss->killers[0] && move != ss->killers[1] && move != countermove);
+          bool T = value > alpha;
+          dbg_hit_on(T);
+          if(C) dbg_mean_of(100*T);
+      }
+
       if (value > bestValue)
       {
           bestValue = value;
@@ -1334,8 +1354,12 @@ moves_loop: // When in check, search starts here
 
     // If there is a move which produces search value greater than alpha we update stats of searched moves
     else if (bestMove)
+    {
+        if(!pos.capture(bestMove)) setMove(hopfield, (ss-2)->currentMove, (ss-1)->currentMove, bestMove);
+
         update_all_stats(pos, ss, bestMove, bestValue, beta, prevSq,
                          quietsSearched, quietCount, capturesSearched, captureCount, depth);
+    }
 
     // Bonus for prior countermove that caused the fail low
     else if (   (depth >= 5 || PvNode)
