@@ -931,12 +931,14 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-6)->continuationHistory };
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
+    Move hopfieldMove = getMove(hopfield, {(ss-1)->currentMove, (ss-2)->currentMove});
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
                                       contHist,
                                       countermove,
-                                      ss->killers);
+                                      ss->killers,
+                                      hopfieldMove);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
@@ -947,8 +949,6 @@ moves_loop: // When in check, search starts here
                          && ttMove
                          && (tte->bound() & BOUND_UPPER)
                          && tte->depth() >= depth;
-
-    Move hopfieldMove = getMove(hopfield, {(ss-1)->currentMove, (ss-2)->currentMove});
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
