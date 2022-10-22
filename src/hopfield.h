@@ -98,7 +98,7 @@ namespace Stockfish
 
     void setMove(Hopfield& hopfield, Move move, const std::vector<Move>& history)
     {
-        Pattern pattern(hopfield.N);
+        Pattern pattern(hopfield.N, 0);
         buildPattern(pattern, move, history);
         hopfield.addPattern(pattern);
     }
@@ -113,7 +113,7 @@ namespace Stockfish
 
     Move getMove(const Hopfield& hopfield, const std::vector<Move>& history)
     {
-        Pattern pattern(hopfield.N);
+        Pattern pattern(hopfield.N, 0);
         buildPattern(pattern, MOVE_NONE, history);
         hopfield.retrievePattern(pattern);
         return extractMove(pattern);

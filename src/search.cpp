@@ -159,6 +159,7 @@ namespace {
 
 void Search::init() {
 
+  hopfield.clear();
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int((20.26 + std::log(Threads.size()) / 2) * std::log(i));
 }
