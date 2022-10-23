@@ -2,6 +2,7 @@
 #define HOPFIELD_H
 
 #include <vector>
+
 #include "types.h"
 
 namespace Stockfish

@@ -76,6 +76,7 @@ namespace Stockfish
         Pattern pattern(N, 0);
         buildPattern(pattern, MOVE_NONE, history);
         retrievePattern(pattern);
-        return extractMove(pattern);
+        Move move = extractMove(pattern);
+        return is_ok(move) ? move : MOVE_NONE;
     }
 }
