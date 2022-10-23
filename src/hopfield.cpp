@@ -10,7 +10,7 @@ namespace Stockfish
 
     void Hopfield::addPattern(const Pattern& pattern)
     {
-        const int WEIGHTS = 2 * N;
+        const int WEIGHTS = N / 2;
         for (int i = 0; i < N; ++i)
             for (int j = 0; j < N; ++j)
                 if (i != j)
