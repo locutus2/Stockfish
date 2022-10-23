@@ -10,11 +10,11 @@ namespace Stockfish
 
     void Hopfield::addPattern(const Pattern& pattern)
     {
+        const int WEIGHTS = N;
         for (int i = 0; i < N; ++i)
             for (int j = 0; j < N; ++j)
                 if (i != j)
-                   weight[i][j] = ((N - 1) * weight[i][j] + pattern[i] * pattern[j] * RESOLUTION) / N;
-
+                   weight[i][j] = ((WEIGHTS - 1) * weight[i][j] + pattern[i] * pattern[j] * RESOLUTION) / WEIGHTS;
     }
 
     void Hopfield::retrievePattern(Pattern& input) const
@@ -36,7 +36,6 @@ namespace Stockfish
                     input[i] = out;
                 }
             }
-
         }
     }
 
@@ -84,6 +83,5 @@ namespace Stockfish
         {
             return MOVE_NONE;
         }
-
     }
 }
