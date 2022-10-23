@@ -19,27 +19,21 @@ namespace Stockfish
 
     void Hopfield::retrievePattern(Pattern& input) const
     {
-        std::vector<int> index(N - N_FIXED);
-        for (int i = 0; i < int(index.size()); ++i)
-            index[i] = i;
-
         bool stable = false;
         while(!stable)
         {
-            std::random_shuffle(index.begin(), index.end());
-
             stable = true;
 
-            for(int i = 0; i < int(index.size()); ++i)
+            for(int i = 0; i < N - N_FIXED; ++i)
             {
                 int sum = 0;
                 for(int j = 0; j < N; ++j)
-                    sum += input[j] * weight[index[i]][j];
+                    sum += input[j] * weight[i][j];
                 int out = (sum > 0 ? 1 : -1);
-                if(out != input[index[i]])
+                if(out != input[i])
                 {
                     stable = false;
-                    input[index[i]] = out;
+                    input[i] = out;
                 }
             }
 
