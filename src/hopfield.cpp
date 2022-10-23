@@ -10,7 +10,7 @@ namespace Stockfish
 
     void Hopfield::addPattern(const Pattern& pattern)
     {
-        const int WEIGHTS = N / 2;
+        const int WEIGHTS = N;
         for (int i = 0; i < N - 1; ++i)
             for (int j = i + 1; j < N; ++j)
                    weight[j][i] = weight[i][j] = ((WEIGHTS - 1) * weight[i][j] + pattern[i] * pattern[j] * RESOLUTION) / WEIGHTS;
@@ -18,8 +18,8 @@ namespace Stockfish
 
     void Hopfield::retrievePattern(Pattern& input) const
     {
-        bool stable = false;
-        while(!stable)
+        bool stable;
+        do
         {
             stable = true;
 
@@ -36,6 +36,7 @@ namespace Stockfish
                 }
             }
         }
+        while(!stable);
     }
 
     void MovesHopfield::buildPattern(Pattern& pattern, Move move, const std::vector<Move>& history)
