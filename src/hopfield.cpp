@@ -4,7 +4,7 @@ namespace Stockfish
 {
     void Hopfield::clear()
     {
-        for (auto w : weight)
+        for (auto& w : weight)
             std::fill(w.begin(), w.end(), 0);
     }
 
