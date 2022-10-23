@@ -8,7 +8,7 @@
 namespace Stockfish
 {
     constexpr int BITS_PER_MOVE = 12;
-    constexpr int MOVES_PER_PATTERN = 4;
+    constexpr int MOVES_PER_PATTERN = 3;
 
     typedef std::vector<int> Pattern;
 
@@ -33,7 +33,7 @@ namespace Stockfish
     class MovesHopfield : public Hopfield
     {
         public:
-        MovesHopfield(int n = BITS_PER_MOVE * MOVES_PER_PATTERN, int n_fixed = BITS_PER_MOVE * (MOVES_PER_PATTERN - 1)) : Hopfield(n, n_fixed) {}
+        MovesHopfield(int n = BITS_PER_MOVE * MOVES_PER_PATTERN, int n_fixed = 0) : Hopfield(n, n_fixed) {}
         static void buildPattern(Pattern& pattern, Move move, const std::vector<Move>& history);
         static Move extractMove(const Pattern& pattern, int moveNr = 0);
         void setMove(Move move, const std::vector<Move>& history);
