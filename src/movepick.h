@@ -138,6 +138,7 @@ private:
   template<GenType> void score();
   ExtMove* begin() { return cur; }
   ExtMove* end() { return endMoves; }
+  void initStage(int firstStage);
 
   const Position& pos;
   const ButterflyHistory* mainHistory;
