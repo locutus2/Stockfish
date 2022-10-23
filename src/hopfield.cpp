@@ -43,7 +43,8 @@ namespace Stockfish
     {
         for(int i = -1; i < int(history.size()); ++i)
         {
-            int m = from_to((i < 0 ? move : history[i]));
+            Move mm = (i < 0 ? move : history[i]);
+            int m = FULL_MOVE ? mm : from_to(mm);
             for(int j = 0; j < BITS_PER_MOVE; ++j)
                 pattern[BITS_PER_MOVE * (i + 1) + j] = (m & (1 << j) ? 1 : -1);
         }
@@ -76,7 +77,10 @@ namespace Stockfish
 
         if (USE_INVERTED)
         {
-            move = Move(from_to(Move(~move)));
+            if (FULL_MOVE)
+                move = Move(0xFFFF & ~move);
+            else
+                move = Move(from_to(Move(~move)));
             return is_ok(move) ? move : MOVE_NONE;
         }
         else
