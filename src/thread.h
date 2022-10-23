@@ -25,6 +25,7 @@
 #include <thread>
 #include <vector>
 
+#include "hopfield.h"
 #include "material.h"
 #include "movepick.h"
 #include "pawns.h"
@@ -75,6 +76,7 @@ public:
   ButterflyHistory mainHistory;
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory[2][2];
+  MovesHopfield hopfield;
   Score trend;
 };
 

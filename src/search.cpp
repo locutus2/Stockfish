@@ -24,6 +24,7 @@
 #include <sstream>
 
 #include "evaluate.h"
+#include "hopfield.h"
 #include "misc.h"
 #include "movegen.h"
 #include "movepick.h"
@@ -34,8 +35,6 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
-
-#include "hopfield.h"
 
 namespace Stockfish {
 
@@ -159,7 +158,6 @@ namespace {
 
 void Search::init() {
 
-  hopfield.clear();
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int((20.26 + std::log(Threads.size()) / 2) * std::log(i));
 }
@@ -932,7 +930,7 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-6)->continuationHistory };
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
-    Move hopfieldMove = getMove(hopfield, {(ss-1)->currentMove, (ss-2)->currentMove});
+    Move hopfieldMove = thisThread->hopfield.getMove({(ss-1)->currentMove, (ss-2)->currentMove});
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
@@ -1695,7 +1693,7 @@ moves_loop: // When in check, search starts here
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
 
-        setMove(hopfield, bestMove, {(ss-1)->currentMove, (ss-2)->currentMove});
+        thisThread->hopfield.setMove(bestMove, {(ss-1)->currentMove, (ss-2)->currentMove});
     }
     else
         // Increase stats for the best move in case it was a capture move
