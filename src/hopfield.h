@@ -3,10 +3,14 @@
 
 #include <vector>
 
+#include "position.h"
 #include "types.h"
 
 namespace Stockfish
 {
+    constexpr bool FIXED_HISTORY = true;
+    constexpr bool USE_INVERTED = true;
+
     constexpr int BITS_PER_MOVE = 12;
     constexpr int MOVES_PER_PATTERN = 3;
 
@@ -33,11 +37,11 @@ namespace Stockfish
     class MovesHopfield : public Hopfield
     {
         public:
-        MovesHopfield(int n = BITS_PER_MOVE * MOVES_PER_PATTERN, int n_fixed = 0) : Hopfield(n, n_fixed) {}
+        MovesHopfield(int n = BITS_PER_MOVE * MOVES_PER_PATTERN, int n_fixed = (FIXED_HISTORY ? BITS_PER_MOVE * (MOVES_PER_PATTERN - 1) : 0)) : Hopfield(n, n_fixed) {}
         static void buildPattern(Pattern& pattern, Move move, const std::vector<Move>& history);
         static Move extractMove(const Pattern& pattern, int moveNr = 0);
         void setMove(Move move, const std::vector<Move>& history);
-        Move getMove(const std::vector<Move>& history) const;
+        Move getMove(const Position& pos, const std::vector<Move>& history) const;
     };
 }
 

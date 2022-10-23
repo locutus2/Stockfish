@@ -930,7 +930,7 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-6)->continuationHistory };
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
-    Move hopfieldMove = thisThread->hopfield.getMove({(ss-1)->currentMove, (ss-2)->currentMove});
+    Move hopfieldMove = thisThread->hopfield.getMove(pos, {(ss-1)->currentMove, (ss-2)->currentMove});
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,

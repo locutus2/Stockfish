@@ -65,12 +65,25 @@ namespace Stockfish
         addPattern(pattern);
     }
 
-    Move MovesHopfield::getMove(const std::vector<Move>& history) const
+    Move MovesHopfield::getMove(const Position& pos, const std::vector<Move>& history) const
     {
         Pattern pattern(N, 0);
         buildPattern(pattern, MOVE_NONE, history);
         retrievePattern(pattern);
         Move move = extractMove(pattern);
-        return is_ok(move) ? move : MOVE_NONE;
+
+        if (is_ok(move) && pos.pseudo_legal(move))
+            return move;
+
+        if (USE_INVERTED)
+        {
+            move = Move(from_to(Move(~move)));
+            return is_ok(move) ? move : MOVE_NONE;
+        }
+        else
+        {
+            return MOVE_NONE;
+        }
+
     }
 }
