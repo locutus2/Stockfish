@@ -930,7 +930,7 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-6)->continuationHistory };
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
-    Move hopfieldMove = thisThread->hopfield.getMove({(ss-2)->currentMove, (ss-4)->currentMove});
+    Move hopfieldMove = thisThread->hopfield.getMove({(ss-1)->currentMove, (ss-2)->currentMove, (ss-3)->currentMove});
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
@@ -1693,7 +1693,7 @@ moves_loop: // When in check, search starts here
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
 
-        thisThread->hopfield.setMove(bestMove, {(ss-2)->currentMove, (ss-4)->currentMove});
+        thisThread->hopfield.setMove(bestMove, {(ss-1)->currentMove, (ss-2)->currentMove, (ss-3)->currentMove});
     }
     else
         // Increase stats for the best move in case it was a capture move

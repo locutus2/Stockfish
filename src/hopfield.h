@@ -8,7 +8,7 @@
 namespace Stockfish
 {
     constexpr int BITS_PER_MOVE = 12;
-    constexpr int MOVES_PER_PATTERN = 3;
+    constexpr int MOVES_PER_PATTERN = 4;
 
     typedef std::vector<int> Pattern;
 
