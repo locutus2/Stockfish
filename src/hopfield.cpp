@@ -10,7 +10,7 @@ namespace Stockfish
 
     void Hopfield::addPattern(const Pattern& pattern)
     {
-        const int WEIGHTS = N / 4;
+        const int WEIGHTS = N;
         for (int i = 0; i < N - 1; ++i)
             for (int j = i + 1; j < N; ++j)
                    weight[j][i] = weight[i][j] = ((WEIGHTS - 1) * weight[i][j] + pattern[i] * pattern[j] * RESOLUTION) / WEIGHTS;
@@ -72,20 +72,18 @@ namespace Stockfish
         retrievePattern(pattern);
         Move move = extractMove(pattern);
 
-        if (is_ok(move) && pos.pseudo_legal(move))
-            return move;
-
         if (USE_INVERTED)
         {
-            if (FULL_MOVE)
+            if (is_ok(move) && pos.pseudo_legal(move))
+                return move;
+
+            else if (FULL_MOVE)
                 move = Move(0xFFFF & ~move);
+
             else
                 move = Move(from_to(Move(~move)));
-            return is_ok(move) ? move : MOVE_NONE;
         }
-        else
-        {
-            return MOVE_NONE;
-        }
+
+        return is_ok(move) ? move : MOVE_NONE;
     }
 }
