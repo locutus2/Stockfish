@@ -60,7 +60,8 @@ void Thread::clear() {
   counterMoves.fill(MOVE_NONE);
   mainHistory.fill(0);
   captureHistory.fill(0);
-  hopfield.clear();
+  hopfield[0].clear();
+  hopfield[1].clear();
   previousDepth = 0;
 
   for (bool inCheck : { false, true })

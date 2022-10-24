@@ -32,7 +32,7 @@ namespace Stockfish
     {
         static constexpr bool USE_INVERTED = false;
         static constexpr bool FIXED_HISTORY = true;
-        static constexpr bool FULL_MOVE = true;
+        static constexpr bool FULL_MOVE = false;
         static constexpr int BITS_PER_MOVE = 12 + 4 * FULL_MOVE;
         static constexpr int MOVES_PER_PATTERN = 3;
 
