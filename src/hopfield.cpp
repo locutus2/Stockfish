@@ -10,7 +10,7 @@ namespace Stockfish
 
     void Hopfield::addPattern(const Pattern& pattern)
     {
-        const int WEIGHTS = N;
+        const int WEIGHTS = N / 2;
         for (int i = 0; i < N - 1; ++i)
             for (int j = i + 1; j < N; ++j)
                    weight[j][i] = weight[i][j] = ((WEIGHTS - 1) * weight[i][j] + pattern[i] * pattern[j] * RESOLUTION) / WEIGHTS;
