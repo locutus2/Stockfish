@@ -930,7 +930,7 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-6)->continuationHistory };
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
-    Move hopfieldMove = PvNode ? thisThread->hopfield.getMove(pos, {(ss-1)->currentMove, (ss-2)->currentMove}) : MOVE_NONE;
+    Move hopfieldMove = thisThread->hopfield.getMove(pos);
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
@@ -1339,8 +1339,8 @@ moves_loop: // When in check, search starts here
     // If there is a move which produces search value greater than alpha we update stats of searched moves
     else if (bestMove)
     {
-        if (PvNode && !pos.capture(bestMove))
-            thisThread->hopfield.setMove(bestMove, {(ss-1)->currentMove, (ss-2)->currentMove});
+        if (!pos.capture(bestMove))
+            thisThread->hopfield.setMove(pos, bestMove);
 
         update_all_stats(pos, ss, bestMove, bestValue, beta, prevSq,
                          quietsSearched, quietCount, capturesSearched, captureCount, depth);

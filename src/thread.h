@@ -76,7 +76,7 @@ public:
   ButterflyHistory mainHistory;
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory[2][2];
-  MovesHopfield hopfield;
+  PositionHopfield hopfield;
   Score trend;
 };
 

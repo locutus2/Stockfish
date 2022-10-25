@@ -1,4 +1,5 @@
 #include "hopfield.h"
+#include "misc.h"
 
 namespace Stockfish
 {
@@ -10,7 +11,7 @@ namespace Stockfish
 
     void Hopfield::addPattern(const Pattern& pattern)
     {
-        const int WEIGHTS = N / 2;
+        const int WEIGHTS = N;
         for (int i = 0; i < N - 1; ++i)
             for (int j = i + 1; j < N; ++j)
                    weight[j][i] = weight[i][j] = ((WEIGHTS - 1) * weight[i][j] + pattern[i] * pattern[j] * RESOLUTION) / WEIGHTS;
@@ -39,7 +40,7 @@ namespace Stockfish
         while(!stable);
     }
 
-    void MovesHopfield::buildPattern(Pattern& pattern, Move move, const std::vector<Move>& history)
+    void PositionHopfield::buildPattern(const Position& pos, Pattern& pattern, Move move, const std::vector<Move>& history)
     {
         for(int i = -1; i < int(history.size()); ++i)
         {
@@ -48,9 +49,33 @@ namespace Stockfish
             for(int j = 0; j < BITS_PER_MOVE; ++j)
                 pattern[BITS_PER_MOVE * (i + 1) + j] = (m & (1 << j) ? 1 : -1);
         }
+
+        if (USE_POSITION)
+        {
+            constexpr int offset = BITS_PER_MOVE * MOVES_PER_PATTERN;
+
+            if (ONE_HOT_ENCODING)
+                std::fill(pattern.begin() + offset, pattern.end(),  -1);
+
+            for (Square sq = SQ_A1; sq <= SQ_H8; ++sq)
+            {
+                int pieceIndex = pos.piece_on(sq);
+                if (ONE_HOT_ENCODING)
+                {
+                    pieceIndex = pieceIndex - 2 * (pieceIndex > W_KING);
+                    pattern[offset + BITS_PER_SQUARE * sq + pieceIndex] = 1;
+                }
+                else
+                {
+                    for (int i = 0; i < BITS_PER_SQUARE; ++i)
+                        pattern[offset + BITS_PER_SQUARE * sq + i] = (pieceIndex & (1 << i) ? 1 : -1);
+
+                }
+            }
+        }
     }
 
-    Move MovesHopfield::extractMove(const Pattern& pattern, int moveNr)
+    Move PositionHopfield::extractMove(const Pattern& pattern, int moveNr)
     {
         Move m = MOVE_NONE;
         for(int i = 0; i < BITS_PER_MOVE; ++i)
@@ -58,17 +83,17 @@ namespace Stockfish
         return m;
     }
 
-    void MovesHopfield::setMove(Move move, const std::vector<Move>& history)
+    void PositionHopfield::setMove(const Position& pos, Move move, const std::vector<Move>& history)
     {
         Pattern pattern(N, 0);
-        buildPattern(pattern, move, history);
+        buildPattern(pos, pattern, move, history);
         addPattern(pattern);
     }
 
-    Move MovesHopfield::getMove(const Position& pos, const std::vector<Move>& history) const
+    Move PositionHopfield::getMove(const Position& pos, const std::vector<Move>& history) const
     {
         Pattern pattern(N, 0);
-        buildPattern(pattern, MOVE_NONE, history);
+        buildPattern(pos, pattern, MOVE_NONE, history);
         retrievePattern(pattern);
         Move move = extractMove(pattern);
 
