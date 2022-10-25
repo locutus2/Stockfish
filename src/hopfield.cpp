@@ -10,23 +10,28 @@ namespace Stockfish
 
     void Hopfield::addPattern(const Pattern& pattern)
     {
-        const int WEIGHTS = N / 2;
-        for (int i = 0; i < N - 1; ++i)
+        const int WEIGHTS = N;
+        for (int i = 0; i < N - N_FIXED; ++i)
             for (int j = i + 1; j < N; ++j)
-                   weight[j][i] = weight[i][j] = ((WEIGHTS - 1) * weight[i][j] + pattern[i] * pattern[j] * RESOLUTION) / WEIGHTS;
+                weight[j][i] = weight[i][j] = ((WEIGHTS - 1) * weight[i][j] + pattern[i] * pattern[j] * RESOLUTION) / WEIGHTS;
     }
 
     void Hopfield::retrievePattern(Pattern& input) const
     {
         bool stable;
+        std::vector<int> fixedSum(N - N_FIXED, 0);
+        for(int i = 0; i < N - N_FIXED; ++i)
+            for(int j = N - N_FIXED; j < N; ++j)
+                fixedSum[i] += input[j] * weight[i][j];
+
         do
         {
             stable = true;
 
             for(int i = 0; i < N - N_FIXED; ++i)
             {
-                int sum = 0;
-                for(int j = 0; j < N; ++j)
+                int sum = fixedSum[i];
+                for(int j = 0; j < N - N_FIXED; ++j)
                     sum += input[j] * weight[i][j];
                 int out = (sum > 0 ? 1 : -1);
                 if(out != input[i])
