@@ -65,6 +65,8 @@ namespace Stockfish
 
     void MovesHopfield::setMove(Move move, const std::vector<Move>& history)
     {
+        assert(int(history.size()) == MOVES_PER_PATTERN - 1);
+
         Pattern pattern(N, 0);
         buildPattern(pattern, move, history);
         addPattern(pattern);
@@ -72,6 +74,8 @@ namespace Stockfish
 
     Move MovesHopfield::getMove(const Position& pos, const std::vector<Move>& history) const
     {
+        assert(int(history.size()) == MOVES_PER_PATTERN - 1);
+
         Pattern pattern(N, 0);
         buildPattern(pattern, MOVE_NONE, history);
         retrievePattern(pattern);
