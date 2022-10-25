@@ -31,7 +31,7 @@ namespace Stockfish
     class PositionHopfield : public Hopfield
     {
         static constexpr bool USE_POSITION = true;
-        static constexpr bool ONE_HOT_ENCODING = true;
+        static constexpr bool ONE_HOT_ENCODING = false;
         static constexpr int BITS_PER_SQUARE = ONE_HOT_ENCODING ? 13 : 4;
         static constexpr int BITS_PER_POSITION = USE_POSITION ? 64 * BITS_PER_SQUARE : 0;
         static constexpr bool USE_INVERTED = false;
