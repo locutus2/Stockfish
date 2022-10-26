@@ -856,7 +856,10 @@ namespace {
         && !(   ss->ttHit
              && tte->depth() >= depth - 3
              && ttValue != VALUE_NONE
-             && ttValue < probCutBeta))
+             && ttValue < probCutBeta)
+        && !(   !ttMove
+             && !cutNode
+             && eval <= alpha))
     {
         assert(probCutBeta < VALUE_INFINITE);
 
@@ -890,9 +893,6 @@ namespace {
                     tte->save(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER, depth - 3, move, ss->staticEval);
                     return value;
                 }
-
-                else if (move == ttMove)
-                    break;
             }
     }
 
