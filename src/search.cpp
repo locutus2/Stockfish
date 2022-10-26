@@ -930,7 +930,7 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-6)->continuationHistory };
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
-    Move hopfieldMove = PvNode ? thisThread->hopfield.getMove(pos, {(ss-1)->currentMove, (ss-2)->currentMove}) : MOVE_NONE;
+    Move hopfieldMove = thisThread->hopfield.getMove(pos, {(ss-1)->currentMove, (ss-2)->currentMove});
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
@@ -1015,7 +1015,7 @@ moves_loop: // When in check, search starts here
               if (!pos.see_ge(move, Value(-222) * depth))
                   continue;
           }
-          else if (move != hopfieldMove)
+          else
           {
               int history =   (*contHist[0])[movedPiece][to_sq(move)]
                             + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1133,7 +1133,8 @@ moves_loop: // When in check, search starts here
           &&  moveCount > 1 + (PvNode && ss->ply <= 1)
           && (   !ss->ttPv
               || !capture
-              || (cutNode && (ss-1)->moveCount > 1)))
+              || (cutNode && (ss-1)->moveCount > 1))
+          && (capture || move != hopfieldMove))
       {
           Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
@@ -1338,7 +1339,7 @@ moves_loop: // When in check, search starts here
     // If there is a move which produces search value greater than alpha we update stats of searched moves
     else if (bestMove)
     {
-        if (PvNode && !pos.capture(bestMove))
+        if (!pos.capture(bestMove))
             thisThread->hopfield.setMove(bestMove, {(ss-1)->currentMove, (ss-2)->currentMove});
 
         update_all_stats(pos, ss, bestMove, bestValue, beta, prevSq,
