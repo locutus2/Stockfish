@@ -172,6 +172,8 @@ void Search::init() {
               PieceSquareIndex[make_piece(BLACK, pt)][sq] = index++;
       }
   }
+
+  assert(index == PIECE_SQUARE_INDICES);
 }
 
 

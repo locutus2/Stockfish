@@ -78,6 +78,8 @@ struct Stats : public std::array<Stats<T, D, Sizes...>, Size>
 template <typename T, int D, int Size>
 struct Stats<T, D, Size> : public std::array<StatsEntry<T, D>, Size>
 {
+  typedef Stats<T, D, Size> stats;
+
   void fill(const T& v) {
 
     // For standard-layout 'this' points to first struct member
