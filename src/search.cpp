@@ -1695,7 +1695,7 @@ moves_loop: // When in check, search starts here
     {
         // Increase stats for the best move in case it was a capture move
         captureHistory[moved_piece][to_sq(bestMove)][captured] << bonus1;
-    
+
         // Update capture countermove history
         if (is_ok((ss-1)->currentMove))
             thisThread->captureCounterMoves[pos.piece_on(prevSq)][prevSq] = bestMove;
