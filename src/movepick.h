@@ -76,20 +76,7 @@ struct Stats : public std::array<Stats<T, D, Sizes...>, Size>
 };
 
 template <typename T, int D, int Size>
-struct Stats<T, D, Size> : public std::array<StatsEntry<T, D>, Size>
-{
-  typedef Stats<T, D, Size> stats;
-
-  void fill(const T& v) {
-
-    // For standard-layout 'this' points to first struct member
-    assert(std::is_standard_layout<stats>::value);
-
-    typedef StatsEntry<T, D> entry;
-    entry* p = reinterpret_cast<entry*>(this);
-    std::fill(p, p + sizeof(*this) / sizeof(entry), v);
-  }
-};
+struct Stats<T, D, Size> : public std::array<StatsEntry<T, D>, Size> { };
 
 /// In stats table, D=0 means that the template parameter is not used
 enum StatsParams { NOT_USED = 0 };
