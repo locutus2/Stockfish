@@ -128,8 +128,9 @@ public:
   MovePicker(const Position&, Move, Depth, const ButterflyHistory*,
                                            const CapturePieceToHistory*,
                                            const PieceToHistory**,
-                                           Square);
-  MovePicker(const Position&, Move, Value, Depth, const CapturePieceToHistory*);
+                                           Square,
+                                           Move);
+  MovePicker(const Position&, Move, Value, Depth, const CapturePieceToHistory*, Move);
   Move next_move(bool skipQuiets = false);
 
   Bitboard threatenedPieces;

@@ -77,8 +77,9 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
-                                                             Square rs)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), recaptureSquare(rs), depth(d)
+                                                             Square rs,
+                                                             Move capCm)
+           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), captureCounterMove(capCm), recaptureSquare(rs), depth(d)
 {
   assert(d <= 0);
 
@@ -89,8 +90,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 
 /// MovePicker constructor for ProbCut: we generate captures with SEE greater
 /// than or equal to the given threshold.
-MovePicker::MovePicker(const Position& p, Move ttm, Value th, Depth d, const CapturePieceToHistory* cph)
-           : pos(p), captureHistory(cph), ttMove(ttm), threshold(th), depth(d)
+MovePicker::MovePicker(const Position& p, Move ttm, Value th, Depth d, const CapturePieceToHistory* cph, Move capCm)
+           : pos(p), captureHistory(cph), ttMove(ttm), captureCounterMove(capCm), threshold(th), depth(d)
 {
   assert(!pos.checkers());
 
@@ -125,7 +126,8 @@ void MovePicker::score() {
   for (auto& m : *this)
       if constexpr (Type == CAPTURES)
           m.value =  6 * int(PieceValue[MG][pos.piece_on(to_sq(m))])
-                   +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
+                   +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))]
+                   +     (m == captureCounterMove)  * 5000;
 
       else if constexpr (Type == QUIETS)
           m.value =  2 * (*mainHistory)[pos.side_to_move()][from_to(m)]
@@ -198,10 +200,9 @@ top:
 
   case GOOD_CAPTURE:
       if (select<Next>([&](){
-                       return   *cur == captureCounterMove
-                             || pos.see_ge(*cur, Value(-69 * cur->value / 1024)) ?
-                                // Move losing capture to endBadCaptures to be tried later
-                                true : (*endBadCaptures++ = *cur, false); }))
+                       return pos.see_ge(*cur, Value(-69 * cur->value / 1024)) ?
+                              // Move losing capture to endBadCaptures to be tried later
+                              true : (*endBadCaptures++ = *cur, false); }))
           return *(cur - 1);
 
       // Prepare the pointers to loop over the refutations array
