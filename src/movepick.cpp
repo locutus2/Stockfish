@@ -26,7 +26,7 @@ namespace Stockfish {
 namespace {
 
   enum Stages {
-    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
+    MAIN_TT, CAPTURE_REFUTATION, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
     EVASION_TT, EVASION_INIT, EVASION,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
@@ -61,9 +61,10 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
                                                              Move cm,
+                                                             Move capCm,
                                                              const Move* killers)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
+             ttMove(ttm), captureCounterMove(capCm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
 {
   assert(d > 0);
 
@@ -77,7 +78,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
                                                              Square rs)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), recaptureSquare(rs), depth(d)
+           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), captureCounterMove(MOVE_NONE), recaptureSquare(rs), depth(d)
 {
   assert(d <= 0);
 
@@ -89,7 +90,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 /// MovePicker constructor for ProbCut: we generate captures with SEE greater
 /// than or equal to the given threshold.
 MovePicker::MovePicker(const Position& p, Move ttm, Value th, Depth d, const CapturePieceToHistory* cph)
-           : pos(p), captureHistory(cph), ttMove(ttm), threshold(th), depth(d)
+           : pos(p), captureHistory(cph), ttMove(ttm), captureCounterMove(MOVE_NONE), threshold(th), depth(d)
 {
   assert(!pos.checkers());
 
@@ -184,6 +185,16 @@ top:
       ++stage;
       return ttMove;
 
+  case CAPTURE_REFUTATION:
+      ++stage;
+
+      if (   captureCounterMove != MOVE_NONE
+          && pos.capture(captureCounterMove)
+          && pos.pseudo_legal(captureCounterMove))
+          return captureCounterMove;
+
+      [[fallthrough]];
+
   case CAPTURE_INIT:
   case PROBCUT_INIT:
   case QCAPTURE_INIT:
@@ -197,9 +208,10 @@ top:
 
   case GOOD_CAPTURE:
       if (select<Next>([&](){
-                       return pos.see_ge(*cur, Value(-69 * cur->value / 1024)) ?
-                              // Move losing capture to endBadCaptures to be tried later
-                              true : (*endBadCaptures++ = *cur, false); }))
+                       return *cur != captureCounterMove ? (pos.see_ge(*cur, Value(-69 * cur->value / 1024)) ?
+                                                            // Move losing capture to endBadCaptures to be tried later
+                                                            true : (*endBadCaptures++ = *cur, false))
+                                                         : false; }))
           return *(cur - 1);
 
       // Prepare the pointers to loop over the refutations array
