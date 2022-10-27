@@ -76,11 +76,25 @@ struct Stats : public std::array<Stats<T, D, Sizes...>, Size>
 };
 
 template <typename T, int D, int Size>
-struct Stats<T, D, Size> : public std::array<StatsEntry<T, D>, Size> {};
+struct Stats<T, D, Size> : public std::array<StatsEntry<T, D>, Size>
+{
+  void fill(const T& v) {
+
+    // For standard-layout 'this' points to first struct member
+    assert(std::is_standard_layout<stats>::value);
+
+    typedef StatsEntry<T, D> entry;
+    entry* p = reinterpret_cast<entry*>(this);
+    std::fill(p, p + sizeof(*this) / sizeof(entry), v);
+  }
+};
 
 /// In stats table, D=0 means that the template parameter is not used
 enum StatsParams { NOT_USED = 0 };
 enum StatsType { NoCaptures, Captures };
+
+constexpr int PIECE_SQUARE_INDICES = 737;
+extern int PieceSquareIndex[PIECE_NB][SQUARE_NB];
 
 /// ButterflyHistory records how often quiet moves have been successful or
 /// unsuccessful during the current search, and is used for reduction and move
@@ -91,19 +105,19 @@ typedef Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)> Butterfl
 
 /// CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
 /// move, see www.chessprogramming.org/Countermove_Heuristic
-typedef Stats<Move, NOT_USED, PIECE_NB, SQUARE_NB> CounterMoveHistory;
+typedef Stats<Move, NOT_USED, PIECE_SQUARE_INDICES> CounterMoveHistory;
 
 /// CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
-typedef Stats<int16_t, 10692, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB> CapturePieceToHistory;
+typedef Stats<int16_t, 10692, PIECE_SQUARE_INDICES, PIECE_TYPE_NB> CapturePieceToHistory;
 
 /// PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
-typedef Stats<int16_t, 29952, PIECE_NB, SQUARE_NB> PieceToHistory;
+typedef Stats<int16_t, 29952, PIECE_SQUARE_INDICES> PieceToHistory;
 
 /// ContinuationHistory is the combined history of a given pair of moves, usually
 /// the current one given a previous one. The nested history table is based on
 /// PieceToHistory instead of ButterflyBoards.
 /// (~63 elo)
-typedef Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB> ContinuationHistory;
+typedef Stats<PieceToHistory, NOT_USED, PIECE_SQUARE_INDICES> ContinuationHistory;
 
 
 /// MovePicker class is used to pick one pseudo-legal move at a time from the

@@ -159,6 +159,19 @@ void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int((20.26 + std::log(Threads.size()) / 2) * std::log(i));
+
+  int index = 1;
+  for (PieceType pt = PAWN; pt <= KING; ++pt)
+  {
+      for (Square sq = SQ_A1; sq <= SQ_H8; ++sq)
+      {
+          if (pt != PAWN || sq >= SQ_A3)
+              PieceSquareIndex[make_piece(WHITE, pt)][sq] = index++;
+
+          if (pt != PAWN || sq <= SQ_H6)
+              PieceSquareIndex[make_piece(BLACK, pt)][sq] = index++;
+      }
+  }
 }
 
 
@@ -277,7 +290,7 @@ void Thread::search() {
 
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; i--)
-      (ss-i)->continuationHistory = &this->continuationHistory[0][0][NO_PIECE][0]; // Use as a sentinel
+      (ss-i)->continuationHistory = &this->continuationHistory[0][0][0]; // Use as a sentinel
 
   for (int i = 0; i <= MAX_PLY + 2; ++i)
       (ss+i)->ply = i;
@@ -808,7 +821,7 @@ namespace {
         Depth R = std::min(int(eval - beta) / 168, 7) + depth / 3 + 4 - (complexity > 861);
 
         ss->currentMove = MOVE_NULL;
-        ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+        ss->continuationHistory = &thisThread->continuationHistory[0][0][0];
 
         pos.do_null_move(st);
 
@@ -870,8 +883,8 @@ namespace {
                 ss->currentMove = move;
                 ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
                                                                           [true]
-                                                                          [pos.moved_piece(move)]
-                                                                          [to_sq(move)];
+                                                                          [PieceSquareIndex[pos.moved_piece(move)]
+                                                                                           [to_sq(move)]];
 
                 pos.do_move(move, st);
 
@@ -928,7 +941,7 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-4)->continuationHistory,
                                           nullptr                   , (ss-6)->continuationHistory };
 
-    Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
+    Move countermove = thisThread->counterMoves[PieceSquareIndex[pos.piece_on(prevSq)][prevSq]];
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
@@ -1006,7 +1019,7 @@ moves_loop: // When in check, search starts here
                   && lmrDepth < 7
                   && !ss->inCheck
                   && ss->staticEval + 180 + 201 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))]
-                   + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 6 < alpha)
+                   + captureHistory[PieceSquareIndex[movedPiece][to_sq(move)]][type_of(pos.piece_on(to_sq(move)))] / 6 < alpha)
                   continue;
 
               // SEE based pruning (~9 Elo)
@@ -1015,9 +1028,9 @@ moves_loop: // When in check, search starts here
           }
           else
           {
-              int history =   (*contHist[0])[movedPiece][to_sq(move)]
-                            + (*contHist[1])[movedPiece][to_sq(move)]
-                            + (*contHist[3])[movedPiece][to_sq(move)];
+              int history =   (*contHist[0])[PieceSquareIndex[movedPiece][to_sq(move)]]
+                            + (*contHist[1])[PieceSquareIndex[movedPiece][to_sq(move)]]
+                            + (*contHist[3])[PieceSquareIndex[movedPiece][to_sq(move)]];
 
               // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 5
@@ -1102,7 +1115,7 @@ moves_loop: // When in check, search starts here
           else if (   PvNode
                    && move == ttMove
                    && move == ss->killers[0]
-                   && (*contHist[0])[movedPiece][to_sq(move)] >= 5177)
+                   && (*contHist[0])[PieceSquareIndex[movedPiece][to_sq(move)]] >= 5177)
               extension = 1;
       }
 
@@ -1117,8 +1130,8 @@ moves_loop: // When in check, search starts here
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
                                                                 [capture]
-                                                                [movedPiece]
-                                                                [to_sq(move)];
+                                                                [PieceSquareIndex[movedPiece]
+                                                                                 [to_sq(move)]];
 
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
@@ -1171,9 +1184,9 @@ moves_loop: // When in check, search starts here
               r++;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
-                         + (*contHist[0])[movedPiece][to_sq(move)]
-                         + (*contHist[1])[movedPiece][to_sq(move)]
-                         + (*contHist[3])[movedPiece][to_sq(move)]
+                         + (*contHist[0])[PieceSquareIndex[movedPiece][to_sq(move)]]
+                         + (*contHist[1])[PieceSquareIndex[movedPiece][to_sq(move)]]
+                         + (*contHist[3])[PieceSquareIndex[movedPiece][to_sq(move)]]
                          - 4433;
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
@@ -1542,14 +1555,14 @@ moves_loop: // When in check, search starts here
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
                                                                 [capture]
-                                                                [pos.moved_piece(move)]
-                                                                [to_sq(move)];
+                                                                [PieceSquareIndex[pos.moved_piece(move)]
+                                                                                 [to_sq(move)]];
 
       // Continuation history based pruning (~2 Elo)
       if (   !capture
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY
-          && (*contHist[0])[pos.moved_piece(move)][to_sq(move)] < 0
-          && (*contHist[1])[pos.moved_piece(move)][to_sq(move)] < 0)
+          && (*contHist[0])[PieceSquareIndex[pos.moved_piece(move)][to_sq(move)]] < 0
+          && (*contHist[1])[PieceSquareIndex[pos.moved_piece(move)][to_sq(move)]] < 0)
           continue;
 
       // movecount pruning for quiet check evasions
@@ -1691,7 +1704,7 @@ moves_loop: // When in check, search starts here
     }
     else
         // Increase stats for the best move in case it was a capture move
-        captureHistory[moved_piece][to_sq(bestMove)][captured] << bonus1;
+        captureHistory[PieceSquareIndex[moved_piece][to_sq(bestMove)]][captured] << bonus1;
 
     // Extra penalty for a quiet early move that was not a TT move or
     // main killer move in previous ply when it gets refuted.
@@ -1704,7 +1717,7 @@ moves_loop: // When in check, search starts here
     {
         moved_piece = pos.moved_piece(capturesSearched[i]);
         captured = type_of(pos.piece_on(to_sq(capturesSearched[i])));
-        captureHistory[moved_piece][to_sq(capturesSearched[i])][captured] << -bonus1;
+        captureHistory[PieceSquareIndex[moved_piece][to_sq(capturesSearched[i])]][captured] << -bonus1;
     }
   }
 
@@ -1720,7 +1733,7 @@ moves_loop: // When in check, search starts here
         if (ss->inCheck && i > 2)
             break;
         if (is_ok((ss-i)->currentMove))
-            (*(ss-i)->continuationHistory)[pc][to] << bonus;
+            (*(ss-i)->continuationHistory)[PieceSquareIndex[pc][to]] << bonus;
     }
   }
 
@@ -1745,7 +1758,7 @@ moves_loop: // When in check, search starts here
     if (is_ok((ss-1)->currentMove))
     {
         Square prevSq = to_sq((ss-1)->currentMove);
-        thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] = move;
+        thisThread->counterMoves[PieceSquareIndex[pos.piece_on(prevSq)][prevSq]] = move;
     }
   }
 

@@ -64,9 +64,8 @@ void Thread::clear() {
 
   for (bool inCheck : { false, true })
       for (StatsType c : { NoCaptures, Captures })
-          for (auto& to : continuationHistory[inCheck][c])
-              for (auto& h : to)
-                  h->fill(-71);
+          for (auto& h : continuationHistory[inCheck][c])
+              h->fill(-71);
 }
 
 
