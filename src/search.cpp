@@ -663,7 +663,7 @@ namespace {
 
         // Partial workaround for the graph history interaction problem
         // For high rule50 counts don't produce transposition table cutoffs.
-        if (!ss->inCheck && pos.rule50_count() < 90)
+        if (!ss->ttPv && pos.rule50_count() < 90)
             return ttValue;
     }
 
