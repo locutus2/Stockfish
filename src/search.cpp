@@ -861,7 +861,7 @@ namespace {
         assert(probCutBeta < VALUE_INFINITE);
 
         MovePicker mp(pos, ttMove, probCutBeta - ss->staticEval, depth - 3, &captureHistory,
-                      thisThread->captureCounterMoves[pos.piece_on(prevSq)][prevSq]);
+                      thisThread->captureCounterMoves[pos.piece_on(prevSq)][prevSq][type_of(pos.captured_piece())]);
 
         while ((move = mp.next_move()) != MOVE_NONE)
             if (move != excludedMove && pos.legal(move))
@@ -930,7 +930,7 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-6)->continuationHistory };
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
-    Move captureCounterMove = thisThread->captureCounterMoves[pos.piece_on(prevSq)][prevSq];
+    Move captureCounterMove = thisThread->captureCounterMoves[pos.piece_on(prevSq)][prevSq][type_of(pos.captured_piece())];
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
@@ -1491,7 +1491,7 @@ moves_loop: // When in check, search starts here
                                       &thisThread->captureHistory,
                                       contHist,
                                       prevSq,
-                                      thisThread->captureCounterMoves[pos.piece_on(prevSq)][prevSq]);
+                                      thisThread->captureCounterMoves[pos.piece_on(prevSq)][prevSq][pos.captured_piece()]);
 
     int quietCheckEvasions = 0;
 
@@ -1700,7 +1700,7 @@ moves_loop: // When in check, search starts here
 
         // Update capture countermove history
         if (is_ok((ss-1)->currentMove))
-            thisThread->captureCounterMoves[pos.piece_on(prevSq)][prevSq] = bestMove;
+            thisThread->captureCounterMoves[pos.piece_on(prevSq)][prevSq][captured] = bestMove;
     }
 
     // Extra penalty for a quiet early move that was not a TT move or
