@@ -140,7 +140,7 @@ void MovePicker::score() {
                           :                                                                           0)
                           :                                                                           0)
                    +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384
-                   -     (m == repeatingMove) * 50000;
+                   -     (m == repeatingMove) * 25000;
       else // Type == EVASIONS
       {
           if (pos.capture(m))
