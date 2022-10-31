@@ -1220,6 +1220,9 @@ moves_loop: // When in check, search starts here
                               std::min(maxNextDepth, newDepth), false);
       }
 
+      if (value > alpha)
+          value += Value(pos.key() & 0x2) - 1;
+
       // Step 19. Undo move
       pos.undo_move(move);
 
