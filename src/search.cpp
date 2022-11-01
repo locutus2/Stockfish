@@ -86,7 +86,7 @@ namespace {
 
   // Add a small random component to draw evaluations to avoid 3-fold blindness
   Value value_draw(Key key) {
-    return VALUE_DRAW - Value(key & 0x1);
+    return VALUE_DRAW + Value(key & 0x1);
   }
 
   // Skill structure is used to implement strength limit. If we have an uci_elo then
