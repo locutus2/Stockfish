@@ -86,7 +86,7 @@ namespace {
 
   // Add a small random component to draw evaluations to avoid 3-fold blindness
   Value value_draw(const Thread* thisThread) {
-    return VALUE_DRAW - 1 + Value(thisThread->nodes & 0x2);
+    return VALUE_DRAW + Value(thisThread->nodes & 0x1);
   }
 
   // Skill structure is used to implement strength limit. If we have an uci_elo then
