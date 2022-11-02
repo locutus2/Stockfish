@@ -138,7 +138,7 @@ void MovePicker::score() {
                            :                                         !(to_sq(m) & threatenedByPawn)  ? 15000
                            :                                                                           0)
                            :                                                                           0)
-                    +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384) / 16;
+                    +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384) / 256;
       else // Type == EVASIONS
       {
           if (pos.capture(m))
@@ -229,7 +229,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, -188 * depth);
+          partial_insertion_sort(cur, endMoves, -12 * depth);
       }
 
       ++stage;
