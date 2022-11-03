@@ -1170,7 +1170,7 @@ moves_loop: // When in check, search starts here
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
 
-          if (capture && improving)
+          if (capture && improving && captureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())] > 0)
               r--;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
