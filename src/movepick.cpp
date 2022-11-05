@@ -62,9 +62,9 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              const PieceToHistory** ch,
                                                              Move cm,
                                                              const Move* killers,
-                                                             Move nk)
+                                                             const Move* nk)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), nextKiller(nk), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
+             ttMove(ttm), nextKiller{nk[0], nk[1]}, refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
 {
   assert(d > 0);
 
@@ -126,7 +126,8 @@ void MovePicker::score() {
       if constexpr (Type == CAPTURES)
           m.value =  6 * int(PieceValue[MG][pos.piece_on(to_sq(m))])
                    +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))]
-                   +     (stage == CAPTURE_INIT && to_sq(m) == from_sq(nextKiller) && pos.pseudo_legal<true>(nextKiller)) * 1024;
+                   +     (stage == CAPTURE_INIT && (   (to_sq(m) == from_sq(nextKiller[0]) && pos.pseudo_legal<true>(nextKiller[0]))
+                                                    || (to_sq(m) == from_sq(nextKiller[1]) && pos.pseudo_legal<true>(nextKiller[1])))) * 1024;
 
       else if constexpr (Type == QUIETS)
           m.value =  2 * (*mainHistory)[pos.side_to_move()][from_to(m)]

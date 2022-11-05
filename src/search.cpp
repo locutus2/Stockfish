@@ -935,7 +935,7 @@ moves_loop: // When in check, search starts here
                                       contHist,
                                       countermove,
                                       ss->killers,
-                                      (ss+1)->killers[0]);
+                                      (ss+1)->killers);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
