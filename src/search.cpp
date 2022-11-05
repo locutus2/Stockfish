@@ -1000,18 +1000,21 @@ moves_loop: // When in check, search starts here
           if (   capture
               || givesCheck)
           {
-              // Futility pruning for captures (~0 Elo)
-              if (   !givesCheck
-                  && !PvNode
-                  && lmrDepth < 7
-                  && !ss->inCheck
-                  && ss->staticEval + 180 + 201 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))]
-                   + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 6 < alpha)
-                  continue;
+              if (!capture || to_sq(move) != from_sq((ss+1)->killers[0]))
+              {
+                  // Futility pruning for captures (~0 Elo)
+                  if (   !givesCheck
+                      && !PvNode
+                      && lmrDepth < 7
+                      && !ss->inCheck
+                      && ss->staticEval + 180 + 201 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))]
+                       + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 6 < alpha)
+                      continue;
 
-              // SEE based pruning (~9 Elo)
-              if (!pos.see_ge(move, Value(-222) * depth))
-                  continue;
+                  // SEE based pruning (~9 Elo)
+                  if (!pos.see_ge(move, Value(-222) * depth))
+                      continue;
+              }
           }
           else
           {
@@ -1169,9 +1172,6 @@ moves_loop: // When in check, search starts here
           // Increase reduction if next ply has a lot of fail high
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
-
-          if (capture && to_sq(move) == from_sq((ss+1)->killers[0]))
-              r--;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                          + (*contHist[0])[movedPiece][to_sq(move)]
