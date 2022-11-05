@@ -71,9 +71,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
   stage = (pos.checkers() ? EVASION_TT : MAIN_TT) +
           !(ttm && pos.pseudo_legal(ttm));
   threatenedPieces = 0;
-
-  if (!pos.pseudo_legal<true>(nextKiller))
-      nextKiller = MOVE_NONE;
 }
 
 /// MovePicker constructor for quiescence search
@@ -194,6 +191,9 @@ top:
   case QCAPTURE_INIT:
       cur = endBadCaptures = moves;
       endMoves = generate<CAPTURES>(pos, cur);
+
+      if (!is_ok(nextKiller) || !pos.pseudo_legal<true>(nextKiller))
+          nextKiller = MOVE_NONE;
 
       score<CAPTURES>();
       partial_insertion_sort(cur, endMoves, -3000 * depth);
