@@ -126,7 +126,7 @@ void MovePicker::score() {
       if constexpr (Type == CAPTURES)
           m.value =  6 * int(PieceValue[MG][pos.piece_on(to_sq(m))])
                    +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))]
-                   +     (stage == CAPTURE_INIT && nextKiller != MOVE_NONE && to_sq(m) == from_sq(nextKiller)) * 4096;
+                   +     (stage == CAPTURE_INIT && to_sq(m) == from_sq(nextKiller) && pos.pseudo_legal<true>(nextKiller)) * 1024;
 
       else if constexpr (Type == QUIETS)
           m.value =  2 * (*mainHistory)[pos.side_to_move()][from_to(m)]

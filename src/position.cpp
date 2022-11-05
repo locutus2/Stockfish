@@ -554,9 +554,10 @@ bool Position::legal(Move m) const {
 /// pseudo legal. It is used to validate moves from TT that can be corrupted
 /// due to SMP concurrent access or hash position key aliasing.
 
+template <bool OPPONENT>
 bool Position::pseudo_legal(const Move m) const {
 
-  Color us = sideToMove;
+  Color us = OPPONENT ? ~sideToMove : sideToMove;
   Square from = from_sq(m);
   Square to = to_sq(m);
   Piece pc = moved_piece(m);
@@ -564,7 +565,8 @@ bool Position::pseudo_legal(const Move m) const {
   // Use a slower but simpler function for uncommon cases
   // yet we skip the legality check of MoveList<LEGAL>().
   if (type_of(m) != NORMAL)
-      return checkers() ? MoveList<    EVASIONS>(*this).contains(m)
+      return OPPONENT   ? false :
+             checkers() ? MoveList<    EVASIONS>(*this).contains(m)
                         : MoveList<NON_EVASIONS>(*this).contains(m);
 
   // Is not a promotion, so promotion piece must be empty
@@ -602,7 +604,7 @@ bool Position::pseudo_legal(const Move m) const {
   // Evasions generator already takes care to avoid some kind of illegal moves
   // and legal() relies on this. We therefore have to take care that the same
   // kind of moves are filtered out here.
-  if (checkers())
+  if (!OPPONENT && checkers())
   {
       if (type_of(pc) != KING)
       {
@@ -1349,5 +1351,8 @@ bool Position::pos_is_ok() const {
 
   return true;
 }
+
+template bool Position::pseudo_legal<false>(const Move m) const;
+template bool Position::pseudo_legal<true>(const Move m) const;
 
 } // namespace Stockfish
