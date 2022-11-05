@@ -71,6 +71,9 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
   stage = (pos.checkers() ? EVASION_TT : MAIN_TT) +
           !(ttm && pos.pseudo_legal(ttm));
   threatenedPieces = 0;
+
+  if (!pos.pseudo_legal<true>(nextKiller))
+      nextKiller = MOVE_NONE;
 }
 
 /// MovePicker constructor for quiescence search
@@ -78,7 +81,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
                                                              Square rs)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), recaptureSquare(rs), depth(d)
+           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), nextKiller(MOVE_NONE), recaptureSquare(rs), depth(d)
 {
   assert(d <= 0);
 
@@ -90,7 +93,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 /// MovePicker constructor for ProbCut: we generate captures with SEE greater
 /// than or equal to the given threshold.
 MovePicker::MovePicker(const Position& p, Move ttm, Value th, Depth d, const CapturePieceToHistory* cph)
-           : pos(p), captureHistory(cph), ttMove(ttm), threshold(th), depth(d)
+           : pos(p), captureHistory(cph), ttMove(ttm), nextKiller(MOVE_NONE), threshold(th), depth(d)
 {
   assert(!pos.checkers());
 
@@ -126,7 +129,7 @@ void MovePicker::score() {
       if constexpr (Type == CAPTURES)
           m.value =  6 * int(PieceValue[MG][pos.piece_on(to_sq(m))])
                    +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))]
-                   +     (stage == CAPTURE_INIT && to_sq(m) == from_sq(nextKiller) && pos.pseudo_legal<true>(nextKiller)) * 1024;
+                   +     (nextKiller != MOVE_NONE && to_sq(m) == from_sq(nextKiller)) * 1024;
 
       else if constexpr (Type == QUIETS)
           m.value =  2 * (*mainHistory)[pos.side_to_move()][from_to(m)]
