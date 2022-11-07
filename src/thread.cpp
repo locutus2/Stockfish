@@ -57,6 +57,7 @@ Thread::~Thread() {
 
 void Thread::clear() {
 
+  std::fill(reinterpret_cast<int*>(averageMoveScore), reinterpret_cast<int*>(averageMoveScore) + sizeof(averageMoveScore) / sizeof(int), 0);
   counterMoves.fill(MOVE_NONE);
   mainHistory.fill(0);
   captureHistory.fill(0);

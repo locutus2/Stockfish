@@ -20,6 +20,7 @@
 
 #include "bitboard.h"
 #include "movepick.h"
+#include "thread.h"
 
 namespace Stockfish {
 
@@ -127,18 +128,20 @@ void MovePicker::score() {
                    +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
 
       else if constexpr (Type == QUIETS)
-          m.value =  2 * (*mainHistory)[pos.side_to_move()][from_to(m)]
-                   + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
-                   +     (threatenedPieces & from_sq(m) ?
-                           (type_of(pos.moved_piece(m)) == QUEEN && !(to_sq(m) & threatenedByRook)  ? 50000
-                          : type_of(pos.moved_piece(m)) == ROOK  && !(to_sq(m) & threatenedByMinor) ? 25000
-                          :                                         !(to_sq(m) & threatenedByPawn)  ? 15000
-                          :                                                                           0)
-                          :                                                                           0)
-                   +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384;
+          m.value = pos.this_thread()->averageMoveScore[pos.moved_piece(m)][to_sq(m)]
+                  =  (*mainHistory)[pos.side_to_move()][from_to(m)]
+                   + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
+                   + (  (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
+                      + (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
+                      + (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
+                      + pos.this_thread()->averageMoveScore[pos.moved_piece(m)][to_sq(m)]) / 2
+                   + (threatenedPieces & from_sq(m) ?
+                      (  type_of(pos.moved_piece(m)) == QUEEN && !(to_sq(m) & threatenedByRook)  ? 25000
+                       : type_of(pos.moved_piece(m)) == ROOK  && !(to_sq(m) & threatenedByMinor) ? 12500
+                       :                                         !(to_sq(m) & threatenedByPawn)  ? 7500
+                       :                                                                           0)
+                       :                                                                           0)
+                   + bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 8208;
       else // Type == EVASIONS
       {
           if (pos.capture(m))
