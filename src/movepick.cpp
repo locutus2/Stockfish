@@ -141,7 +141,7 @@ void MovePicker::score() {
                           :                                                                           0)
                           :                                                                           0)
                    +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384;
-          val += (val - pos.this_thread()->expectedMoveScore[pos.moved_piece(m)][to_sq(m)]) / 4;
+          val += (val - pos.this_thread()->expectedMoveScore[pos.moved_piece(m)][to_sq(m)]) / 8;
           m.value = pos.this_thread()->expectedMoveScore[pos.moved_piece(m)][to_sq(m)] = val;
       }
       else // Type == EVASIONS
