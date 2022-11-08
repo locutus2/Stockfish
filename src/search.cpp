@@ -929,7 +929,8 @@ moves_loop: // When in check, search starts here
                                       &captureHistory,
                                       contHist,
                                       countermove,
-                                      ss->killers);
+                                      ss->killers,
+                                      (ss-2)->statScore);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
