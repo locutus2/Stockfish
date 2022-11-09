@@ -229,7 +229,7 @@ top:
           cur = endBadCaptures;
           endMoves = generate<QUIETS>(pos, cur);
 
-          if (depth > 1 || countRefutations == 0)
+          if (depth > 1 || countRefutations <= 1)
           {
               score<QUIETS>();
               partial_insertion_sort(cur, endMoves, -3000 * depth);
