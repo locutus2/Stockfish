@@ -230,7 +230,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, std::min(-3000 * depth + sortOffset, 0));
+          partial_insertion_sort(cur, endMoves, std::min(-3000 * depth + std::max(sortOffset, 0), 0));
       }
 
       ++stage;
