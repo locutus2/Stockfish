@@ -211,6 +211,7 @@ top:
           || refutations[1].move == refutations[2].move)
           --endMoves;
 
+      countRefutations = 0;
       ++stage;
       [[fallthrough]];
 
@@ -218,7 +219,7 @@ top:
       if (select<Next>([&](){ return    *cur != MOVE_NONE
                                     && !pos.capture(*cur)
                                     &&  pos.pseudo_legal(*cur); }))
-          return *(cur - 1);
+          return ++countRefutations, *(cur - 1);
       ++stage;
       [[fallthrough]];
 
@@ -228,7 +229,7 @@ top:
           cur = endBadCaptures;
           endMoves = generate<QUIETS>(pos, cur);
 
-          if (depth > 1)
+          if (depth > 1 || countRefutations == 0)
           {
               score<QUIETS>();
               partial_insertion_sort(cur, endMoves, -3000 * depth);
