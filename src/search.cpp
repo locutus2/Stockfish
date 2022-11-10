@@ -1165,6 +1165,14 @@ moves_loop: // When in check, search starts here
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
 
+          // Increase reductions if at PV node already a best move found
+          if (   PvNode
+              && bestMove
+              && depth < 6
+              && beta  <  VALUE_KNOWN_WIN
+              && alpha > -VALUE_KNOWN_WIN)
+              r++;
+
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                          + (*contHist[0])[movedPiece][to_sq(move)]
                          + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1272,18 +1280,7 @@ moves_loop: // When in check, search starts here
                   update_pv(ss->pv, move, (ss+1)->pv);
 
               if (PvNode && value < beta) // Update alpha! Always alpha < beta
-              {
                   alpha = value;
-
-                  // Reduce other moves if we have found at least one score improvement
-                  if (   depth > 1
-                      && depth < 6
-                      && beta  <  VALUE_KNOWN_WIN
-                      && alpha > -VALUE_KNOWN_WIN)
-                     depth -= 1;
-
-                  assert(depth > 0);
-              }
               else
               {
                   ss->cutoffCnt++;
