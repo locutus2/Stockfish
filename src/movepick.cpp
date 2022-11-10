@@ -228,7 +228,7 @@ top:
           cur = endBadCaptures;
           endMoves = generate<QUIETS>(pos, cur);
 
-          if (depth > 1 || !ttMove)
+          if (depth > 2 || !ttMove)
           {
               score<QUIETS>();
               partial_insertion_sort(cur, endMoves, -3000 * depth);
