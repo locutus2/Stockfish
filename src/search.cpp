@@ -1246,6 +1246,23 @@ moves_loop: // When in check, search starts here
               for (Move* m = (ss+1)->pv; *m != MOVE_NONE; ++m)
                   rm.pv.push_back(*m);
 
+              // Save new PV line in transpostion table
+              if (value > alpha && value < beta && thisThread->pvIdx == 0)
+              {
+                  StateInfo si[MAX_PLY];
+                  for (int i = 0; i < int(rm.pv.size()) - 1; ++i)
+                      pos.do_move(rm.pv[i], si[i]);
+
+                  for (int i = int(rm.pv.size()) - 2; i >= 0; --i)
+                  {
+                      bool ttHit2;
+                      TTEntry* tte2 = TT.probe(pos.key(), ttHit2);
+                      Value eval2 = ttHit2 ? tte2->eval() : value;
+                      tte2->save(pos.key(), value_to_tt(value, i), true, BOUND_EXACT, depth - i, rm.pv[i+1], eval2);
+                      pos.undo_move(rm.pv[i]);
+                  }
+              }
+
               // We record how often the best move has been changed in each iteration.
               // This information is used for time management. In MultiPV mode,
               // we must take care to only do this for the first PV line.
