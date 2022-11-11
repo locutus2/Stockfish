@@ -1253,13 +1253,15 @@ moves_loop: // When in check, search starts here
                   for (int i = 0; i < int(rm.pv.size()) - 1; ++i)
                       pos.do_move(rm.pv[i], si[i]);
 
-                  for (int i = int(rm.pv.size()) - 2; i >= 0; --i)
+                  for (int i = int(rm.pv.size()) - 1; i >= 0; --i)
                   {
                       bool ttHit2;
                       TTEntry* tte2 = TT.probe(pos.key(), ttHit2);
                       Value eval2 = ttHit2 ? tte2->eval() : value;
-                      tte2->save(pos.key(), value_to_tt(value, i), true, BOUND_EXACT, depth - i, rm.pv[i+1], eval2);
-                      pos.undo_move(rm.pv[i]);
+                      tte2->save(pos.key(), value_to_tt(value, i), true, BOUND_EXACT, depth - i, rm.pv[i], eval2);
+
+                      if (i > 0)
+                          pos.undo_move(rm.pv[i-1]);
                   }
               }
 
