@@ -71,6 +71,7 @@ struct RootMove {
   Value score = -VALUE_INFINITE;
   Value previousScore = -VALUE_INFINITE;
   Value averageScore = -VALUE_INFINITE;
+  Value averageScoreTrend = -VALUE_INFINITE;
   int selDepth = 0;
   int tbRank = 0;
   Value tbScore;
