@@ -164,7 +164,9 @@ namespace {
     num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
     Threads.ALPHA = 1;
-    double change = 0;
+    Threads.BETA = 0;
+    double achange = 0;
+    double bchange = 0;
     double A = 1e-10;
     for(int it = 1;; ++it)
     {
@@ -173,7 +175,8 @@ namespace {
         TimePoint elapsed = now();
 
         Threads.error = 0;
-        Threads.derror = 0;
+        Threads.aderror = 0;
+        Threads.bderror = 0;
         for (const auto& cmd : list)
         {
             istringstream is(cmd);
@@ -196,18 +199,21 @@ namespace {
             else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
         }
         Threads.error /= (13 * num);
-        Threads.derror /= (13 * num);
+        Threads.aderror /= (13 * num);
+        Threads.bderror /= (13 * num);
 
         if (it == 1)
         {
-            A = 0.001 / std::abs(Threads.derror);
+            A = 0.001 / std::max(std::abs(Threads.aderror), std::abs(Threads.bderror));
         }
 
         constexpr double M = 0.8;
-        change = A * Threads.derror + M * change;
+        achange = A * Threads.aderror + M * achange;
+        bchange = A * Threads.bderror + M * bchange;
         //cerr << "update: " << A * Threads.derror / (13 * num) << endl;
         //cerr << "ALPHA2: " << Threads.ALPHA << endl;
-        Threads.ALPHA -= change;
+        Threads.ALPHA -= achange;
+        Threads.BETA -= bchange;
         //cerr << "ALPHA3: " << Threads.ALPHA << endl;
 
         elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
@@ -221,9 +227,12 @@ namespace {
              << "\nNodes searched  : " << nodes
              << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
         cerr << "Error: " << Threads.error << endl;
-        cerr << "DError: " << Threads.derror << endl;
-        cerr << "Change: " << change << endl;
+        cerr << "DError ALPHA: " << Threads.aderror << endl;
+        cerr << "Change ALPHA: " << achange << endl;
         cerr << "ALPHA: " << Threads.ALPHA << endl;
+        cerr << "DError BETA: " << Threads.bderror << endl;
+        cerr << "Change BETA: " << bchange << endl;
+        cerr << "BETA: " << Threads.BETA << endl;
     }
   }
 

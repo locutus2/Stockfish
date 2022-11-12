@@ -312,7 +312,8 @@ void Thread::search() {
   optimism[us] = optimism[~us] = VALUE_ZERO;
 
   int searchAgainCounter = 0;
-  double x = 0, y = 0;
+  double x = 0, ax = 0, bx = 0;
+  double t = 0, at = 0, bt = 0;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -428,22 +429,70 @@ void Thread::search() {
 
           if (pvIdx == 0)
           {
-              if (rootDepth == 1)
+              constexpr bool USE_TREND = true;
+              if (USE_TREND)
               {
-                  x = bestValue;
-                  y = bestValue;
+                  if (rootDepth == 1)
+                  {
+                      x = bestValue;
+                      ax = bestValue;
+                      bx = bestValue;
+                  }
+                  else if (rootDepth == 2)
+                  {
+                      t = double(bestValue) - x;
+                      at = double(bestValue) - ax;
+                      bt = double(bestValue) - bx;
+                  }
+                  else
+                  {
+                      constexpr double H = 0.001;
+                      if(rootDepth >= 4)
+                      {
+                          Threads.error += std::pow(double(bestValue) - x-t, 2);
+                          //derror += (std::pow(double(bestValue) - y, 2) - std::pow(double(bestValue) - x, 2)) / H;
+                          Threads.aderror += (std::pow(double(bestValue) - ax-at, 2) - std::pow(double(bestValue) - x-t, 2)) / H;
+                          Threads.bderror += (std::pow(double(bestValue) - bx-bt, 2) - std::pow(double(bestValue) - x-t, 2)) / H;
+                      }
+
+                      //x += std::max(ALPHA, 1.0 / rootDepth) * (double(bestValue) - x);
+                      //y += std::max(ALPHA + H, 1.0 / rootDepth) * (double(bestValue) - y);
+                      //x += Threads.ALPHA * (double(bestValue) - x);
+                      double xold = x;
+                      x = Threads.ALPHA * double(bestValue) + (1 - Threads.ALPHA) * (x + t);
+                      t = Threads.BETA * (x - xold) + (1 - Threads.BETA) * t;
+
+                      double axold = ax;
+                      ax = (Threads.ALPHA + H) * double(bestValue) + (1 - Threads.ALPHA - H) * (ax + at);
+                      at = Threads.BETA * (ax - axold) + (1 - Threads.BETA) * at;
+
+                      double bxold = bx;
+                      bx = Threads.ALPHA * double(bestValue) + (1 - Threads.ALPHA) * (bx + bt);
+                      bt = (Threads.BETA + H) * (bx - bxold) + (1 - Threads.BETA - H) * bt;
+
+                      //ax += (Threads.ALPHA + H) * (double(bestValue) - ax);
+                      //bx += Threads.ALPHA * (double(bestValue) - bx);
+                  }
               }
               else
               {
-                  constexpr double H = 0.001;
-                  Threads.error += std::pow(double(bestValue) - x, 2);
-                  //derror += (std::pow(double(bestValue) - y, 2) - std::pow(double(bestValue) - x, 2)) / H;
-                  Threads.derror += (std::pow(double(bestValue) - y, 2) - std::pow(double(bestValue) - x, 2)) / H;
+                  if (rootDepth == 1)
+                  {
+                      x = bestValue;
+                      ax = bestValue;
+                  }
+                  else
+                  {
+                      constexpr double H = 0.001;
+                      if(rootDepth >= 4)
+                      {
+                          Threads.error += std::pow(double(bestValue) - x, 2);
+                          Threads.aderror += (std::pow(double(bestValue) - ax, 2) - std::pow(double(bestValue) - x, 2)) / H;
+                      }
 
-                  //x += std::max(ALPHA, 1.0 / rootDepth) * (double(bestValue) - x);
-                  //y += std::max(ALPHA + H, 1.0 / rootDepth) * (double(bestValue) - y);
-                  x += Threads.ALPHA * (double(bestValue) - x);
-                  y += (Threads.ALPHA + H) * (double(bestValue) - y);
+                      x = Threads.ALPHA * double(bestValue) + (1 - Threads.ALPHA) * x;
+                      ax = (Threads.ALPHA + H) * double(bestValue) + (1 - Threads.ALPHA - H) * ax;
+                  }
               }
           }
       }
