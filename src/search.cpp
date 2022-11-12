@@ -449,6 +449,7 @@ void Thread::search() {
                       constexpr double H = 0.001;
                       if(rootDepth >= 4)
                       {
+                          Threads.nerror++;
                           Threads.error += std::pow(double(bestValue) - x-t, 2);
                           //derror += (std::pow(double(bestValue) - y, 2) - std::pow(double(bestValue) - x, 2)) / H;
                           Threads.aderror += (std::pow(double(bestValue) - ax-at, 2) - std::pow(double(bestValue) - x-t, 2)) / H;
@@ -486,6 +487,7 @@ void Thread::search() {
                       constexpr double H = 0.001;
                       if(rootDepth >= 4)
                       {
+                          Threads.nerror++;
                           Threads.error += std::pow(double(bestValue) - x, 2);
                           Threads.aderror += (std::pow(double(bestValue) - ax, 2) - std::pow(double(bestValue) - x, 2)) / H;
                       }

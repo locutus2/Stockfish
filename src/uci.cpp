@@ -175,6 +175,7 @@ namespace {
 
         TimePoint elapsed = now();
 
+        Threads.nerror = 0;
         Threads.error = 0;
         Threads.aderror = 0;
         Threads.bderror = 0;
@@ -199,9 +200,9 @@ namespace {
             else if (token == "position")   position(pos, is, states);
             else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
         }
-        Threads.error /= (13 * num);
-        Threads.aderror /= (13 * num);
-        Threads.bderror /= (13 * num);
+        Threads.error /= Threads.nerror;
+        Threads.aderror /= Threads.nerror;
+        Threads.bderror /= Threads.nerror;
 
         if (it == 1)
         {

@@ -116,6 +116,7 @@ struct ThreadPool : public std::vector<Thread*> {
 
   std::atomic_bool stop, increaseDepth;
 
+  int64_t nerror;
   double error;
   double aderror;
   double bderror;
