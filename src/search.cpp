@@ -367,8 +367,8 @@ void Thread::search() {
           int failedHighCnt = 0;
           bool first = true;
           Value V = rootMoves[pvIdx].averageScore;
-          //Value V2 = rootMoves[pvIdx].averageBestValue + rootMoves[pvIdx].averageBestValueTrend;
-          Value V2 = rootMoves[pvIdx].averageScore + rootMoves[pvIdx].averageBestValueTrend;
+          Value V2 = rootMoves[pvIdx].averageBestValue + rootMoves[pvIdx].averageBestValueTrend;
+          //Value V2 = rootMoves[pvIdx].averageScore + rootMoves[pvIdx].averageBestValueTrend;
           //Value V2 = rootMoves[pvIdx].averageBestValue;
           while (true)
           {
@@ -448,8 +448,8 @@ void Thread::search() {
           else
           {
               constexpr int SCALE = 1024;
-              constexpr int ALPHA = int(0.734226 * SCALE);
-              constexpr int BETA = int(0.473252 * SCALE);
+              constexpr int ALPHA = int(0.704025 * SCALE);
+              constexpr int BETA = int(0.526757 * SCALE);
               Value lastAverage = rootMoves[pvIdx].averageBestValue;
               rootMoves[pvIdx].averageBestValue = (ALPHA * bestValue + (SCALE - ALPHA) * (lastAverage + rootMoves[pvIdx].averageBestValueTrend)) / SCALE;
               rootMoves[pvIdx].averageBestValueTrend = (BETA * (rootMoves[pvIdx].averageBestValue - lastAverage) + (SCALE - BETA) * rootMoves[pvIdx].averageBestValueTrend) / SCALE;
