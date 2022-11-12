@@ -123,6 +123,7 @@ struct ThreadPool : public std::vector<Thread*> {
   double bderror;
   double ALPHA;
   double BETA;
+  std::vector<std::vector<double>> data;
 private:
   StateListPtr setupStates;
 

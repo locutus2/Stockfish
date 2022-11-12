@@ -163,43 +163,112 @@ namespace {
     vector<string> list = setup_bench(pos, args);
     num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
+    //cerr << "ALPHA: " << Threads.ALPHA << endl;
+
+    TimePoint elapsed = now();
+    Threads.data.clear();
+
+    for (const auto& cmd : list)
+    {
+        istringstream is(cmd);
+        is >> skipws >> token;
+
+        if (token == "go" || token == "eval")
+        {
+            //cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
+            if (token == "go")
+            {
+               go(pos, is, states);
+               Threads.main()->wait_for_search_finished();
+               nodes += Threads.nodes_searched();
+            }
+            else
+               trace_eval(pos);
+        }
+        else if (token == "setoption")  setoption(is);
+        else if (token == "position")   position(pos, is, states);
+        else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
+    }
+
     Threads.ALPHA = 1;
     Threads.BETA = 0;
+
+    constexpr double H = 0.001;
     double achange = 0;
     double bchange = 0;
     double A = 1e-10;
     double B = 1e-10;
     for(int it = 1;; ++it)
     {
-        //cerr << "ALPHA: " << Threads.ALPHA << endl;
-
-        TimePoint elapsed = now();
+        elapsed = now();
 
         Threads.nerror = 0;
         Threads.error = 0;
         Threads.aderror = 0;
         Threads.bderror = 0;
-        for (const auto& cmd : list)
-        {
-            istringstream is(cmd);
-            is >> skipws >> token;
+        double x = 0, ax = 0, bx = 0;
+        double t = 0, at = 0, bt = 0;
 
-            if (token == "go" || token == "eval")
+
+        for (const std::vector<double>& v : Threads.data)
+        {
+            for (int i = 0; i < int(v.size()); ++i)
             {
-                //cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
-                if (token == "go")
+                if (Threads.USE_TREND)
                 {
-                   go(pos, is, states);
-                   Threads.main()->wait_for_search_finished();
-                   nodes += Threads.nodes_searched();
+                    if (i == 0)
+                    {
+                        x = ax = bx = v[i];
+                    }
+                    else if (i == 1)
+                    {
+                        t = at = bt = v[i] - x;
+                    }
+                    else
+                    {
+                        if (i >= 3)
+                        {
+                            Threads.nerror++;
+                            Threads.error += std::pow(v[i] - x - t, 2);
+                            Threads.aderror += (std::pow(v[i] - ax - at, 2) - std::pow(v[i] - x - t, 2)) / H;
+                            Threads.bderror += (std::pow(v[i] - bx - bt, 2) - std::pow(v[i] - x - t, 2)) / H;
+                        }
+
+                        double xold = x;
+                        x = Threads.ALPHA * v[i] + (1 - Threads.ALPHA) * (x + t);
+                        t = Threads.BETA * (x - xold) + (1 - Threads.BETA) * t;
+
+                        double axold = ax;
+                        ax = (Threads.ALPHA + H) * v[i] + (1 - Threads.ALPHA - H) * (ax + at);
+                        at = Threads.BETA * (ax - axold) + (1 - Threads.BETA) * at;
+
+                        double bxold = bx;
+                        bx = Threads.ALPHA * v[i] + (1 - Threads.ALPHA) * (bx + bt);
+                        bt = (Threads.BETA + H) * (bx - bxold) + (1 - Threads.BETA - H) * bt;
+                    }
                 }
                 else
-                   trace_eval(pos);
+                {
+                    if (i == 0)
+                    {
+                        x = ax = v[i];
+                    }
+                    else
+                    {
+                        if (i >= 3)
+                        {
+                            Threads.nerror++;
+                            Threads.error += std::pow(v[i] - x, 2);
+                            Threads.aderror += (std::pow(v[i] - ax, 2) - std::pow(v[i] - x, 2)) / H;
+                        }
+
+                        x = Threads.ALPHA * v[i] + (1 - Threads.ALPHA) * x;
+                        ax = (Threads.ALPHA + H) * v[i] + (1 - Threads.ALPHA - H) * ax;
+                    }
+                }
             }
-            else if (token == "setoption")  setoption(is);
-            else if (token == "position")   position(pos, is, states);
-            else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
         }
+
         Threads.error /= Threads.nerror;
         Threads.aderror /= Threads.nerror;
         Threads.bderror /= Threads.nerror;
@@ -229,9 +298,9 @@ namespace {
 
 
         cerr << "\n======= iteration " << it << " ================="
-             << "\nTotal time (ms) : " << elapsed
-             << "\nNodes searched  : " << nodes
-             << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
+             << "\nTotal time (ms) : " << elapsed << endl;
+        //     << "\nNodes searched  : " << nodes
+         //    << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
         cerr << "Error: " << Threads.error << endl;
         cerr << "DError ALPHA: " << Threads.aderror << endl;
         cerr << "Change ALPHA: " << -achange << endl;
@@ -243,6 +312,7 @@ namespace {
             cerr << "Change BETA: " << -bchange << endl;
             cerr << "BETA: " << Threads.BETA << endl;
         }
+        cerr << std::flush;
     }
   }
 

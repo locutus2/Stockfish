@@ -312,8 +312,9 @@ void Thread::search() {
   optimism[us] = optimism[~us] = VALUE_ZERO;
 
   int searchAgainCounter = 0;
-  double x = 0, ax = 0, bx = 0;
-  double t = 0, at = 0, bt = 0;
+  //double x = 0, ax = 0, bx = 0;
+  //double t = 0, at = 0, bt = 0;
+  std::vector<double> x;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -429,7 +430,12 @@ void Thread::search() {
 
           if (pvIdx == 0)
           {
-              constexpr bool USE_TREND = true;
+              x.push_back(double(bestValue));
+          }
+
+          /*
+          if (pvIdx == 0)
+          {
               if (Threads.USE_TREND)
               {
                   if (rootDepth == 1)
@@ -497,7 +503,10 @@ void Thread::search() {
                   }
               }
           }
+          */
       }
+
+      Threads.data.push_back(x);
 
       if (!Threads.stop)
           completedDepth = rootDepth;
