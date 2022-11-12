@@ -168,6 +168,7 @@ namespace {
     double achange = 0;
     double bchange = 0;
     double A = 1e-10;
+    double B = 1e-10;
     for(int it = 1;; ++it)
     {
         //cerr << "ALPHA: " << Threads.ALPHA << endl;
@@ -204,12 +205,14 @@ namespace {
 
         if (it == 1)
         {
-            A = 0.001 / std::max(std::abs(Threads.aderror), std::abs(Threads.bderror));
+            //A = 0.001 / std::max(std::abs(Threads.aderror), std::abs(Threads.bderror));
+            A = 0.001 / std::abs(Threads.aderror);
+            B = 0.001 / std::abs(Threads.bderror);
         }
 
         constexpr double M = 0.8;
         achange = A * Threads.aderror + M * achange;
-        bchange = A * Threads.bderror + M * bchange;
+        bchange = B * Threads.bderror + M * bchange;
         //cerr << "update: " << A * Threads.derror / (13 * num) << endl;
         //cerr << "ALPHA2: " << Threads.ALPHA << endl;
         Threads.ALPHA -= achange;
