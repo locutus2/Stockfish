@@ -312,6 +312,8 @@ void Thread::search() {
   optimism[us] = optimism[~us] = VALUE_ZERO;
 
   int searchAgainCounter = 0;
+  Value averageBestValue = VALUE_ZERO;
+  Value averageBestValueTrend = VALUE_ZERO;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -350,7 +352,8 @@ void Thread::search() {
           // Reset aspiration window starting size
           if (rootDepth >= 4)
           {
-              Value prev = rootMoves[pvIdx].averageScore;
+              Value prev = pvIdx == 0 ? averageBestValue + averageBestValueTrend
+                                      : rootMoves[pvIdx].averageScore;
               delta = Value(10) + int(prev) * prev / 15620;
               alpha = std::max(prev - delta,-VALUE_INFINITE);
               beta  = std::min(prev + delta, VALUE_INFINITE);
@@ -424,6 +427,22 @@ void Thread::search() {
           if (    mainThread
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
+
+          if (pvIdx == 0)
+          {
+              if (rootDepth == 1)
+                  averageBestValue = bestValue;
+
+              else if (rootDepth == 2)
+                  averageBestValueTrend = bestValue - averageBestValue;
+
+              else
+              {
+                  Value lastAverage = averageBestValue;
+                  averageBestValue = (752 * bestValue + 272 * (lastAverage + averageBestValueTrend)) / 1024;
+                  averageBestValueTrend = (485 * (averageBestValue - lastAverage) + 539 * averageBestValueTrend) / 1024;
+              }
+          }
       }
 
       if (!Threads.stop)
