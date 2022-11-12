@@ -365,6 +365,11 @@ void Thread::search() {
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
           int failedHighCnt = 0;
+          bool first = true;
+          Value V = rootMoves[pvIdx].averageScore;
+          //Value V2 = rootMoves[pvIdx].averageBestValue + rootMoves[pvIdx].averageBestValueTrend;
+          Value V2 = rootMoves[pvIdx].averageScore + rootMoves[pvIdx].averageBestValueTrend;
+          //Value V2 = rootMoves[pvIdx].averageBestValue;
           while (true)
           {
               // Adjust the effective depth searched, but ensuring at least one effective increment for every
@@ -396,6 +401,15 @@ void Thread::search() {
 
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
+              if (first && rootDepth >= 4)
+              {
+                  //dbg_hit_on(bestValue > alpha && bestValue < beta);
+                  //dbg_hit_on(V > alpha && V < beta);
+                  //dbg_mean_of(100*(V2 > alpha && V2 < beta));
+                  //std::cerr << rootDepth << " " << bestValue << " " << V << " " << V2 << std::endl;
+                  dbg_hit_on(std::abs(V2 - bestValue) <= std::abs(V - bestValue));
+              }
+
               if (bestValue <= alpha)
               {
                   beta = (alpha + beta) / 2;
@@ -414,7 +428,7 @@ void Thread::search() {
                   break;
 
               delta += delta / 4 + 2;
-
+              first = false;
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
           }
 
@@ -424,6 +438,22 @@ void Thread::search() {
           if (    mainThread
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
+
+          if (rootDepth == 1)
+              rootMoves[pvIdx].averageBestValue = bestValue;
+
+          else if (rootDepth == 2)
+              rootMoves[pvIdx].averageBestValueTrend = bestValue - rootMoves[pvIdx].averageBestValue;
+
+          else
+          {
+              constexpr int SCALE = 1024;
+              constexpr int ALPHA = int(0.734226 * SCALE);
+              constexpr int BETA = int(0.473252 * SCALE);
+              Value lastAverage = rootMoves[pvIdx].averageBestValue;
+              rootMoves[pvIdx].averageBestValue = (ALPHA * bestValue + (SCALE - ALPHA) * (lastAverage + rootMoves[pvIdx].averageBestValueTrend)) / SCALE;
+              rootMoves[pvIdx].averageBestValueTrend = (BETA * (rootMoves[pvIdx].averageBestValue - lastAverage) + (SCALE - BETA) * rootMoves[pvIdx].averageBestValueTrend) / SCALE;
+          }
       }
 
       if (!Threads.stop)
