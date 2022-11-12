@@ -312,8 +312,8 @@ void Thread::search() {
   optimism[us] = optimism[~us] = VALUE_ZERO;
 
   int searchAgainCounter = 0;
-  Value averageBestValue = VALUE_ZERO;
-  Value averageBestValueTrend = VALUE_ZERO;
+  std::vector<int> averageBestValue(multiPV, 0);
+  std::vector<int> averageBestValueTrend(multiPV, 0);
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -352,8 +352,7 @@ void Thread::search() {
           // Reset aspiration window starting size
           if (rootDepth >= 4)
           {
-              Value prev = pvIdx == 0 ? averageBestValue + averageBestValueTrend
-                                      : rootMoves[pvIdx].averageScore;
+              Value prev = Value(averageBestValue[pvIdx] + averageBestValueTrend[pvIdx]);
               delta = Value(10) + int(prev) * prev / 15620;
               alpha = std::max(prev - delta,-VALUE_INFINITE);
               beta  = std::min(prev + delta, VALUE_INFINITE);
@@ -428,20 +427,17 @@ void Thread::search() {
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
 
-          if (pvIdx == 0)
+          if (rootDepth == 1)
+              averageBestValue[pvIdx] = bestValue;
+
+          else if (rootDepth == 2)
+              averageBestValueTrend[pvIdx] = bestValue - averageBestValue[pvIdx];
+
+          else
           {
-              if (rootDepth == 1)
-                  averageBestValue = bestValue;
-
-              else if (rootDepth == 2)
-                  averageBestValueTrend = bestValue - averageBestValue;
-
-              else
-              {
-                  Value lastAverage = averageBestValue;
-                  averageBestValue = (752 * bestValue + 272 * (lastAverage + averageBestValueTrend)) / 1024;
-                  averageBestValueTrend = (485 * (averageBestValue - lastAverage) + 539 * averageBestValueTrend) / 1024;
-              }
+              int lastAverage = averageBestValue[pvIdx];
+              averageBestValue[pvIdx] = (752 * bestValue + 272 * (lastAverage + averageBestValueTrend[pvIdx])) / 1024;
+              averageBestValueTrend[pvIdx] = (485 * (averageBestValue[pvIdx] - lastAverage) + 539 * averageBestValueTrend[pvIdx]) / 1024;
           }
       }
 
