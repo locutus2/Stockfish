@@ -312,6 +312,7 @@ void Thread::search() {
   optimism[us] = optimism[~us] = VALUE_ZERO;
 
   int searchAgainCounter = 0;
+  double x = 0, y = 0;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -424,6 +425,27 @@ void Thread::search() {
           if (    mainThread
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
+
+          if (pvIdx == 0)
+          {
+              if (rootDepth == 1)
+              {
+                  x = bestValue;
+                  y = bestValue;
+              }
+              else
+              {
+                  constexpr double H = 0.001;
+                  Threads.error += std::pow(double(bestValue) - x, 2);
+                  //derror += (std::pow(double(bestValue) - y, 2) - std::pow(double(bestValue) - x, 2)) / H;
+                  Threads.derror += (std::pow(double(bestValue) - y, 2) - std::pow(double(bestValue) - x, 2)) / H;
+
+                  //x += std::max(ALPHA, 1.0 / rootDepth) * (double(bestValue) - x);
+                  //y += std::max(ALPHA + H, 1.0 / rootDepth) * (double(bestValue) - y);
+                  x += Threads.ALPHA * (double(bestValue) - x);
+                  y += (Threads.ALPHA + H) * (double(bestValue) - y);
+              }
+          }
       }
 
       if (!Threads.stop)

@@ -116,6 +116,9 @@ struct ThreadPool : public std::vector<Thread*> {
 
   std::atomic_bool stop, increaseDepth;
 
+  double error;
+  double derror;
+  double ALPHA;
 private:
   StateListPtr setupStates;
 

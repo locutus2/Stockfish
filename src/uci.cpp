@@ -163,39 +163,68 @@ namespace {
     vector<string> list = setup_bench(pos, args);
     num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
-    TimePoint elapsed = now();
-
-    for (const auto& cmd : list)
+    Threads.ALPHA = 1;
+    double change = 0;
+    double A = 1e-10;
+    for(int it = 1;; ++it)
     {
-        istringstream is(cmd);
-        is >> skipws >> token;
+        //cerr << "ALPHA: " << Threads.ALPHA << endl;
 
-        if (token == "go" || token == "eval")
+        TimePoint elapsed = now();
+
+        Threads.error = 0;
+        Threads.derror = 0;
+        for (const auto& cmd : list)
         {
-            cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
-            if (token == "go")
+            istringstream is(cmd);
+            is >> skipws >> token;
+
+            if (token == "go" || token == "eval")
             {
-               go(pos, is, states);
-               Threads.main()->wait_for_search_finished();
-               nodes += Threads.nodes_searched();
+                //cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
+                if (token == "go")
+                {
+                   go(pos, is, states);
+                   Threads.main()->wait_for_search_finished();
+                   nodes += Threads.nodes_searched();
+                }
+                else
+                   trace_eval(pos);
             }
-            else
-               trace_eval(pos);
+            else if (token == "setoption")  setoption(is);
+            else if (token == "position")   position(pos, is, states);
+            else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
         }
-        else if (token == "setoption")  setoption(is);
-        else if (token == "position")   position(pos, is, states);
-        else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
+        Threads.error /= (13 * num);
+        Threads.derror /= (13 * num);
+
+        if (it == 1)
+        {
+            A = 0.001 / std::abs(Threads.derror);
+        }
+
+        constexpr double M = 0.8;
+        change = A * Threads.derror + M * change;
+        //cerr << "update: " << A * Threads.derror / (13 * num) << endl;
+        //cerr << "ALPHA2: " << Threads.ALPHA << endl;
+        Threads.ALPHA -= change;
+        //cerr << "ALPHA3: " << Threads.ALPHA << endl;
+
+        elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
+
+        dbg_print(); // Just before exiting
+        dbg_printc(); // Just before exiting
+
+
+        cerr << "\n======= iteration " << it << " ================="
+             << "\nTotal time (ms) : " << elapsed
+             << "\nNodes searched  : " << nodes
+             << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
+        cerr << "Error: " << Threads.error << endl;
+        cerr << "DError: " << Threads.derror << endl;
+        cerr << "Change: " << change << endl;
+        cerr << "ALPHA: " << Threads.ALPHA << endl;
     }
-
-    elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
-
-    dbg_print(); // Just before exiting
-    dbg_printc(); // Just before exiting
-
-    cerr << "\n==========================="
-         << "\nTotal time (ms) : " << elapsed
-         << "\nNodes searched  : " << nodes
-         << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
   }
 
   // The win rate model returns the probability of winning (in per mille units) given an
