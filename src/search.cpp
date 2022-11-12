@@ -430,7 +430,7 @@ void Thread::search() {
           if (pvIdx == 0)
           {
               constexpr bool USE_TREND = true;
-              if (USE_TREND)
+              if (Threads.USE_TREND)
               {
                   if (rootDepth == 1)
                   {

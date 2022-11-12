@@ -208,7 +208,8 @@ namespace {
         {
             //A = 0.001 / std::max(std::abs(Threads.aderror), std::abs(Threads.bderror));
             A = 0.001 / std::abs(Threads.aderror);
-            B = 0.001 / std::abs(Threads.bderror);
+            if(Threads.USE_TREND)
+                B = 0.001 / std::abs(Threads.bderror);
         }
 
         constexpr double M = 0.8;
@@ -219,6 +220,7 @@ namespace {
         Threads.ALPHA -= achange;
         Threads.BETA -= bchange;
         //cerr << "ALPHA3: " << Threads.ALPHA << endl;
+
 
         elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
 
@@ -232,11 +234,15 @@ namespace {
              << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
         cerr << "Error: " << Threads.error << endl;
         cerr << "DError ALPHA: " << Threads.aderror << endl;
-        cerr << "Change ALPHA: " << achange << endl;
+        cerr << "Change ALPHA: " << -achange << endl;
         cerr << "ALPHA: " << Threads.ALPHA << endl;
-        cerr << "DError BETA: " << Threads.bderror << endl;
-        cerr << "Change BETA: " << bchange << endl;
-        cerr << "BETA: " << Threads.BETA << endl;
+
+        if (Threads.USE_TREND)
+        {
+            cerr << "DError BETA: " << Threads.bderror << endl;
+            cerr << "Change BETA: " << -bchange << endl;
+            cerr << "BETA: " << Threads.BETA << endl;
+        }
     }
   }
 
