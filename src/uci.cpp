@@ -229,9 +229,12 @@ namespace {
                         if (i >= 3)
                         {
                             Threads.nerror++;
-                            Threads.error += std::pow(v[i] - x - t, 2);
-                            Threads.aderror += (std::pow(v[i] - ax - at, 2) - std::pow(v[i] - x - t, 2)) / H;
-                            Threads.bderror += (std::pow(v[i] - bx - bt, 2) - std::pow(v[i] - x - t, 2)) / H;
+                            Threads.error += std::abs(v[i] - x - t);
+                            Threads.aderror += (std::abs(v[i] - ax - at) - std::abs(v[i] - x - t)) / H;
+                            Threads.bderror += (std::abs(v[i] - bx - bt) - std::abs(v[i] - x - t)) / H;
+                            //Threads.error += std::pow(v[i] - x - t, 2);
+                            //Threads.aderror += (std::pow(v[i] - ax - at, 2) - std::pow(v[i] - x - t, 2)) / H;
+                            //Threads.bderror += (std::pow(v[i] - bx - bt, 2) - std::pow(v[i] - x - t, 2)) / H;
                         }
 
                         double xold = x;
@@ -258,8 +261,10 @@ namespace {
                         if (i >= 3)
                         {
                             Threads.nerror++;
-                            Threads.error += std::pow(v[i] - x, 2);
-                            Threads.aderror += (std::pow(v[i] - ax, 2) - std::pow(v[i] - x, 2)) / H;
+                            Threads.error += std::abs(v[i] - x);
+                            Threads.aderror += (std::abs(v[i] - ax) - std::abs(v[i] - x)) / H;
+                            //Threads.error += std::pow(v[i] - x, 2);
+                            //Threads.aderror += (std::pow(v[i] - ax, 2) - std::pow(v[i] - x, 2)) / H;
                         }
 
                         x = Threads.ALPHA * v[i] + (1 - Threads.ALPHA) * x;
