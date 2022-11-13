@@ -550,7 +550,7 @@ namespace {
     TTEntry* tte;
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
-    Depth extension, newDepth;
+    Depth extension, newDepth, originalDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, improving, priorCapture, singularQuietLMR;
     bool capture, moveCountPruning, ttCapture;
@@ -565,6 +565,7 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    originalDepth      = depth;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -931,7 +932,6 @@ moves_loop: // When in check, search starts here
                                       countermove,
                                       ss->killers);
 
-    Depth originalDepth = depth;
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
 
