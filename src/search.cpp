@@ -312,8 +312,8 @@ void Thread::search() {
   optimism[us] = optimism[~us] = VALUE_ZERO;
 
   int searchAgainCounter = 0;
-  std::vector<int> averageBestValue(multiPV, 0);
-  std::vector<int> averageBestValueTrend(multiPV, 0);
+  std::vector<Value> averageBestValue(multiPV, VALUE_ZERO);
+  std::vector<Value> averageBestValueTrend(multiPV, VALUE_ZERO);
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -352,9 +352,7 @@ void Thread::search() {
           // Reset aspiration window starting size
           if (rootDepth >= 4)
           {
-              Value prev = (  rootMoves[pvIdx].averageScore
-                            + averageBestValue[pvIdx]
-                            + averageBestValueTrend[pvIdx]) / 2;
+              Value prev = averageBestValue[pvIdx] + averageBestValueTrend[pvIdx];
               delta = Value(10) + int(prev) * prev / 15620;
               alpha = std::max(prev - delta,-VALUE_INFINITE);
               beta  = std::min(prev + delta, VALUE_INFINITE);
@@ -437,9 +435,9 @@ void Thread::search() {
 
           else
           {
-              int lastAverage = averageBestValue[pvIdx];
-              averageBestValue[pvIdx] = (752 * bestValue + 272 * (lastAverage + averageBestValueTrend[pvIdx])) / 1024;
-              averageBestValueTrend[pvIdx] = (485 * (averageBestValue[pvIdx] - lastAverage) + 539 * averageBestValueTrend[pvIdx]) / 1024;
+              Value lastAverage = averageBestValue[pvIdx];
+              averageBestValue[pvIdx] = (964 * bestValue + 60 * (lastAverage + averageBestValueTrend[pvIdx])) / 1024;
+              averageBestValueTrend[pvIdx] = (249 * (averageBestValue[pvIdx] - lastAverage) + 775 * averageBestValueTrend[pvIdx]) / 1024;
           }
       }
 
