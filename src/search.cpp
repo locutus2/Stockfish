@@ -550,7 +550,7 @@ namespace {
     TTEntry* tte;
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
-    Depth extension, newDepth, originalDepth;
+    Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, improving, priorCapture, singularQuietLMR;
     bool capture, moveCountPruning, ttCapture;
@@ -565,7 +565,6 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
-    originalDepth      = depth;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -932,6 +931,7 @@ moves_loop: // When in check, search starts here
                                       countermove,
                                       ss->killers);
 
+    Depth originalDepth = depth;
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
 
@@ -1213,7 +1213,7 @@ moves_loop: // When in check, search starts here
           (ss+1)->pv[0] = MOVE_NONE;
 
           value = -search<PV>(pos, ss+1, -beta, -alpha,
-                              std::min(maxNextDepth, newDepth), false);
+                              std::min(maxNextDepth, std::max(newDepth, originalDepth + extension - 1)), false);
       }
 
       // Step 19. Undo move
@@ -1359,7 +1359,7 @@ moves_loop: // When in check, search starts here
         tte->save(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
-                  originalDepth, bestMove, ss->staticEval);
+                  depth, bestMove, ss->staticEval);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
