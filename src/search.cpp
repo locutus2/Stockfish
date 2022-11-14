@@ -119,7 +119,7 @@ namespace {
   void update_pv(Move* pv, Move move, const Move* childPv);
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus);
-  void update_all_stats(const Position& pos, Stack* ss, Move bestMove, Move bestCaptureMove, Value bestValue, Value beta, Square prevSq,
+  void update_all_stats(const Position& pos, Stack* ss, Move bestMove, Move secondBestMove, Value bestValue, Value beta, Square prevSq,
                         Move* quietsSearched, int quietCount, Move* capturesSearched, int captureCount, Depth depth);
 
   // perft() is our utility to verify move generation. All the leaf nodes up
@@ -549,7 +549,7 @@ namespace {
 
     TTEntry* tte;
     Key posKey;
-    Move ttMove, move, excludedMove, bestMove, bestCaptureMove;
+    Move ttMove, move, excludedMove, bestMove, secondBestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, improving, priorCapture, singularQuietLMR;
@@ -600,7 +600,7 @@ namespace {
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     (ss+1)->ttPv         = false;
-    (ss+1)->excludedMove = bestMove = bestCaptureMove = MOVE_NONE;
+    (ss+1)->excludedMove = bestMove = secondBestMove = MOVE_NONE;
     (ss+2)->killers[0]   = (ss+2)->killers[1] = MOVE_NONE;
     (ss+2)->cutoffCnt    = 0;
     ss->doubleExtensions = (ss-1)->doubleExtensions;
@@ -1266,10 +1266,8 @@ moves_loop: // When in check, search starts here
 
           if (value > alpha)
           {
+              secondBestMove = bestMove;
               bestMove = move;
-
-              if (capture)
-                  bestCaptureMove = move;
 
               if (PvNode && !rootNode) // Update pv even in fail-high case
                   update_pv(ss->pv, move, (ss+1)->pv);
@@ -1332,7 +1330,7 @@ moves_loop: // When in check, search starts here
 
     // If there is a move which produces search value greater than alpha we update stats of searched moves
     else if (bestMove)
-        update_all_stats(pos, ss, bestMove, bestCaptureMove, bestValue, beta, prevSq,
+        update_all_stats(pos, ss, bestMove, secondBestMove, bestValue, beta, prevSq,
                          quietsSearched, quietCount, capturesSearched, captureCount, depth);
 
     // Bonus for prior countermove that caused the fail low
@@ -1662,7 +1660,7 @@ moves_loop: // When in check, search starts here
 
   // update_all_stats() updates stats at the end of search() when a bestMove is found
 
-  void update_all_stats(const Position& pos, Stack* ss, Move bestMove, Move bestCaptureMove, Value bestValue, Value beta, Square prevSq,
+  void update_all_stats(const Position& pos, Stack* ss, Move bestMove, Move secondBestMove, Value bestValue, Value beta, Square prevSq,
                         Move* quietsSearched, int quietCount, Move* capturesSearched, int captureCount, Depth depth) {
 
     Color us = pos.side_to_move();
@@ -1686,14 +1684,18 @@ moves_loop: // When in check, search starts here
             thisThread->mainHistory[us][from_to(quietsSearched[i])] << -bonus2;
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
-
-        // Increase stats for a good capture move
-        if (bestCaptureMove)
-            captureHistory[pos.moved_piece(bestCaptureMove)][to_sq(bestCaptureMove)][type_of(pos.piece_on(to_sq(bestCaptureMove)))] << stat_bonus(depth);
     }
     else
         // Increase stats for the best move in case it was a capture move
         captureHistory[moved_piece][to_sq(bestMove)][captured] << bonus1;
+
+    if (secondBestMove)
+    {
+        if (pos.capture(secondBestMove))
+            captureHistory[pos.moved_piece(secondBestMove)][to_sq(secondBestMove)][type_of(pos.piece_on(to_sq(secondBestMove)))] << stat_bonus(depth);
+        else
+            update_quiet_stats(pos, ss, secondBestMove, stat_bonus(depth));
+    }
 
     // Extra penalty for a quiet early move that was not a TT move or
     // main killer move in previous ply when it gets refuted.
