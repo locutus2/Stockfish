@@ -550,7 +550,7 @@ namespace {
     TTEntry* tte;
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
-    Depth extension, newDepth, originalDepth;
+    Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, improving, priorCapture, singularQuietLMR;
     bool capture, moveCountPruning, ttCapture;
@@ -565,7 +565,6 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
-    originalDepth      = depth;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -932,6 +931,7 @@ moves_loop: // When in check, search starts here
                                       countermove,
                                       ss->killers);
 
+    Depth originalDepth = depth;
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
 
@@ -1331,7 +1331,7 @@ moves_loop: // When in check, search starts here
     // If there is a move which produces search value greater than alpha we update stats of searched moves
     else if (bestMove)
         update_all_stats(pos, ss, bestMove, bestValue, beta, prevSq,
-                         quietsSearched, quietCount, capturesSearched, captureCount, depth);
+                         quietsSearched, quietCount, capturesSearched, captureCount, originalDepth);
 
     // Bonus for prior countermove that caused the fail low
     else if (   (depth >= 5 || PvNode)
@@ -1341,9 +1341,9 @@ moves_loop: // When in check, search starts here
         //or fail low was really bad
         bool extraBonus =    PvNode
                           || cutNode
-                          || bestValue < alpha - 62 * depth;
+                          || bestValue < alpha - 62 * originalDepth;
 
-        update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, stat_bonus(depth) * (1 + extraBonus));
+        update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, stat_bonus(originalDepth) * (1 + extraBonus));
     }
 
     if (PvNode)
@@ -1359,7 +1359,7 @@ moves_loop: // When in check, search starts here
         tte->save(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
-                  originalDepth, bestMove, ss->staticEval);
+                  depth, bestMove, ss->staticEval);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
