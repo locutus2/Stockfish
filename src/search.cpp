@@ -1672,10 +1672,15 @@ moves_loop: // When in check, search starts here
 
     if (secondBestMove)
     {
+        int bonus = stat_bonus(depth);
         if (pos.capture(secondBestMove))
-            captureHistory[pos.moved_piece(secondBestMove)][to_sq(secondBestMove)][type_of(pos.piece_on(to_sq(secondBestMove)))] << stat_bonus(depth);
+            captureHistory[pos.moved_piece(secondBestMove)][to_sq(secondBestMove)][type_of(pos.piece_on(to_sq(secondBestMove)))] << bonus;
+
         else
-            update_quiet_stats(pos, ss, secondBestMove, stat_bonus(depth));
+        {
+            thisThread->mainHistory[us][from_to(secondBestMove)] << bonus;
+            update_continuation_histories(ss, pos.moved_piece(secondBestMove), to_sq(secondBestMove), bonus);
+        }
     }
 
     if (!pos.capture(bestMove))
