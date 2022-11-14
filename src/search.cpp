@@ -931,6 +931,7 @@ moves_loop: // When in check, search starts here
                                       countermove,
                                       ss->killers);
 
+    Depth nonReducedDepth = depth;
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
 
@@ -1279,7 +1280,8 @@ moves_loop: // When in check, search starts here
                   if (   depth > 1
                       && depth < 6
                       && beta  <  VALUE_KNOWN_WIN
-                      && alpha > -VALUE_KNOWN_WIN)
+                      && alpha > -VALUE_KNOWN_WIN
+                      && depth >= nonReducedDepth)
                      depth -= 1;
 
                   assert(depth > 0);
