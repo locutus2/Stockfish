@@ -196,9 +196,9 @@ namespace {
                                       : ~pos.pieces(   ); // QUIETS || QUIET_CHECKS
 
         moveList = generate_pawn_moves<Us, Type>(pos, moveList, target);
+        moveList = generate_moves<Us,   ROOK, Checks>(pos, moveList, target);
         moveList = generate_moves<Us, KNIGHT, Checks>(pos, moveList, target);
         moveList = generate_moves<Us, BISHOP, Checks>(pos, moveList, target);
-        moveList = generate_moves<Us,   ROOK, Checks>(pos, moveList, target);
         moveList = generate_moves<Us,  QUEEN, Checks>(pos, moveList, target);
     }
 
