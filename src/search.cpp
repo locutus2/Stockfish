@@ -1284,15 +1284,15 @@ moves_loop: // When in check, search starts here
               {
                   alpha = value;
 
+                  update_all_stats(pos, ss, bestMove, bestValue, beta, prevSq,
+                                   quietsSearched, quietCount, capturesSearched, captureCount, depth);
+
                   // Reduce other moves if we have found at least one score improvement
                   if (   depth > 1
                       && depth < 6
                       && beta  <  VALUE_KNOWN_WIN
                       && alpha > -VALUE_KNOWN_WIN)
                      depth -= 1;
-
-                  update_all_stats(pos, ss, bestMove, bestValue, beta, prevSq,
-                                   nullptr, 0, nullptr, 0, depth);
 
                   assert(depth > 0);
               }
