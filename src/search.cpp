@@ -1167,11 +1167,9 @@ moves_loop: // When in check, search starts here
 
           if (    ss->ply >= 8
               && !(ss-8)->ttPv
-              && !capture
-              && !givesCheck
-              &&  priorCapture
-              && !improving)
-              r++;
+              &&  improving
+              &&  givesCheck)
+              r--;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                          + (*contHist[0])[movedPiece][to_sq(move)]
