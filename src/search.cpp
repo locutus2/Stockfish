@@ -1167,7 +1167,6 @@ moves_loop: // When in check, search starts here
 
           if (    ss->ply >= 8
               && !(ss-8)->ttPv
-              &&  improving
               &&  givesCheck)
               r--;
 
