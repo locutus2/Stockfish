@@ -1165,8 +1165,8 @@ moves_loop: // When in check, search starts here
           if ((ss+1)->cutoffCnt > 3 && !PvNode)
               r++;
 
-          if (    ss->ply >= thisThread->rootDepth / 2
-              && !(ss - thisThread->rootDepth / 2)->ttPv
+          if (    ss->ply >= 4 + thisThread->rootDepth / 4
+              && !(ss - 4 - thisThread->rootDepth / 4)->ttPv
               &&  givesCheck)
               r--;
 
