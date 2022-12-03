@@ -418,6 +418,7 @@ void UCI::loop(int argc, char* argv[]) {
       // These commands must not be used during a search!
       else if (token == "flip")     pos.flip();
       else if (token == "bench")    bench(pos, is, states);
+      else if (token == "learn")    learn(pos, is, states);
       else if (token == "d")        sync_cout << pos << sync_endl;
       else if (token == "eval")     trace_eval(pos);
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
