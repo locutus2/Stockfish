@@ -36,6 +36,12 @@ using std::string;
 
 namespace Stockfish {
 
+double PARAMS[N_PARAMS] = { 
+    1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 
+};
+
 namespace Zobrist {
 
   Key psq[PIECE_NB][SQUARE_NB];

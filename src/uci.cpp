@@ -165,6 +165,7 @@ namespace {
 
     TimePoint elapsed = now();
 
+    std::vector<Move> bestMove;
     for (const auto& cmd : list)
     {
         istringstream is(cmd);
@@ -172,12 +173,13 @@ namespace {
 
         if (token == "go" || token == "eval")
         {
-            cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
+            //cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
             if (token == "go")
             {
                go(pos, is, states);
                Threads.main()->wait_for_search_finished();
                nodes += Threads.nodes_searched();
+               bestMove.push_back(Threads.main()->rootMoves[0].pv[0]);
             }
             else
                trace_eval(pos);
@@ -186,6 +188,107 @@ namespace {
         else if (token == "position")   position(pos, is, states);
         else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
     }
+
+    auto rng = []()->double { return std::rand()/(double)RAND_MAX; };
+
+    constexpr double A = 1;
+    constexpr double L = 10000;
+    constexpr double ALPHA = 0.001;
+    constexpr double T0 = 100000000;
+    constexpr double BETA = 0.98;
+    constexpr int SHIFT = 128;
+    constexpr int KMAX = 1000;
+    double score0 = nodes;
+    double score = score0;
+    double POLD[N_PARAMS];
+    double PBEST[N_PARAMS];
+    double scorebest = score0;
+    std::srand(123456);
+    for(int i = 0; i < N_PARAMS; ++i)
+            PBEST[i] = PARAMS[i];
+
+    for(int it = 0; it < KMAX; it++)
+    {
+        for(int i = 0; i < N_PARAMS; ++i)
+        {
+            POLD[i] = PARAMS[i];
+            PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
+        }
+
+        nodes = 0;
+        std::vector<Move> bestMove2;
+        for (const auto& cmd : list)
+        {
+            istringstream is(cmd);
+            is >> skipws >> token;
+
+            if (token == "go" || token == "eval")
+            {
+                //cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
+                if (token == "go")
+                {
+                   go(pos, is, states);
+                   Threads.main()->wait_for_search_finished();
+                   nodes += Threads.nodes_searched();
+                   bestMove2.push_back(Threads.main()->rootMoves[0].pv[0]);
+                }
+                else
+                   trace_eval(pos);
+            }
+            else if (token == "setoption")  setoption(is);
+            else if (token == "position")   position(pos, is, states);
+            else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
+        }
+
+        double T = T0 * std::pow(BETA, it); 
+        double new_score = nodes;
+        for(int i = 0; i < (int)bestMove.size(); ++i)
+        {
+            if (bestMove[i] != bestMove2[i])
+            {
+                new_score += L;
+            }
+        }
+
+
+        double e = std::exp(-(new_score - score)/T);
+        if (e >= rng())
+        {
+            score = new_score;
+
+            if (score > scorebest)
+            {
+                scorebest = score;
+                for(int i = 0; i < N_PARAMS; ++i)
+                    PBEST[i] = PARAMS[i];
+                std::cerr << "=> BEST:";
+                for(int i = 0; i < N_PARAMS; ++i)
+                {
+                    std::cerr << " " << PARAMS[i];
+                }
+                std::cerr;
+            }
+
+            for(int i = 0; i < N_PARAMS; ++i)
+            {
+                PARAMS[i] = POLD[i];
+            }
+        }
+        else
+        {
+            for(int i = 0; i < N_PARAMS; ++i)
+            {
+                PARAMS[i] = POLD[i];
+            }
+        }
+        std::cerr << "it: " << it+1 << " s: " << score << " T: " << T << " sr: " << score/score0 << std::endl;
+    }
+                std::cerr << "=> FINAL BEST[" << scorebest << "]:";
+                for(int i = 0; i < N_PARAMS; ++i)
+                {
+                    std::cerr << " " << PARAMS[i];
+                }
+                std::cerr;
 
     elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
 
