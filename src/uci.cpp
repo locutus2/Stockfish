@@ -266,7 +266,7 @@ namespace {
                 {
                     std::cerr << " " << PARAMS[i];
                 }
-                std::cerr;
+                std::cerr << std::endl;
             }
 
             for(int i = 0; i < N_PARAMS; ++i)
@@ -288,7 +288,7 @@ namespace {
                 {
                     std::cerr << " " << PARAMS[i];
                 }
-                std::cerr;
+                std::cerr << std::endl;
 
     elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
 
