@@ -256,7 +256,7 @@ namespace {
         {
             score = new_score;
 
-            if (score > scorebest)
+            if (score < scorebest)
             {
                 scorebest = score;
                 for(int i = 0; i < N_PARAMS; ++i)
