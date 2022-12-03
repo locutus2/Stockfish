@@ -305,17 +305,15 @@ namespace {
                 for(int i = 0; i < N_PARAMS; ++i)
                     PBEST[i] = PARAMS[i];
                 std::cerr << "=> BEST:";
-                for(int i = 0; i < N_PARAMS; ++i)
-                {
-                    std::cerr << " " << PARAMS[i];
-                }
-                std::cerr << std::endl;
             }
+            else
+                std::cerr << "=> NEXT:";
 
             for(int i = 0; i < N_PARAMS; ++i)
             {
-                PARAMS[i] = POLD[i];
+                    std::cerr << " " << PARAMS[i];
             }
+            std::cerr << std::endl;
         }
         else
         {
