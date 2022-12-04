@@ -328,7 +328,7 @@ namespace {
                 std::cerr << "=> FINAL BEST[" << scorebest << "]:";
                 for(int i = 0; i < N_PARAMS; ++i)
                 {
-                    std::cerr << " " << PARAMS[i];
+                    std::cerr << " " << P_BEST[i];
                 }
                 std::cerr << std::endl;
 
