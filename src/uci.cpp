@@ -235,7 +235,8 @@ namespace {
     auto rng = []()->double { return std::rand()/(double)RAND_MAX; };
 
     constexpr double A = 1;
-    constexpr double L = 10000;
+    //constexpr double L = 10000;
+    constexpr double L = 0;
     constexpr double ALPHA = 0.001;
     constexpr double T0 = 100000000;
     constexpr double BETA = 0.98;
