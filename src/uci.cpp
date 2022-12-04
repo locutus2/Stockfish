@@ -237,9 +237,9 @@ namespace {
     //constexpr double L = 10000;
     constexpr double L = 0;
     constexpr double ALPHA = 0.001;
-    constexpr double T0 = 100000000;
+    constexpr double T0 = 2*100000000;
     constexpr double BETA = 0.98;
-    constexpr int SHIFT = 128/2;
+    constexpr int SHIFT = 128;
     constexpr int KMAX = 1000;
     double score0 = nodes;
     double score = score0;
