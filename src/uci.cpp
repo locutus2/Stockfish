@@ -287,7 +287,7 @@ namespace {
             else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
         }
 
-        double T = POLY_TEMP ? T0 * std::pow(it / (double)KMAX, BETA)
+        double T = POLY_TEMP ? T0 * std::pow(1 - it / (double)KMAX, BETA)
                              : T0 * std::pow(BETA, it); 
         double new_score = nodes;
         for(int i = 0; i < (int)bestMove.size(); ++i)
