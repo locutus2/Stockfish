@@ -234,12 +234,15 @@ namespace {
 
     auto rng = []()->double { return std::rand()/(double)RAND_MAX; };
 
+    constexpr bool POLY_TEMP = true;
+
     //constexpr double L = 10000;
     constexpr double L = 0;
-    constexpr double ALPHA = 0.001;
+    //constexpr double ALPHA = 0.001;
+    constexpr double ALPHA = 0.5;
     constexpr double T0 = 100000000;
-    constexpr double BETA = 0.98;
-    constexpr int SHIFT = 128 * 4;
+    constexpr double BETA = POLY_TEMP ? 10 : 0.98;
+    //constexpr int SHIFT = 128 * 4;
     constexpr int KMAX = 1000;
     double score0 = nodes;
     double score = score0;
@@ -255,7 +258,8 @@ namespace {
         for(int i = 0; i < N_PARAMS; ++i)
         {
             POLD[i] = PARAMS[i];
-            PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
+            PARAMS[i] += ALPHA * (rng() - 0.5);
+            //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
         }
 
         nodes = 0;
@@ -283,7 +287,8 @@ namespace {
             else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
         }
 
-        double T = T0 * std::pow(BETA, it); 
+        double T = POLY_TEMP ? T0 * std::pow(it / (double)KMAX, BETA)
+                             : T0 * std::pow(BETA, it); 
         double new_score = nodes;
         for(int i = 0; i < (int)bestMove.size(); ++i)
         {
