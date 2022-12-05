@@ -234,7 +234,7 @@ namespace {
 
     auto rng = []()->double { return std::rand()/(double)RAND_MAX; };
 
-    constexpr bool POLY_TEMP = true;
+    constexpr bool POLY_TEMP = false;
 
     //constexpr double L = 10000;
     constexpr double L = 0;
