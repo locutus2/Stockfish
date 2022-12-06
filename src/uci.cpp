@@ -232,14 +232,16 @@ namespace {
         else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
     }
 
-    auto rng = []()->double { return std::rand()/(double)RAND_MAX; };
+    auto rngU = [](double a = 0, double b = 1)->double { return a + (b - a) * std::rand() / (double)RAND_MAX; };
 
-    constexpr bool POLY_TEMP = true;
+    constexpr bool POLY_TEMP = false;
 
     //constexpr double L = 10000;
     constexpr double L = 0;
     //constexpr double ALPHA = 0.001;
-    constexpr double ALPHA = 0.02*10;
+    //constexpr double ALPHA = 0.01; // base
+    //constexpr double ALPHA = 0.1;
+    constexpr double ALPHA = 1;
     constexpr double T0 = 100000000;
     constexpr double BETA = POLY_TEMP ? 10 : 0.98;
     //constexpr int SHIFT = 128 * 4;
@@ -258,7 +260,7 @@ namespace {
         for(int i = 0; i < N_PARAMS; ++i)
         {
             POLD[i] = PARAMS[i];
-            PARAMS[i] += ALPHA * (rng() - 0.5);
+            PARAMS[i] += ALPHA * rngU(-1, 1);
             //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
         }
 
@@ -300,7 +302,7 @@ namespace {
 
 
         double e = std::exp(-(new_score - score)/T);
-        if (e >= rng())
+        if (e >= rngU())
         {
             score = new_score;
 
