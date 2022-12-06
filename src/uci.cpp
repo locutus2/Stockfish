@@ -19,6 +19,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <string>
 
@@ -232,9 +233,16 @@ namespace {
         else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
     }
 
+    std::srand(123456);
     auto rngU = [](double a = 0, double b = 1)->double { return a + (b - a) * std::rand() / (double)RAND_MAX; };
 
-    constexpr bool POLY_TEMP = false;
+    std::mt19937 gen{123456};
+    auto rngG = [&gen](double a = 0, double b = 1)->double { 
+        std::normal_distribution<> d{(a+b)/2, (b-a)/4};
+        return d(gen); 
+    };
+
+    constexpr bool POLY_TEMP = true;
 
     //constexpr double L = 10000;
     constexpr double L = 0;
@@ -251,7 +259,6 @@ namespace {
     double POLD[N_PARAMS];
     double PBEST[N_PARAMS];
     double scorebest = score0;
-    std::srand(123456);
     for(int i = 0; i < N_PARAMS; ++i)
             PBEST[i] = PARAMS[i];
 
@@ -260,7 +267,8 @@ namespace {
         for(int i = 0; i < N_PARAMS; ++i)
         {
             POLD[i] = PARAMS[i];
-            PARAMS[i] += ALPHA * rngU(-1, 1);
+            PARAMS[i] += ALPHA * rngG(-1, 1);
+            //PARAMS[i] += ALPHA * rngU(-1, 1);
             //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
         }
 
