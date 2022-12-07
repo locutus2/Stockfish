@@ -242,14 +242,14 @@ namespace {
         return d(gen); 
     };
 
-    constexpr bool POLY_TEMP = true;
+    constexpr bool POLY_TEMP = false;
 
     //constexpr double L = 10000;
     constexpr double L = 0;
     //constexpr double ALPHA = 0.001;
     //constexpr double ALPHA = 0.01; // base
-    //constexpr double ALPHA = 0.1;
-    constexpr double ALPHA = 1;
+    constexpr double ALPHA = 0.1;
+    //constexpr double ALPHA = 1;
     constexpr double T0 = 100000000;
     constexpr double BETA = POLY_TEMP ? 10 : 0.98;
     //constexpr int SHIFT = 128 * 4;
