@@ -249,10 +249,12 @@ namespace {
     constexpr double L = 0;
     //constexpr double ALPHA = 0.001;
     //constexpr double ALPHA = 0.01; // base
-    constexpr double ALPHA = 0.4;
+    constexpr double ALPHA = 0.2;
     //constexpr double ALPHA = 1;
     constexpr double T0 = 100000000;
     constexpr double BETA = POLY_TEMP ? 10 : 0.98;
+    constexpr double MIN_PARAM = 0;
+    constexpr double MAX_PARAM = std::numeric_limits<double>::max();
     //constexpr int SHIFT = 128 * 4;
     constexpr int KMAX = 1000;
     double score0 = nodes;
@@ -268,10 +270,13 @@ namespace {
         for(int i = 0; i < N_PARAMS; ++i)
         {
             POLD[i] = PARAMS[i];
+            double rnd;
             if (GAUSS)
-                PARAMS[i] += ALPHA * rngG(-1, 1);
+                rnd = rngG(-1, 1);
             else
-                PARAMS[i] += ALPHA * rngU(-1, 1);
+                rnd = rngU(-1, 1);
+
+            PARAMS[i] = std::min(MAX_PARAM, std::max(MIN_PARAM, PARAMS[i] + ALPHA * rnd));
             //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
         }
 
