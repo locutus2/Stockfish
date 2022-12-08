@@ -1125,7 +1125,7 @@ moves_loop: // When in check, search starts here
       if (    depth >= 2
           &&  moveCount > 1 + (PvNode && ss->ply <= 1)
           && (   !ss->ttPv
-              || !capture
+              || (!capture && type_of(move) != PROMOTION)
               || (cutNode && (ss-1)->moveCount > 1)))
       {
           Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
@@ -1158,8 +1158,7 @@ moves_loop: // When in check, search starts here
 
           // Decrease reduction if we move a threatened piece (~1 Elo)
           if (   depth > 9
-              && (mp.threatenedPieces & from_sq(move))
-              && !ss->inCheck)
+              && (mp.threatenedPieces & from_sq(move)))
               r--;
 
           // Increase reduction if next ply has a lot of fail high
