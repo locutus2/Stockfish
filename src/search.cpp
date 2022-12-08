@@ -1153,12 +1153,13 @@ moves_loop: // When in check, search starts here
               r -= 1 + 11 / (3 + depth);
 
           // Decrease reduction if ttMove has been singularly extended (~1 Elo)
-          if (singularQuietLMR && !ss->inCheck)
+          if (singularQuietLMR)
               r--;
 
           // Decrease reduction if we move a threatened piece (~1 Elo)
           if (   depth > 9
-              && (mp.threatenedPieces & from_sq(move)))
+              && (mp.threatenedPieces & from_sq(move))
+              && !ss->inCheck)
               r--;
 
           // Increase reduction if next ply has a lot of fail high
