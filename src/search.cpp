@@ -1150,10 +1150,10 @@ moves_loop: // When in check, search starts here
 
           // Decrease reduction for PvNodes based on depth
           if (PvNode)
-              r -= 1 - ss->inCheck + 11 / (3 + depth);
+              r -= 1 + 11 / (3 + depth);
 
           // Decrease reduction if ttMove has been singularly extended (~1 Elo)
-          if (singularQuietLMR)
+          if (singularQuietLMR && !ss->inCheck)
               r--;
 
           // Decrease reduction if we move a threatened piece (~1 Elo)
