@@ -242,13 +242,14 @@ namespace {
         return d(gen); 
     };
 
-    constexpr bool POLY_TEMP = false;
+    constexpr bool POLY_TEMP = true;
+    constexpr bool GAUSS = true;
 
     //constexpr double L = 10000;
     constexpr double L = 0;
     //constexpr double ALPHA = 0.001;
     //constexpr double ALPHA = 0.01; // base
-    constexpr double ALPHA = 0.1;
+    constexpr double ALPHA = 0.2;
     //constexpr double ALPHA = 1;
     constexpr double T0 = 100000000;
     constexpr double BETA = POLY_TEMP ? 10 : 0.98;
@@ -267,8 +268,10 @@ namespace {
         for(int i = 0; i < N_PARAMS; ++i)
         {
             POLD[i] = PARAMS[i];
-            PARAMS[i] += ALPHA * rngG(-1, 1);
-            //PARAMS[i] += ALPHA * rngU(-1, 1);
+            if (GAUSS)
+                PARAMS[i] += ALPHA * rngG(-1, 1);
+            else
+                PARAMS[i] += ALPHA * rngU(-1, 1);
             //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
         }
 
