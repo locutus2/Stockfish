@@ -247,9 +247,10 @@ namespace {
 
     //constexpr double L = 10000;
     constexpr double L = 0;
+    constexpr double MOMENTUM = 0.5;
     //constexpr double ALPHA = 0.001;
     //constexpr double ALPHA = 0.01; // base
-    constexpr double ALPHA = 0.01;
+    constexpr double ALPHA = 0.1;
     //constexpr double ALPHA = 1;
     constexpr double T0 = 100000000;
     constexpr int KMAX = 100;
@@ -271,6 +272,9 @@ namespace {
 
     for(int it = 0; it < KMAX; it++)
     {
+        double T = POLY_TEMP ? T0 * std::pow(1 - it / (double)KMAX, BETA)
+                             : T0 * std::pow(BETA, it); 
+        double new_score = nodes;
         for(int i = 0; i < N_PARAMS; ++i)
         {
             POLD[i] = PARAMS[i];
@@ -281,6 +285,7 @@ namespace {
                 rnd = rngU(-1, 1);
 
             PARAMS[i] = std::min(MAX_PARAM, std::max(MIN_PARAM, PARAMS[i] + ALPHA * rnd));
+            PARAMS[i] += MOMENTUM * (1 - T / T0) * (PBEST[i] - PARAMS[i]);
             //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
         }
 
@@ -309,9 +314,6 @@ namespace {
             else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
         }
 
-        double T = POLY_TEMP ? T0 * std::pow(1 - it / (double)KMAX, BETA)
-                             : T0 * std::pow(BETA, it); 
-        double new_score = nodes;
         for(int i = 0; i < (int)bestMove.size(); ++i)
         {
             if (bestMove[i] != bestMove2[i])
