@@ -1307,7 +1307,8 @@ moves_loop: // When in check, search starts here
               }
               else
               {
-                  ss->cutoffCnt++;
+                  if (!capture)
+                      ss->cutoffCnt++;
                   assert(value >= beta); // Fail high
                   break;
               }
