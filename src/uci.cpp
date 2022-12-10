@@ -242,21 +242,26 @@ namespace {
         return d(gen); 
     };
 
-    constexpr bool POLY_TEMP = true;
+    constexpr bool POLY_TEMP = false;
     constexpr bool GAUSS = true;
 
     //constexpr double L = 10000;
     //constexpr double POLY_ORDER = 10;
-    constexpr double POLY_ORDER = 1;
+    constexpr double POLY_ORDER = 10;
     constexpr double L = 0;
     constexpr double MIN_MOMENTUM = 0;
-    constexpr double MAX_MOMENTUM = 0.5;
+    constexpr double MAX_MOMENTUM = 0;//0.5;
     constexpr double DYNAMIC_MOM = 1;
     //constexpr double ALPHA = 0.001;
     //constexpr double ALPHA = 0.01; // base
-    constexpr double ALPHA = 0.1;
+    constexpr double ALPHA = 0.01;
     //constexpr double ALPHA = 1;
-    constexpr double T0 = 100000000;
+    //constexpr double T0 = 100000000;
+    //constexpr double T0 = 2500000; // for ALPHA = 0.01
+    //constexpr double T0 = 10000000; // for ALPHA = 0.1
+    constexpr double ALPHA_BASE = 0.1;
+    constexpr double T_BASE = 10000000; // for ALPHA = 0.1
+    double T0 = T_BASE * std::pow(ALPHA / ALPHA_BASE, 0.6); // for ALPHA = 0.1
     constexpr int KMAX = 100;
     constexpr int RESTARTS = 0;
     //constexpr double BETA = POLY_TEMP ? POLY_ORDER : 0.98;
@@ -332,6 +337,9 @@ namespace {
             }
 
 
+            //dbg_mean_of((new_score - score)/1024);
+            //dbg_std_of((new_score - score)/1024);
+
             double e = std::exp(-(new_score - score)/T);
             if (e >= rngU())
             {
@@ -361,6 +369,7 @@ namespace {
                 }
             }
             std::cerr << "it: " << it+1 << " s: " << score << " T: " << T << " sr: " << score/score0 << std::endl;
+            dbg_print();
         }
 
         if (RESTARTS > 0)
