@@ -254,7 +254,8 @@ namespace {
     constexpr double T0 = 100000000;
     constexpr double BETA = POLY_TEMP ? 10 : 0.98;
     constexpr double MIN_PARAM = 0;
-    constexpr double MAX_PARAM = std::numeric_limits<double>::max();
+    constexpr double MAX_PARAM = 2;
+    //constexpr double MAX_PARAM = std::numeric_limits<double>::max();
     //constexpr int SHIFT = 128 * 4;
     constexpr int KMAX = 1000;
     double score0 = nodes;
