@@ -1165,7 +1165,7 @@ moves_loop: // When in check, search starts here
               r--;
 
           // Increase reduction if next ply has a lot of fail high
-          if ((ss+1)->cutoffCnt > 3 && type_of(move) != PROMOTION)
+          if ((ss+1)->cutoffCnt > 3 && !givesCheck)
               r++;
 
           ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
