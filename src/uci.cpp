@@ -246,6 +246,8 @@ namespace {
     constexpr bool GAUSS = true;
 
     //constexpr double L = 10000;
+    //constexpr double POLY_ORDER = 10;
+    constexpr double POLY_ORDER = 1;
     constexpr double L = 0;
     constexpr double MOMENTUM = 0.5;
     //constexpr double ALPHA = 0.001;
@@ -254,8 +256,8 @@ namespace {
     //constexpr double ALPHA = 1;
     constexpr double T0 = 100000000;
     constexpr int KMAX = 100;
-    //constexpr double BETA = POLY_TEMP ? 10 : 0.98;
-    double BETA = POLY_TEMP ? 10 
+    //constexpr double BETA = POLY_TEMP ? POLY_ORDER : 0.98;
+    double BETA = POLY_TEMP ? POLY_ORDER 
                             : std::pow(1 / T0, 1.0 / KMAX);
     constexpr double MIN_PARAM = 0;
     constexpr double MAX_PARAM = 2;
