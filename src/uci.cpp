@@ -249,7 +249,7 @@ namespace {
     constexpr double L = 0;
     //constexpr double ALPHA = 0.001;
     //constexpr double ALPHA = 0.01; // base
-    constexpr double ALPHA = 0.2;
+    constexpr double ALPHA = 0.02;
     //constexpr double ALPHA = 1;
     constexpr double T0 = 100000000;
     constexpr double BETA = POLY_TEMP ? 10 : 0.98;
