@@ -258,6 +258,7 @@ namespace {
     //constexpr double ALPHA = 1;
     constexpr double T0 = 100000000;
     constexpr int KMAX = 100;
+    constexpr int RESTARTS = 0;
     //constexpr double BETA = POLY_TEMP ? POLY_ORDER : 0.98;
     double BETA = POLY_TEMP ? POLY_ORDER 
                             : std::pow(1 / T0, 1.0 / KMAX);
@@ -272,99 +273,117 @@ namespace {
     double PBEST[N_PARAMS];
     double scorebest = score0;
     for(int i = 0; i < N_PARAMS; ++i)
-            PBEST[i] = PARAMS[i];
+        PBEST[i] = PARAMS[i];
 
-    for(int it = 0; it < KMAX; it++)
+    for(int r =0; r <= RESTARTS; r++)
     {
-        double T = POLY_TEMP ? T0 * std::pow(1 - it / (double)KMAX, BETA)
-                             : T0 * std::pow(BETA, it); 
-        double new_score = nodes;
-        for(int i = 0; i < N_PARAMS; ++i)
+        for(int it = 0; it < KMAX; it++)
         {
-            POLD[i] = PARAMS[i];
-            double rnd;
-            if (GAUSS)
-                rnd = rngG(-1, 1);
-            else
-                rnd = rngU(-1, 1);
-
-            // random step to  a neighbour constraint by MIN_PARAM and MAX_PARAM
-            PARAMS[i] = std::min(MAX_PARAM, std::max(MIN_PARAM, PARAMS[i] + ALPHA * rnd));
-            // add also a momentum step in direction to the current best solution
-            PARAMS[i] += (MIN_MOMENTUM  + (MAX_MOMENTUM - MIN_MOMENTUM) * (1 - DYNAMIC_MOM * T / T0)) * (PBEST[i] - PARAMS[i]);
-            //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
-        }
-
-        nodes = 0;
-        std::vector<Move> bestMove2;
-        for (const auto& cmd : list)
-        {
-            istringstream is(cmd);
-            is >> skipws >> token;
-
-            if (token == "go" || token == "eval")
+            double T = POLY_TEMP ? T0 * std::pow(1 - it / (double)KMAX, BETA)
+                                 : T0 * std::pow(BETA, it); 
+            double new_score = nodes;
+            for(int i = 0; i < N_PARAMS; ++i)
             {
-                //cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
-                if (token == "go")
+                POLD[i] = PARAMS[i];
+                double rnd;
+                if (GAUSS)
+                    rnd = rngG(-1, 1);
+                else
+                    rnd = rngU(-1, 1);
+
+                // random step to  a neighbour constraint by MIN_PARAM and MAX_PARAM
+                PARAMS[i] = std::min(MAX_PARAM, std::max(MIN_PARAM, PARAMS[i] + ALPHA * rnd));
+                // add also a momentum step in direction to the current best solution
+                PARAMS[i] += (MIN_MOMENTUM  + (MAX_MOMENTUM - MIN_MOMENTUM) * (1 - DYNAMIC_MOM * T / T0)) * (PBEST[i] - PARAMS[i]);
+                //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
+            }
+
+            nodes = 0;
+            std::vector<Move> bestMove2;
+            for (const auto& cmd : list)
+            {
+                istringstream is(cmd);
+                is >> skipws >> token;
+
+                if (token == "go" || token == "eval")
                 {
-                   go(pos, is, states);
-                   Threads.main()->wait_for_search_finished();
-                   nodes += Threads.nodes_searched();
-                   bestMove2.push_back(Threads.main()->rootMoves[0].pv[0]);
+                    //cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
+                    if (token == "go")
+                    {
+                       go(pos, is, states);
+                       Threads.main()->wait_for_search_finished();
+                       nodes += Threads.nodes_searched();
+                       bestMove2.push_back(Threads.main()->rootMoves[0].pv[0]);
+                    }
+                    else
+                       trace_eval(pos);
+                }
+                else if (token == "setoption")  setoption(is);
+                else if (token == "position")   position(pos, is, states);
+                else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
+            }
+
+            for(int i = 0; i < (int)bestMove.size(); ++i)
+            {
+                if (bestMove[i] != bestMove2[i])
+                {
+                    new_score += L;
+                }
+            }
+
+
+            double e = std::exp(-(new_score - score)/T);
+            if (e >= rngU())
+            {
+                score = new_score;
+
+                if (score < scorebest)
+                {
+                    scorebest = score;
+                    for(int i = 0; i < N_PARAMS; ++i)
+                        PBEST[i] = PARAMS[i];
+                    std::cerr << "=> BEST:";
                 }
                 else
-                   trace_eval(pos);
-            }
-            else if (token == "setoption")  setoption(is);
-            else if (token == "position")   position(pos, is, states);
-            else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
-        }
+                    std::cerr << "=> NEXT:";
 
-        for(int i = 0; i < (int)bestMove.size(); ++i)
-        {
-            if (bestMove[i] != bestMove2[i])
-            {
-                new_score += L;
-            }
-        }
-
-
-        double e = std::exp(-(new_score - score)/T);
-        if (e >= rngU())
-        {
-            score = new_score;
-
-            if (score < scorebest)
-            {
-                scorebest = score;
-                for(int i = 0; i < N_PARAMS; ++i)
-                    PBEST[i] = PARAMS[i];
-                std::cerr << "=> BEST:";
-            }
-            else
-                std::cerr << "=> NEXT:";
-
-            for(int i = 0; i < N_PARAMS; ++i)
-            {
-                    std::cerr << " " << PARAMS[i];
-            }
-            std::cerr << std::endl;
-        }
-        else
-        {
-            for(int i = 0; i < N_PARAMS; ++i)
-            {
-                PARAMS[i] = POLD[i];
-            }
-        }
-        std::cerr << "it: " << it+1 << " s: " << score << " T: " << T << " sr: " << score/score0 << std::endl;
-    }
-                std::cerr << "=> FINAL BEST[" << scorebest << "]:";
                 for(int i = 0; i < N_PARAMS; ++i)
                 {
-                    std::cerr << " " << PBEST[i];
+                        std::cerr << " " << PARAMS[i];
                 }
                 std::cerr << std::endl;
+            }
+            else
+            {
+                for(int i = 0; i < N_PARAMS; ++i)
+                {
+                    PARAMS[i] = POLD[i];
+                }
+            }
+            std::cerr << "it: " << it+1 << " s: " << score << " T: " << T << " sr: " << score/score0 << std::endl;
+        }
+
+        if (RESTARTS > 0)
+        {
+            std::cerr << "=> EPOCHE BEST[" << scorebest << "]:";
+            for(int i = 0; i < N_PARAMS; ++i)
+            {
+                std::cerr << " " << PBEST[i];
+            }
+            std::cerr << std::endl;
+
+            // set ne start point as best of last epoche
+            for(int i = 0; i < N_PARAMS; ++i)
+                PARAMS[i] = PBEST[i];
+        }
+    }
+
+    std::cerr << "=> FINAL BEST[" << scorebest << "]:";
+    for(int i = 0; i < N_PARAMS; ++i)
+    {
+        std::cerr << " " << PBEST[i];
+    }
+    std::cerr << std::endl;
 
     elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
 
