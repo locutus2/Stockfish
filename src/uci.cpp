@@ -204,7 +204,8 @@ namespace {
     string token;
     uint64_t num, nodes = 0, cnt = 1;
 
-    vector<string> list = setup_bench(pos, args);
+    int run = 0;
+    vector<string> list = setup_learn(pos, args, run);
     num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
     TimePoint elapsed = now();
@@ -233,10 +234,10 @@ namespace {
         else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
     }
 
-    std::srand(123456);
+    std::srand(123456 + run);
     auto rngU = [](double a = 0, double b = 1)->double { return a + (b - a) * std::rand() / (double)RAND_MAX; };
 
-    std::mt19937 gen{123456};
+    std::mt19937 gen{123456 + run};
     auto rngG = [&gen](double a = 0, double b = 1)->double { 
         std::normal_distribution<> d{(a+b)/2, (b-a)/4};
         return d(gen); 
@@ -254,14 +255,14 @@ namespace {
     constexpr double DYNAMIC_MOM = 1;
     //constexpr double ALPHA = 0.001;
     //constexpr double ALPHA = 0.01; // base
-    constexpr double ALPHA = 0.01;
+    constexpr double ALPHA = 0.1;
     //constexpr double ALPHA = 1;
     //constexpr double T0 = 100000000;
     //constexpr double T0 = 2500000; // for ALPHA = 0.01
     //constexpr double T0 = 10000000; // for ALPHA = 0.1
     constexpr double ALPHA_BASE = 0.1;
     constexpr double T_BASE = 10000000; // for ALPHA = 0.1
-    double T0 = T_BASE * std::pow(ALPHA / ALPHA_BASE, 0.6); // for ALPHA = 0.1
+    double T0 = T_BASE;// * std::pow(ALPHA / ALPHA_BASE, 0.6); // for ALPHA = 0.1
     constexpr int KMAX = 100;
     constexpr int RESTARTS = 0;
     //constexpr double BETA = POLY_TEMP ? POLY_ORDER : 0.98;

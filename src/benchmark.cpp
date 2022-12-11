@@ -172,4 +172,72 @@ vector<string> setup_bench(const Position& current, istream& is) {
   return list;
 }
 
+vector<string> setup_learn(const Position& current, istream& is, int& run) {
+
+  vector<string> fens, list;
+  string go, token;
+
+  // Assign default values to missing arguments
+  string ttSize    = (is >> token) ? token : "16";
+  string threads   = (is >> token) ? token : "1";
+  string limit     = (is >> token) ? token : "13";
+  string fenFile   = (is >> token) ? token : "default";
+  string limitType = "depth";
+  string evalType  = "mixed";
+
+  //limitType = (is >> token) ? token : "depth";
+  //evalType  = (is >> token) ? token : "mixed";
+  run = (is >> token) ? run : 0;
+
+  go = limitType == "eval" ? "eval" : "go " + limitType + " " + limit;
+
+  if (fenFile == "default")
+      fens = Defaults;
+
+  else if (fenFile == "current")
+      fens.push_back(current.fen());
+
+  else
+  {
+      string fen;
+      ifstream file(fenFile);
+
+      if (!file.is_open())
+      {
+          cerr << "Unable to open file " << fenFile << endl;
+          exit(EXIT_FAILURE);
+      }
+
+      while (getline(file, fen))
+          if (!fen.empty())
+              fens.push_back(fen);
+
+      file.close();
+  }
+
+  list.emplace_back("setoption name Threads value " + threads);
+  list.emplace_back("setoption name Hash value " + ttSize);
+  list.emplace_back("ucinewgame");
+
+  size_t posCounter = 0;
+
+  for (const string& fen : fens)
+      if (fen.find("setoption") != string::npos)
+          list.emplace_back(fen);
+      else
+      {
+          if (evalType == "classical" || (evalType == "mixed" && posCounter % 2 == 0))
+              list.emplace_back("setoption name Use NNUE value false");
+          else if (evalType == "NNUE" || (evalType == "mixed" && posCounter % 2 != 0))
+              list.emplace_back("setoption name Use NNUE value true");
+          list.emplace_back("position fen " + fen);
+          list.emplace_back(go);
+          ++posCounter;
+      }
+
+  list.emplace_back("setoption name Use NNUE value true");
+
+  return list;
+}
+
 } // namespace Stockfish
