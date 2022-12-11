@@ -259,7 +259,7 @@ namespace {
     constexpr double DYNAMIC_MOM = 1;
     //constexpr double ALPHA = 0.001;
     //constexpr double ALPHA = 0.01; // base
-    constexpr double ALPHA = 0.1;
+    constexpr double ALPHA = 0.2;
     //constexpr double ALPHA = 1;
     //constexpr double T0 = 100000000;
     //constexpr double T0 = 2500000; // for ALPHA = 0.01
