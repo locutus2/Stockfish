@@ -252,14 +252,14 @@ namespace {
 
     //constexpr double L = 10000;
     //constexpr double POLY_ORDER = 10;
-    constexpr double POLY_ORDER = 10;
+    constexpr double POLY_ORDER = 5;
     constexpr double L = 0;
     constexpr double MIN_MOMENTUM = 0;
     constexpr double MAX_MOMENTUM = 0;//0.5;
     constexpr double DYNAMIC_MOM = 1;
     //constexpr double ALPHA = 0.001;
     //constexpr double ALPHA = 0.01; // base
-    constexpr double ALPHA = 0.2;
+    constexpr double ALPHA = 0.1;
     //constexpr double ALPHA = 1;
     //constexpr double T0 = 100000000;
     //constexpr double T0 = 2500000; // for ALPHA = 0.01
