@@ -187,7 +187,7 @@ vector<string> setup_learn(const Position& current, istream& is, int& run) {
 
   //limitType = (is >> token) ? token : "depth";
   //evalType  = (is >> token) ? token : "mixed";
-  run = (is >> token) ? run : 0;
+  run = (is >> run) ? run : 0;
 
   go = limitType == "eval" ? "eval" : "go " + limitType + " " + limit;
 
