@@ -202,6 +202,8 @@ namespace {
 
   void learn(Position& pos, istream& args, StateListPtr& states) {
 
+    enum SCHEDULE {SCH_EXP, SCH_POLY, SCH_LIN};
+
     string token;
     uint64_t num, nodes = 0, cnt = 1;
 
@@ -245,7 +247,7 @@ namespace {
         return d(gen); 
     };
 
-    constexpr bool POLY_TEMP = false;
+    constexpr SCHEDULE schedule = SCH_POLY;
     constexpr bool GAUSS = true;
 
     //constexpr double L = 10000;
@@ -268,8 +270,9 @@ namespace {
     constexpr int KMAX = 100;
     constexpr int RESTARTS = 0;
     //constexpr double BETA = POLY_TEMP ? POLY_ORDER : 0.98;
-    double BETA = POLY_TEMP ? POLY_ORDER 
-                            : std::pow(1 / T0, 1.0 / KMAX);
+    double BETA = schedule == SCH_POLY ? POLY_ORDER :
+                  schedule == SCH_LIN  ? (T0 - 1) / KMAX
+              /* schedule == SCH_EXP */: std::pow(1 / T0, 1.0 / KMAX);
     constexpr double MIN_PARAM = 0;
     constexpr double MAX_PARAM = 2;
     //constexpr double MAX_PARAM = std::numeric_limits<double>::max();
@@ -287,8 +290,9 @@ namespace {
     {
         for(int it = 0; it < KMAX; it++)
         {
-            double T = POLY_TEMP ? T0 * std::pow(1 - it / (double)KMAX, BETA)
-                                 : T0 * std::pow(BETA, it); 
+            double T = schedule == SCH_POLY ? T0 * std::pow(1 - it / (double)KMAX, BETA) :
+                       schedule == SCH_LIN  ? T0 / (1 + BETA * it)
+                   /* schedule == SCH_EXP */: T0 * std::pow(BETA, it); 
             double new_score = nodes;
             for(int i = 0; i < N_PARAMS; ++i)
             {
