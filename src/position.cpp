@@ -36,11 +36,7 @@ using std::string;
 
 namespace Stockfish {
 
-double PARAMS[N_PARAMS] = { 
-    1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 
-};
+double PARAMS[N_PARAMS];
 
 namespace Zobrist {
 

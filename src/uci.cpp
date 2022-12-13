@@ -251,8 +251,7 @@ namespace {
     constexpr bool GAUSS = true;
 
     //constexpr double L = 10000;
-    //constexpr double POLY_ORDER = 10;
-    constexpr double POLY_ORDER = 20;
+    constexpr double POLY_ORDER = 10;
     constexpr double L = 0;
     constexpr double MIN_MOMENTUM = 0;
     constexpr double MAX_MOMENTUM = 0;//0.5;
@@ -283,6 +282,11 @@ namespace {
     double POLD[N_PARAMS];
     double PBEST[N_PARAMS];
     double scorebest = score0;
+
+    // init params
+    for(int i = 0; i < N_PARAMS; ++i)
+        PARAMS[i] = 1;
+
     for(int i = 0; i < N_PARAMS; ++i)
         PBEST[i] = PARAMS[i];
 

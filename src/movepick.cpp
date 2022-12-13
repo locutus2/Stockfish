@@ -123,31 +123,31 @@ void MovePicker::score() {
 
   for (auto& m : *this)
       if constexpr (Type == CAPTURES)
-          m.value =  PARAMS[0] * 6 * int(PieceValue[MG][pos.piece_on(to_sq(m))])
-                   + PARAMS[1] *     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
+          m.value =  6 * int(PieceValue[MG][pos.piece_on(to_sq(m))])
+                   +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
 
       else if constexpr (Type == QUIETS)
-          m.value =  PARAMS[2] * 2 * (*mainHistory)[pos.side_to_move()][from_to(m)]
-                   + PARAMS[3] * 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                   + PARAMS[4] *     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                   + PARAMS[5] *     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   + PARAMS[6] *     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
+          m.value =  2 * (*mainHistory)[pos.side_to_move()][from_to(m)]
+                   + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
+                   +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
+                   +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
+                   +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
                    +     (threatenedPieces & from_sq(m) ?
-                           (type_of(pos.moved_piece(m)) == QUEEN && !(to_sq(m) & threatenedByRook)  ? PARAMS[7] * 50000
-                          : type_of(pos.moved_piece(m)) == ROOK  && !(to_sq(m) & threatenedByMinor) ? PARAMS[8] * 25000
-                          :                                         !(to_sq(m) & threatenedByPawn)  ? PARAMS[9] * 15000
+                           (type_of(pos.moved_piece(m)) == QUEEN && !(to_sq(m) & threatenedByRook)  ? 50000
+                          : type_of(pos.moved_piece(m)) == ROOK  && !(to_sq(m) & threatenedByMinor) ? 25000
+                          :                                         !(to_sq(m) & threatenedByPawn)  ? 15000
                           :                                                                           0)
                           :                                                                           0)
-                   + PARAMS[10] *     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384;
+                   + bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384;
       else // Type == EVASIONS
       {
           if (pos.capture(m))
-              m.value =  PARAMS[11] * (int)PieceValue[MG][pos.piece_on(to_sq(m))]
-                       - PARAMS[12] * (int)Value(type_of(pos.moved_piece(m)))
+              m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
+                       - Value(type_of(pos.moved_piece(m)))
                        + (1 << 28);
           else
-              m.value =  PARAMS[13] * (*mainHistory)[pos.side_to_move()][from_to(m)]
-                       + PARAMS[14] * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
+              m.value =  PARAMS[0] * (*mainHistory)[pos.side_to_move()][from_to(m)]
+                       + PARAMS[1] * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
       }
 }
 
