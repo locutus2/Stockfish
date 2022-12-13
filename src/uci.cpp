@@ -385,7 +385,7 @@ namespace {
 
         if (RESTARTS > 0)
         {
-            std::cerr << "=> EPOCHE BEST[" << scorebest << "]:";
+            std::cerr << "=> EPOCHE BEST[" << scorebest/score0 << "]:";
             for(int i = 0; i < N_PARAMS; ++i)
             {
                 std::cerr << " " << PBEST[i];
@@ -398,7 +398,7 @@ namespace {
         }
     }
 
-    std::cerr << "=> FINAL BEST[" << scorebest << "]:";
+    std::cerr << "=> FINAL BEST[" << scorebest/score0 << "]:";
     for(int i = 0; i < N_PARAMS; ++i)
     {
         std::cerr << " " << PBEST[i];
