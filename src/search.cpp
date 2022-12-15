@@ -552,7 +552,7 @@ namespace {
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
-    bool givesCheck, improving, singularQuietLMR;
+    bool givesCheck, improving, priorCapture, singularQuietLMR;
     bool capture, moveCountPruning, ttCapture;
     Piece movedPiece;
     int moveCount, captureCount, quietCount, improvement, complexity;
@@ -560,7 +560,8 @@ namespace {
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
     ss->inCheck        = pos.checkers();
-    ss->priorCapture   = pos.captured_piece();
+    ss->priorPromotion = type_of((ss-1)->currentMove) == PROMOTION;
+    priorCapture       = pos.captured_piece();
     Color us           = pos.side_to_move();
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
@@ -627,7 +628,7 @@ namespace {
     if (!excludedMove)
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
 
-    ButterflyHistory &mainHistory = thisThread->mainHistory[ss->priorCapture];
+    ButterflyHistory &mainHistory = thisThread->mainHistory[ss->priorPromotion];
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -646,7 +647,7 @@ namespace {
                     update_quiet_stats(pos, ss, ttMove, stat_bonus(depth));
 
                 // Extra penalty for early quiet moves of the previous ply (~0 Elo)
-                if ((ss-1)->moveCount <= 2 && !ss->priorCapture)
+                if ((ss-1)->moveCount <= 2 && !priorCapture)
                     update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + 1));
             }
             // Penalty for a quiet ttMove that fails low (~1 Elo)
@@ -754,10 +755,10 @@ namespace {
     thisThread->complexityAverage.update(complexity);
 
     // Use static evaluation difference to improve quiet move ordering (~3 Elo)
-    if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !ss->priorCapture)
+    if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        thisThread->mainHistory[(ss-1)->priorCapture][~us][from_to((ss-1)->currentMove)] << bonus;
+        thisThread->mainHistory[(ss-1)->priorPromotion][~us][from_to((ss-1)->currentMove)] << bonus;
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1354,7 +1355,7 @@ moves_loop: // When in check, search starts here
 
     // Bonus for prior countermove that caused the fail low
     else if (   (depth >= 5 || PvNode)
-             && !ss->priorCapture)
+             && !priorCapture)
     {
         //Assign extra bonus if current node is PvNode or cutNode
         //or fail low was really bad
@@ -1420,7 +1421,7 @@ moves_loop: // When in check, search starts here
     Thread* thisThread = pos.this_thread();
     bestMove = MOVE_NONE;
     ss->inCheck = pos.checkers();
-    ss->priorCapture = pos.captured_piece();
+    ss->priorPromotion = type_of((ss-1)->currentMove) == PROMOTION;
     moveCount = 0;
 
     // Check for an immediate draw or maximum ply reached
@@ -1491,7 +1492,7 @@ moves_loop: // When in check, search starts here
         futilityBase = bestValue + 153;
     }
 
-    ButterflyHistory &mainHistory = thisThread->mainHistory[ss->priorCapture];
+    ButterflyHistory &mainHistory = thisThread->mainHistory[ss->priorPromotion];
 
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
                                           nullptr                   , (ss-4)->continuationHistory,
@@ -1695,7 +1696,7 @@ moves_loop: // When in check, search starts here
         int bonus2 = bestValue > beta + 137 ? bonus1               // larger bonus
                                             : stat_bonus(depth);   // smaller bonus
 
-        ButterflyHistory &mainHistory = thisThread->mainHistory[ss->priorCapture];
+        ButterflyHistory &mainHistory = thisThread->mainHistory[ss->priorPromotion];
 
         // Increase stats for the best move in case it was a quiet move
         update_quiet_stats(pos, ss, bestMove, bonus2);
@@ -1756,7 +1757,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    ButterflyHistory &mainHistory = thisThread->mainHistory[ss->priorCapture];
+    ButterflyHistory &mainHistory = thisThread->mainHistory[ss->priorPromotion];
 
     mainHistory[us][from_to(move)] << bonus;
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
