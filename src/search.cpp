@@ -929,7 +929,8 @@ moves_loop: // When in check, search starts here
                                       &captureHistory,
                                       contHist,
                                       countermove,
-                                      ss->killers);
+                                      ss->killers,
+                                      (*contHist[1])[pos.piece_on(prevSq)][prevSq] / 8);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
