@@ -20,6 +20,7 @@
 
 #include "bitboard.h"
 #include "movepick.h"
+#include "thread.h"
 
 namespace Stockfish {
 
@@ -147,6 +148,7 @@ void MovePicker::score() {
                        + (1 << 28);
           else
               m.value =  (*mainHistory)[pos.side_to_move()][from_to(m)]
+                       + pos.this_thread()->mainHistory[0][pos.side_to_move()][from_to(m)]
                        + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
       }
 }
