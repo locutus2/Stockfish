@@ -62,9 +62,12 @@ namespace {
   {
       th->mainHistory[us][from_to(move)] << bonus;
       th->mainHistory2[C][us][from_to(move)] << bonus;
-      int V = th->mainHistory2[1][us][from_to(move)]
-             -th->mainHistory2[0][us][from_to(move)];
+      int V1 = th->mainHistory2[1][us][from_to(move)];
+      int V0 = th->mainHistory2[0][us][from_to(move)];
+      int V = V1 - V0;
       dbg_mean_of(V);
+      dbg_std_of(V);
+      dbg_corr_of(V0,V1);
   }
 
   // Different node types, used as a template parameter
