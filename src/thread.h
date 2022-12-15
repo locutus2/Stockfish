@@ -73,6 +73,7 @@ public:
   Value rootDelta;
   CounterMoveHistory counterMoves;
   ButterflyHistory mainHistory;
+  ButterflyHistory mainHistory2[2];
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory[2][2];
 };

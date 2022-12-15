@@ -58,6 +58,15 @@ using namespace Search;
 
 namespace {
 
+  void update(Thread *th, Color us, Move move, int bonus, bool C)
+  {
+      th->mainHistory[us][from_to(move)] << bonus;
+      th->mainHistory2[C][us][from_to(move)] << bonus;
+      int V = th->mainHistory2[1][us][from_to(move)]
+             -th->mainHistory2[0][us][from_to(move)];
+      dbg_mean_of(V);
+  }
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
@@ -651,7 +660,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                thisThread->mainHistory[us][from_to(ttMove)] << penalty;
+                update(thisThread, us, ttMove, penalty, ss->inCheck);
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -755,7 +764,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        thisThread->mainHistory[~us][from_to((ss-1)->currentMove)] << bonus;
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, (ss-1)->inCheck);
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1696,7 +1705,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            thisThread->mainHistory[us][from_to(quietsSearched[i])] << -bonus2;
+            update(thisThread, us, quietsSearched[i], -bonus2, ss->inCheck);
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1749,7 +1758,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    thisThread->mainHistory[us][from_to(move)] << bonus;
+    update(thisThread, us, move, bonus, ss->inCheck);
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
