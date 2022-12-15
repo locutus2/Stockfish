@@ -65,6 +65,14 @@ namespace {
      * [0] Total 46523024 Correlation(x,y) = 0.0249837 y = 0.0135384 * x + 2259.98 x = 0.0461048 * y + -148.101 var_min with w(x) = 0.221153
      *
      * C=priorPromotion
+     * [0] Total 46523024 Mean -255.705
+     * [0] Total 46523024 Std 5610.88
+     * [0] Total 46523024 Correlation(x,y) = 0.0783046 y = 0.0470671 * x + -173.656 x = 0.130274 * y + 108.196 var_min with w(x) = 0.247977
+     *
+     * C=prior king move
+     * [0] Total 46523024 Mean -613.495
+     * [0] Total 46523024 Std 4467.07
+     * [0] Total 46523024 Correlation(x,y) = 0.572349 y = 0.538749 * x + -593.01 x = 0.608046 * y + 390.441 var_min with w(x) = 0.429522
     */
   void update(Thread *th, Color us, Move move, int bonus, bool C)
   {
@@ -671,7 +679,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, type_of((ss-1)->currentMove) == PROMOTION);
+                update(thisThread, us, ttMove, penalty, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == KING);
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -775,7 +783,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, type_of((ss-2)->currentMove) == PROMOTION);
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, type_of(pos.piece_on(to_sq((ss-2)->currentMove))) == KING);
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1716,7 +1724,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, type_of((ss-1)->currentMove) == PROMOTION);
+            update(thisThread, us, quietsSearched[i], -bonus2, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == KING);
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1769,7 +1777,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, type_of((ss-1)->currentMove) == PROMOTION);
+    update(thisThread, us, move, bonus, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == KING);
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
