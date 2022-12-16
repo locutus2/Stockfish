@@ -79,6 +79,11 @@ namespace {
      * [0] Total 46523024 Std 6015.45
      * [0] Total 46523024 Correlation(x,y) = 0.161413 y = 0.138508 * x + -1943.92 x = 0.188107 * y + 329.649 var_min with w(x) = 0.409657
      *
+     * C=rook imbalance
+     * [0] Total 46523024 Mean 353.997
+     * [0] Total 46523024 Std 5679.34
+     * [0] Total 46523024 Correlation(x,y) = 0.289423 y = 0.319998 * x + -24.3682 x = 0.26177 * y + -503.429 var_min with w(x) = 0.570283
+     *
      * C=material imbalance
      * [0] Total 46523024 Mean -452.418
      * [0] Total 46523024 Std 5421.14
@@ -760,7 +765,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK));
+                update(thisThread, us, ttMove, penalty, pos.count<ROOK>(WHITE) == pos.count<ROOK>(BLACK));
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -864,7 +869,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK));
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, pos.count<ROOK>(WHITE) == pos.count<ROOK>(BLACK));
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1805,7 +1810,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK));
+            update(thisThread, us, quietsSearched[i], -bonus2, pos.count<ROOK>(WHITE) == pos.count<ROOK>(BLACK));
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1858,7 +1863,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK));
+    update(thisThread, us, move, bonus, pos.count<ROOK>(WHITE) == pos.count<ROOK>(BLACK));
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
