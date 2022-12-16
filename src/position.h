@@ -120,6 +120,8 @@ public:
   Bitboard attackers_to(Square s) const;
   Bitboard attackers_to(Square s, Bitboard occupied) const;
   Bitboard slider_blockers(Bitboard sliders, Square s, Bitboard& pinners) const;
+  Bitboard passed_pawns(Color c) const;
+  Bitboard passed_pawns() const;
   template<PieceType Pt> Bitboard attacks_by(Color c) const;
 
   // Properties of moves
@@ -442,6 +444,18 @@ inline void Position::do_move(Move m, StateInfo& newSt) {
 inline StateInfo* Position::state() const {
 
   return st;
+}
+
+inline Bitboard Position::passed_pawns() const {
+  return passed_pawns(WHITE) | passed_pawns(BLACK);
+}
+
+inline Bitboard Position::passed_pawns(Color c) const {
+
+    Bitboard attacks = 0, b = pieces(~c, PAWN);
+    while (b)
+        attacks |= passed_pawn_span(~c, pop_lsb(b));
+    return pieces(c, PAWN) & ~attacks;
 }
 
 } // namespace Stockfish
