@@ -89,6 +89,11 @@ namespace {
      * [0] Total 46523024 Std 5288.89
      * [0] Total 46523024 Correlation(x,y) = 0.409261 y = 0.389548 * x + -890.899 x = 0.429971 * y + 391.136 var_min with w(x) = 0.458287
      *
+     * C=prior check evasion
+     * [0] Total 46523024 Mean -1469.42
+     * [0] Total 46523024 Std 5024.7
+     * [0] Total 46523024 Correlation(x,y) = 0.439274 y = 0.395085 * x + -1418.69 x = 0.488405 * y + 760.582 var_min with w(x) = 0.406224
+     *
      * C=prior bishop move
      * [0] Total 46523024 Mean -1037.81
      * [0] Total 46523024 Std 4991.98
@@ -98,6 +103,11 @@ namespace {
      * [0] Total 46523024 Mean -613.495
      * [0] Total 46523024 Std 4467.07
      * [0] Total 46523024 Correlation(x,y) = 0.572349 y = 0.538749 * x + -593.01 x = 0.608046 * y + 390.441 var_min with w(x) = 0.429522
+     *
+     * C=prior rook move
+     * [0] Total 46523024 Mean -421.146
+     * [0] Total 46523024 Std 4439.17
+     * [0] Total 46523024 Correlation(x,y) = 0.588591 y = 0.56739 * x + -435.563 x = 0.610585 * y + 244.168 var_min with w(x) = 0.455478
      *
      * C=prior pawn move
      * [0] Total 46523024 Mean -759.766
@@ -109,7 +119,15 @@ namespace {
      * [0] Total 46523024 Std 4379.7
      * [0] Total 46523024 Correlation(x,y) = 0.609812 y = 0.604497 * x + -740.506 x = 0.615174 * y + 500.198 var_min with w(x) = 0.488783
      *
-     * C=prior rook move
+     * C=prior first move
+     * [0] Total 46523024 Mean -86.7226
+     * [0] Total 46523024 Std 3169.13
+     * [0] Total 46523024 Correlation(x,y) = 0.788305 y = 0.7659 * x + -80.3288 x = 0.811365 * y + 75.5157 var_min with w(x) = 0.432024
+     *
+     * C=cut node
+     * [0] Total 46523024 Mean 921.627
+     * [0] Total 46523024 Std 3580.86
+     * [0] Total 46523024 Correlation(x,y) = 0.725769 y = 0.713574 * x + 753.265 x = 0.738172 * y + -834.223 var_min with w(x) = 0.469119
     */
   void update(Thread *th, Color us, Move move, int bonus, bool C)
   {
@@ -626,6 +644,7 @@ namespace {
     Thread* thisThread = pos.this_thread();
     ss->inCheck        = pos.checkers();
     ss->priorCapture = priorCapture       = pos.captured_piece();
+    ss->cutNode = cutNode;
     Color us           = pos.side_to_move();
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
@@ -716,7 +735,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == BISHOP);
+                update(thisThread, us, ttMove, penalty, cutNode);
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -820,7 +839,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, type_of(pos.piece_on(to_sq((ss-2)->currentMove))) == BISHOP);
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, (ss-1)->cutNode);
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1761,7 +1780,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == BISHOP);
+            update(thisThread, us, quietsSearched[i], -bonus2, ss->cutNode);
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1814,7 +1833,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == BISHOP);
+    update(thisThread, us, move, bonus, ss->cutNode);
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history

@@ -48,6 +48,7 @@ struct Stack {
   int moveCount;
   bool inCheck;
   bool priorCapture;
+  bool cutNode;
   bool ttPv;
   bool ttHit;
   int doubleExtensions;
