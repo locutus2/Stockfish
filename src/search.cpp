@@ -69,20 +69,25 @@ namespace {
      * [0] Total 46523024 Std 5610.88
      * [0] Total 46523024 Correlation(x,y) = 0.0783046 y = 0.0470671 * x + -173.656 x = 0.130274 * y + 108.196 var_min with w(x) = 0.247977
      *
-     * C=prior king move
-     * [0] Total 46523024 Mean -613.495
-     * [0] Total 46523024 Std 4467.07
-     * [0] Total 46523024 Correlation(x,y) = 0.572349 y = 0.538749 * x + -593.01 x = 0.608046 * y + 390.441 var_min with w(x) = 0.429522
-     *
      * C=queen imbalance
      * [0] Total 46523024 Mean 331.933
      * [0] Total 46523024 Std 5874.38
      * [0] Total 46523024 Correlation(x,y) = 0.147908 y = 0.188358 * x + 79.6245 x = 0.116144 * y + -313.309 var_min with w(x) = 0.638473
      *
+     * C=prior king move
+     * [0] Total 46523024 Mean -613.495
+     * [0] Total 46523024 Std 4467.07
+     * [0] Total 46523024 Correlation(x,y) = 0.572349 y = 0.538749 * x + -593.01 x = 0.608046 * y + 390.441 var_min with w(x) = 0.429522
+     *
      * C=priorCapture
      * [0] Total 46523024 Mean -768.625
      * [0] Total 46523024 Std 4379.7
      * [0] Total 46523024 Correlation(x,y) = 0.609812 y = 0.604497 * x + -740.506 x = 0.615174 * y + 500.198 var_min with w(x) = 0.488783
+     *
+     * C=opposite bishops
+     * [0] Total 46523024 Mean -1912.06
+     * [0] Total 46523024 Std 6015.45
+     * [0] Total 46523024 Correlation(x,y) = 0.161413 y = 0.138508 * x + -1943.92 x = 0.188107 * y + 329.649 var_min with w(x) = 0.409657
     */
   void update(Thread *th, Color us, Move move, int bonus, bool C)
   {
@@ -689,7 +694,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, priorCapture);
+                update(thisThread, us, ttMove, penalty, pos.opposite_bishops());
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -793,7 +798,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, (ss-1)->priorCapture);
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, pos.opposite_bishops());
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1734,7 +1739,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, pos.captured_piece());
+            update(thisThread, us, quietsSearched[i], -bonus2, pos.opposite_bishops());
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1787,7 +1792,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, pos.captured_piece());
+    update(thisThread, us, move, bonus, pos.opposite_bishops());
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
