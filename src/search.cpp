@@ -84,6 +84,11 @@ namespace {
      * [0] Total 46523024 Std 5679.34
      * [0] Total 46523024 Correlation(x,y) = 0.289423 y = 0.319998 * x + -24.3682 x = 0.26177 * y + -503.429 var_min with w(x) = 0.570283
      *
+     * C=knight imbalance
+     * [0] Total 46523024 Mean 418.155
+     * [0] Total 46523024 Std 5579.25
+     * [0] Total 46523024 Correlation(x,y) = 0.344839 y = 0.35116 * x + -171.269 x = 0.338632 * y + -742.405 var_min with w(x) = 0.513859
+     *
      * C=bishop imbalance
      * [0] Total 46523024 Mean 513.1
      * [0] Total 46523024 Std 5551.04
@@ -113,6 +118,11 @@ namespace {
      * [0] Total 46523024 Mean -1037.81
      * [0] Total 46523024 Std 4991.98
      * [0] Total 46523024 Correlation(x,y) = 0.4768 y = 0.458299 * x + -1020.58 x = 0.496047 * y + 530.827 var_min with w(x) = 0.462227
+     *
+     * C=pawn imbalance
+     * [0] Total 46523024 Mean -205.91
+     * [0] Total 46523024 Std 4844.77
+     * [0] Total 46523024 Correlation(x,y) = 0.513602 y = 0.512237 * x + -346.486 x = 0.514971 * y + -33.7502 var_min with w(x) = 0.497264
      *
      * C=prior king move
      * [0] Total 46523024 Mean -613.495
@@ -158,6 +168,8 @@ namespace {
      * [0] Total 46523024 Mean -86.7226
      * [0] Total 46523024 Std 3169.13
      * [0] Total 46523024 Correlation(x,y) = 0.788305 y = 0.7659 * x + -80.3288 x = 0.811365 * y + 75.5157 var_min with w(x) = 0.432024
+     *
+     * C=minor imbalance
     */
   void update(Thread *th, Color us, Move move, int bonus, bool C)
   {
@@ -770,7 +782,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, pos.count<BISHOP>(WHITE) == pos.count<BISHOP>(BLACK));
+                update(thisThread, us, ttMove, penalty, pos.count<PAWN>(WHITE) == pos.count<PAWN>(BLACK));
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -874,7 +886,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, pos.count<BISHOP>(WHITE) == pos.count<BISHOP>(BLACK));
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, pos.count<PAWN>(WHITE) == pos.count<PAWN>(BLACK));
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1815,7 +1827,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, pos.count<BISHOP>(WHITE) == pos.count<BISHOP>(BLACK));
+            update(thisThread, us, quietsSearched[i], -bonus2, pos.count<PAWN>(WHITE) == pos.count<PAWN>(BLACK));
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1868,7 +1880,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, pos.count<BISHOP>(WHITE) == pos.count<BISHOP>(BLACK));
+    update(thisThread, us, move, bonus, pos.count<PAWN>(WHITE) == pos.count<PAWN>(BLACK));
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
