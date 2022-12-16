@@ -79,6 +79,11 @@ namespace {
      * [0] Total 46523024 Std 6015.45
      * [0] Total 46523024 Correlation(x,y) = 0.161413 y = 0.138508 * x + -1943.92 x = 0.188107 * y + 329.649 var_min with w(x) = 0.409657
      *
+     * C=material imbalance
+     * [0] Total 46523024 Mean -452.418
+     * [0] Total 46523024 Std 5421.14
+     * [0] Total 46523024 Correlation(x,y) = 0.384543 y = 0.388753 * x + -702.65 x = 0.380379 * y + -81.5683 var_min with w(x) = 0.508844
+     *
      * C=prior queen move
      * [0] Total 46523024 Mean -1260.53
      * [0] Total 46523024 Std 5282.25
@@ -755,7 +760,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, ss->allNode);
+                update(thisThread, us, ttMove, penalty, pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK));
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -859,7 +864,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, (ss-1)->allNode);
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK));
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1800,7 +1805,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, ss->allNode);
+            update(thisThread, us, quietsSearched[i], -bonus2, pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK));
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1853,7 +1858,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, ss->allNode);
+    update(thisThread, us, move, bonus, pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK));
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
