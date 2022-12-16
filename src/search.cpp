@@ -109,6 +109,11 @@ namespace {
      * [0] Total 46523024 Std 4439.17
      * [0] Total 46523024 Correlation(x,y) = 0.588591 y = 0.56739 * x + -435.563 x = 0.610585 * y + 244.168 var_min with w(x) = 0.455478
      *
+     * C=pv node
+     * [0] Total 46523024 Mean -2188.06
+     * [0] Total 46523024 Std 4295.32
+     * [0] Total 46523024 Correlation(x,y) = 0.594612 y = 0.544572 * x + -2089.59 x = 0.649249 * y + 1496.44 var_min with w(x) = 0.392462
+     *
      * C=prior pawn move
      * [0] Total 46523024 Mean -759.766
      * [0] Total 46523024 Std 4369.74
@@ -119,6 +124,11 @@ namespace {
      * [0] Total 46523024 Std 4379.7
      * [0] Total 46523024 Correlation(x,y) = 0.609812 y = 0.604497 * x + -740.506 x = 0.615174 * y + 500.198 var_min with w(x) = 0.488783
      *
+     * C=ttpv
+     * [0] Total 46523024 Mean -1407.59
+     * [0] Total 46523024 Std 4094.2
+     * [0] Total 46523024 Correlation(x,y) = 0.649846 y = 0.639031 * x + -1327.03 x = 0.660843 * y + 1005.89 var_min with w(x) = 0.476046
+     *
      * C=cut node
      * [0] Total 46523024 Mean 921.627
      * [0] Total 46523024 Std 3580.86
@@ -128,11 +138,6 @@ namespace {
      * [0] Total 46523024 Mean -86.7226
      * [0] Total 46523024 Std 3169.13
      * [0] Total 46523024 Correlation(x,y) = 0.788305 y = 0.7659 * x + -80.3288 x = 0.811365 * y + 75.5157 var_min with w(x) = 0.432024
-     *
-     * C=ttpv
-         * [0] Total 46523024 Mean -1407.59
-         * [0] Total 46523024 Std 4094.2
-         * [0] Total 46523024 Correlation(x,y) = 0.649846 y = 0.639031 * x + -1327.03 x = 0.660843 * y + 1005.89 var_min with w(x) = 0.476046
     */
   void update(Thread *th, Color us, Move move, int bonus, bool C)
   {
@@ -649,7 +654,11 @@ namespace {
     Thread* thisThread = pos.this_thread();
     ss->inCheck        = pos.checkers();
     ss->priorCapture = priorCapture       = pos.captured_piece();
-    ss->cutNode = cutNode;
+    if(!ss->excludedMove)
+    {
+       ss->cutNode = cutNode;
+       ss->PvNode = PvNode;
+    }
     Color us           = pos.side_to_move();
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
@@ -740,7 +749,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, ss->ttPv);
+                update(thisThread, us, ttMove, penalty, PvNode);
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -844,7 +853,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, (ss-1)->ttPv);
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, (ss-1)->PvNode);
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1785,7 +1794,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, ss->ttPv);
+            update(thisThread, us, quietsSearched[i], -bonus2, ss->PvNode);
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1838,7 +1847,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, ss->ttPv);
+    update(thisThread, us, move, bonus, ss->PvNode);
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history

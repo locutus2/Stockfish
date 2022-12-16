@@ -49,6 +49,7 @@ struct Stack {
   bool inCheck;
   bool priorCapture;
   bool cutNode;
+  bool PvNode;
   bool ttPv;
   bool ttHit;
   int doubleExtensions;
