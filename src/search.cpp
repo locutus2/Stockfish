@@ -74,7 +74,7 @@ namespace {
      * [0] Total 46523024 Std 5874.38
      * [0] Total 46523024 Correlation(x,y) = 0.147908 y = 0.188358 * x + 79.6245 x = 0.116144 * y + -313.309 var_min with w(x) = 0.638473
      *
-     * C=opposite bishops
+     * C=opposite bishops ELO -1.19 N 47624
      * [0] Total 46523024 Mean -1912.06
      * [0] Total 46523024 Std 6015.45
      * [0] Total 46523024 Correlation(x,y) = 0.161413 y = 0.138508 * x + -1943.92 x = 0.188107 * y + 329.649 var_min with w(x) = 0.409657
@@ -154,7 +154,7 @@ namespace {
      * [0] Total 46523024 Std 4369.74
      * [0] Total 46523024 Correlation(x,y) = 0.608977 y = 0.606995 * x + -738.873 x = 0.610966 * y + 484.874 var_min with w(x) = 0.495832
      *
-     * C=priorCapture
+     * C=priorCapture ELO -0.93 N 55472
      * [0] Total 46523024 Mean -768.625
      * [0] Total 46523024 Std 4379.7
      * [0] Total 46523024 Correlation(x,y) = 0.609812 y = 0.604497 * x + -740.506 x = 0.615174 * y + 500.198 var_min with w(x) = 0.488783
