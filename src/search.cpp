@@ -134,6 +134,11 @@ namespace {
      * [0] Total 46523024 Std 3580.86
      * [0] Total 46523024 Correlation(x,y) = 0.725769 y = 0.713574 * x + 753.265 x = 0.738172 * y + -834.223 var_min with w(x) = 0.469119
      *
+     * C=ALL node
+     * [0] Total 46523024 Mean -412.702
+     * [0] Total 46523024 Std 3581.3
+     * [0] Total 46523024 Correlation(x,y) = 0.73266 y = 0.730946 * x + -404.175 x = 0.734377 * y + 311.497 var_min with w(x) = 0.495621
+     *
      * C=prior first move
      * [0] Total 46523024 Mean -86.7226
      * [0] Total 46523024 Std 3169.13
@@ -658,6 +663,7 @@ namespace {
     {
        ss->cutNode = cutNode;
        ss->PvNode = PvNode;
+       ss->allNode = !PvNode && !cutNode;
     }
     Color us           = pos.side_to_move();
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
@@ -749,7 +755,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, PvNode);
+                update(thisThread, us, ttMove, penalty, ss->allNode);
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -853,7 +859,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, (ss-1)->PvNode);
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, (ss-1)->allNode);
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1794,7 +1800,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, ss->PvNode);
+            update(thisThread, us, quietsSearched[i], -bonus2, ss->allNode);
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1847,7 +1853,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, ss->PvNode);
+    update(thisThread, us, move, bonus, ss->allNode);
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history

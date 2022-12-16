@@ -50,6 +50,7 @@ struct Stack {
   bool priorCapture;
   bool cutNode;
   bool PvNode;
+  bool allNode;
   bool ttPv;
   bool ttHit;
   int doubleExtensions;
