@@ -154,7 +154,7 @@ namespace {
      * [0] Total 46523024 Std 4844.77
      * [0] Total 46523024 Correlation(x,y) = 0.513602 y = 0.512237 * x + -346.486 x = 0.514971 * y + -33.7502 var_min with w(x) = 0.497264
      *
-     * C=prior king move
+     * C=prior king move ELO -0.55 N 72704
      * [0] Total 46523024 Mean -613.495
      * [0] Total 46523024 Std 4467.07
      * [0] Total 46523024 Correlation(x,y) = 0.572349 y = 0.538749 * x + -593.01 x = 0.608046 * y + 390.441 var_min with w(x) = 0.429522
@@ -198,9 +198,43 @@ namespace {
      * [0] Total 46523024 Mean -86.7226
      * [0] Total 46523024 Std 3169.13
      * [0] Total 46523024 Correlation(x,y) = 0.788305 y = 0.7659 * x + -80.3288 x = 0.811365 * y + 75.5157 var_min with w(x) = 0.432024
+     *
+     *
+     * C=random
+     * [0] Total 46523024 Mean 2.48896
+     * [0] Total 46523024 Std 2506.91
+     * [0] Total 46523024 Correlation(x,y) = 0.867018 y = 0.86695 * x + 7.48414 x = 0.867086 * y + 2.83194 var_min with w(x) = 0.499705
+     * ========== 2x comb ==================
+     * 
+     * C=incheck && priorPromotion
+     * [0] Total 46523024 Mean 296.322
+     * [0] Total 46523024 Std 5111.52
+     * [0] Total 46523024 Correlation(x,y) = 0.0210567 y = 0.00526237 * x + 382.712 x = 0.0842555 * y + 54.5636 var_min with w(x) = 0.0543713
+     *
+     * C=incheck && !priorPromotion
+     * [0] Total 46523024 Mean 2299.14
+     * [0] Total 46523024 Std 5669.13
+     * [0] Total 46523024 Correlation(x,y) = 0.024934 y = 0.013505 * x + 2256.09 x = 0.0460352 * y + -147.467 var_min with w(x) = 0.220995
+     *
+     * C=!incheck && !priorPromotion
+     * [0] Total 46523024 Mean -1997.62
+     * [0] Total 46523024 Std 5804.82
+     * [0] Total 46523024 Correlation(x,y) = 0.0408679 y = 0.0665186 * x + -174.801 x = 0.0251085 * y + 1953.84 var_min with w(x) = 0.73452
+     *
+     * C=incheck == priorPromotion
+     * [0] Total 46523024 Mean -1994.08
+     * [0] Total 46523024 Std 5804.31
+     * [0] Total 46523024 Correlation(x,y) = 0.0409339 y = 0.0666366 * x + -174.486 x = 0.0251451 * y + 1950.62 var_min with w(x) = 0.734599
+     *
+     * C=!incheck && priorPromotion
+     * [0] Total 46523024 Mean -417.992
+     * [0] Total 46523024 Std 5589.55
+     * [0] Total 46523024 Correlation(x,y) = 0.0771297 y = 0.0455432 * x + -335.547 x = 0.130623 * y + 129.696 var_min with w(x) = 0.241034
+     *
     */
   void update(Thread *th, Color us, Move move, int bonus, bool C)
   {
+      C = th->nodes & 1;
       th->mainHistory[us][from_to(move)] << bonus;
       th->mainHistory2[C][us][from_to(move)] << bonus;
       int V1 = th->mainHistory2[1][us][from_to(move)];
@@ -810,7 +844,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, (ss-1)->currentMove == MOVE_NULL);
+                update(thisThread, us, ttMove, penalty, ss->inCheck && !(type_of((ss-1)->currentMove) == PROMOTION));
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -914,7 +948,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, (ss-2)->currentMove == MOVE_NULL);
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, (ss-1)->inCheck && !(type_of((ss-2)->currentMove) == PROMOTION));
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1855,7 +1889,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, (ss-1)->currentMove == MOVE_NULL);
+            update(thisThread, us, quietsSearched[i], -bonus2, ss->inCheck && !(type_of((ss-1)->currentMove) == PROMOTION));
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1908,7 +1942,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, (ss-1)->currentMove == MOVE_NULL);
+    update(thisThread, us, move, bonus, ss->inCheck && !(type_of((ss-1)->currentMove) == PROMOTION));
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
