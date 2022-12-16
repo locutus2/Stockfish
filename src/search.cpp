@@ -154,6 +154,12 @@ namespace {
      * [0] Total 46523024 Std 4844.77
      * [0] Total 46523024 Correlation(x,y) = 0.513602 y = 0.512237 * x + -346.486 x = 0.514971 * y + -33.7502 var_min with w(x) = 0.497264
      *
+     * C=excludedMove
+     * [0] Total 46523024 Hits 2931858 hit rate (%) 6.30195
+     * [0] Total 46523024 Mean -510.199
+     * [0] Total 46523024 Std 4626.24
+     * [0] Total 46523024 Correlation(x,y) = 0.522371 y = 0.465949 * x + -426.32 x = 0.585625 * y + 363.867 var_min with w(x) = 0.381704
+     *
      * C=prior king move ELO -0.55 N 72704
      * [0] Total 46523024 Mean -613.495
      * [0] Total 46523024 Std 4467.07
@@ -194,17 +200,22 @@ namespace {
      * [0] Total 46523024 Std 3581.3
      * [0] Total 46523024 Correlation(x,y) = 0.73266 y = 0.730946 * x + -404.175 x = 0.734377 * y + 311.497 var_min with w(x) = 0.495621
      *
+     * C=improving
+     * [0] Total 46523024 Hits 22823842 hit rate (%) 49.0592
+     * [0] Total 46523024 Mean -664.547
+     * [0] Total 46523024 Std 3502.55
+     * [0] Total 46523024 Correlation(x,y) = 0.745412 y = 0.745661 * x + -603.299 x = 0.745162 * y + 556.564 var_min with w(x) = 0.500658
+     *
      * C=prior first move
      * [0] Total 46523024 Mean -86.7226
      * [0] Total 46523024 Std 3169.13
      * [0] Total 46523024 Correlation(x,y) = 0.788305 y = 0.7659 * x + -80.3288 x = 0.811365 * y + 75.5157 var_min with w(x) = 0.432024
      *
-     *
      * C=random
      * [0] Total 46523024 Mean 2.48896
      * [0] Total 46523024 Std 2506.91
      * [0] Total 46523024 Correlation(x,y) = 0.867018 y = 0.86695 * x + 7.48414 x = 0.867086 * y + 2.83194 var_min with w(x) = 0.499705
-     * ========== 2x comb ==================
+      ========== 2x comb ==================
      * 
      * C=incheck && priorPromotion
      * [0] Total 46523024 Mean 296.322
@@ -232,14 +243,16 @@ namespace {
      * [0] Total 46523024 Correlation(x,y) = 0.0771297 y = 0.0455432 * x + -335.547 x = 0.130623 * y + 129.696 var_min with w(x) = 0.241034
      *
     */
-  void update(Thread *th, Color us, Move move, int bonus, bool C)
+  void update(Thread *th, Color us, Move move, int bonus, const Position &pos, Search::Stack *ss)
   {
-      C = th->nodes & 1;
+      //C = th->nodes & 1;
+      bool C = ss->improving; 
       th->mainHistory[us][from_to(move)] << bonus;
       th->mainHistory2[C][us][from_to(move)] << bonus;
       int V1 = th->mainHistory2[1][us][from_to(move)];
       int V0 = th->mainHistory2[0][us][from_to(move)];
       int V = V1 - V0;
+      dbg_hit_on(C);
       dbg_mean_of(V);
       dbg_std_of(V);
       dbg_corr_of(V0,V1);
@@ -844,7 +857,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, ss->inCheck && !(type_of((ss-1)->currentMove) == PROMOTION));
+                update(thisThread, us, ttMove, penalty, pos, ss);
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -914,7 +927,7 @@ namespace {
     {
         // Skip early pruning when in check
         ss->staticEval = eval = VALUE_NONE;
-        improving = false;
+        ss->improving = improving = false;
         improvement = 0;
         complexity = 0;
         goto moves_loop;
@@ -948,7 +961,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, (ss-1)->inCheck && !(type_of((ss-2)->currentMove) == PROMOTION));
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, pos, ss-1);
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -958,7 +971,7 @@ namespace {
     improvement =   (ss-2)->staticEval != VALUE_NONE ? ss->staticEval - (ss-2)->staticEval
                   : (ss-4)->staticEval != VALUE_NONE ? ss->staticEval - (ss-4)->staticEval
                   :                                    168;
-    improving = improvement > 0;
+    ss->improving = improving = improvement > 0;
 
     // Step 7. Razoring.
     // If eval is really low check with qsearch if it can exceed alpha, if it can't,
@@ -1889,7 +1902,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, ss->inCheck && !(type_of((ss-1)->currentMove) == PROMOTION));
+            update(thisThread, us, quietsSearched[i], -bonus2, pos, ss);
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1942,7 +1955,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, ss->inCheck && !(type_of((ss-1)->currentMove) == PROMOTION));
+    update(thisThread, us, move, bonus, pos, ss);
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history

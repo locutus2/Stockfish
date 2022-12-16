@@ -47,6 +47,7 @@ struct Stack {
   int statScore;
   int moveCount;
   bool inCheck;
+  bool improving;
   bool priorCapture;
   bool cutNode;
   bool PvNode;
