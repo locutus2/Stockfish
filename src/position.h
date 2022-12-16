@@ -133,6 +133,7 @@ public:
   // Piece specific
   bool pawn_passed(Color c, Square s) const;
   bool opposite_bishops() const;
+  bool opposite_castling() const;
   int  pawns_on_same_color_squares(Color c, Square s) const;
 
   // Doing and undoing moves
@@ -375,6 +376,11 @@ inline bool Position::opposite_bishops() const {
   return   count<BISHOP>(WHITE) == 1
         && count<BISHOP>(BLACK) == 1
         && opposite_colors(square<BISHOP>(WHITE), square<BISHOP>(BLACK));
+}
+
+inline bool Position::opposite_castling() const {
+   return   (file_of(square<KING>(WHITE)) >= FILE_F && file_of(square<KING>(BLACK)) <= FILE_C)
+         || (file_of(square<KING>(BLACK)) >= FILE_F && file_of(square<KING>(WHITE)) <= FILE_C);
 }
 
 inline bool Position::is_chess960() const {

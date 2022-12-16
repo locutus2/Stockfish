@@ -79,6 +79,11 @@ namespace {
      * [0] Total 46523024 Std 6015.45
      * [0] Total 46523024 Correlation(x,y) = 0.161413 y = 0.138508 * x + -1943.92 x = 0.188107 * y + 329.649 var_min with w(x) = 0.409657
      *
+     * C=opposite castling
+     * [0] Total 46523024 Mean -1382.88
+     * [0] Total 46523024 Std 5842.73
+     * [0] Total 46523024 Correlation(x,y) = 0.231848 y = 0.207131 * x + -1423.85 x = 0.259514 * y + 320.612 var_min with w(x) = 0.427071
+     *
      * C=rook imbalance
      * [0] Total 46523024 Mean 353.997
      * [0] Total 46523024 Std 5679.34
@@ -785,7 +790,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, pos.count<KNIGHT>(WHITE) + pos.count<BISHOP>(WHITE) == pos.count<KNIGHT>(BLACK) + pos.count<BISHOP>(BLACK));
+                update(thisThread, us, ttMove, penalty, pos.opposite_castling());
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -889,7 +894,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, pos.count<KNIGHT>(WHITE) + pos.count<BISHOP>(WHITE) == pos.count<KNIGHT>(BLACK) + pos.count<BISHOP>(BLACK));
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, pos.opposite_castling());
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1830,7 +1835,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, pos.count<KNIGHT>(WHITE) + pos.count<BISHOP>(WHITE) == pos.count<KNIGHT>(BLACK) + pos.count<BISHOP>(BLACK));
+            update(thisThread, us, quietsSearched[i], -bonus2, pos.opposite_castling());
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1883,7 +1888,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, pos.count<KNIGHT>(WHITE) + pos.count<BISHOP>(WHITE) == pos.count<KNIGHT>(BLACK) + pos.count<BISHOP>(BLACK));
+    update(thisThread, us, move, bonus, pos.opposite_castling());
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
