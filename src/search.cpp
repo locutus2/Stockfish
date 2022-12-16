@@ -84,15 +84,20 @@ namespace {
      * [0] Total 46523024 Std 4467.07
      * [0] Total 46523024 Correlation(x,y) = 0.572349 y = 0.538749 * x + -593.01 x = 0.608046 * y + 390.441 var_min with w(x) = 0.429522
      *
+     * C=prior pawn move
+     * [0] Total 46523024 Mean -759.766
+     * [0] Total 46523024 Std 4369.74
+     * [0] Total 46523024 Correlation(x,y) = 0.608977 y = 0.606995 * x + -738.873 x = 0.610966 * y + 484.874 var_min with w(x) = 0.495832
+     *
      * C=priorCapture
      * [0] Total 46523024 Mean -768.625
      * [0] Total 46523024 Std 4379.7
      * [0] Total 46523024 Correlation(x,y) = 0.609812 y = 0.604497 * x + -740.506 x = 0.615174 * y + 500.198 var_min with w(x) = 0.488783
      *
-     * C=prior pawn move
-     * [0] Total 46523024 Mean -759.766
-     * [0] Total 46523024 Std 4369.74
-     * [0] Total 46523024 Correlation(x,y) = 0.608977 y = 0.606995 * x + -738.873 x = 0.610966 * y + 484.874 var_min with w(x) = 0.495832
+     * C=prior queen move
+     * [0] Total 46523024 Mean -1260.53
+     * [0] Total 46523024 Std 5282.25
+     * [0] Total 46523024 Correlation(x,y) = 0.39798 y = 0.368503 * x + -1236.51 x = 0.429814 * y + 563.482 var_min with w(x) = 0.436338
     */
   void update(Thread *th, Color us, Move move, int bonus, bool C)
   {
@@ -699,7 +704,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == PAWN);
+                update(thisThread, us, ttMove, penalty, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == QUEEN);
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -803,7 +808,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, type_of(pos.piece_on(to_sq((ss-2)->currentMove))) == PAWN);
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, type_of(pos.piece_on(to_sq((ss-2)->currentMove))) == QUEEN);
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1744,7 +1749,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == PAWN);
+            update(thisThread, us, quietsSearched[i], -bonus2, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == QUEEN);
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1797,7 +1802,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == PAWN);
+    update(thisThread, us, move, bonus, type_of(pos.piece_on(to_sq((ss-1)->currentMove))) == QUEEN);
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
