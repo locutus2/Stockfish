@@ -89,6 +89,11 @@ namespace {
      * [0] Total 46523024 Std 5679.34
      * [0] Total 46523024 Correlation(x,y) = 0.289423 y = 0.319998 * x + -24.3682 x = 0.26177 * y + -503.429 var_min with w(x) = 0.570283
      *
+     * C=own passed pawns exists
+     * [0] Total 46523024 Mean -167.607
+     * [0] Total 46523024 Std 5690.25
+     * [0] Total 46523024 Correlation(x,y) = 0.300455 y = 0.289353 * x + -600.153 x = 0.311983 * y + -366.481 var_min with w(x) = 0.47311
+     *
      * C=passed pawns exists
      * [0] Total 46523024 Mean 434.463
      * [0] Total 46523024 Std 5568.45
@@ -103,6 +108,11 @@ namespace {
      * [0] Total 46523024 Mean 513.1
      * [0] Total 46523024 Std 5551.04
      * [0] Total 46523024 Correlation(x,y) = 0.351159 y = 0.355602 * x + -102.581 x = 0.346771 * y + -802.046 var_min with w(x) = 0.509689
+     *
+     * C=opponent passed pawns exists
+     * [0] Total 46523024 Mean -557.925
+     * [0] Total 46523024 Std 5516.32
+     * [0] Total 46523024 Correlation(x,y) = 0.35322 y = 0.345524 * x + -793.715 x = 0.361087 * y + -28.7237 var_min with w(x) = 0.482976
      *
      * C=minor imbalance
      * [0] Total 46523024 Mean 504.072
@@ -795,7 +805,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                update(thisThread, us, ttMove, penalty, pos.passed_pawns());
+                update(thisThread, us, ttMove, penalty, pos.passed_pawns(us));
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -899,7 +909,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-19 * int((ss-1)->staticEval + ss->staticEval), -1914, 1914);
-        update(thisThread, ~us, (ss-1)->currentMove, bonus, pos.passed_pawns());
+        update(thisThread, ~us, (ss-1)->currentMove, bonus, pos.passed_pawns(~us));
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -1840,7 +1850,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            update(thisThread, us, quietsSearched[i], -bonus2, pos.passed_pawns());
+            update(thisThread, us, quietsSearched[i], -bonus2, pos.passed_pawns(us));
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1893,7 +1903,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    update(thisThread, us, move, bonus, pos.passed_pawns());
+    update(thisThread, us, move, bonus, pos.passed_pawns(us));
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
