@@ -59,17 +59,17 @@ using namespace Search;
 namespace {
 
     /*
-     * C = inCheck
+     * C = inCheck ELO 0.38 N 330816
      * [0] Total 46523024 Mean 2303.32
      * [0] Total 46523024 Std 5669.71
      * [0] Total 46523024 Correlation(x,y) = 0.0249837 y = 0.0135384 * x + 2259.98 x = 0.0461048 * y + -148.101 var_min with w(x) = 0.221153
      *
-     * C=priorPromotion
+     * C=priorPromotion ELO 0.12 N 165088
      * [0] Total 46523024 Mean -255.705
      * [0] Total 46523024 Std 5610.88
      * [0] Total 46523024 Correlation(x,y) = 0.0783046 y = 0.0470671 * x + -173.656 x = 0.130274 * y + 108.196 var_min with w(x) = 0.247977
      *
-     * C=queen imbalance
+     * C=queen imbalance ELO -0,08 N 118752
      * [0] Total 46523024 Mean 331.933
      * [0] Total 46523024 Std 5874.38
      * [0] Total 46523024 Correlation(x,y) = 0.147908 y = 0.188358 * x + 79.6245 x = 0.116144 * y + -313.309 var_min with w(x) = 0.638473
@@ -79,12 +79,12 @@ namespace {
      * [0] Total 46523024 Std 6015.45
      * [0] Total 46523024 Correlation(x,y) = 0.161413 y = 0.138508 * x + -1943.92 x = 0.188107 * y + 329.649 var_min with w(x) = 0.409657
      *
-     * C=prior null move
+     * C=prior null move ELO -0,29 N 9266
      * [0] Total 46523024 Mean 908.329
      * [0] Total 46523024 Std 5444.97
      * [0] Total 46523024 Correlation(x,y) = 0.226819 y = 0.163654 * x + 975.819 x = 0.314363 * y + -230.216 var_min with w(x) = 0.299121
      *
-     * C=opposite castling
+     * C=opposite castling ELO -0.48 N 77120
      * [0] Total 46523024 Mean -1382.88
      * [0] Total 46523024 Std 5842.73
      * [0] Total 46523024 Correlation(x,y) = 0.231848 y = 0.207131 * x + -1423.85 x = 0.259514 * y + 320.612 var_min with w(x) = 0.427071
