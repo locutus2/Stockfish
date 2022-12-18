@@ -1176,7 +1176,7 @@ moves_loop: // When in check, search starts here
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
           r -= (ss->statScore
-                + 13628 * (
+                + 0.1 * 13628 * (
                       + std::max(0.0,  PARAMS[0]) * ss->inCheck
                       + std::max(0.0, -PARAMS[0]) * !ss->inCheck
                       + std::max(0.0,  PARAMS[1]) * capture
