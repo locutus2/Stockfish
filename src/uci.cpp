@@ -248,7 +248,8 @@ namespace {
     };
 
     constexpr SCHEDULE schedule = SCH_POLY;
-    constexpr bool GAUSS = true;
+    constexpr bool FULL_RANDOM = true;
+    constexpr bool GAUSS = false;
 
     //constexpr double L = 10000;
     constexpr double POLY_ORDER = 10;
@@ -302,16 +303,24 @@ namespace {
             {
                 POLD[i] = PARAMS[i];
                 double rnd;
-                if (GAUSS)
-                    rnd = rngG(-1, 1);
+                if (FULL_RANDOM)
+                {
+                    rnd = rngU(MIN_PARAM, MAX_PARAM);
+                    PARAMS[i] = rnd;
+                }
                 else
-                    rnd = rngU(-1, 1);
+                {
+                    if (GAUSS)
+                        rnd = rngG(-1, 1);
+                    else
+                        rnd = rngU(-1, 1);
 
-                // random step to  a neighbour constraint by MIN_PARAM and MAX_PARAM
-                PARAMS[i] = std::min(MAX_PARAM, std::max(MIN_PARAM, PARAMS[i] + ALPHA * rnd));
-                // add also a momentum step in direction to the current best solution
-                PARAMS[i] += (MIN_MOMENTUM  + (MAX_MOMENTUM - MIN_MOMENTUM) * (1 - DYNAMIC_MOM * T / T0)) * (PBEST[i] - PARAMS[i]);
-                //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
+                    // random step to  a neighbour constraint by MIN_PARAM and MAX_PARAM
+                    PARAMS[i] = std::min(MAX_PARAM, std::max(MIN_PARAM, PARAMS[i] + ALPHA * rnd));
+                    // add also a momentum step in direction to the current best solution
+                    PARAMS[i] += (MIN_MOMENTUM  + (MAX_MOMENTUM - MIN_MOMENTUM) * (1 - DYNAMIC_MOM * T / T0)) * (PBEST[i] - PARAMS[i]);
+                    //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
+                }
             }
 
             nodes = 0;
