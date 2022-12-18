@@ -146,8 +146,8 @@ void MovePicker::score() {
                        - Value(type_of(pos.moved_piece(m)))
                        + (1 << 28);
           else
-              m.value =  PARAMS[0] * (*mainHistory)[pos.side_to_move()][from_to(m)]
-                       + PARAMS[1] * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
+              m.value =  (*mainHistory)[pos.side_to_move()][from_to(m)]
+                       + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
       }
 }
 

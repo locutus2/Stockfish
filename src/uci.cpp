@@ -286,7 +286,7 @@ namespace {
 
     // init params
     for(int i = 0; i < N_PARAMS; ++i)
-        PARAMS[i] = 1;
+        PARAMS[i] = 0;
 
     for(int i = 0; i < N_PARAMS; ++i)
         PBEST[i] = PARAMS[i];

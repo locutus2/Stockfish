@@ -1175,7 +1175,54 @@ moves_loop: // When in check, search starts here
                          - 4433;
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-          r -= ss->statScore / (13628 + 4000 * (depth > 7 && depth < 19));
+          r -= (ss->statScore
+                + 13628 * (
+                      + PARAMS[0] * ss->inCheck
+                      + PARAMS[1] * !ss->inCheck
+                      + PARAMS[2] * capture
+                      + PARAMS[3] * !capture
+                      + PARAMS[4] * improving
+                      + PARAMS[5] * !improving
+                      + PARAMS[6] * PvNode
+                      + PARAMS[7] * !PvNode
+                      + PARAMS[8] * cutNode
+                      + PARAMS[9] * !cutNode
+                      + PARAMS[10] * likelyFailLow
+                      + PARAMS[11] * !likelyFailLow
+                      + PARAMS[12] * ttCapture
+                      + PARAMS[13] * !ttCapture
+                      + PARAMS[14] * singularQuietLMR
+                      + PARAMS[15] * !singularQuietLMR
+                      + PARAMS[16] * (type_of(move) == PROMOTION)
+                      + PARAMS[17] * (type_of(move) != PROMOTION)
+                      + PARAMS[18] * ss->ttPv
+                      + PARAMS[19] * !ss->ttPv
+                      + PARAMS[20] * givesCheck
+                      + PARAMS[21] * !givesCheck
+                      + PARAMS[22] * priorCapture
+                      + PARAMS[23] * !priorCapture
+                      + PARAMS[24] * ((ss+1)->cutoffCnt > 3)
+                      + PARAMS[25] * ((ss+1)->cutoffCnt <= 3)
+                      + PARAMS[26] * bool(mp.threatenedPieces & from_sq(move))
+                      + PARAMS[27] * !(mp.threatenedPieces & from_sq(move))
+                      + PARAMS[28] * ((ss-1)->moveCount > 7)
+                      + PARAMS[29] * ((ss-1)->moveCount <= 7)
+                      + PARAMS[30] * ((ss-1)->currentMove == MOVE_NULL)
+                      + PARAMS[31] * ((ss-1)->currentMove != MOVE_NULL)
+                      + PARAMS[32] * bool(excludedMove)
+                      + PARAMS[33] * !(excludedMove)
+                      + PARAMS[34] * ss->ttHit
+                      + PARAMS[35] * !ss->ttHit
+                      + PARAMS[36] * bool(ttMove)
+                      + PARAMS[37] * !ttMove
+                      + PARAMS[38] * (countermove == move)
+                      + PARAMS[39] * (countermove != move)
+                      + PARAMS[40] * (ss->killers[0] == move)
+                      + PARAMS[41] * (ss->killers[0] != move)
+                      + PARAMS[42] * (ss->killers[1] == move)
+                      + PARAMS[43] * (ss->killers[1] != move)
+                          )) 
+               / (13628 + 4000 * (depth > 7 && depth < 19));
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
