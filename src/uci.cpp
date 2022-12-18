@@ -213,6 +213,9 @@ namespace {
 
     TimePoint elapsed = now();
 
+    for(int i = 0; i < N_PARAMS; ++i)
+        PARAMS[i] = 0;
+
     std::vector<Move> bestMove;
     for (const auto& cmd : list)
     {
@@ -273,8 +276,8 @@ namespace {
     double BETA = schedule == SCH_POLY ? POLY_ORDER :
                   schedule == SCH_LIN  ? (T0 - 1) / KMAX
               /* schedule == SCH_EXP */: std::pow(1 / T0, 1.0 / KMAX);
-    constexpr double MIN_PARAM = 0;
-    constexpr double MAX_PARAM = 2;
+    constexpr double MIN_PARAM = -1;
+    constexpr double MAX_PARAM = 1;
     //constexpr double MAX_PARAM = std::numeric_limits<double>::max();
     //constexpr int SHIFT = 128 * 4;
     //
@@ -285,8 +288,6 @@ namespace {
     double scorebest = score0;
 
     // init params
-    for(int i = 0; i < N_PARAMS; ++i)
-        PARAMS[i] = 0;
 
     for(int i = 0; i < N_PARAMS; ++i)
         PBEST[i] = PARAMS[i];

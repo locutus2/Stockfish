@@ -1177,50 +1177,50 @@ moves_loop: // When in check, search starts here
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
           r -= (ss->statScore
                 + 13628 * (
-                      + PARAMS[0] * ss->inCheck
-                      + PARAMS[1] * !ss->inCheck
-                      + PARAMS[2] * capture
-                      + PARAMS[3] * !capture
-                      + PARAMS[4] * improving
-                      + PARAMS[5] * !improving
-                      + PARAMS[6] * PvNode
-                      + PARAMS[7] * !PvNode
-                      + PARAMS[8] * cutNode
-                      + PARAMS[9] * !cutNode
-                      + PARAMS[10] * likelyFailLow
-                      + PARAMS[11] * !likelyFailLow
-                      + PARAMS[12] * ttCapture
-                      + PARAMS[13] * !ttCapture
-                      + PARAMS[14] * singularQuietLMR
-                      + PARAMS[15] * !singularQuietLMR
-                      + PARAMS[16] * (type_of(move) == PROMOTION)
-                      + PARAMS[17] * (type_of(move) != PROMOTION)
-                      + PARAMS[18] * ss->ttPv
-                      + PARAMS[19] * !ss->ttPv
-                      + PARAMS[20] * givesCheck
-                      + PARAMS[21] * !givesCheck
-                      + PARAMS[22] * priorCapture
-                      + PARAMS[23] * !priorCapture
-                      + PARAMS[24] * ((ss+1)->cutoffCnt > 3)
-                      + PARAMS[25] * ((ss+1)->cutoffCnt <= 3)
-                      + PARAMS[26] * bool(mp.threatenedPieces & from_sq(move))
-                      + PARAMS[27] * !(mp.threatenedPieces & from_sq(move))
-                      + PARAMS[28] * ((ss-1)->moveCount > 7)
-                      + PARAMS[29] * ((ss-1)->moveCount <= 7)
-                      + PARAMS[30] * ((ss-1)->currentMove == MOVE_NULL)
-                      + PARAMS[31] * ((ss-1)->currentMove != MOVE_NULL)
-                      + PARAMS[32] * bool(excludedMove)
-                      + PARAMS[33] * !(excludedMove)
-                      + PARAMS[34] * ss->ttHit
-                      + PARAMS[35] * !ss->ttHit
-                      + PARAMS[36] * bool(ttMove)
-                      + PARAMS[37] * !ttMove
-                      + PARAMS[38] * (countermove == move)
-                      + PARAMS[39] * (countermove != move)
-                      + PARAMS[40] * (ss->killers[0] == move)
-                      + PARAMS[41] * (ss->killers[0] != move)
-                      + PARAMS[42] * (ss->killers[1] == move)
-                      + PARAMS[43] * (ss->killers[1] != move)
+                      + std::max(0.0,  PARAMS[0]) * ss->inCheck
+                      + std::max(0.0, -PARAMS[0]) * !ss->inCheck
+                      + std::max(0.0,  PARAMS[1]) * capture
+                      + std::max(0.0, -PARAMS[1]) * !capture
+                      + std::max(0.0,  PARAMS[2]) * improving
+                      + std::max(0.0, -PARAMS[2]) * !improving
+                      + std::max(0.0,  PARAMS[3]) * PvNode
+                      + std::max(0.0, -PARAMS[3]) * !PvNode
+                      + std::max(0.0,  PARAMS[4]) * cutNode
+                      + std::max(0.0, -PARAMS[4]) * !cutNode
+                      + std::max(0.0,  PARAMS[5]) * likelyFailLow
+                      + std::max(0.0, -PARAMS[5]) * !likelyFailLow
+                      + std::max(0.0,  PARAMS[6]) * ttCapture
+                      + std::max(0.0, -PARAMS[6]) * !ttCapture
+                      + std::max(0.0,  PARAMS[7]) * singularQuietLMR
+                      + std::max(0.0, -PARAMS[7]) * !singularQuietLMR
+                      + std::max(0.0,  PARAMS[8]) * (type_of(move) == PROMOTION)
+                      + std::max(0.0, -PARAMS[8]) * !(type_of(move) == PROMOTION)
+                      + std::max(0.0,  PARAMS[9]) * ss->ttPv
+                      + std::max(0.0, -PARAMS[9]) * !ss->ttPv
+                      + std::max(0.0,  PARAMS[10]) * givesCheck
+                      + std::max(0.0, -PARAMS[10]) * !givesCheck
+                      + std::max(0.0,  PARAMS[11]) * priorCapture
+                      + std::max(0.0, -PARAMS[11]) * !priorCapture
+                      + std::max(0.0,  PARAMS[12]) * ((ss+1)->cutoffCnt > 3)
+                      + std::max(0.0, -PARAMS[12]) * !((ss+1)->cutoffCnt > 3)
+                      + std::max(0.0,  PARAMS[13]) * bool(mp.threatenedPieces & from_sq(move))
+                      + std::max(0.0, -PARAMS[13]) * !(mp.threatenedPieces & from_sq(move))
+                      + std::max(0.0,  PARAMS[14]) * ((ss-1)->moveCount > 7)
+                      + std::max(0.0, -PARAMS[14]) * !((ss-1)->moveCount > 7)
+                      + std::max(0.0,  PARAMS[15]) * ((ss-1)->currentMove == MOVE_NULL)
+                      + std::max(0.0, -PARAMS[15]) * !((ss-1)->currentMove == MOVE_NULL)
+                      + std::max(0.0,  PARAMS[16]) * bool(excludedMove)
+                      + std::max(0.0, -PARAMS[16]) * !excludedMove
+                      + std::max(0.0,  PARAMS[17]) * ss->ttHit
+                      + std::max(0.0, -PARAMS[17]) * !ss->ttHit
+                      + std::max(0.0,  PARAMS[18]) * bool(ttMove)
+                      + std::max(0.0, -PARAMS[18]) * !ttMove
+                      + std::max(0.0,  PARAMS[19]) * (countermove == move)
+                      + std::max(0.0, -PARAMS[19]) * !(countermove == move)
+                      + std::max(0.0,  PARAMS[20]) * (ss->killers[0] == move)
+                      + std::max(0.0, -PARAMS[20]) * !(ss->killers[0] == move)
+                      + std::max(0.0,  PARAMS[21]) * (ss->killers[1] == move)
+                      + std::max(0.0, -PARAMS[21]) * !(ss->killers[1] == move)
                           )) 
                / (13628 + 4000 * (depth > 7 && depth < 19));
 
