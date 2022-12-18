@@ -240,6 +240,7 @@ namespace {
         else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
     }
 
+    std::cerr << "nodes: " << nodes << std::endl;
     //std::cerr << "RUN: " << run << std::endl;
     std::srand(123456 + run);
     auto rngU = [](double a = 0, double b = 1)->double { return a + (b - a) * std::rand() / (double)RAND_MAX; };
@@ -299,7 +300,6 @@ namespace {
             double T = schedule == SCH_POLY ? T0 * std::pow(1 - it / (double)KMAX, BETA) :
                        schedule == SCH_LIN  ? T0 / (1 + BETA * it)
                    /* schedule == SCH_EXP */: T0 * std::pow(BETA, it); 
-            double new_score = nodes;
             for(int i = 0; i < N_PARAMS; ++i)
             {
                 POLD[i] = PARAMS[i];
@@ -348,7 +348,9 @@ namespace {
                 else if (token == "position")   position(pos, is, states);
                 else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
             }
+    std::cerr << "nodes: " << nodes << std::endl;
 
+            double new_score = nodes;
             for(int i = 0; i < (int)bestMove.size(); ++i)
             {
                 if (bestMove[i] != bestMove2[i])
