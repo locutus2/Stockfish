@@ -240,7 +240,7 @@ namespace {
         else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
     }
 
-    std::cerr << "nodes: " << nodes << std::endl;
+    //std::cerr << "nodes: " << nodes << std::endl;
     //std::cerr << "RUN: " << run << std::endl;
     std::srand(123456 + run);
     auto rngU = [](double a = 0, double b = 1)->double { return a + (b - a) * std::rand() / (double)RAND_MAX; };
@@ -348,7 +348,7 @@ namespace {
                 else if (token == "position")   position(pos, is, states);
                 else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
             }
-    std::cerr << "nodes: " << nodes << std::endl;
+            //std::cerr << "nodes: " << nodes << std::endl;
 
             double new_score = nodes;
             for(int i = 0; i < (int)bestMove.size(); ++i)
