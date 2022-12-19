@@ -252,9 +252,10 @@ namespace {
     };
 
     constexpr SCHEDULE schedule = SCH_POLY;
-    constexpr bool FULL_RANDOM = true;
-    constexpr bool GAUSS = false;
+    constexpr bool FULL_RANDOM = false;
+    constexpr bool GAUSS = true;
 
+    constexpr bool DYNAMIC_T0 = true;
     //constexpr double L = 10000;
     constexpr double POLY_ORDER = 10;
     constexpr double L = 0;
@@ -269,7 +270,9 @@ namespace {
     //constexpr double T0 = 2500000; // for ALPHA = 0.01
     //constexpr double T0 = 10000000; // for ALPHA = 0.1
     constexpr double ALPHA_BASE = 0.1;
-    constexpr double T_BASE = 10000000; // for ALPHA = 0.1
+    //constexpr double T_BASE = 10000000; // for ALPHA = 0.1
+    double T_BASE = nodes; // for ALPHA = 0.1
+    double T_DIFF_MAX = 0;
     double T0 = T_BASE;// * std::pow(ALPHA / ALPHA_BASE, 0.6); // for ALPHA = 0.1
     constexpr int KMAX = 100;
     constexpr int RESTARTS = 0;
@@ -359,6 +362,12 @@ namespace {
                 }
             }
 
+            if(DYNAMIC_T0)
+            {
+                //T_DIFF_MAX = std::max(T_DIFF_MAX, new_score - score);
+                T_DIFF_MAX = std::max(T_DIFF_MAX, std::abs(new_score - score));
+                T0 = 0.5 * T0 + 0.5 * T_DIFF_MAX;
+            }
 
             //dbg_mean_of((new_score - score)/1024);
             //dbg_std_of((new_score - score)/1024);
