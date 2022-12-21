@@ -213,6 +213,7 @@ namespace {
 
     TimePoint elapsed = now();
 
+    ACTIVE = false;
     for(int i = 0; i < N_PARAMS; ++i)
         PARAMS[i] = 0;
 
@@ -240,6 +241,7 @@ namespace {
         else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
     }
 
+    ACTIVE = true;
     //std::cerr << "nodes: " << nodes << std::endl;
     //std::cerr << "RUN: " << run << std::endl;
     std::srand(123456 + run);
@@ -252,8 +254,9 @@ namespace {
     };
 
     constexpr SCHEDULE schedule = SCH_POLY;
+    constexpr bool DISCRETE = true;
     constexpr bool FULL_RANDOM = false;
-    constexpr bool GAUSS = true;
+    constexpr bool GAUSS = false;
 
     constexpr bool DYNAMIC_T0 = true;
     //constexpr double L = 10000;
@@ -282,6 +285,8 @@ namespace {
               /* schedule == SCH_EXP */: std::pow(1 / T0, 1.0 / KMAX);
     constexpr double MIN_PARAM = -256;
     constexpr double MAX_PARAM = 256;
+    constexpr int LOWER_PARAM = -1;
+    constexpr int UPPER_PARAM = 1;
     //constexpr double MAX_PARAM = std::numeric_limits<double>::max();
     //constexpr int SHIFT = 128 * 4;
     //
@@ -313,27 +318,38 @@ namespace {
             double T = schedule == SCH_POLY ? T0 * std::pow(1 - it / (double)KMAX, BETA) :
                        schedule == SCH_LIN  ? T0 / (1 + BETA * it)
                    /* schedule == SCH_EXP */: T0 * std::pow(BETA, it); 
-            for(int i = 0; i < N_PARAMS; ++i)
+            if (DISCRETE)
             {
-                POLD[i] = PARAMS[i];
-                double rnd;
-                if (FULL_RANDOM)
-                {
-                    rnd = rngU(MIN_PARAM, MAX_PARAM);
-                    PARAMS[i] = rnd;
-                }
-                else
-                {
-                    if (GAUSS)
-                        rnd = rngG(-1, 1);
-                    else
-                        rnd = rngU(-1, 1);
+                for(int i = 0; i < N_PARAMS; ++i)
+                    POLD[i] = PARAMS[i];
 
-                    // random step to  a neighbour constraint by MIN_PARAM and MAX_PARAM
-                    PARAMS[i] = std::min(MAX_PARAM, std::max(MIN_PARAM, PARAMS[i] + ALPHA * rnd));
-                    // add also a momentum step in direction to the current best solution
-                    PARAMS[i] += (MIN_MOMENTUM  + (MAX_MOMENTUM - MIN_MOMENTUM) * (1 - DYNAMIC_MOM * T / T0)) * (PBEST[i] - PARAMS[i]);
-                    //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
+                int i = std::rand() % N_PARAMS;
+                PARAMS[i] = (PARAMS[i] + LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) % (UPPER_PARAM - LOWER_PARAM + 1) - LOWER_PARAM;
+            }
+            else
+            {
+                for(int i = 0; i < N_PARAMS; ++i)
+                {
+                    POLD[i] = PARAMS[i];
+                    double rnd;
+                    if (FULL_RANDOM)
+                    {
+                        rnd = rngU(MIN_PARAM, MAX_PARAM);
+                        PARAMS[i] = rnd;
+                    }
+                    else
+                    {
+                        if (GAUSS)
+                            rnd = rngG(-1, 1);
+                        else
+                            rnd = rngU(-1, 1);
+
+                        // random step to  a neighbour constraint by MIN_PARAM and MAX_PARAM
+                        PARAMS[i] = std::min(MAX_PARAM, std::max(MIN_PARAM, PARAMS[i] + ALPHA * rnd));
+                        // add also a momentum step in direction to the current best solution
+                        PARAMS[i] += (MIN_MOMENTUM  + (MAX_MOMENTUM - MIN_MOMENTUM) * (1 - DYNAMIC_MOM * T / T0)) * (PBEST[i] - PARAMS[i]);
+                        //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
+                    }
                 }
             }
 

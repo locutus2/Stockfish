@@ -512,6 +512,13 @@ void Thread::search() {
 
 namespace {
 
+    bool pcheck(int p, bool c)
+    {
+        return p == 1  ?  c :
+               p == -1 ? !c 
+               /*p==0*/: true;  
+    }
+
   // search<>() is the main search function for both PV and non-PV nodes
 
   template <NodeType nodeType>
@@ -1163,60 +1170,34 @@ moves_loop: // When in check, search starts here
                      + (*contHist[3])[movedPiece][to_sq(move)]
                      - 4433;
 
-          // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-           /*
-                + 0.1 * 13628 * (
-                      + std::max(0.0,  PARAMS[0]) * ss->inCheck
-                      + std::max(0.0, -PARAMS[0]) * !ss->inCheck
-                      + std::max(0.0,  PARAMS[1]) * capture
-                      + std::max(0.0, -PARAMS[1]) * !capture
-                      + std::max(0.0,  PARAMS[2]) * improving
-                      + std::max(0.0, -PARAMS[2]) * !improving
-                      + std::max(0.0,  PARAMS[3]) * PvNode
-                      + std::max(0.0, -PARAMS[3]) * !PvNode
-                      + std::max(0.0,  PARAMS[4]) * cutNode
-                      + std::max(0.0, -PARAMS[4]) * !cutNode
-                      + std::max(0.0,  PARAMS[5]) * likelyFailLow
-                      + std::max(0.0, -PARAMS[5]) * !likelyFailLow
-                      + std::max(0.0,  PARAMS[6]) * ttCapture
-                      + std::max(0.0, -PARAMS[6]) * !ttCapture
-                      + std::max(0.0,  PARAMS[7]) * singularQuietLMR
-                      + std::max(0.0, -PARAMS[7]) * !singularQuietLMR
-                      + std::max(0.0,  PARAMS[8]) * (type_of(move) == PROMOTION)
-                      + std::max(0.0, -PARAMS[8]) * !(type_of(move) == PROMOTION)
-                      + std::max(0.0,  PARAMS[9]) * ss->ttPv
-                      + std::max(0.0, -PARAMS[9]) * !ss->ttPv
-                      + std::max(0.0,  PARAMS[10]) * givesCheck
-                      + std::max(0.0, -PARAMS[10]) * !givesCheck
-                      + std::max(0.0,  PARAMS[11]) * priorCapture
-                      + std::max(0.0, -PARAMS[11]) * !priorCapture
-                      + std::max(0.0,  PARAMS[12]) * ((ss+1)->cutoffCnt > 3)
-                      + std::max(0.0, -PARAMS[12]) * !((ss+1)->cutoffCnt > 3)
-                      + std::max(0.0,  PARAMS[13]) * bool(mp.threatenedPieces & from_sq(move))
-                      + std::max(0.0, -PARAMS[13]) * !(mp.threatenedPieces & from_sq(move))
-                      + std::max(0.0,  PARAMS[14]) * ((ss-1)->moveCount > 7)
-                      + std::max(0.0, -PARAMS[14]) * !((ss-1)->moveCount > 7)
-                      + std::max(0.0,  PARAMS[15]) * ((ss-1)->currentMove == MOVE_NULL)
-                      + std::max(0.0, -PARAMS[15]) * !((ss-1)->currentMove == MOVE_NULL)
-                      + std::max(0.0,  PARAMS[16]) * bool(excludedMove)
-                      + std::max(0.0, -PARAMS[16]) * !excludedMove
-                      + std::max(0.0,  PARAMS[17]) * ss->ttHit
-                      + std::max(0.0, -PARAMS[17]) * !ss->ttHit
-                      + std::max(0.0,  PARAMS[18]) * bool(ttMove)
-                      + std::max(0.0, -PARAMS[18]) * !ttMove
-                      + std::max(0.0,  PARAMS[19]) * (countermove == move)
-                      + std::max(0.0, -PARAMS[19]) * !(countermove == move)
-                      + std::max(0.0,  PARAMS[20]) * (ss->killers[0] == move)
-                      + std::max(0.0, -PARAMS[20]) * !(ss->killers[0] == move)
-                      + std::max(0.0,  PARAMS[21]) * (ss->killers[1] == move)
-                      + std::max(0.0, -PARAMS[21]) * !(ss->killers[1] == move)
-                          )) 
-                          */
+      bool C =  (    pcheck(PARAMS[0], ss->inCheck)
+             && pcheck(PARAMS[1], capture)
+             && pcheck(PARAMS[2], improving)
+             && pcheck(PARAMS[3], PvNode)
+             && pcheck(PARAMS[4], cutNode)
+             && pcheck(PARAMS[5], likelyFailLow)
+             && pcheck(PARAMS[6], ttCapture)
+             && pcheck(PARAMS[7], singularQuietLMR)
+             && pcheck(PARAMS[8], (type_of(move) == PROMOTION))
+             && pcheck(PARAMS[9], ss->ttPv)
+             && pcheck(PARAMS[10], givesCheck)
+             && pcheck(PARAMS[11], priorCapture)
+             && pcheck(PARAMS[12], ((ss+1)->cutoffCnt > 3))
+             && pcheck(PARAMS[13], bool(mp.threatenedPieces & from_sq(move)))
+             && pcheck(PARAMS[14], ((ss-1)->moveCount > 7))
+             && pcheck(PARAMS[15], ((ss-1)->currentMove == MOVE_NULL))
+             && pcheck(PARAMS[16], bool(excludedMove))
+             && pcheck(PARAMS[17], ss->ttHit)
+             && pcheck(PARAMS[18], bool(ttMove))
+             && pcheck(PARAMS[19], (countermove == move))
+             && pcheck(PARAMS[20], (ss->killers[0] == move))
+             && pcheck(PARAMS[21], (ss->killers[1] == move))
+         );
+
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -= ss->statScore / (13000 + 4152 * (depth > 7 && depth < 19));
 
       bool CC = false;
-      bool C = false;
 
       // Step 17. Late moves reduction / extension (LMR, ~98 Elo)
       // We use various heuristics for the sons of a node after the first son has
@@ -1229,51 +1210,6 @@ moves_loop: // When in check, search starts here
               || (cutNode && (ss-1)->moveCount > 1)))
       {
           CC = true;
-          C = (  PARAMS[0] * ss->inCheck
-               + PARAMS[1] * !ss->inCheck
-               + PARAMS[2] * capture
-               + PARAMS[3] * !capture
-               + PARAMS[4] * improving
-               + PARAMS[5] * !improving
-               + PARAMS[6] * PvNode
-               + PARAMS[7] * !PvNode
-               + PARAMS[8] * cutNode
-               + PARAMS[9] * !cutNode
-               + PARAMS[10] * likelyFailLow
-               + PARAMS[11] * !likelyFailLow
-               + PARAMS[12] * ttCapture
-               + PARAMS[13] * !ttCapture
-               + PARAMS[14] * singularQuietLMR
-               + PARAMS[15] * !singularQuietLMR
-               + PARAMS[16] * (type_of(move) == PROMOTION)
-               + PARAMS[17] * !(type_of(move) == PROMOTION)
-               + PARAMS[18] * ss->ttPv
-               + PARAMS[19] * !ss->ttPv
-               + PARAMS[20] * givesCheck
-               + PARAMS[21] * !givesCheck
-               + PARAMS[22] * priorCapture
-               + PARAMS[23] * !priorCapture
-               + PARAMS[24] * ((ss+1)->cutoffCnt > 3)
-               + PARAMS[25] * !((ss+1)->cutoffCnt > 3)
-               + PARAMS[26] * bool(mp.threatenedPieces & from_sq(move))
-               + PARAMS[27] * !(mp.threatenedPieces & from_sq(move))
-               + PARAMS[28] * ((ss-1)->moveCount > 7)
-               + PARAMS[29] * !((ss-1)->moveCount > 7)
-               + PARAMS[30] * ((ss-1)->currentMove == MOVE_NULL)
-               + PARAMS[31] * !((ss-1)->currentMove == MOVE_NULL)
-               + PARAMS[32] * bool(excludedMove)
-               + PARAMS[33] * !excludedMove
-               + PARAMS[34] * ss->ttHit
-               + PARAMS[35] * !ss->ttHit
-               + PARAMS[36] * bool(ttMove)
-               + PARAMS[37] * !ttMove
-               + PARAMS[38] * (countermove == move)
-               + PARAMS[39] * !(countermove == move)
-               + PARAMS[40] * (ss->killers[0] == move)
-               + PARAMS[41] * !(ss->killers[0] == move)
-               + PARAMS[42] * (ss->killers[1] == move)
-               + PARAMS[43] * !(ss->killers[1] == move)
-               ) > 0;
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
@@ -1384,8 +1320,8 @@ moves_loop: // When in check, search starts here
       if(CC)
       {
           bool T = value > alpha;
-          dbg_hit_on(T != C);
-          dbg_hit_on(T, 1);
+          dbg_hit_on(C, !T);
+          //dbg_hit_on(!T, 1);
       }
 
       if (value > bestValue)
