@@ -321,6 +321,8 @@ static std::atomic<int64_t> hits[DBG_N][2], means[DBG_N][2], stds[DBG_N][3], cov
 static std::atomic<int64_t> Chits[DBG_N][DBG_C3][2];
 static std::atomic<int64_t> ChitsCmp[DBG_N][DBG_C3][3];
 
+double dbg_get_hit_on(int n) { return hits[n][0] ? hits[n][1] / (double)hits[n][0] : std::numeric_limits<double>::max(); }
+
 void dbg_hit_on(bool b, int n, int w) { hits[n][0] += w; if (b) hits[n][1] += w; }
 void dbg_hit_on(bool c, bool b, int n, int w) { if (c) dbg_hit_on(b, n, w); }
 void dbg_mean_of(int v, int n, int w) { means[n][0] += w; means[n][1] += w*v; }
@@ -336,6 +338,14 @@ void dbg_linc(int x1, int x2, int y, int n, int w) { linc[n][0] += w; linc[n][1]
 void dbg_cramer_of(bool x, bool y, int n, int w) { cramer[n][0] += w; cramer[n][2*x+y+1] += w;}
 void dbg_chi2_of(bool x, bool y, int n, int w) { chi2[n][0] += w; chi2[n][2*x+y+1] += w;}
 void dbg_gain_ratio(bool x, bool y, int n, int w) { gain[n][0] += w; gain[n][2*x+y+1] += w;}
+
+void dbg_clear() {
+
+	for(int i = 0; i  < DBG_N; ++i)
+    {
+        hits[i][0] = hits[i][1] = 0;
+    }
+}
 
 void dbg_hit_on(std::vector<bool>& c, bool b, int n, int w) { 
 	const int cn = (int)c.size();

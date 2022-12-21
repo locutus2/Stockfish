@@ -264,7 +264,7 @@ namespace {
     constexpr double DYNAMIC_MOM = 1;
     //constexpr double ALPHA = 0.001;
     //constexpr double ALPHA = 0.01; // base
-    constexpr double ALPHA = 0.1;
+    constexpr double ALPHA = 1;
     //constexpr double ALPHA = 1;
     //constexpr double T0 = 100000000;
     //constexpr double T0 = 2500000; // for ALPHA = 0.01
@@ -280,16 +280,25 @@ namespace {
     double BETA = schedule == SCH_POLY ? POLY_ORDER :
                   schedule == SCH_LIN  ? (T0 - 1) / KMAX
               /* schedule == SCH_EXP */: std::pow(1 / T0, 1.0 / KMAX);
-    constexpr double MIN_PARAM = -1;
-    constexpr double MAX_PARAM = 1;
+    constexpr double MIN_PARAM = -256;
+    constexpr double MAX_PARAM = 256;
     //constexpr double MAX_PARAM = std::numeric_limits<double>::max();
     //constexpr int SHIFT = 128 * 4;
     //
-    double score0 = nodes;
+    //double score0 = nodes;
+    double score0 = dbg_get_hit_on();
     double score = score0;
     double POLD[N_PARAMS];
     double PBEST[N_PARAMS];
     double scorebest = score0;
+
+    std::cerr << "=> BEST:";
+    for(int i = 0; i < N_PARAMS; ++i)
+    {
+        std::cerr << " " << PARAMS[i];
+    }
+    std::cerr << std::endl;
+    std::cerr << "it: " << 0 << " s: " << score << " T: " << T0 << " sr: " << score/score0 << std::endl;
 
     // init params
 
@@ -300,6 +309,7 @@ namespace {
     {
         for(int it = 0; it < KMAX; it++)
         {
+            dbg_clear();
             double T = schedule == SCH_POLY ? T0 * std::pow(1 - it / (double)KMAX, BETA) :
                        schedule == SCH_LIN  ? T0 / (1 + BETA * it)
                    /* schedule == SCH_EXP */: T0 * std::pow(BETA, it); 
@@ -353,7 +363,8 @@ namespace {
             }
             //std::cerr << "nodes: " << nodes << std::endl;
 
-            double new_score = nodes;
+            //double new_score = nodes;
+            double new_score = dbg_get_hit_on();
             for(int i = 0; i < (int)bestMove.size(); ++i)
             {
                 if (bestMove[i] != bestMove2[i])

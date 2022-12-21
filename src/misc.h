@@ -56,7 +56,9 @@ void dbg_hit_on_cmp(std::vector<bool>& c, bool b, int n, int m, int w = 1);
 
 void dbg_print();
 void dbg_printc();
+void dbg_clear();
 
+double dbg_get_hit_on(int n = 0);
 
 typedef std::chrono::milliseconds::rep TimePoint; // A value in milliseconds
 static_assert(sizeof(TimePoint) == sizeof(int64_t), "TimePoint should be 64 bits");
