@@ -258,7 +258,7 @@ namespace {
     constexpr bool FULL_RANDOM = false;
     constexpr bool GAUSS = false;
 
-    constexpr bool DYNAMIC_T0 = true;
+    constexpr bool DYNAMIC_T0 = false;
     //constexpr double L = 10000;
     constexpr double POLY_ORDER = 10;
     constexpr double L = 0;
@@ -274,7 +274,7 @@ namespace {
     //constexpr double T0 = 10000000; // for ALPHA = 0.1
     constexpr double ALPHA_BASE = 0.1;
     //constexpr double T_BASE = 10000000; // for ALPHA = 0.1
-    double T_BASE = nodes; // for ALPHA = 0.1
+    double T_BASE = 1;//nodes; // for ALPHA = 0.1
     double T_DIFF_MAX = 0;
     double T0 = T_BASE;// * std::pow(ALPHA / ALPHA_BASE, 0.6); // for ALPHA = 0.1
     constexpr int KMAX = 100;
