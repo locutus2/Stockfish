@@ -297,6 +297,11 @@ namespace {
     double PBEST[N_PARAMS];
     double scorebest = score0;
 
+    if (DYNAMIC_T0)
+    {
+        T0 = score0;
+    }
+
     std::cerr << "=> BEST:";
     for(int i = 0; i < N_PARAMS; ++i)
     {
