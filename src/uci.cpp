@@ -324,7 +324,7 @@ namespace {
                     POLD[i] = PARAMS[i];
 
                 int i = std::rand() % N_PARAMS;
-                PARAMS[i] = (PARAMS[i] + LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) % (UPPER_PARAM - LOWER_PARAM + 1) - LOWER_PARAM;
+                PARAMS[i] = (PARAMS[i] - LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) % (UPPER_PARAM - LOWER_PARAM + 1) + LOWER_PARAM;
             }
             else
             {
