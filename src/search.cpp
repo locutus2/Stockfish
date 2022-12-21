@@ -1157,36 +1157,23 @@ moves_loop: // When in check, search starts here
       if ((ss+1)->cutoffCnt > 3)
           r++;
 
+      if (   givesCheck
+          && ss->killers[0] == move
+          && cutNode
+          && improving
+          && type_of(move) != PROMOTION
+          && !ss->ttPv
+          && !priorCapture
+          && (ss+1)->cutoffCnt <= 3
+          && (ss-1)->moveCount > 7
+          && !ttMove)
+          r--;
+
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
                      + (*contHist[1])[movedPiece][to_sq(move)]
                      + (*contHist[3])[movedPiece][to_sq(move)]
                      - 4433;
-
-      if (  207 * ss->inCheck
-          + 254 * capture
-          -  20 * improving
-          - 293 * PvNode
-          + 165 * cutNode
-          + 274 * likelyFailLow
-          + 197 * ttCapture
-          +  93 * singularQuietLMR
-          + 185 * (type_of(move) == PROMOTION)
-          - 220 * ss->ttPv
-          - 125 * givesCheck
-          + 115 * priorCapture
-          -  86 * ((ss+1)->cutoffCnt > 3)
-          - 127 * bool(mp.threatenedPieces & from_sq(move))
-          + 104 * ((ss-1)->moveCount > 7)
-          +  85 * ((ss-1)->currentMove == MOVE_NULL)
-          -  95 * bool(excludedMove)
-          -  79 * ss->ttHit
-          - 295 * bool(ttMove)
-          - 114 * (countermove == move)
-          +  54 * (ss->killers[0] == move)
-          + 217 * (ss->killers[1] == move)
-          > 821)
-          r--;
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -= ss->statScore / (13000 + 4152 * (depth > 7 && depth < 19));
