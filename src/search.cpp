@@ -1192,8 +1192,8 @@ moves_loop: // When in check, search starts here
              && pcheck(PARAMS[19], (countermove == move))
              && pcheck(PARAMS[20], (ss->killers[0] == move))
              && pcheck(PARAMS[21], (ss->killers[1] == move))
-             && pcheck(PARAMS[22], (ss->staticEval >= beta))
-             && pcheck(PARAMS[23], (eval >= beta))
+             && pcheck(PARAMS[22], (ss->staticEval > alpha))
+             && pcheck(PARAMS[23], (eval > alpha))
          );
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
@@ -1322,7 +1322,7 @@ moves_loop: // When in check, search starts here
       if(CC)
       {
           bool T = value > alpha;
-          dbg_hit_on(C, !T);
+          dbg_hit_on(C, T);
           //dbg_hit_on(!T, 1);
       }
 
