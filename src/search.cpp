@@ -1193,7 +1193,44 @@ moves_loop: // When in check, search starts here
              && pcheck(PARAMS[20], (ss->killers[0] == move))
              && pcheck(PARAMS[21], (ss->killers[1] == move))
              && pcheck(PARAMS[22], (ss->staticEval > alpha))
-             && pcheck(PARAMS[23], (eval > alpha))
+             && pcheck(PARAMS[23], (eval > alpha)
+             && pcheck(PARAMS[24], (ss-1)->ttPv)
+             && pcheck(PARAMS[25], (ss-1)->inCheck)
+             && pcheck(PARAMS[26], bool((ss-1)->excludedMove))
+             && pcheck(PARAMS[27], ((ss-2)->currentMove == MOVE_NULL))
+             && pcheck(PARAMS[28], (ss-2)->ttPv)
+             && pcheck(PARAMS[29], (ss-2)->inCheck)
+             && pcheck(PARAMS[30], bool((ss-2)->excludedMove))
+             && pcheck(PARAMS[31], ((ss-3)->currentMove == MOVE_NULL))
+         );
+
+      // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
+      r -= ss->statScore / (13000 + 4152 * (depth > 7 && depth < 19));
+
+      bool CC = false;
+
+      // Step 17. Late moves reduction / extension (LMR, ~98 Elo)
+      // We use various heuristics for the sons of a node after the first son has
+      // been searched. In general we would like to reduce them, but there are many
+      // cases where we extend a son if it has good chances to be "interesting".
+      if (    depth >= 2
+          &&  moveCount > 1 + (PvNode && ss->ply <= 1)
+          && (   !ss->ttPv
+              || !capture
+              || (cutNode && (ss-1)->moveCount > 1)))
+      {
+          CC = true;
+
+          // In general we want to cap the LMR depth search at newDepth, but when
+          // reduction is negative, we allow this move a limited search extension
+          // beyond the first move depth. This may lead to hidden double extensions.
+          Depth d = std::clamp(newDepth - r, 1, newDepth + 1);
+
+          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
+
+          // Do full depth search when reduced LMR search fails high
+          if (value > alpha && d < newDepth)
+          {
          );
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
