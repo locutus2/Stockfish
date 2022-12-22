@@ -1231,35 +1231,6 @@ moves_loop: // When in check, search starts here
           // Do full depth search when reduced LMR search fails high
           if (value > alpha && d < newDepth)
           {
-         );
-
-      // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-      r -= ss->statScore / (13000 + 4152 * (depth > 7 && depth < 19));
-
-      bool CC = false;
-
-      // Step 17. Late moves reduction / extension (LMR, ~98 Elo)
-      // We use various heuristics for the sons of a node after the first son has
-      // been searched. In general we would like to reduce them, but there are many
-      // cases where we extend a son if it has good chances to be "interesting".
-      if (    depth >= 2
-          &&  moveCount > 1 + (PvNode && ss->ply <= 1)
-          && (   !ss->ttPv
-              || !capture
-              || (cutNode && (ss-1)->moveCount > 1)))
-      {
-          CC = true;
-
-          // In general we want to cap the LMR depth search at newDepth, but when
-          // reduction is negative, we allow this move a limited search extension
-          // beyond the first move depth. This may lead to hidden double extensions.
-          Depth d = std::clamp(newDepth - r, 1, newDepth + 1);
-
-          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
-
-          // Do full depth search when reduced LMR search fails high
-          if (value > alpha && d < newDepth)
-          {
               // Adjust full depth search based on LMR results - if result
               // was good enough search deeper, if it was bad enough search shallower
               const bool doDeeperSearch = value > (alpha + 64 + 11 * (newDepth - d));
