@@ -22,6 +22,7 @@
 #include <random>
 #include <sstream>
 #include <string>
+#include <set>
 
 #include "evaluate.h"
 #include "movegen.h"
