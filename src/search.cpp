@@ -1189,7 +1189,7 @@ moves_loop: // When in check, search starts here
              && pcheck(PARAMS[16], bool(excludedMove))
              && pcheck(PARAMS[17], ss->ttHit)
              && pcheck(PARAMS[18], bool(ttMove))
-             && pcheck(PARAMS[19], (countermove == move))
+             && pcheck(PARAMS[19], countermove == move)
              && pcheck(PARAMS[20], ss->killers[0] == move)
              && pcheck(PARAMS[21], ss->killers[1] == move)
              && pcheck(PARAMS[22], ss->staticEval > alpha)
@@ -1200,9 +1200,9 @@ moves_loop: // When in check, search starts here
              && pcheck(PARAMS[27], (ss-2)->currentMove == MOVE_NULL)
              && pcheck(PARAMS[28], (ss-2)->ttPv)
              && pcheck(PARAMS[29], (ss-2)->inCheck)
-             && pcheck(PARAMS[30], bool((ss-2)->excludedMove)))
+             && pcheck(PARAMS[30], bool((ss-2)->excludedMove))
              && pcheck(PARAMS[31], (ss-3)->currentMove == MOVE_NULL)
-         );
+             );
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -= ss->statScore / (13000 + 4152 * (depth > 7 && depth < 19));
