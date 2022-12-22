@@ -1157,17 +1157,18 @@ moves_loop: // When in check, search starts here
       if ((ss+1)->cutoffCnt > 3)
           r++;
 
-      if (   givesCheck
-          && ss->killers[0] == move
-          && cutNode
-          && improving
+      // Increase reduction for quiet moves at former PV nodes after a null move
+      if (   (ss-1)->currentMove != MOVE_NULL
+          && ss->ttPv
+          && !capture
+          && !improving
+          && ttCapture
           && type_of(move) != PROMOTION
-          && !ss->ttPv
-          && !priorCapture
-          && (ss+1)->cutoffCnt <= 3
-          && (ss-1)->moveCount > 7
-          && !ttMove)
-          r--;
+          && !givesCheck
+          && priorCapture
+          && ss->killers[0] != move
+          && eval <= alpha)
+          r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
