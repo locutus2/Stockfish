@@ -253,6 +253,7 @@ namespace {
         return d(gen); 
     };
 
+    constexpr double PCONT = 0.5;
     constexpr SCHEDULE schedule = SCH_POLY;
     constexpr bool DISCRETE = true;
     constexpr bool FULL_RANDOM = false;
@@ -329,8 +330,17 @@ namespace {
                 for(int i = 0; i < N_PARAMS; ++i)
                     POLD[i] = PARAMS[i];
 
-                int i = std::rand() % N_PARAMS;
-                PARAMS[i] = (PARAMS[i] - LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) % (UPPER_PARAM - LOWER_PARAM + 1) + LOWER_PARAM;
+                std::set<int> used;
+                do
+                {
+                    int i = std::rand() % N_PARAMS;
+                    if(used.find(i) == used.end())
+                    {
+                        used.insert(i);
+                        PARAMS[i] = (PARAMS[i] - LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) % (UPPER_PARAM - LOWER_PARAM + 1) + LOWER_PARAM;
+                    }
+                }
+                while(rngU() <= PCONT);
             }
             else
             {
