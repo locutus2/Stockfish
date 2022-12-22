@@ -417,7 +417,7 @@ namespace {
             //dbg_std_of((new_score - score)/1024);
 
             double e = std::exp(-(new_score - score)/T);
-            if (e >= rngU())
+            if (new_score < 1 && e >= rngU())
             {
                 score = new_score;
 
