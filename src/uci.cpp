@@ -309,6 +309,7 @@ namespace {
     }
     std::cerr << std::endl;
     std::cerr << "it: " << 0 << " s: " << score << " T: " << T0 << " sr: " << score/score0 << std::endl;
+    dbg_print();
 
     // init params
 
