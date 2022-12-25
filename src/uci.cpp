@@ -280,7 +280,7 @@ namespace {
     double T_DIFF_MAX = 0;
     double T0 = T_BASE;// * std::pow(ALPHA / ALPHA_BASE, 0.6); // for ALPHA = 0.1
     constexpr int KMAX = 100;
-    constexpr int RESTARTS = 0;
+    constexpr int RESTARTS = 10;
     //constexpr double BETA = POLY_TEMP ? POLY_ORDER : 0.98;
     double BETA = schedule == SCH_POLY ? POLY_ORDER :
                   schedule == SCH_LIN  ? (T0 - 1) / KMAX
