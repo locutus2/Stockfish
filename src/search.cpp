@@ -1157,18 +1157,16 @@ moves_loop: // When in check, search starts here
       if ((ss+1)->cutoffCnt > 3)
           r++;
 
-      if (   improving
-          && !ttCapture
+      if (   r <= 0
+          && improving
+          && PvNode
           && type_of(move) != PROMOTION
-          && !ss->ttPv
-          && !priorCapture
-          && (ss-1)->moveCount > 7
-          && !excludedMove
-          && countermove == move
-          && ss->killers[0] == move
-          && ss->staticEval > alpha
-          && eval > alpha)
-          r--;
+          && !givesCheck
+          && (ss+1)->cutoffCnt > 3
+          && ss->killers[0] != move
+          && ss->killers[1] != move
+          && ss->staticEval <= alpha)
+          r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
