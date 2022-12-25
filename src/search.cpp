@@ -1170,7 +1170,9 @@ moves_loop: // When in check, search starts here
                      + (*contHist[3])[movedPiece][to_sq(move)]
                      - 4433;
 
-      bool C =  (    pcheck(PARAMS[0], ss->inCheck)
+      /*
+      bool C =  (    
+              pcheck(PARAMS[0], ss->inCheck)
              && pcheck(PARAMS[1], capture)
              && pcheck(PARAMS[2], improving)
              && pcheck(PARAMS[3], PvNode)
@@ -1203,6 +1205,11 @@ moves_loop: // When in check, search starts here
              && pcheck(PARAMS[30], bool((ss-2)->excludedMove))
              && pcheck(PARAMS[31], (ss-3)->currentMove == MOVE_NULL)
              );
+             */
+      bool C =  true;
+      for(Square s = SQ_A1; C && s <= SQ_H8; ++s)
+         for(Piece p = NO_PIECE; C && p < PIECE_NB; ++p)
+             C = C && pcheck(PARAMS[PIECE_NB * relative_square(us, s) + p], pos.piece_on(relative_square(us, s)) == p);
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -= ss->statScore / (13000 + 4152 * (depth > 7 && depth < 19));
@@ -1219,7 +1226,7 @@ moves_loop: // When in check, search starts here
               || !capture
               || (cutNode && (ss-1)->moveCount > 1)))
       {
-          CC = (r <= 0);
+          CC = true;
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
