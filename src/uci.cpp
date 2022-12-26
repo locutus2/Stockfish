@@ -255,7 +255,7 @@ namespace {
     };
 
     constexpr double PCONT = 0.5;
-    constexpr SCHEDULE schedule = SCH_POLY;
+    constexpr SCHEDULE schedule = SCH_EXP;
     constexpr bool DISCRETE = true;
     constexpr bool FULL_RANDOM = false;
     constexpr bool GAUSS = false;
@@ -276,15 +276,15 @@ namespace {
     //constexpr double T0 = 10000000; // for ALPHA = 0.1
     constexpr double ALPHA_BASE = 0.1;
     //constexpr double T_BASE = 10000000; // for ALPHA = 0.1
-    double T_BASE = 1;//nodes; // for ALPHA = 0.1
     double T_DIFF_MAX = 0;
+    constexpr int KMAX = 100;
+    constexpr int RESTARTS = 10;
+    double T_BASE = 1;//nodes; // for ALPHA = 0.1
     double T0 = T_BASE;// * std::pow(ALPHA / ALPHA_BASE, 0.6); // for ALPHA = 0.1
-    constexpr int KMAX = 1000;
-    constexpr int RESTARTS = 1;
     //constexpr double BETA = POLY_TEMP ? POLY_ORDER : 0.98;
-    double BETA = schedule == SCH_POLY ? POLY_ORDER :
-                  schedule == SCH_LIN  ? (T0 - 1) / KMAX
-              /* schedule == SCH_EXP */: std::pow(1 / T0, 1.0 / KMAX);
+    //double BETA = schedule == SCH_POLY ? POLY_ORDER :
+    //              schedule == SCH_LIN  ? (T0 - 1) / KMAX
+    //          /* schedule == SCH_EXP */: std::pow(1 / T0, 1.0 / KMAX);
     constexpr double MIN_PARAM = -256;
     constexpr double MAX_PARAM = 256;
     constexpr int LOWER_PARAM = -1;
@@ -299,10 +299,22 @@ namespace {
     double PBEST[N_PARAMS];
     double scorebest = score0;
 
+    constexpr double P0 = 0.999;
+    constexpr double DELTA0 = 1;
+    T0 = -DELTA0 / std::log(P0);
+
+    constexpr double P1 = 0.001;
+    constexpr double T1 = -DELTA0 / std::log(P1);
+
+    double BETA = schedule == SCH_POLY ? (1 - std::pow(T1/T0, 1.0/POLY_ORDER)) / KMAX:
+                  schedule == SCH_LIN  ? (T0/T1 - 1) / KMAX
+              /* schedule == SCH_EXP */: std::log(T1 / T0) / KMAX;
+
     if (DYNAMIC_T0)
     {
         T0 = score0;
     }
+
 
     std::cerr << "=> BEST:";
     for(int i = 0; i < N_PARAMS; ++i)
@@ -323,7 +335,8 @@ namespace {
         for(int it = 0; it < KMAX; it++)
         {
             dbg_clear();
-            double T = schedule == SCH_POLY ? T0 * std::pow(1 - it / (double)KMAX, BETA) :
+            //double T = schedule == SCH_POLY ? T0 * std::pow(1 - it / (double)KMAX, BETA) :
+            double T = schedule == SCH_POLY ? T0 * std::pow(1 - BETA * it, POLY_ORDER) :
                        schedule == SCH_LIN  ? T0 / (1 + BETA * it)
                    /* schedule == SCH_EXP */: T0 * std::pow(BETA, it); 
             if (DISCRETE)
