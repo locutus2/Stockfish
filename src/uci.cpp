@@ -277,8 +277,8 @@ namespace {
     constexpr double ALPHA_BASE = 0.1;
     //constexpr double T_BASE = 10000000; // for ALPHA = 0.1
     double T_DIFF_MAX = 0;
-    constexpr int KMAX = 100;
-    constexpr int RESTARTS = 10;
+    constexpr int KMAX = 1000;
+    constexpr int RESTARTS = 1;
     double T_BASE = 1;//nodes; // for ALPHA = 0.1
     double T0 = T_BASE;// * std::pow(ALPHA / ALPHA_BASE, 0.6); // for ALPHA = 0.1
     //constexpr double BETA = POLY_TEMP ? POLY_ORDER : 0.98;
@@ -308,8 +308,9 @@ namespace {
 
     double BETA = schedule == SCH_POLY ? (1 - std::pow(T1/T0, 1.0/POLY_ORDER)) / KMAX:
                   schedule == SCH_LIN  ? (T0/T1 - 1) / KMAX
-              /* schedule == SCH_EXP */: std::log(T1 / T0) / KMAX;
+              /* schedule == SCH_EXP */: -std::log(T1 / T0) / KMAX;
 
+    std::cerr << "BETA=" << BETA << std::endl;
     if (DYNAMIC_T0)
     {
         T0 = score0;
@@ -338,7 +339,8 @@ namespace {
             //double T = schedule == SCH_POLY ? T0 * std::pow(1 - it / (double)KMAX, BETA) :
             double T = schedule == SCH_POLY ? T0 * std::pow(1 - BETA * it, POLY_ORDER) :
                        schedule == SCH_LIN  ? T0 / (1 + BETA * it)
-                   /* schedule == SCH_EXP */: T0 * std::pow(BETA, it); 
+                   /* schedule == SCH_EXP */: T0 * std::exp(-BETA * it); 
+            //std::cerr << "SET T=" << T << " T0=" << T0 << " T1=" << T1 << " it=" << it << std::endl;
             if (DISCRETE)
             {
                 for(int i = 0; i < N_PARAMS; ++i)
