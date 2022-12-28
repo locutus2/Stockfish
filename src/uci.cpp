@@ -257,6 +257,7 @@ namespace {
     constexpr double PCONT = 0.5;
     constexpr SCHEDULE schedule = SCH_EXP;
     constexpr bool DISCRETE = true;
+    constexpr bool ONE_STEP = true;
     constexpr bool FULL_RANDOM = false;
     constexpr bool GAUSS = false;
 
@@ -278,8 +279,8 @@ namespace {
     //constexpr double T_BASE = 10000000; // for ALPHA = 0.1
     double T_DIFF_MAX = 0;
     constexpr int KMAX = 100;
-    constexpr int LE = 1;
-    constexpr int RESTARTS = 10;
+    constexpr int LE = 2 * N_PARAMS;//1;
+    constexpr int RESTARTS = 1;
     double T_BASE = 1;//nodes; // for ALPHA = 0.1
     double T0 = T_BASE;// * std::pow(ALPHA / ALPHA_BASE, 0.6); // for ALPHA = 0.1
     //constexpr double BETA = POLY_TEMP ? POLY_ORDER : 0.98;
@@ -350,17 +351,27 @@ namespace {
                     for(int i = 0; i < N_PARAMS; ++i)
                         POLD[i] = PARAMS[i];
 
-                    std::set<int> used;
-                    do
+                    if (ONE_STEP)
                     {
                         int i = std::rand() % N_PARAMS;
-                        if(used.find(i) == used.end())
-                        {
-                            used.insert(i);
-                            PARAMS[i] = (PARAMS[i] - LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) % (UPPER_PARAM - LOWER_PARAM + 1) + LOWER_PARAM;
-                        }
+                        PARAMS[i] = (PARAMS[i] - LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) 
+                                   % (UPPER_PARAM - LOWER_PARAM + 1) + LOWER_PARAM;
                     }
-                    while(rngU() <= PCONT);
+                    else
+                    {
+                        std::set<int> used;
+                        do
+                        {
+                            int i = std::rand() % N_PARAMS;
+                            if(used.find(i) == used.end())
+                            {
+                                used.insert(i);
+                                PARAMS[i] = (PARAMS[i] - LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1)
+                                           % (UPPER_PARAM - LOWER_PARAM + 1) + LOWER_PARAM;
+                            }
+                        }
+                        while(rngU() <= PCONT);
+                    }
                 }
                 else
                 {
