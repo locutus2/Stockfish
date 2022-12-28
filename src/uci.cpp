@@ -278,7 +278,7 @@ namespace {
     constexpr double ALPHA_BASE = 0.1;
     //constexpr double T_BASE = 10000000; // for ALPHA = 0.1
     double T_DIFF_MAX = 0;
-    constexpr int KMAX = 100;
+    constexpr int KMAX = 1000;
     constexpr int LE = 1;//2 * N_PARAMS;//1;
     constexpr int RESTARTS = 1;
     double T_BASE = 1;//nodes; // for ALPHA = 0.1
