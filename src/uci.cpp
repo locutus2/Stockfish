@@ -279,7 +279,7 @@ namespace {
     //constexpr double T_BASE = 10000000; // for ALPHA = 0.1
     double T_DIFF_MAX = 0;
     constexpr int KMAX = 100;
-    constexpr int LE = 2 * N_PARAMS;//1;
+    constexpr int LE = 1;//2 * N_PARAMS;//1;
     constexpr int RESTARTS = 1;
     double T_BASE = 1;//nodes; // for ALPHA = 0.1
     double T0 = T_BASE;// * std::pow(ALPHA / ALPHA_BASE, 0.6); // for ALPHA = 0.1
