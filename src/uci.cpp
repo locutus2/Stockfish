@@ -278,6 +278,7 @@ namespace {
     //constexpr double T_BASE = 10000000; // for ALPHA = 0.1
     double T_DIFF_MAX = 0;
     constexpr int KMAX = 100;
+    constexpr int LE = 1;
     constexpr int RESTARTS = 10;
     double T_BASE = 1;//nodes; // for ALPHA = 0.1
     double T0 = T_BASE;// * std::pow(ALPHA / ALPHA_BASE, 0.6); // for ALPHA = 0.1
@@ -333,134 +334,140 @@ namespace {
 
     for(int r =0; r <= RESTARTS; r++)
     {
-        for(int it = 0; it < KMAX; it++)
+        int it = 0;
+        for(int k = 0; k < KMAX; k++)
         {
-            dbg_clear();
             //double T = schedule == SCH_POLY ? T0 * std::pow(1 - it / (double)KMAX, BETA) :
-            double T = schedule == SCH_POLY ? T0 * std::pow(1 - BETA * it, POLY_ORDER) :
-                       schedule == SCH_LIN  ? T0 / (1 + BETA * it)
-                   /* schedule == SCH_EXP */: T0 * std::exp(-BETA * it); 
-            //std::cerr << "SET T=" << T << " T0=" << T0 << " T1=" << T1 << " it=" << it << std::endl;
-            if (DISCRETE)
+            double T = schedule == SCH_POLY ? T0 * std::pow(1 - BETA * k, POLY_ORDER) :
+                       schedule == SCH_LIN  ? T0 / (1 + BETA * k)
+                   /* schedule == SCH_EXP */: T0 * std::exp(-BETA * k); 
+            for(int l = 0; l < LE; ++l)
             {
-                for(int i = 0; i < N_PARAMS; ++i)
-                    POLD[i] = PARAMS[i];
-
-                std::set<int> used;
-                do
+                dbg_clear();
+                //std::cerr << "SET T=" << T << " T0=" << T0 << " T1=" << T1 << " it=" << it << std::endl;
+                if (DISCRETE)
                 {
-                    int i = std::rand() % N_PARAMS;
-                    if(used.find(i) == used.end())
-                    {
-                        used.insert(i);
-                        PARAMS[i] = (PARAMS[i] - LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) % (UPPER_PARAM - LOWER_PARAM + 1) + LOWER_PARAM;
-                    }
-                }
-                while(rngU() <= PCONT);
-            }
-            else
-            {
-                for(int i = 0; i < N_PARAMS; ++i)
-                {
-                    POLD[i] = PARAMS[i];
-                    double rnd;
-                    if (FULL_RANDOM)
-                    {
-                        rnd = rngU(MIN_PARAM, MAX_PARAM);
-                        PARAMS[i] = rnd;
-                    }
-                    else
-                    {
-                        if (GAUSS)
-                            rnd = rngG(-1, 1);
-                        else
-                            rnd = rngU(-1, 1);
-
-                        // random step to  a neighbour constraint by MIN_PARAM and MAX_PARAM
-                        PARAMS[i] = std::min(MAX_PARAM, std::max(MIN_PARAM, PARAMS[i] + ALPHA * rnd));
-                        // add also a momentum step in direction to the current best solution
-                        PARAMS[i] += (MIN_MOMENTUM  + (MAX_MOMENTUM - MIN_MOMENTUM) * (1 - DYNAMIC_MOM * T / T0)) * (PBEST[i] - PARAMS[i]);
-                        //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
-                    }
-                }
-            }
-
-            nodes = 0;
-            std::vector<Move> bestMove2;
-            for (const auto& cmd : list)
-            {
-                istringstream is(cmd);
-                is >> skipws >> token;
-
-                if (token == "go" || token == "eval")
-                {
-                    //cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
-                    if (token == "go")
-                    {
-                       go(pos, is, states);
-                       Threads.main()->wait_for_search_finished();
-                       nodes += Threads.nodes_searched();
-                       bestMove2.push_back(Threads.main()->rootMoves[0].pv[0]);
-                    }
-                    else
-                       trace_eval(pos);
-                }
-                else if (token == "setoption")  setoption(is);
-                else if (token == "position")   position(pos, is, states);
-                else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
-            }
-            //std::cerr << "nodes: " << nodes << std::endl;
-
-            //double new_score = nodes;
-            double new_score = dbg_get_hit_on();
-            for(int i = 0; i < (int)bestMove.size(); ++i)
-            {
-                if (bestMove[i] != bestMove2[i])
-                {
-                    new_score += L;
-                }
-            }
-
-            if(DYNAMIC_T0)
-            {
-                //T_DIFF_MAX = std::max(T_DIFF_MAX, new_score - score);
-                T_DIFF_MAX = std::max(T_DIFF_MAX, std::abs(new_score - score));
-                T0 = 0.5 * T0 + 0.5 * T_DIFF_MAX;
-            }
-
-            //dbg_mean_of((new_score - score)/1024);
-            //dbg_std_of((new_score - score)/1024);
-
-            double e = std::exp(-(new_score - score)/T);
-            if (new_score < 1 && e >= rngU())
-            {
-                score = new_score;
-
-                if (score < scorebest)
-                {
-                    scorebest = score;
                     for(int i = 0; i < N_PARAMS; ++i)
-                        PBEST[i] = PARAMS[i];
-                    std::cerr << "=> BEST:";
+                        POLD[i] = PARAMS[i];
+
+                    std::set<int> used;
+                    do
+                    {
+                        int i = std::rand() % N_PARAMS;
+                        if(used.find(i) == used.end())
+                        {
+                            used.insert(i);
+                            PARAMS[i] = (PARAMS[i] - LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) % (UPPER_PARAM - LOWER_PARAM + 1) + LOWER_PARAM;
+                        }
+                    }
+                    while(rngU() <= PCONT);
                 }
                 else
-                    std::cerr << "=> NEXT:";
+                {
+                    for(int i = 0; i < N_PARAMS; ++i)
+                    {
+                        POLD[i] = PARAMS[i];
+                        double rnd;
+                        if (FULL_RANDOM)
+                        {
+                            rnd = rngU(MIN_PARAM, MAX_PARAM);
+                            PARAMS[i] = rnd;
+                        }
+                        else
+                        {
+                            if (GAUSS)
+                                rnd = rngG(-1, 1);
+                            else
+                                rnd = rngU(-1, 1);
 
-                for(int i = 0; i < N_PARAMS; ++i)
-                {
-                        std::cerr << " " << PARAMS[i];
+                            // random step to  a neighbour constraint by MIN_PARAM and MAX_PARAM
+                            PARAMS[i] = std::min(MAX_PARAM, std::max(MIN_PARAM, PARAMS[i] + ALPHA * rnd));
+                            // add also a momentum step in direction to the current best solution
+                            PARAMS[i] += (MIN_MOMENTUM  + (MAX_MOMENTUM - MIN_MOMENTUM) * (1 - DYNAMIC_MOM * T / T0)) * (PBEST[i] - PARAMS[i]);
+                            //PARAMS[i] += ALPHA * ((std::rand() % SHIFT) + (std::rand() % SHIFT ) - SHIFT + 1);
+                        }
+                    }
                 }
-                std::cerr << std::endl;
-            }
-            else
-            {
-                for(int i = 0; i < N_PARAMS; ++i)
+
+                nodes = 0;
+                std::vector<Move> bestMove2;
+                for (const auto& cmd : list)
                 {
-                    PARAMS[i] = POLD[i];
+                    istringstream is(cmd);
+                    is >> skipws >> token;
+
+                    if (token == "go" || token == "eval")
+                    {
+                        //cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
+                        if (token == "go")
+                        {
+                           go(pos, is, states);
+                           Threads.main()->wait_for_search_finished();
+                           nodes += Threads.nodes_searched();
+                           bestMove2.push_back(Threads.main()->rootMoves[0].pv[0]);
+                        }
+                        else
+                           trace_eval(pos);
+                    }
+                    else if (token == "setoption")  setoption(is);
+                    else if (token == "position")   position(pos, is, states);
+                    else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
                 }
+                //std::cerr << "nodes: " << nodes << std::endl;
+
+                //double new_score = nodes;
+                double new_score = dbg_get_hit_on();
+                for(int i = 0; i < (int)bestMove.size(); ++i)
+                {
+                    if (bestMove[i] != bestMove2[i])
+                    {
+                        new_score += L;
+                    }
+                }
+
+                if(DYNAMIC_T0)
+                {
+                    //T_DIFF_MAX = std::max(T_DIFF_MAX, new_score - score);
+                    T_DIFF_MAX = std::max(T_DIFF_MAX, std::abs(new_score - score));
+                    T0 = 0.5 * T0 + 0.5 * T_DIFF_MAX;
+                }
+
+                //dbg_mean_of((new_score - score)/1024);
+                //dbg_std_of((new_score - score)/1024);
+
+                double delta = new_score - score;
+                if (new_score < 1 && (delta < 0 || std::exp(-delta/T) >= rngU()))
+                {
+                    score = new_score;
+
+                    if (score < scorebest)
+                    {
+                        scorebest = score;
+                        for(int i = 0; i < N_PARAMS; ++i)
+                            PBEST[i] = PARAMS[i];
+                        std::cerr << "=> BEST";
+                    }
+                    else
+                        std::cerr << "=> NEXT";
+                    std::cerr << "[" << score/score0 << "]:";
+
+                    for(int i = 0; i < N_PARAMS; ++i)
+                    {
+                            std::cerr << " " << PARAMS[i];
+                    }
+                    std::cerr << std::endl;
+                }
+                else
+                {
+                    for(int i = 0; i < N_PARAMS; ++i)
+                    {
+                        PARAMS[i] = POLD[i];
+                    }
+                }
+                std::cerr << "it: " << it+1 << " s: " << score << " T: " << T << " sr: " << score/score0 << std::endl;
+                dbg_print();
+                it++;
             }
-            std::cerr << "it: " << it+1 << " s: " << score << " T: " << T << " sr: " << score/score0 << std::endl;
-            dbg_print();
         }
 
         if (RESTARTS > 0)
