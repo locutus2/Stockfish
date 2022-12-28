@@ -1158,14 +1158,12 @@ moves_loop: // When in check, search starts here
           r++;
 
       if (   r <= 0
-          && improving
-          && PvNode
-          && type_of(move) != PROMOTION
-          && !givesCheck
-          && (ss+1)->cutoffCnt > 3
+          && ss->ply <= 1
+          && !likelyFailLow
+          && ttCapture
           && ss->killers[0] != move
-          && ss->killers[1] != move
-          && ss->staticEval <= alpha)
+          && eval <= alpha
+          && !(ss-1)->inCheck)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
