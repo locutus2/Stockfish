@@ -1224,6 +1224,10 @@ moves_loop: // When in check, search starts here
       //       C = C && pcheck(PARAMS[40 + int(s)], relative_square(us, to_sq(move)) == s)
 
       bool CC = false;
+      bool C2 = thisThread->nodes & 1;
+
+      if(C && C2)
+          r++;
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
       // We use various heuristics for the sons of a node after the first son has
@@ -1347,7 +1351,7 @@ moves_loop: // When in check, search starts here
       if(CC)
       {
           bool T = value > alpha;
-          dbg_hit_on(C, T);
+          dbg_hit_on(C, T, int(C2));
           //dbg_hit_on(!T, 1);
       }
 

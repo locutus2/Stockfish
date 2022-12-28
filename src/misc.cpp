@@ -321,7 +321,7 @@ static std::atomic<int64_t> hits[DBG_N][2], means[DBG_N][2], stds[DBG_N][3], cov
 static std::atomic<int64_t> Chits[DBG_N][DBG_C3][2];
 static std::atomic<int64_t> ChitsCmp[DBG_N][DBG_C3][3];
 
-double dbg_get_hit_on(int n) { return hits[n][0] ? (10 + hits[n][1]) / (10 + (double)hits[n][0]) : 1.0 /*std::numeric_limits<double>::max()*/; }
+double dbg_get_hit_on(int n, int n0, int n1) { return hits[n][0] ? (n0 + hits[n][1]) / (n1 + (double)hits[n][0]) : 1.0 /*std::numeric_limits<double>::max()*/; }
 
 void dbg_hit_on(bool b, int n, int w) { hits[n][0] += w; if (b) hits[n][1] += w; }
 void dbg_hit_on(bool c, bool b, int n, int w) { if (c) dbg_hit_on(b, n, w); }

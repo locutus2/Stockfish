@@ -254,6 +254,12 @@ namespace {
         return d(gen); 
     };
 
+    auto energy = []()->double {
+        return (  dbg_get_hit_on(0, 10, 10)
+                - dbg_get_hit_on(1, 0, 10) + 1) / 2;
+        //return dbg_get_hit_on();
+    };
+
     constexpr double PCONT = 0.5;
     constexpr SCHEDULE schedule = SCH_EXP;
     constexpr bool DISCRETE = true;
@@ -295,7 +301,7 @@ namespace {
     //constexpr int SHIFT = 128 * 4;
     //
     //double score0 = nodes;
-    double score0 = dbg_get_hit_on();
+    double score0 = energy();
     double score = score0;
     double POLD[N_PARAMS];
     double PBEST[N_PARAMS];
@@ -427,7 +433,7 @@ namespace {
                 //std::cerr << "nodes: " << nodes << std::endl;
 
                 //double new_score = nodes;
-                double new_score = dbg_get_hit_on();
+                double new_score = energy();
                 for(int i = 0; i < (int)bestMove.size(); ++i)
                 {
                     if (bestMove[i] != bestMove2[i])
