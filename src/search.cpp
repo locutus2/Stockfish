@@ -1202,7 +1202,15 @@ moves_loop: // When in check, search starts here
              && pcheck(PARAMS[29], (ss-2)->inCheck)
              && pcheck(PARAMS[30], bool((ss-2)->excludedMove))
              && pcheck(PARAMS[31], (ss-3)->currentMove == MOVE_NULL)
+             && pcheck(PARAMS[32], type_of(movedPiece) == PAWN)
+             && pcheck(PARAMS[33], type_of(movedPiece) == KNIGHT)
+             && pcheck(PARAMS[34], type_of(movedPiece) == BISHOP)
+             && pcheck(PARAMS[35], type_of(movedPiece) == ROOK)
+             && pcheck(PARAMS[36], type_of(movedPiece) == QUEEN)
+             && pcheck(PARAMS[37], type_of(movedPiece) == KING)
              );
+      //for(Square s = SQ_A1; s <= SQ_H8; ++s)
+      //       C = C && pcheck(PARAMS[38 + int(s)], relative_square(us, to_sq(move)) == s)
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -= ss->statScore / (13000 + 4152 * (depth > 7 && depth < 19));
