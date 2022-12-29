@@ -260,6 +260,12 @@ namespace {
         //return dbg_get_hit_on();
     };
 
+    auto allowed = []()->double {
+        return    dbg_get_hit_on(0, 10, 10) < 1
+               && dbg_get_hit_on(1, 0, 10) < 1;
+        //return dbg_get_hit_on() < 1;
+    };
+
     constexpr double PCONT = 0.5;
     constexpr SCHEDULE schedule = SCH_EXP;
     constexpr bool DISCRETE = true;
@@ -453,7 +459,7 @@ namespace {
                 //dbg_std_of((new_score - score)/1024);
 
                 double delta = new_score - score;
-                if (new_score < 1 && (delta < 0 || std::exp(-delta/T) >= rngU()))
+                if (allowed() && (delta < 0 || std::exp(-delta/T) >= rngU()))
                 {
                     score = new_score;
 
