@@ -273,7 +273,7 @@ namespace {
     constexpr bool FULL_RANDOM = false;
     constexpr bool GAUSS = false;
 
-    constexpr bool DYNAMIC_T0 = false;
+    constexpr bool DYNAMIC_T0 = true;
     //constexpr double L = 10000;
     constexpr double POLY_ORDER = 10;
     constexpr double L = 0;
@@ -316,9 +316,11 @@ namespace {
     constexpr double P0 = 0.999;
     constexpr double DELTA0 = 1;
     T0 = -DELTA0 / std::log(P0);
+    double DELTA_AVG = DELTA0;
+    constexpr double DELTA_LAMBDA = 0.1;
 
     constexpr double P1 = 0.001;
-    constexpr double T1 = -DELTA0 / std::log(P1);
+    double T1 = -DELTA0 / std::log(P1);
 
     double BETA = schedule == SCH_POLY ? (1 - std::pow(T1/T0, 1.0/POLY_ORDER)) / KMAX:
                   schedule == SCH_LIN  ? (T0/T1 - 1) / KMAX
@@ -327,7 +329,7 @@ namespace {
     std::cerr << "BETA=" << BETA << std::endl;
     if (DYNAMIC_T0)
     {
-        T0 = score0;
+        //T0 = score0;
     }
 
 
@@ -339,6 +341,7 @@ namespace {
     std::cerr << std::endl;
     std::cerr << "it: " << 0 << " s: " << score << " T: " << T0 << " sr: " << score/score0 << std::endl;
     dbg_print();
+                std::cerr << "SET T0=" << T0 << " T1=" << T1 << " BETA=" << BETA << std::endl;
 
     // init params
 
@@ -350,6 +353,15 @@ namespace {
         int it = 0;
         for(int k = 0; k < KMAX; k++)
         {
+            if (DYNAMIC_T0)
+            {
+                T0 = -DELTA_AVG / std::log(P0);
+                T1 = -DELTA_AVG / std::log(P1);
+                BETA = schedule == SCH_POLY ? (1 - std::pow(T1/T0, 1.0/POLY_ORDER)) / KMAX:
+                       schedule == SCH_LIN  ? (T0/T1 - 1) / KMAX
+                       /* schedule == SCH_EXP */: -std::log(T1 / T0) / KMAX;
+                std::cerr << "SET T0=" << T0 << " T1=" << T1 << " BETA=" << BETA << std::endl;
+            }
             //double T = schedule == SCH_POLY ? T0 * std::pow(1 - it / (double)KMAX, BETA) :
             double T = schedule == SCH_POLY ? T0 * std::pow(1 - BETA * k, POLY_ORDER) :
                        schedule == SCH_LIN  ? T0 / (1 + BETA * k)
@@ -448,17 +460,21 @@ namespace {
                     }
                 }
 
+                double delta = new_score - score;
                 if(DYNAMIC_T0)
                 {
-                    //T_DIFF_MAX = std::max(T_DIFF_MAX, new_score - score);
-                    T_DIFF_MAX = std::max(T_DIFF_MAX, std::abs(new_score - score));
-                    T0 = 0.5 * T0 + 0.5 * T_DIFF_MAX;
+                    ////T_DIFF_MAX = std::max(T_DIFF_MAX, new_score - score);
+                    //T_DIFF_MAX = std::max(T_DIFF_MAX, std::abs(new_score - score));
+                    //T0 = 0.5 * T0 + 0.5 * T_DIFF_MAX;
+                    if (delta > 0)
+                    {
+                        DELTA_AVG += /*DELTA_LAMBDA*/ 1.0 / (it+1) * (delta - DELTA_AVG);
+                    }   
                 }
 
                 //dbg_mean_of((new_score - score)/1024);
                 //dbg_std_of((new_score - score)/1024);
 
-                double delta = new_score - score;
                 if (allowed() && (delta < 0 || std::exp(-delta/T) >= rngU()))
                 {
                     score = new_score;
