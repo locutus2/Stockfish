@@ -1166,13 +1166,17 @@ moves_loop: // When in check, search starts here
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -= ss->statScore / (13000 + 4152 * (depth > 7 && depth < 19));
 
-      if (   r <= 0
-          && ss->ply <= 1
-          && !likelyFailLow
-          && ttCapture
-          && ss->killers[0] != move
-          && eval <= alpha
-          && !(ss-1)->inCheck)
+      if (   improving
+          && type_of(movedPiece) == BISHOP
+          && countermove == move
+          && ss->killers[0] == move
+          && !cutNode
+          && !priorCapture
+          && ss->ttHit
+          && !ttMove
+          && !(ss-1)->ttPv
+          && !(ss-1)->excludedMove
+          && !(ss-2)->excludedMove)
           r++;
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
