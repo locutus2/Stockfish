@@ -1166,18 +1166,6 @@ moves_loop: // When in check, search starts here
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -= ss->statScore / (13000 + 4152 * (depth > 7 && depth < 19));
 
-      if (   improving
-          && type_of(movedPiece) == BISHOP
-          && ss->killers[0] == move
-          && !cutNode
-          && !priorCapture
-          && ss->ttHit
-          && !ttMove
-          && !(ss-1)->ttPv
-          && !(ss-1)->excludedMove
-          && !(ss-2)->excludedMove)
-          r++;
-
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
       // We use various heuristics for the sons of a node after the first son has
       // been searched. In general we would like to reduce them, but there are many
@@ -1188,6 +1176,19 @@ moves_loop: // When in check, search starts here
               || !capture
               || (cutNode && (ss-1)->moveCount > 1)))
       {
+          if (   improving
+              && type_of(movedPiece) == BISHOP
+              && countermove == move
+              && ss->killers[0] == move
+              && !cutNode
+              && !priorCapture
+              && ss->ttHit
+              && !ttMove
+              && !(ss-1)->ttPv
+              && !(ss-1)->excludedMove
+              && !(ss-2)->excludedMove)
+              r++;
+
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
           // beyond the first move depth. This may lead to hidden double extensions.
