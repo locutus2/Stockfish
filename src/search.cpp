@@ -1168,7 +1168,6 @@ moves_loop: // When in check, search starts here
 
       if (   improving
           && type_of(movedPiece) == BISHOP
-          && countermove == move
           && ss->killers[0] == move
           && !cutNode
           && !priorCapture
