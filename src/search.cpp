@@ -1157,6 +1157,18 @@ moves_loop: // When in check, search starts here
       if ((ss+1)->cutoffCnt > 3)
           r++;
 
+      if (   improving
+          && countermove == move
+          && ss->killers[0] == move
+          && !cutNode
+          && !priorCapture
+          && ss->ttHit
+          && !ttMove
+          && !(ss-1)->ttPv
+          && !(ss-1)->excludedMove
+          && !(ss-2)->excludedMove)
+          r++;
+
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
                      + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1176,19 +1188,6 @@ moves_loop: // When in check, search starts here
               || !capture
               || (cutNode && (ss-1)->moveCount > 1)))
       {
-          if (   improving
-              && type_of(movedPiece) == BISHOP
-              && countermove == move
-              && ss->killers[0] == move
-              && !cutNode
-              && !priorCapture
-              && ss->ttHit
-              && !ttMove
-              && !(ss-1)->ttPv
-              && !(ss-1)->excludedMove
-              && !(ss-2)->excludedMove)
-              r++;
-
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
           // beyond the first move depth. This may lead to hidden double extensions.
