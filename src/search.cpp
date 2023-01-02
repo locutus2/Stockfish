@@ -986,6 +986,55 @@ moves_loop: // When in check, search starts here
       newDepth = depth - 1;
 
       Value delta = beta - alpha;
+      bool CC = false;
+      bool C =  (    pcheck(PARAMS[0], ss->inCheck)
+             && pcheck(PARAMS[1], capture)
+             && pcheck(PARAMS[2], improving)
+             && pcheck(PARAMS[3], PvNode)
+             && pcheck(PARAMS[4], cutNode)
+             && pcheck(PARAMS[5], likelyFailLow)
+             && pcheck(PARAMS[6], ttCapture)
+             && pcheck(PARAMS[7], singularQuietLMR)
+             && pcheck(PARAMS[8], type_of(move) == PROMOTION)
+             && pcheck(PARAMS[9], ss->ttPv)
+             && pcheck(PARAMS[10], givesCheck)
+             && pcheck(PARAMS[11], priorCapture)
+             && pcheck(PARAMS[12], (ss+1)->cutoffCnt > 3)
+             && pcheck(PARAMS[13], bool(mp.threatenedPieces & from_sq(move)))
+             && pcheck(PARAMS[14], (ss-1)->moveCount > 7)
+             && pcheck(PARAMS[15], (ss-1)->currentMove == MOVE_NULL)
+             && pcheck(PARAMS[16], bool(excludedMove))
+             && pcheck(PARAMS[17], ss->ttHit)
+             && pcheck(PARAMS[18], bool(ttMove))
+             && pcheck(PARAMS[19], countermove == move)
+             && pcheck(PARAMS[20], ss->killers[0] == move)
+             && pcheck(PARAMS[21], ss->killers[1] == move)
+             && pcheck(PARAMS[22], ss->staticEval > alpha)
+             && pcheck(PARAMS[23], eval > alpha)
+             && pcheck(PARAMS[24], (ss-1)->ttPv)
+             && pcheck(PARAMS[25], (ss-1)->inCheck)
+             && pcheck(PARAMS[26], bool((ss-1)->excludedMove))
+             && pcheck(PARAMS[27], (ss-2)->currentMove == MOVE_NULL)
+             && pcheck(PARAMS[28], (ss-2)->ttPv)
+             && pcheck(PARAMS[29], (ss-2)->inCheck)
+             && pcheck(PARAMS[30], bool((ss-2)->excludedMove))
+             && pcheck(PARAMS[31], (ss-3)->currentMove == MOVE_NULL)
+             && pcheck(PARAMS[32], type_of(movedPiece) == PAWN)
+             && pcheck(PARAMS[33], type_of(movedPiece) == KNIGHT)
+             && pcheck(PARAMS[34], type_of(movedPiece) == BISHOP)
+             && pcheck(PARAMS[35], type_of(movedPiece) == ROOK)
+             && pcheck(PARAMS[36], type_of(movedPiece) == QUEEN)
+             && pcheck(PARAMS[37], type_of(movedPiece) == KING)
+             && pcheck(PARAMS[38], more_than_one(pos.checkers()))
+             && pcheck(PARAMS[39], givesCheck && !(pos.checkers() & to_sq(move)))
+             && pcheck(PARAMS[40], type_of(pos.captured_piece()) == PAWN)
+             && pcheck(PARAMS[41], type_of(pos.captured_piece()) == KNIGHT)
+             && pcheck(PARAMS[42], type_of(pos.captured_piece()) == BISHOP)
+             && pcheck(PARAMS[43], type_of(pos.captured_piece()) == ROOK)
+             && pcheck(PARAMS[44], type_of(pos.captured_piece()) == QUEEN)
+             && pcheck(PARAMS[45], pos.captured_piece() == NO_PIECE)
+             );
+      bool C2 = thisThread->nodes & 1;
 
       // Step 14. Pruning at shallow depth (~120 Elo). Depth conditions are important for mate finding.
       if (  !rootNode
@@ -1023,7 +1072,10 @@ moves_loop: // When in check, search starts here
               // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 5
                   && history < -3875 * (depth - 1))
-                  continue;
+              {
+                  CC = true;
+                  if(!C) continue;
+              }
 
               history += 2 * thisThread->mainHistory[us][from_to(move)];
 
@@ -1173,6 +1225,7 @@ moves_loop: // When in check, search starts here
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -= ss->statScore / (13000 + 4152 * (depth > 7 && depth < 19));
 
+      /*
       bool C =  (    pcheck(PARAMS[0], ss->inCheck)
              && pcheck(PARAMS[1], capture)
              && pcheck(PARAMS[2], improving)
@@ -1220,14 +1273,15 @@ moves_loop: // When in check, search starts here
              && pcheck(PARAMS[44], type_of(pos.captured_piece()) == QUEEN)
              && pcheck(PARAMS[45], pos.captured_piece() == NO_PIECE)
              );
+             */
       //for(Square s = SQ_A1; s <= SQ_H8; ++s)
       //       C = C && pcheck(PARAMS[40 + int(s)], relative_square(us, to_sq(move)) == s)
 
-      bool CC = false;
-      bool C2 = thisThread->nodes & 1;
+      //bool CC = false;
+      //bool C2 = thisThread->nodes & 1;
 
-      if(C && C2)
-          r++;
+      //if(C && C2)
+      //    r++;
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
       // We use various heuristics for the sons of a node after the first son has
@@ -1240,7 +1294,7 @@ moves_loop: // When in check, search starts here
               || (cutNode && (ss-1)->moveCount > 1)))
       {
           //CC = (r <= 0);
-          CC = true;
+          //CC = true;
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
@@ -1351,7 +1405,8 @@ moves_loop: // When in check, search starts here
       if(CC)
       {
           bool T = value > alpha;
-          dbg_hit_on(C, T, int(C2));
+          dbg_hit_on(C, !T);
+          //dbg_hit_on(C, T, int(C2));
           //dbg_hit_on(!T, 1);
       }
 

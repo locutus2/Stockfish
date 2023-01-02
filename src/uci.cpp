@@ -255,15 +255,15 @@ namespace {
     };
 
     auto energy = []()->double {
-        return (  dbg_get_hit_on(0, 10, 10)
-                - dbg_get_hit_on(1, 0, 10) + 1) / 2;
-        //return dbg_get_hit_on();
+        //return (  dbg_get_hit_on(0, 10, 10)
+        //        - dbg_get_hit_on(1, 0, 10) + 1) / 2;
+        return dbg_get_hit_on(0, 20, 20);
     };
 
     auto allowed = []()->double {
-        return    dbg_get_hit_on(0, 10, 10) < 1
-               && dbg_get_hit_on(1, 0, 10) < 1;
-        //return dbg_get_hit_on() < 1;
+        //return    dbg_get_hit_on(0, 10, 10) < 1
+        //       && dbg_get_hit_on(1, 0, 10) < 1;
+        return dbg_get_hit_on(0, 20, 20) < 1;
     };
 
     constexpr double PCONT = 0.5;
@@ -341,7 +341,7 @@ namespace {
     std::cerr << std::endl;
     std::cerr << "it: " << 0 << " s: " << score << " T: " << T0 << " sr: " << score/score0 << std::endl;
     dbg_print();
-                std::cerr << "SET T0=" << T0 << " T1=" << T1 << " BETA=" << BETA << std::endl;
+        //        std::cerr << "SET T0=" << T0 << " T1=" << T1 << " BETA=" << BETA << std::endl;
 
     // init params
 
@@ -360,7 +360,7 @@ namespace {
                 BETA = schedule == SCH_POLY ? (1 - std::pow(T1/T0, 1.0/POLY_ORDER)) / KMAX:
                        schedule == SCH_LIN  ? (T0/T1 - 1) / KMAX
                        /* schedule == SCH_EXP */: -std::log(T1 / T0) / KMAX;
-                std::cerr << "SET T0=" << T0 << " T1=" << T1 << " BETA=" << BETA << std::endl;
+         //       std::cerr << "SET T0=" << T0 << " T1=" << T1 << " BETA=" << BETA << std::endl;
             }
             //double T = schedule == SCH_POLY ? T0 * std::pow(1 - it / (double)KMAX, BETA) :
             double T = schedule == SCH_POLY ? T0 * std::pow(1 - BETA * k, POLY_ORDER) :
