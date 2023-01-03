@@ -1015,7 +1015,22 @@ moves_loop: // When in check, search starts here
 
               // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 5
-                  && history < -4180 * (depth - 1))
+                  && history < -4180 * (depth - 1)
+                  && (   move != countermove
+                      || move != ss->killers[0]
+                      || !improving
+                      || !cutNode
+                      || priorCapture
+                      || (ss-1)->moveCount > 7
+                      || excludedMove
+                      || ss->ttHit
+                      || ss->staticEval <= alpha
+                      || (ss-1)->inCheck
+                      || (ss-1)->excludedMove
+                      || (ss-2)->ttPv
+                      || type_of(movedPiece) == BISHOP
+                      || type_of(movedPiece) == QUEEN
+                      || type_of(movedPiece) == KING))
                   continue;
 
               history += 2 * thisThread->mainHistory[us][from_to(move)];
