@@ -1254,7 +1254,7 @@ moves_loop: // When in check, search starts here
           Value momentum = rm.score != -VALUE_INFINITE ? Value(std::abs(value - rm.score)) : VALUE_ZERO;
           rm.averageScore = rm.averageScore != -VALUE_INFINITE ?  (value * int(2 * momentum + 1) + rm.averageScore * int(rm.averageMomentum))
                                                                 / int(2 * momentum + rm.averageMomentum + 1) : value;
-          rm.averageMomentum = rm.score != -VALUE_INFINITE ? (momentum + rm.averageMomentum) / 2 : rm.averageMomentum;
+          rm.averageMomentum = rm.score != -VALUE_INFINITE ? (momentum + rm.averageMomentum) / 2 : VALUE_ZERO;
 
           // PV move or new best move?
           if (moveCount == 1 || value > alpha)
