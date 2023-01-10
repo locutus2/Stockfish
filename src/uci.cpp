@@ -262,7 +262,7 @@ namespace {
     constexpr bool FULL_RANDOM = false;
     constexpr bool GAUSS = false;
 
-    constexpr bool DYNAMIC_T0 = false;
+    constexpr bool DYNAMIC_T0 = true;
     //constexpr double L = 10000;
     constexpr double POLY_ORDER = 10;
     constexpr double L = 0;
@@ -307,7 +307,7 @@ namespace {
     T0 = -DELTA0 / std::log(P0);
 
     constexpr double P1 = 0.001;
-    constexpr double T1 = -DELTA0 / std::log(P1);
+    double T1 = -DELTA0 / std::log(P1);
 
     double BETA = schedule == SCH_POLY ? (1 - std::pow(T1/T0, 1.0/POLY_ORDER)) / KMAX:
                   schedule == SCH_LIN  ? (T0/T1 - 1) / KMAX
