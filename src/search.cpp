@@ -1251,8 +1251,6 @@ moves_loop: // When in check, search starts here
               || !capture
               || (cutNode && (ss-1)->moveCount > 1)))
       {
-          //CC = (r <= 0);
-          CC = true;
 
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
@@ -1293,6 +1291,9 @@ moves_loop: // When in check, search starts here
                // Increase reduction for cut nodes and not ttMove (~1 Elo)
                if (!ttMove && cutNode)
                          r += 2;
+
+               CC = (r == 4);
+               if(C) r++;
 
                value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4), !cutNode);
       }
