@@ -304,6 +304,8 @@ namespace {
 
     constexpr double P0 = 0.999;
     constexpr double DELTA0 = 1;
+    constexpr double DELTA_LAMBDA = 0.1;
+    double DELTA_AVG = DELTA0;
     T0 = -DELTA0 / std::log(P0);
 
     constexpr double P1 = 0.001;
@@ -316,7 +318,7 @@ namespace {
     std::cerr << "BETA=" << BETA << std::endl;
     if (DYNAMIC_T0)
     {
-        T0 = score0;
+    //    T0 = score0;
     }
 
 
@@ -437,17 +439,21 @@ namespace {
                     }
                 }
 
+                double delta = new_score - score;
                 if(DYNAMIC_T0)
                 {
                     //T_DIFF_MAX = std::max(T_DIFF_MAX, new_score - score);
-                    T_DIFF_MAX = std::max(T_DIFF_MAX, std::abs(new_score - score));
-                    T0 = 0.5 * T0 + 0.5 * T_DIFF_MAX;
+                    //T_DIFF_MAX = std::max(T_DIFF_MAX, std::abs(new_score - score));
+                    //T0 = 0.5 * T0 + 0.5 * T_DIFF_MAX;
+                    if (delta > 0)
+                    {
+                        DELTA_AVG += /*DELTA_LAMBDA*/ 1.0 / (it+1) * (delta - DELTA_AVG);
+                    }
                 }
 
                 //dbg_mean_of((new_score - score)/1024);
                 //dbg_std_of((new_score - score)/1024);
 
-                double delta = new_score - score;
                 if (new_score < 1 && (delta < 0 || std::exp(-delta/T) >= rngU()))
                 {
                     score = new_score;
