@@ -389,7 +389,7 @@ void dbg_hit_on_cmp(std::vector<bool>& c, bool b, int n, int m, int w) {
 	}	
 }
 
-void printCondition(int k, std::ostream& out = std::cerr)
+static void printCondition(int k, std::ostream& out = std::cerr)
 {
               bool first = true;
 	      for(int i = 0; i < DBG_C; ++i)
@@ -459,7 +459,7 @@ void dbg_printc() {
 
 }
 
-double gain_ratio(double p)
+static double gain_ratio(double p)
 {
 	if(p > 0 && p < 1)
 		return -(p*std::log(p)+(1-p)*std::log(1-p))/std::log(2);
