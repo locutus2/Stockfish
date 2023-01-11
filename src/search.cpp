@@ -1219,7 +1219,19 @@ moves_loop: // When in check, search starts here
           if (!ttMove && cutNode)
               r += 2;
 
-          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - !likelyFailLow * (r > 4), !cutNode);
+          if (   !PvNode
+              && !cutNode
+              && ss->ttPv
+              && !improving
+              && type_of(pos.captured_piece()) == PAWN
+              && (ss-1)->currentMove != MOVE_NULL
+              && ttMove
+              && eval <= alpha
+              && type_of(movedPiece) != PAWN
+              && type_of(movedPiece) != QUEEN)
+              r++;
+
+          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4), !cutNode);
       }
 
       // For PV nodes only, do a full PV search on the first move or after a fail
