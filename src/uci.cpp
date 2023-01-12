@@ -322,7 +322,7 @@ namespace {
     }
 
 
-    std::cerr << "=> BEST:";
+    std::cerr << "=> BEST[" << score/score0 << "]:";
     for(int i = 0; i < N_PARAMS; ++i)
     {
         std::cerr << " " << PARAMS[i];
