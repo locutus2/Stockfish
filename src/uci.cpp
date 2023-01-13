@@ -336,7 +336,7 @@ namespace {
     for(int i = 0; i < N_PARAMS; ++i)
         PBEST[i] = PARAMS[i];
 
-    for(int r =0; r <= RESTARTS; r++)
+    for(int r = 0; r <= RESTARTS; r++)
     {
         int it = 0;
         for(int k = 0; k < KMAX; k++)
@@ -356,9 +356,21 @@ namespace {
 
                     if (ONE_STEP)
                     {
-                        int i = std::rand() % N_PARAMS;
-                        PARAMS[i] = (PARAMS[i] - LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) 
-                                   % (UPPER_PARAM - LOWER_PARAM + 1) + LOWER_PARAM;
+                        if (true)//it == 0)
+                        {
+                            for(int j = 0; j < N_CLAUSES; ++j)
+                            {
+                                int i = j * N_BASE_PARAMS + std::rand() % N_BASE_PARAMS;
+                                PARAMS[i] = (PARAMS[i] - LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) 
+                                           % (UPPER_PARAM - LOWER_PARAM + 1) + LOWER_PARAM;
+                            }
+                        }
+                        else
+                        {
+                            int i = std::rand() % N_PARAMS;
+                            PARAMS[i] = (PARAMS[i] - LOWER_PARAM + std::rand() % (UPPER_PARAM - LOWER_PARAM) + 1) 
+                                       % (UPPER_PARAM - LOWER_PARAM + 1) + LOWER_PARAM;
+                        }
                     }
                     else
                     {
