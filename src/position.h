@@ -37,7 +37,9 @@ namespace Stockfish {
 /// its previous state when we retract a move. Whenever a move is made on the
 /// board (by calling Position::do_move), a StateInfo object must be passed.
 
-constexpr int N_PARAMS = 68;
+constexpr int N_CLAUSES = 16;
+constexpr int N_BASE_PARAMS = 68;
+constexpr int N_PARAMS = N_CLAUSES * N_BASE_PARAMS;
 extern int PARAMS[N_PARAMS];
 extern bool ACTIVE;
 

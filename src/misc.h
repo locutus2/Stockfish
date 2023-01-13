@@ -58,7 +58,7 @@ void dbg_print();
 void dbg_printc();
 void dbg_clear();
 
-double dbg_get_hit_on(int n = 0, int n1 = 200, int n0 = 200);
+double dbg_get_hit_on(int n = 0, int n1 = 100, int n0 = 100);
 
 typedef std::chrono::milliseconds::rep TimePoint; // A value in milliseconds
 static_assert(sizeof(TimePoint) == sizeof(int64_t), "TimePoint should be 64 bits");
