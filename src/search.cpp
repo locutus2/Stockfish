@@ -1216,19 +1216,7 @@ moves_loop: // When in check, search starts here
       else if (!PvNode || moveCount > 1)
       {
           // Increase reduction for cut nodes and not ttMove (~1 Elo)
-          if (!ttMove && cutNode)
-              r += 2;
-
-          if (   !PvNode
-              && !cutNode
-              && ss->ttPv
-              && !improving
-              && type_of(pos.captured_piece()) == PAWN
-              && (ss-1)->currentMove != MOVE_NULL
-              && ttMove
-              && eval <= alpha
-              && type_of(movedPiece) != PAWN
-              && type_of(movedPiece) != QUEEN)
+          if (!ttMove && cutNode && moveCount > 1)
               r += 2;
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4), !cutNode);
