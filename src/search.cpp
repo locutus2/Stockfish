@@ -1219,12 +1219,12 @@ moves_loop: // When in check, search starts here
           if (!ttMove && cutNode)
               r += 2;
 
-          if (   !PvNode
-              && !cutNode
+          if (   !cutNode
               && ss->ttPv
               && !improving
               && type_of(pos.captured_piece()) == PAWN
               && (ss-1)->currentMove != MOVE_NULL
+              && ttMove
               && eval <= alpha
               && type_of(movedPiece) != PAWN
               && type_of(movedPiece) != QUEEN)
