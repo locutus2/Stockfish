@@ -1226,7 +1226,7 @@ moves_loop: // When in check, search starts here
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4), !cutNode);
 
           if (value > alpha)
-              bestMoveReduced = (r > 4);
+              bestMoveReduced = (r > 4 && move != ttMove);
       }
 
       // For PV nodes only, do a full PV search on the first move or after a fail
