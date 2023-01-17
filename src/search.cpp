@@ -1123,7 +1123,7 @@ moves_loop: // When in check, search starts here
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
 
-      Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
+      Depth r0 = reduction(improving, depth, moveCount, delta, thisThread->rootDelta), r = r0;
 
       // Decrease reduction if position is or has been on the PV
       // and node is not likely to fail low. (~3 Elo)
@@ -1219,7 +1219,7 @@ moves_loop: // When in check, search starts here
                if (!ttMove && cutNode)
                          r += 2;
 
-               value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4 + depth / 15), !cutNode);
+               value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > r0 + 3), !cutNode);
       }
 
       // For PV nodes only, do a full PV search on the first move or after a fail
