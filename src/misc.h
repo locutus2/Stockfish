@@ -21,7 +21,7 @@
 
 #include <cassert>
 #include <chrono>
-#include <ostream>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -57,6 +57,8 @@ void dbg_hit_on_cmp(std::vector<bool>& c, bool b, int n, int m, int w = 1);
 void dbg_print();
 void dbg_printc();
 
+double gain_ratio(double p);
+void printCondition(int k, std::ostream& out = std::cerr);
 
 typedef std::chrono::milliseconds::rep TimePoint; // A value in milliseconds
 static_assert(sizeof(TimePoint) == sizeof(int64_t), "TimePoint should be 64 bits");
