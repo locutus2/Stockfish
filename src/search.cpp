@@ -311,6 +311,7 @@ void Thread::search() {
   multiPV = std::min(multiPV, rootMoves.size());
 
   complexityAverage.set(153, 1);
+  captureAverage.set(1, 2);
 
   optimism[us] = optimism[~us] = VALUE_ZERO;
 
@@ -978,6 +979,8 @@ moves_loop: // When in check, search starts here
       movedPiece = pos.moved_piece(move);
       givesCheck = pos.gives_check(move);
 
+      thisThread->captureAverage.update(capture);
+
       // Calculate new depth for this move
       newDepth = depth - 1;
 
@@ -1159,6 +1162,9 @@ moves_loop: // When in check, search starts here
       // Increase reduction if next ply has a lot of fail high
       if ((ss+1)->cutoffCnt > 3)
           r++;
+
+      if (capture && thisThread->captureAverage.is_smaller(1, 50))
+          r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]

@@ -102,6 +102,10 @@ class RunningAverage {
       bool is_greater(int64_t a, int64_t b) const
         { return b * average > a * (PERIOD * RESOLUTION); }
 
+      // Test if average is strictly smaller than rational a / b
+      bool is_smaller(int64_t a, int64_t b) const
+        { return b * average < a * (PERIOD * RESOLUTION); }
+
       int64_t value() const
         { return average / (PERIOD * RESOLUTION); }
 
