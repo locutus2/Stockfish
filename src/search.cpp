@@ -1163,7 +1163,7 @@ moves_loop: // When in check, search starts here
       if ((ss+1)->cutoffCnt > 3)
           r++;
 
-      if ((capture || type_of(movedPiece) == PAWN) && thisThread->captureAverage.is_smaller(1, 100))
+      if (capture && thisThread->captureAverage.is_smaller(1, 200))
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
