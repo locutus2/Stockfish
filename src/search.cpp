@@ -1126,6 +1126,18 @@ moves_loop: // When in check, search starts here
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
 
+      bool CC = false;
+      std::vector<bool> C = {
+          PvNode,
+          cutNode,
+          improving,
+          capture,
+          givesCheck,
+          ss->inCheck,
+          ttCapture,
+          likelyFailLow,
+      };
+
       Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
       // Decrease reduction if position is or has been on the PV
@@ -1182,12 +1194,24 @@ moves_loop: // When in check, search starts here
               || !capture
               || (cutNode && (ss-1)->moveCount > 1)))
       {
+          CC = true;
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
           // beyond the first move depth. This may lead to hidden double extensions.
           Depth d = std::clamp(newDepth - r, 1, newDepth + 1);
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
+
+          if (CC)
+          {
+              bool T = value <= alpha;
+              std::cerr << int(T);
+              for(bool P : C)
+              {
+                  std::cerr << ' ' << int(P);
+              }
+              std::cerr << std::endl;
+          }
 
           // Do full depth search when reduced LMR search fails high
           if (value > alpha && d < newDepth)
