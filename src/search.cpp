@@ -1205,12 +1205,11 @@ moves_loop: // When in check, search starts here
           if (CC)
           {
               bool T = value <= alpha;
-              std::cerr << int(T);
               for(bool P : C)
               {
-                  std::cerr << ' ' << int(P);
+                  std::cerr << int(P) << ' ';
               }
-              std::cerr << std::endl;
+              std::cerr << int(T) << std::endl;
           }
 
           // Do full depth search when reduced LMR search fails high
