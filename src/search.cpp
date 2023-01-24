@@ -1205,6 +1205,7 @@ moves_loop: // When in check, search starts here
           if (CC)
           {
               bool T = value <= alpha;
+              dbg_hit_on(T);
               for(bool P : C)
               {
                   std::cerr << int(P) << ' ';
