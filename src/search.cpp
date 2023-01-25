@@ -1151,7 +1151,7 @@ moves_loop: // When in check, search starts here
       if (ttCapture)
           r++;
 
-      if (givesCheck && more_than_one(pos.checkers()))
+      if (givesCheck && !(pos.checkers() & to_sq(move)))
           r++;
 
       // Decrease reduction for PvNodes based on depth
