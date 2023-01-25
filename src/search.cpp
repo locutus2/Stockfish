@@ -1128,6 +1128,9 @@ moves_loop: // When in check, search starts here
                                                                 [movedPiece]
                                                                 [to_sq(move)];
 
+      bool inDoubleCheck = more_than_one(pos.checkers());
+      bool discoveredCheck = givesCheck && !(pos.checkers() & to_sq(move));
+
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
 
@@ -1135,12 +1138,47 @@ moves_loop: // When in check, search starts here
       std::vector<bool> C = {
           PvNode,
           cutNode,
+          !PvNode&&!cutNode,
           improving,
           capture,
           givesCheck,
+          discoveredCheck,
+          more_than_one(pos.checkers()),
           ss->inCheck,
+          (ss-1)->inCheck,
+          inDoubleCheck,
+          ss->ttHit,
+          (ss-1)->ttHit,
+          ss->ttPv,
+          (ss-1)->ttPv,
+          bool(excludedMove),
+          bool((ss-1)->excludedMove),
+          (ss-1)->moveCount == 0,
+          (ss-1)->moveCount == 1,
+          (ss-1)->moveCount > 1,
           ttCapture,
           likelyFailLow,
+          priorCapture,
+          extension > 0,
+          extension < 0,
+          extension == 0,
+          move == ttMove,
+          move == countermove,
+          move == ss->killers[0],
+          move == ss->killers[1],
+          type_of(move) == PROMOTION,
+          type_of(movedPiece) == PAWN,
+          type_of(movedPiece) == KNIGHT,
+          type_of(movedPiece) == BISHOP,
+          type_of(movedPiece) == ROOK,
+          type_of(movedPiece) == QUEEN,
+          type_of(movedPiece) == KING,
+          type_of(pos.captured_piece()) == NO_PIECE_TYPE,
+          type_of(pos.captured_piece()) == PAWN,
+          type_of(pos.captured_piece()) == KNIGHT,
+          type_of(pos.captured_piece()) == BISHOP,
+          type_of(pos.captured_piece()) == ROOK,
+          type_of(pos.captured_piece()) == QUEEN,
       };
 
       Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
