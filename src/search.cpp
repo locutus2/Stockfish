@@ -1159,6 +1159,7 @@ moves_loop: // When in check, search starts here
           && bestMove
           && !capture
           && !givesCheck
+          && type_of(movedPiece) != PAWN
           && type_of(move) != PROMOTION
           && move != countermove
           && move != ss->killers[0]
