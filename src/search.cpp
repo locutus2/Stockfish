@@ -554,7 +554,7 @@ namespace {
 
     TTEntry* tte;
     Key posKey;
-    Move ttMove, move, excludedMove, bestMove;
+    Move ttMove, move, excludedMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, improving, priorCapture, singularQuietLMR;
@@ -605,7 +605,7 @@ namespace {
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     (ss+1)->ttPv         = false;
-    (ss+1)->excludedMove = bestMove = MOVE_NONE;
+    (ss+1)->excludedMove = ss->bestMove = MOVE_NONE;
     (ss+2)->killers[0]   = (ss+2)->killers[1] = MOVE_NONE;
     (ss+2)->cutoffCnt    = 0;
     ss->doubleExtensions = (ss-1)->doubleExtensions;
@@ -1067,6 +1067,7 @@ moves_loop: // When in check, search starts here
               ss->excludedMove = move;
               value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
               ss->excludedMove = MOVE_NONE;
+              ss->bestMove = MOVE_NONE;
 
               if (value < singularBeta)
               {
@@ -1303,7 +1304,7 @@ moves_loop: // When in check, search starts here
 
           if (value > alpha)
           {
-              bestMove = move;
+              ss->bestMove = move;
 
               if (PvNode && !rootNode) // Update pv even in fail-high case
                   update_pv(ss->pv, move, (ss+1)->pv);
@@ -1332,7 +1333,7 @@ moves_loop: // When in check, search starts here
 
 
       // If the move is worse than some previously searched move, remember it to update its stats later
-      if (move != bestMove)
+      if (move != ss->bestMove)
       {
           if (capture && captureCount < 32)
               capturesSearched[captureCount++] = move;
@@ -1363,8 +1364,8 @@ moves_loop: // When in check, search starts here
                                  : VALUE_DRAW;
 
     // If there is a move which produces search value greater than alpha we update stats of searched moves
-    else if (bestMove)
-        update_all_stats(pos, ss, bestMove, bestValue, beta, prevSq,
+    else if (ss->bestMove)
+        update_all_stats(pos, ss, ss->bestMove, bestValue, beta, prevSq,
                          quietsSearched, quietCount, capturesSearched, captureCount, depth);
 
     // Bonus for prior countermove that caused the fail low
@@ -1388,8 +1389,8 @@ moves_loop: // When in check, search starts here
     if (!excludedMove && !(rootNode && thisThread->pvIdx))
         tte->save(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
                   bestValue >= beta ? BOUND_LOWER :
-                  PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
-                  depth, bestMove, ss->staticEval);
+                  PvNode && ss->bestMove ? BOUND_EXACT : BOUND_UPPER,
+                  depth, ss->bestMove, ss->staticEval);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
