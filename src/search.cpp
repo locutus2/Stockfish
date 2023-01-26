@@ -1169,6 +1169,9 @@ moves_loop: // When in check, search starts here
       if ((ss+1)->cutoffCnt > 3)
           r++;
 
+      if (capture && (ss-1)->bestMove && to_sq(move) == from_sq((ss-1)->bestMove))
+          r--;
+
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
                      + (*contHist[1])[movedPiece][to_sq(move)]
