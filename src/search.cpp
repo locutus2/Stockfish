@@ -1153,7 +1153,12 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction for PvNodes based on depth
       if (PvNode)
-          r -= 1 - (bestMove && (1 + pos.capture(bestMove))) + 11 / (3 + depth);
+      {
+          r -= 1 + 11 / (3 + depth);
+
+          if (bestMove)
+              r += 1 + pos.capture(bestMove);
+      }
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
