@@ -767,9 +767,12 @@ namespace {
     // static evaluation and the previous static evaluation at our turn (if we were
     // in check at our previous move we look at the move prior to it). The improvement
     // margin and the improving flag are used in various pruning heuristics.
-    improvement =   (ss-2)->staticEval != VALUE_NONE ? ss->staticEval - (ss-2)->staticEval
-                  : (ss-4)->staticEval != VALUE_NONE ? ss->staticEval - (ss-4)->staticEval
-                  :                                    172;
+    improvement =  (  (ss-2)->staticEval != VALUE_NONE ? ss->staticEval - (ss-2)->staticEval
+                    : (ss-4)->staticEval != VALUE_NONE ? ss->staticEval - (ss-4)->staticEval
+                    :                                    172)
+                 + (  (ss-1)->staticEval != VALUE_NONE ? ss->staticEval + (ss-1)->staticEval
+                    : (ss-3)->staticEval != VALUE_NONE ? ss->staticEval + (ss-3)->staticEval
+                    :                                    172);
     improving = improvement > 0;
 
     // Step 7. Razoring (~1 Elo).
@@ -797,7 +800,7 @@ namespace {
         && (ss-1)->statScore < 18200
         &&  eval >= beta
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 20 * depth - improvement / 14 + 235 + complexity / 24
+        &&  ss->staticEval >= beta - 20 * depth - improvement / 7 + 235 + complexity / 24
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
