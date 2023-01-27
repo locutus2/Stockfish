@@ -379,7 +379,7 @@ void dbg_hit_on_cmp(std::vector<bool>& c, bool b, int n, int m, int w) {
 	}	
 }
 
-void printCondition(int k, std::ostream& out = std::cerr)
+void printCondition(int k, std::ostream& out)
 {
               bool first = true;
 	      for(int i = 0; i < DBG_C; ++i)
