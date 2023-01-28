@@ -285,6 +285,11 @@ void Thread::search() {
       (ss-i)->staticEval = VALUE_NONE;
   }
 
+  StateInfo* si = rootPos.state();
+  for (int i = 1; i <= 7; ++i)
+  {
+  }
+
   for (int i = 0; i <= MAX_PLY + 2; ++i)
       (ss+i)->ply = i;
 

@@ -686,6 +686,9 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   assert(is_ok(m));
   assert(&newSt != st);
 
+  // Set done move
+  st->move = m;
+
   thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
   Key k = st->key ^ Zobrist::side;
 
@@ -698,6 +701,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
   // Increment ply counters. In particular, rule50 will be reset to zero later on
   // in case of a capture or a pawn move.
+  st->move = MOVE_NONE;
   ++gamePly;
   ++st->rule50;
   ++st->pliesFromNull;
@@ -997,11 +1001,15 @@ void Position::do_null_move(StateInfo& newSt) {
   assert(!checkers());
   assert(&newSt != st);
 
+  // Set done move
+  st->move = MOVE_NULL;
+
   std::memcpy(&newSt, st, offsetof(StateInfo, accumulator));
 
   newSt.previous = st;
   st = &newSt;
 
+  st->move = MOVE_NONE;
   st->dirtyPiece.dirty_num = 0;
   st->dirtyPiece.piece[0] = NO_PIECE; // Avoid checks in UpdateAccumulator()
   st->accumulator.computed[WHITE] = false;

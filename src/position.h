@@ -57,6 +57,7 @@ struct StateInfo {
   Bitboard   checkSquares[PIECE_TYPE_NB];
   Piece      capturedPiece;
   int        repetition;
+  Move       move;
 
   // Used by NNUE
   Eval::NNUE::Accumulator accumulator;
