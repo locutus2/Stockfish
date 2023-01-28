@@ -277,20 +277,22 @@ void Thread::search() {
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
   int iterIdx = 0;
+  StateInfo* si = rootPos.state()->previous;
 
   std::memset(ss-7, 0, 10 * sizeof(Stack));
-  for (int i = 7; i > 0; --i)
-  {
-      (ss-i)->continuationHistory = &this->continuationHistory[0][0][NO_PIECE][0]; // Use as a sentinel
-      (ss-i)->staticEval = VALUE_NONE;
-  }
 
-  // Add also past moves to search stack
-  StateInfo* si = rootPos.state()->previous;
-  for (int i = 1; i <= 7 && si != nullptr; ++i)
+  for (int i = 1; i <= 7; ++i)
   {
-      (ss-i)->currentMove = si->move;
-      si = si->previous;
+      if (si)
+      {
+          (ss-i)->currentMove = si->move;
+          si = si->previous;
+      }
+
+      (ss-i)->staticEval = VALUE_NONE;
+      (ss-i)->continuationHistory = &this->continuationHistory[0][0]
+                                                              [rootPos.piece_on(to_sq((ss-i)->currentMove))]
+                                                              [to_sq((ss-i)->currentMove)]; // Use as a sentinel
   }
 
   for (int i = 0; i <= MAX_PLY + 2; ++i)
