@@ -686,9 +686,6 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   assert(is_ok(m));
   assert(&newSt != st);
 
-  // Set done move
-  st->move = m;
-
   thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
   Key k = st->key ^ Zobrist::side;
 
@@ -701,10 +698,10 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
   // Increment ply counters. In particular, rule50 will be reset to zero later on
   // in case of a capture or a pawn move.
-  st->move = MOVE_NONE;
   ++gamePly;
   ++st->rule50;
   ++st->pliesFromNull;
+  st->evasion = checkers();
 
   // Used by NNUE
   st->accumulator.computed[WHITE] = false;
@@ -861,6 +858,12 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
       st->rule50 = 0;
   }
 
+  // Set move
+  st->move = m;
+
+  // Set moved piece
+  st->movedPiece = pc;
+
   // Set capture piece
   st->capturedPiece = captured;
 
@@ -1001,15 +1004,11 @@ void Position::do_null_move(StateInfo& newSt) {
   assert(!checkers());
   assert(&newSt != st);
 
-  // Set done move
-  st->move = MOVE_NULL;
-
   std::memcpy(&newSt, st, offsetof(StateInfo, accumulator));
 
   newSt.previous = st;
   st = &newSt;
 
-  st->move = MOVE_NONE;
   st->dirtyPiece.dirty_num = 0;
   st->dirtyPiece.piece[0] = NO_PIECE; // Avoid checks in UpdateAccumulator()
   st->accumulator.computed[WHITE] = false;
@@ -1025,6 +1024,10 @@ void Position::do_null_move(StateInfo& newSt) {
   ++st->rule50;
   prefetch(TT.first_entry(key()));
 
+  st->move          = MOVE_NULL;
+  st->movedPiece    = NO_PIECE;
+  st->capturedPiece = NO_PIECE;
+  st->evasion       = false;
   st->pliesFromNull = 0;
 
   sideToMove = ~sideToMove;

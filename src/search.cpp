@@ -274,7 +274,7 @@ void Thread::search() {
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
   int iterIdx = 0;
-  StateInfo* si = rootPos.state()->previous;
+  StateInfo* si = rootPos.state();
 
   std::memset(ss-7, 0, 10 * sizeof(Stack));
 
@@ -282,9 +282,9 @@ void Thread::search() {
   {
       if (si)
       {
-          (ss-i)->continuationHistory = &this->continuationHistory[0]
+          (ss-i)->continuationHistory = &this->continuationHistory[si->evasion]
                                                                   [bool(si->capturedPiece)]
-                                                                  [rootPos.piece_on(to_sq(si->move))]
+                                                                  [si->movedPiece]
                                                                   [to_sq(si->move)]; // Use as a sentinel
           si = si->previous;
       }

@@ -55,9 +55,11 @@ struct StateInfo {
   Bitboard   blockersForKing[COLOR_NB];
   Bitboard   pinners[COLOR_NB];
   Bitboard   checkSquares[PIECE_TYPE_NB];
+  Piece      movedPiece;
   Piece      capturedPiece;
   int        repetition;
   Move       move;
+  bool       evasion;
 
   // Used by NNUE
   Eval::NNUE::Accumulator accumulator;
