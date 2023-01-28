@@ -285,14 +285,15 @@ void Thread::search() {
   {
       if (si)
       {
-          (ss-i)->currentMove = si->move;
+          (ss-i)->continuationHistory = &this->continuationHistory[0][0]
+                                                                  [rootPos.piece_on(to_sq(si->move))]
+                                                                  [to_sq(si->move)]; // Use as a sentinel
           si = si->previous;
       }
+      else
+          (ss-i)->continuationHistory = &this->continuationHistory[0][0][NO_PIECE][0]; // Use as a sentinal
 
       (ss-i)->staticEval = VALUE_NONE;
-      (ss-i)->continuationHistory = &this->continuationHistory[0][0]
-                                                              [rootPos.piece_on(to_sq((ss-i)->currentMove))]
-                                                              [to_sq((ss-i)->currentMove)]; // Use as a sentinel
   }
 
   for (int i = 0; i <= MAX_PLY + 2; ++i)
