@@ -285,9 +285,12 @@ void Thread::search() {
       (ss-i)->staticEval = VALUE_NONE;
   }
 
-  StateInfo* si = rootPos.state();
-  for (int i = 1; i <= 7; ++i)
+  // Add also past moves to search stack
+  StateInfo* si = rootPos.state()->previous;
+  for (int i = 1; i <= 7 && si != nullptr; ++i)
   {
+      (ss-i)->currentMove = si->move;
+      si = si->previous;
   }
 
   for (int i = 0; i <= MAX_PLY + 2; ++i)
