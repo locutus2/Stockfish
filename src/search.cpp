@@ -285,7 +285,8 @@ void Thread::search() {
   {
       if (si)
       {
-          (ss-i)->continuationHistory = &this->continuationHistory[0][0]
+          (ss-i)->continuationHistory = &this->continuationHistory[0]
+                                                                  [bool(si->capturedPiece)]
                                                                   [rootPos.piece_on(to_sq(si->move))]
                                                                   [to_sq(si->move)]; // Use as a sentinel
           si = si->previous;
