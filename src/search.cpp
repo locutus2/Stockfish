@@ -1732,9 +1732,12 @@ moves_loop: // When in check, search starts here
   {
        history[pc][to] << bonus;
 
-       Bitboard b = PseudoAttacks[KING][to];
-       while (b)
-           history[pc][pop_lsb(b)] << bonus / 2;
+       if (type_of(pc) == KING)
+       {
+           Bitboard b = PseudoAttacks[KING][to];
+           while (b)
+               history[pc][pop_lsb(b)] << bonus / 2;
+       }
   }
 
 
