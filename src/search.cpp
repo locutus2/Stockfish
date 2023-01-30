@@ -1728,6 +1728,16 @@ moves_loop: // When in check, search starts here
   }
 
 
+  void update_ch_entry(PieceToHistory& history, Piece pc, Square to, int bonus)
+  {
+       history[pc][to] << bonus;
+
+       Bitboard b = PseudoAttacks[KING][to];
+       while (b)
+           history[pc][pop_lsb(b)] << bonus / 2;
+  }
+
+
   // update_continuation_histories() updates histories of the move pairs formed
   // by moves at ply -1, -2, -4, and -6 with current move.
 
@@ -1739,7 +1749,7 @@ moves_loop: // When in check, search starts here
         if (ss->inCheck && i > 2)
             break;
         if (is_ok((ss-i)->currentMove))
-            (*(ss-i)->continuationHistory)[pc][to] << bonus;
+            update_ch_entry((*(ss-i)->continuationHistory), pc, to, bonus);
     }
   }
 
