@@ -1733,7 +1733,7 @@ moves_loop: // When in check, search starts here
        history[pc][to] << bonus;
 
        if (type_of(pc) == PAWN && (~(Rank1BB | Rank8BB) & to))
-           history[pc][to + pawn_push(color_of(pc))] << bonus / 8;
+           history[pc][to + pawn_push(color_of(pc))] << bonus / 4;
   }
 
 
