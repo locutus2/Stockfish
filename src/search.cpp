@@ -1736,7 +1736,7 @@ moves_loop: // When in check, search starts here
        {
            Bitboard b = PseudoAttacks[KING][to];
            while (b)
-               history[pc][pop_lsb(b)] << bonus / 2;
+               history[pc][pop_lsb(b)] << bonus / 8;
        }
   }
 
