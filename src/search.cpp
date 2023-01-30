@@ -1744,7 +1744,7 @@ moves_loop: // When in check, search starts here
             (*(ss-i)->continuationHistory)[pc][to] << bonus;
 
             if (bonus > 0)
-                (*(ss-i)->continuationHistory)[pc][from] << -bonus;
+                (*(ss-i)->continuationHistory)[pc][from] << -bonus / 8;
         }
     }
   }
