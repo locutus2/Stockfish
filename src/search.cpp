@@ -948,8 +948,7 @@ moves_loop: // When in check, search starts here
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while (   (move = mp.next_move(moveCountPruning)) != MOVE_NONE
-           && (bestValue < -thisThread->rootAlpha || !(ss->ply & 1)))
+    while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
     {
       assert(is_ok(move));
 
@@ -1133,6 +1132,9 @@ moves_loop: // When in check, search starts here
       pos.do_move(move, st, givesCheck);
 
       Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
+
+      if (ss->ply & 1 && bestValue >= -thisThread->rootAlpha)
+          r++;
 
       // Decrease reduction if position is or has been on the PV
       // and node is not likely to fail low. (~3 Elo)
