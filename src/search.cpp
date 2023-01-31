@@ -56,6 +56,7 @@ using std::string;
 using Eval::evaluate;
 using namespace Search;
 
+
 namespace {
 
   // Different node types, used as a template parameter
@@ -275,6 +276,7 @@ void Thread::search() {
   Color us = rootPos.side_to_move();
   int iterIdx = 0;
 
+
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; --i)
   {
@@ -370,6 +372,8 @@ void Thread::search() {
           int failedHighCnt = 0;
           while (true)
           {
+              rootAlpha = alpha;
+
               // Adjust the effective depth searched, but ensuring at least one effective increment for every
               // four searchAgain steps (see issue #2717).
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - 3 * (searchAgainCounter + 1) / 4);
@@ -944,7 +948,8 @@ moves_loop: // When in check, search starts here
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
+    while (   (move = mp.next_move(moveCountPruning)) != MOVE_NONE
+           && (bestValue < -thisThread->rootAlpha || !(ss->ply & 1)))
     {
       assert(is_ok(move));
 
@@ -1306,6 +1311,9 @@ moves_loop: // When in check, search starts here
               if (PvNode && value < beta) // Update alpha! Always alpha < beta
               {
                   alpha = value;
+
+                  if (rootNode)
+                      thisThread->rootAlpha = alpha;
 
                   // Reduce other moves if we have found at least one score improvement
                   if (   depth > 1
