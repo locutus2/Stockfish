@@ -56,7 +56,6 @@ using std::string;
 using Eval::evaluate;
 using namespace Search;
 
-
 namespace {
 
   // Different node types, used as a template parameter
@@ -275,7 +274,6 @@ void Thread::search() {
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
   int iterIdx = 0;
-
 
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; --i)
