@@ -1131,7 +1131,7 @@ moves_loop: // When in check, search starts here
 
       Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
-      if (!ss->ttPv && ss->ply & 1 && bestValue >= -thisThread->rootAlpha)
+      if (ss->ttPv && ss->ply & 1 && bestValue >= -thisThread->rootAlpha)
           r++;
 
       // Decrease reduction if position is or has been on the PV
