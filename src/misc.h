@@ -54,6 +54,9 @@ void dbg_gain_ratio(bool x, bool y, int n = 0, int w = 1);
 void dbg_hit_on(std::vector<bool>& c, bool b, int n = 0, int w = 1);
 void dbg_hit_on_cmp(std::vector<bool>& c, bool b, int n, int m, int w = 1);
 
+void dbg_stdev_of(int64_t value, int slot = 0);
+void dbg_correl_of(int64_t value1, int64_t value2, int slot = 0);
+
 void dbg_print();
 void dbg_printc();
 

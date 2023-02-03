@@ -40,6 +40,7 @@ typedef WORD(*fun5_t)();
 }
 #endif
 
+#include <cmath>
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
@@ -457,6 +458,54 @@ double gain_ratio(double p)
 		return 0;
 }
 
+constexpr int MaxDebugSlots = 32;
+
+namespace {
+
+template<size_t N>
+struct DebugInfo {
+    std::atomic<int64_t> data[N] = { 0 };
+
+    constexpr inline std::atomic<int64_t>& operator[](int index) { return data[index]; }
+};
+
+DebugInfo<2> hit[MaxDebugSlots];
+DebugInfo<2> mean[MaxDebugSlots];
+DebugInfo<3> stdev[MaxDebugSlots];
+DebugInfo<6> correl[MaxDebugSlots];
+
+}  // namespace
+
+void dbg_hit_on(bool cond, int slot) {
+
+    ++hit[slot][0];
+    if (cond)
+        ++hit[slot][1];
+}
+
+void dbg_mean_of(int64_t value, int slot) {
+
+    ++mean[slot][0];
+    mean[slot][1] += value;
+}
+
+void dbg_stdev_of(int64_t value, int slot) {
+
+    ++stdev[slot][0];
+    stdev[slot][1] += value;
+    stdev[slot][2] += value * value;
+}
+
+void dbg_correl_of(int64_t value1, int64_t value2, int slot) {
+
+    ++correl[slot][0];
+    correl[slot][1] += value1;
+    correl[slot][2] += value1 * value1;
+    correl[slot][3] += value2;
+    correl[slot][4] += value2 * value2;
+    correl[slot][5] += value1 * value2;
+}
+
 void dbg_print() {
 
   for(int n = 0; n < DBG_N; ++n)
@@ -629,6 +678,44 @@ void dbg_print() {
 	     << endl;
     }
 	
+    int64_t n;
+    auto E   = [&n](int64_t x) { return double(x) / n; };
+    auto sqr = [](double x) { return x * x; };
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        if ((n = hit[i][0]))
+            std::cerr << "Hit #" << i
+                      << ": Total " << n << " Hits " << hit[i][1]
+                      << " Hit Rate (%) " << 100.0 * E(hit[i][1])
+                      << std::endl;
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        if ((n = mean[i][0]))
+        {
+            std::cerr << "Mean #" << i
+                      << ": Total " << n << " Mean " << E(mean[i][1])
+                      << std::endl;
+        }
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        if ((n = stdev[i][0]))
+        {
+            double r = sqrtl(E(stdev[i][2]) - sqr(E(stdev[i][1])));
+            std::cerr << "Stdev #" << i
+                      << ": Total " << n << " Stdev " << r
+                      << std::endl;
+        }
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        if ((n = correl[i][0]))
+        {
+            double r = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
+                       / (  sqrtl(E(correl[i][2]) - sqr(E(correl[i][1])))
+                          * sqrtl(E(correl[i][4]) - sqr(E(correl[i][3]))));
+            std::cerr << "Correl. #" << i
+                      << ": Total " << n << " Coefficient " << r
+                      << std::endl;
+        }
 }
 
 
