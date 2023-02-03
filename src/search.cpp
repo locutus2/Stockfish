@@ -1135,6 +1135,28 @@ moves_loop: // When in check, search starts here
       pos.do_move(move, st, givesCheck);
 
       bool CC = false;
+      std::vector<bool> C = {};
+      // add board
+      for(Square sq = SQ_A1; sq <= SQ_H8; ++sq)
+      {
+          Piece p0 = pos.piece_on(relative_square(us, sq));
+          for(Piece p : {NO_PIECE, W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W__QUEEN, W_KING,
+                                   B_PAWN, B_KNIGHT, B_BISHOP, B_ROOK, B__QUEEN, B_KING })
+          {
+              if (us == BLACK)
+                  p = make_piece(~color_of(p), type_of(p));
+              C.push_back(p == p0);
+          }
+      }
+      // add move
+      for(Square sq = SQ_A1; sq <= SQ_H8; ++sq)
+          C.push_back(sq == relative_square(us, from_sq(move)));
+      for(Square sq = SQ_A1; sq <= SQ_H8; ++sq)
+          C.push_back(sq == relative_square(us, to_sq(move)));
+      for(PieceType pt : { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING})
+          C.push_back(pt == type_of(movedPiece));
+
+      /*
       std::vector<bool> C = {
           PvNode,
           cutNode,
@@ -1180,6 +1202,7 @@ moves_loop: // When in check, search starts here
           type_of(pos.captured_piece()) == ROOK,
           type_of(pos.captured_piece()) == QUEEN,
       };
+      */
 
       Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
