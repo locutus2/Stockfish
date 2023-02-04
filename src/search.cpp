@@ -1163,8 +1163,6 @@ moves_loop: // When in check, search starts here
       if (singularQuietLMR)
           r--;
 
-      if (type_of(movedPiece) == KING)
-          r += relative_rank(us, to_sq(move)) - relative_rank(us, from_sq(move));
 
       // Decrease reduction if we move a threatened piece (~1 Elo)
       if (   depth > 9
@@ -1187,7 +1185,9 @@ moves_loop: // When in check, search starts here
                      - 4467;
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-      r -= ss->statScore / (12800 + 4410 * (depth > 7 && depth < 19));
+      r -=  (ss->statScore +  (type_of(movedPiece) == KING)
+                            * (7591 * (relative_rank(us, to_sq(move)) - relative_rank(us, from_sq(move))) - 1036))
+          / (12800 + 4410 * (depth > 7 && depth < 19));
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
       // We use various heuristics for the sons of a node after the first son has
