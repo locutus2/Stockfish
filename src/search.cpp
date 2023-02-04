@@ -1163,9 +1163,8 @@ moves_loop: // When in check, search starts here
       if (singularQuietLMR)
           r--;
 
-      if (   type_of(movedPiece) == KING
-          && relative_rank(us, from_sq(move)) < relative_rank(us, to_sq(move)))
-          r--;
+      if (type_of(movedPiece) == KING)
+          r -= relative_rank(us, to_sq(move)) - relative_rank(us, from_sq(move));
 
       // Decrease reduction if we move a threatened piece (~1 Elo)
       if (   depth > 9
