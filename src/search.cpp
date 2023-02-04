@@ -1163,7 +1163,8 @@ moves_loop: // When in check, search starts here
       if (singularQuietLMR)
           r--;
 
-      if (relative_rank(us, pos.square<KING>(~us)) <= RANK_6)
+      if (   type_of(movedPiece) == KING
+          && relative_rank(us, from_sq(move)) < relative_rank(us, to_sq(move)))
           r--;
 
       // Decrease reduction if we move a threatened piece (~1 Elo)
