@@ -1184,7 +1184,7 @@ moves_loop: // When in check, search starts here
                      - 4467;
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-      r -=  (ss->statScore + (type_of(movedPiece) == KING) * (pos.non_pawn_material() - 8494))
+      r -=  (ss->statScore - (type_of(movedPiece) == KING) * (16604 - pos.non_pawn_material()))
           / (12800 + 4410 * (depth > 7 && depth < 19));
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
