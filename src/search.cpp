@@ -1186,7 +1186,7 @@ moves_loop: // When in check, search starts here
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -=  (ss->statScore +  (type_of(movedPiece) == KING)
-                            * (1036 - 7591 * (relative_rank(us, to_sq(move)) - relative_rank(us, from_sq(move)))))
+                            * (1554 - 11387 * (relative_rank(us, to_sq(move)) - relative_rank(us, from_sq(move)))))
           / (12800 + 4410 * (depth > 7 && depth < 19));
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
