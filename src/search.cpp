@@ -37,6 +37,12 @@
 
 namespace Stockfish {
 
+int A[6] = { 0, 0, 0, 0, 0, 0 };
+int B[6] = { 128, 128, 128, 128, 128, 128 };
+
+TUNE(SetRange(-256, 256), A);
+TUNE(SetRange(0, 256), B);
+
 namespace Search {
 
   LimitsType Limits;
@@ -1184,7 +1190,16 @@ moves_loop: // When in check, search starts here
                      - 4467;
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-      r -= ss->statScore / (12800 + 4410 * (depth > 7 && depth < 19));
+      r -= (ss->statScore
+            + (
+                (type_of(movedPiece) == PAWN)   * A[0] * (B[0] * pos.non_pawn_material() + (256 - B[0]) * (16604 - pos.non_pawn_material()))
+              + (type_of(movedPiece) == KNIGHT) * A[1] * (B[1] * pos.non_pawn_material() + (256 - B[1]) * (16604 - pos.non_pawn_material()))
+              + (type_of(movedPiece) == BISHOP) * A[2] * (B[2] * pos.non_pawn_material() + (256 - B[2]) * (16604 - pos.non_pawn_material()))
+              + (type_of(movedPiece) == ROOK)   * A[3] * (B[3] * pos.non_pawn_material() + (256 - B[3]) * (16604 - pos.non_pawn_material()))
+              + (type_of(movedPiece) == QUEEN)  * A[4] * (B[4] * pos.non_pawn_material() + (256 - B[4]) * (16604 - pos.non_pawn_material()))
+              + (type_of(movedPiece) == KING)   * A[5] * (B[5] * pos.non_pawn_material() + (256 - B[5]) * (16604 - pos.non_pawn_material()))
+            ) / (256 * 256)
+           ) / (12800 + 4410 * (depth > 7 && depth < 19));
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
       // We use various heuristics for the sons of a node after the first son has
