@@ -42,7 +42,7 @@ int W[2][6] = {
     { 0, 0, 0, 0, 0, 0 }
 };
 
-TUNE(SetRange(-256, 256), W);
+TUNE(SetRange(centered_range<256>), W);
 
 namespace Search {
 
