@@ -66,6 +66,11 @@ namespace {
     return Value(158 * (d - improving));
   }
 
+  int Random = 0;
+  int W[6][SQUARE_NB];
+
+  TUNE(SetRange(centered_range<12800>), Random, W);
+
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
@@ -1182,7 +1187,7 @@ moves_loop: // When in check, search starts here
                      - 4467;
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-      r -= ss->statScore / (12800 + 4410 * (depth > 7 && depth < 19));
+      r -= (ss->statScore + W[type_of(movedPiece) - 1][relative_square(us, to_sq(move))]) / (12800 + 4410 * (depth > 7 && depth < 19));
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
       // We use various heuristics for the sons of a node after the first son has
