@@ -526,6 +526,7 @@ namespace {
 
       for(int i = 0; i < CONTEXT; ++i)
       {
+          A[i] = 0;
           for(int k = 0; k < 5; ++k)
              A[i] += ss->stats[k] * (ss-i)->stats[k] * (1 - 2 * (i & 1)) / (K * K);
 
