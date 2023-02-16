@@ -515,6 +515,40 @@ void Thread::search() {
 
 namespace {
 
+  int calculateStatScoreWithAttention(Stack* ss)
+  {
+      const int CONTEXT = 7;
+      constexpr double K = 30000;
+      constexpr double BETA = 100;
+      double A[CONTEXT];
+      double H[5];
+      double sum = 0;
+
+      for(int i = 0; i < CONTEXT; ++i)
+      {
+          for(int k = 0; k < 5; ++k)
+             A[i] += ss->stats[k] * (ss-i)->stats[k] * (1 - 2 * (i & 1)) / (K * K);
+
+          sum += A[i] = std::exp(BETA * A[i]);
+      }
+
+      if (sum > 0)
+      {
+          for(int i = 0; i < CONTEXT; ++i)
+              A[i] /= sum;
+      }
+
+      for(int k = 0; k < 5; ++k)
+      {
+          double h = 0;
+          for(int i = 0; i < CONTEXT; ++i)
+              h += A[i] * (ss-i)->stats[k] * (1 - 2 * (i & 1));
+          H[k] = h;
+      }
+
+      return 2 * H[0] + H[1] + H[2] + H[3] + H[4] - 4467;
+  }
+
   // search<>() is the main search function for both PV and non-PV nodes
 
   template <NodeType nodeType>
@@ -566,6 +600,8 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+
+    std::memset(ss->stats, 0, sizeof(ss->stats));
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -1175,11 +1211,13 @@ moves_loop: // When in check, search starts here
           && (*contHist[0])[movedPiece][to_sq(move)] >= 3600)
           r--;
 
-      ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
-                     + (*contHist[0])[movedPiece][to_sq(move)]
-                     + (*contHist[1])[movedPiece][to_sq(move)]
-                     + (*contHist[3])[movedPiece][to_sq(move)]
-                     - 4467;
+      ss->stats[0] = pos.this_thread()->mainHistory[us][from_to(move)];
+      ss->stats[1] = (*contHist[0])[movedPiece][to_sq(move)];
+      ss->stats[2] = (*contHist[1])[movedPiece][to_sq(move)];
+      ss->stats[3] = (*contHist[3])[movedPiece][to_sq(move)];
+      ss->stats[4] = (*contHist[5])[movedPiece][to_sq(move)];
+
+      ss->statScore = calculateStatScoreWithAttention(ss);
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -= ss->statScore / (12800 + 4410 * (depth > 7 && depth < 19));
