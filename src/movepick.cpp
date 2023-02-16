@@ -127,18 +127,18 @@ void MovePicker::score() {
                    +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))]) / 16;
 
       else if constexpr (Type == QUIETS)
-          m.value = (  590 * (*mainHistory)[pos.side_to_move()][from_to(m)]
-                     + 435 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                     + 231 * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                     + 290 * (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                     + 247 * (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]) / 256
+          m.value = (  595 * (*mainHistory)[pos.side_to_move()][from_to(m)]
+                     + 403 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
+                     + 268 * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
+                     + 246 * (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
+                     + 262 * (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]) / 256
                    +     (threatenedPieces & from_sq(m) ?
-                           (type_of(pos.moved_piece(m)) == QUEEN && !(to_sq(m) & threatenedByRook)  ? 64398
-                          : type_of(pos.moved_piece(m)) == ROOK  && !(to_sq(m) & threatenedByMinor) ? 27458
-                          :                                         !(to_sq(m) & threatenedByPawn)  ? 13787
+                           (type_of(pos.moved_piece(m)) == QUEEN && !(to_sq(m) & threatenedByRook)  ? 68227
+                          : type_of(pos.moved_piece(m)) == ROOK  && !(to_sq(m) & threatenedByMinor) ? 24543
+                          :                                         !(to_sq(m) & threatenedByPawn)  ? 14334
                           :                                                                           0)
                           :                                                                           0)
-                   +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 18052;
+                   +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 18508;
       else // Type == EVASIONS
       {
           if (pos.capture(m))
