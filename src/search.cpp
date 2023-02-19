@@ -515,20 +515,66 @@ void Thread::search() {
 
 namespace {
 
+  template <int DIM>
+  void mult(double A[DIM][DIM], int v[DIM], double w[DIM], double s = 1) {
+
+      for (int i = 0; i < DIM; ++i)
+      {
+          double sum = 0;
+          for (int j = 0; j < DIM; ++j)
+              sum += A[i][j] * v[j];
+          w[i] = sum * s;
+      }
+  }
+
   int calculateStatScoreWithAttention(Stack* ss)
   {
+      const int DIM = 5;
       const int CONTEXT = 7;
-      constexpr double K = 30000;
+      constexpr double SCALE = 1.0 / 30000;
       constexpr double BETA = 100;
       double A[CONTEXT];
-      double H[5];
+      double H[DIM];
+      double Qx[DIM];
+      double Kx[DIM];
+      double Vx[DIM];
       double sum = 0;
+
+      double Q[DIM][DIM] = {
+          { 1, 0, 0, 0, 0 },
+          { 0, 1, 0, 0, 0 },
+          { 0, 0, 1, 0, 0 },
+          { 0, 0, 0, 1, 0 },
+          { 0, 0, 0, 0, 1 }
+      };
+
+      double K[DIM][DIM] = {
+          { 1, 0, 0, 0, 0 },
+          { 0, 1, 0, 0, 0 },
+          { 0, 0, 1, 0, 0 },
+          { 0, 0, 0, 1, 0 },
+          { 0, 0, 0, 0, 1 }
+      };
+
+      double V[DIM][DIM] = {
+          { 1, 0, 0, 0, 0 },
+          { 0, 1, 0, 0, 0 },
+          { 0, 0, 1, 0, 0 },
+          { 0, 0, 0, 1, 0 },
+          { 0, 0, 0, 0, 1 }
+      };
+
+      // Q * x
+      mult(Q, ss->stats, Qx, SCALE);
 
       for(int i = 0; i < CONTEXT; ++i)
       {
+          // K * x
+          mult(K, (ss-i)->stats, Kx, (i & 1 ? -1.0 : 1.0) * SCALE);
+
           A[i] = 0;
-          for(int k = 0; k < 5; ++k)
-             A[i] += ss->stats[k] * (ss-i)->stats[k] * (1 - 2 * (i & 1)) / (K * K);
+          for(int k = 0; k < DIM; ++k)
+             A[i] += Qx[k] * Kx[k];
 
           sum += A[i] = std::exp(BETA * A[i]);
       }
@@ -539,12 +585,16 @@ namespace {
               A[i] /= sum;
       }
 
-      for(int k = 0; k < 5; ++k)
+      for(int k = 0; k < DIM; ++k)
+          H[k] = 0;
+
+      for(int i = 0; i < CONTEXT; ++i)
       {
-          double h = 0;
-          for(int i = 0; i < CONTEXT; ++i)
-              h += A[i] * (ss-i)->stats[k] * (1 - 2 * (i & 1));
-          H[k] = h;
+          // V * x
+          mult(V, (ss-i)->stats, Vx, (i & 1 ? -1.0 : 1.0));
+
+          for(int k = 0; k < DIM; ++k)
+              H[k] += A[i] * Vx[k];
       }
 
       return 2 * H[0] + H[1] + H[2] + H[3] + H[4] - 4467;
