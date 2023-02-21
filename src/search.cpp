@@ -153,6 +153,111 @@ namespace {
     return nodes;
   }
 
+  // Self attention stuff
+
+  const int DIM = 5;
+  const int CONTEXT = 7;
+
+  //const double OUT[DIM+1] = { 2.00131, 0.97657, 0.984729, 0.990041, 0.00269172, 0.834182 };
+
+  const double Q[DIM][DIM] = {
+      {0.920191, 0.0668851, -0.0163638, 0.0187376, 0.0077002,  },
+      {-0.0624754, 0.348288, -0.12311, -0.080093, -0.012963,  },
+      {-0.101067, 0.0232977, 0.382529, -0.0794509, 0.0240818,  },
+      {-0.100598, 0.0541096, -0.10378, 0.406213, -0.0291468,  },
+      {-0.0731212, 0.00602525, -0.0636838, -0.119588, 0.415623,  },
+  };
+
+  const double K[DIM][DIM] = {
+      {0.924843, 0.0470144, -0.0432321, -0.00619975, 0.0236166,  },
+      {-0.0626984, 0.343834, -0.132891, -0.0898158, -0.0159531,  },
+      {-0.0939181, 0.0234441, 0.3821, -0.0900631, 0.022158,  },
+      {-0.0922306, 0.0628862, -0.0960782, 0.409672, -0.034727,  },
+      {-0.0843035, 0.00376585, -0.065065, -0.113343, 0.420253,  },
+  };
+
+  const double V[DIM][DIM] = {
+      {1.00273, -0.0442457, -0.0294829, -0.0190322, 0.00484077,  },
+      {-0.00252365, 0.976625, -0.0192679, -0.0138735, -0.00394684,  },
+      {-0.000559194, -0.0192092, 0.984818, -0.0107989, -0.00212824,  },
+      {-0.00019784, -0.0193479, -0.0142118, 0.990112, -0.000477437,  },
+      {6.56743e-05, 0.006805, 0.00492113, 0.00326979, 0.999886,  },
+  };
+
+  double POSITIONAL_ENCODING[CONTEXT][DIM];
+
+  template <typename T >
+  void mult(const double A[DIM][DIM], T v[DIM], double w[DIM], double s = 1) {
+
+      for (int i = 0; i < DIM; ++i)
+      {
+          double sum = 0;
+          for (int j = 0; j < DIM; ++j)
+              sum += A[i][j] * v[j];
+          w[i] = sum * s;
+      }
+  }
+
+  int calculateStatScoreWithAttention(Stack* ss)
+  {
+      const double SCALE = 1.0 / 30000;
+      const double BETA = 100;
+      double A[CONTEXT];
+      double H[DIM];
+      double Qx[DIM];
+      double Kx[DIM];
+      double Vx[DIM];
+      double sum = 0;
+      double X[CONTEXT][DIM];
+
+      for(int i = 0; i < CONTEXT; ++i)
+          for(int k = 0; k < DIM; ++k)
+              X[i][k] = (ss-i)->stats[k] + POSITIONAL_ENCODING[i][k];
+
+      // Q * x
+      mult(Q, X[0], Qx, SCALE);
+
+      for(int i = 0; i < CONTEXT; ++i)
+      {
+          // K * x
+          mult(K, X[i], Kx, (i & 1 ? -1.0 : 1.0) * SCALE);
+
+          A[i] = 0;
+          for(int k = 0; k < DIM; ++k)
+             A[i] += Qx[k] * Kx[k];
+
+          // softmax weights
+          sum += A[i] = std::exp(BETA * A[i]);
+      }
+
+      if (sum > 0)
+      {
+          // softmax normalization
+          for(int i = 0; i < CONTEXT; ++i)
+              A[i] /= sum;
+      }
+
+      for(int k = 0; k < DIM; ++k)
+          H[k] = 0;
+
+      for(int i = 0; i < CONTEXT; ++i)
+      {
+          // V * x
+          mult(V, (ss-i)->stats, Vx, (i & 1 ? -1.0 : 1.0));
+
+          for(int k = 0; k < DIM; ++k)
+              H[k] += A[i] * Vx[k];
+      }
+
+      return 2 * H[0] + H[1] + H[2] + H[3] + H[4] - 4467;
+      /*
+      double value = -4467 * OUT[DIM];
+      for (int i = 0; i < DIM; ++i)
+          value += H[i] * OUT[i];
+      return value;
+      */
+  }
+
 } // namespace
 
 
@@ -162,6 +267,22 @@ void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int((20.26 + std::log(Threads.size()) / 2) * std::log(i));
+
+  // https://d2l.ai/chapter_attention-mechanisms-and-transformers/self-attention-and-positional-encoding.html
+  for (int i = 0; i < CONTEXT; ++i)
+      for (int j = 0; j < DIM; ++j)
+      {
+          if (j & 1)
+          {
+              double v = (i+1) / std::pow(10000.0, j / double(DIM));
+              POSITIONAL_ENCODING[i][j] = std::sin(v);
+          }
+          else
+          {
+              double v = (i+1) / std::pow(10000.0, (j+1) / double(DIM));
+              POSITIONAL_ENCODING[i][j] = std::cos(v);
+          }
+      }
 }
 
 
@@ -514,99 +635,6 @@ void Thread::search() {
 
 
 namespace {
-
-  const int DIM = 5;
-
-  const double OUT[DIM+1] = { 2.00131, 0.97657, 0.984729, 0.990041, 0.00269172, 0.834182 };
-
-  const double Q[DIM][DIM] = {
-      {0.920191, 0.0668851, -0.0163638, 0.0187376, 0.0077002,  },
-      {-0.0624754, 0.348288, -0.12311, -0.080093, -0.012963,  },
-      {-0.101067, 0.0232977, 0.382529, -0.0794509, 0.0240818,  },
-      {-0.100598, 0.0541096, -0.10378, 0.406213, -0.0291468,  },
-      {-0.0731212, 0.00602525, -0.0636838, -0.119588, 0.415623,  },
-  };
-
-  const double K[DIM][DIM] = {
-      {0.924843, 0.0470144, -0.0432321, -0.00619975, 0.0236166,  },
-      {-0.0626984, 0.343834, -0.132891, -0.0898158, -0.0159531,  },
-      {-0.0939181, 0.0234441, 0.3821, -0.0900631, 0.022158,  },
-      {-0.0922306, 0.0628862, -0.0960782, 0.409672, -0.034727,  },
-      {-0.0843035, 0.00376585, -0.065065, -0.113343, 0.420253,  },
-  };
-
-  const double V[DIM][DIM] = {
-      {1.00273, -0.0442457, -0.0294829, -0.0190322, 0.00484077,  },
-      {-0.00252365, 0.976625, -0.0192679, -0.0138735, -0.00394684,  },
-      {-0.000559194, -0.0192092, 0.984818, -0.0107989, -0.00212824,  },
-      {-0.00019784, -0.0193479, -0.0142118, 0.990112, -0.000477437,  },
-      {6.56743e-05, 0.006805, 0.00492113, 0.00326979, 0.999886,  },
-  };
-
-  void mult(const double A[DIM][DIM], int v[DIM], double w[DIM], double s = 1) {
-
-      for (int i = 0; i < DIM; ++i)
-      {
-          double sum = 0;
-          for (int j = 0; j < DIM; ++j)
-              sum += A[i][j] * v[j];
-          w[i] = sum * s;
-      }
-  }
-
-  int calculateStatScoreWithAttention(Stack* ss)
-  {
-      const int CONTEXT = 7;
-      const double SCALE = 1.0 / 30000;
-      const double BETA = 100;
-      double A[CONTEXT];
-      double H[DIM];
-      double Qx[DIM];
-      double Kx[DIM];
-      double Vx[DIM];
-      double sum = 0;
-
-      // Q * x
-      mult(Q, ss->stats, Qx, SCALE);
-
-      for(int i = 0; i < CONTEXT; ++i)
-      {
-          // K * x
-          mult(K, (ss-i)->stats, Kx, (i & 1 ? -1.0 : 1.0) * SCALE);
-
-          A[i] = 0;
-          for(int k = 0; k < DIM; ++k)
-             A[i] += Qx[k] * Kx[k];
-
-          // softmax weights
-          sum += A[i] = std::exp(BETA * A[i]);
-      }
-
-      if (sum > 0)
-      {
-          // softmax normalization
-          for(int i = 0; i < CONTEXT; ++i)
-              A[i] /= sum;
-      }
-
-      for(int k = 0; k < DIM; ++k)
-          H[k] = 0;
-
-      for(int i = 0; i < CONTEXT; ++i)
-      {
-          // V * x
-          mult(V, (ss-i)->stats, Vx, (i & 1 ? -1.0 : 1.0));
-
-          for(int k = 0; k < DIM; ++k)
-              H[k] += A[i] * Vx[k];
-      }
-
-      //return 2 * H[0] + H[1] + H[2] + H[3] + H[4] - 4467;
-      double value = -4467 * OUT[DIM];
-      for (int i = 0; i < DIM; ++i)
-          value += H[i] * OUT[i];
-      return value;
-  }
 
   // search<>() is the main search function for both PV and non-PV nodes
 
