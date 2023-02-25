@@ -861,8 +861,6 @@ namespace {
     {
         assert(probCutBeta < VALUE_INFINITE);
 
-        Eval::NNUE::hint_common_parent_position(pos);
-
         MovePicker mp(pos, ttMove, probCutBeta - ss->staticEval, &captureHistory);
 
         while ((move = mp.next_move()) != MOVE_NONE)
@@ -894,6 +892,8 @@ namespace {
                     return value;
                 }
             }
+
+        Eval::NNUE::hint_common_parent_position(pos);
     }
 
     // Step 11. If the position is not in TT, decrease depth by 3.
