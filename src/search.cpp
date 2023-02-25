@@ -840,8 +840,6 @@ namespace {
             if (v >= beta)
                 return nullValue;
         }
-        else
-            Eval::NNUE::hint_common_parent_position(pos);
     }
 
     probCutBeta = beta + 186 - 54 * improving;
@@ -948,6 +946,9 @@ moves_loop: // When in check, search starts here
                          && ttMove
                          && (tte->bound() & BOUND_UPPER)
                          && tte->depth() >= depth;
+
+    if (!ss->ttHit)
+        Eval::NNUE::hint_common_parent_position(pos);
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
