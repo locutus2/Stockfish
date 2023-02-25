@@ -839,6 +839,8 @@ namespace {
 
             if (v >= beta)
                 return nullValue;
+
+            Eval::NNUE::hint_common_parent_position(pos);
         }
     }
 
@@ -892,8 +894,6 @@ namespace {
                     return value;
                 }
             }
-
-        Eval::NNUE::hint_common_parent_position(pos);
     }
 
     // Step 11. If the position is not in TT, decrease depth by 3.
