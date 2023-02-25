@@ -840,7 +840,8 @@ namespace {
             if (v >= beta)
                 return nullValue;
         }
-        Eval::NNUE::hint_common_parent_position(pos);
+        else
+            Eval::NNUE::hint_common_parent_position(pos);
     }
 
     probCutBeta = beta + 186 - 54 * improving;
