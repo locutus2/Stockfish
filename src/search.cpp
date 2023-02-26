@@ -87,7 +87,7 @@ namespace {
   // Add a small random component to draw evaluations to avoid 3-fold blindness
   Value value_draw(const Position& pos) {
     return  VALUE_DRAW - 1 + Value(pos.this_thread()->nodes & 0x2)
-          + int(pos.non_pawn_material(~pos.side_to_move()) - pos.non_pawn_material(pos.side_to_move())) * pos.non_pawn_material() / 4194304;
+          + int(pos.non_pawn_material(~pos.side_to_move()) - pos.non_pawn_material(pos.side_to_move())) * pos.non_pawn_material() / 2097152;
   }
 
   // Skill structure is used to implement strength limit. If we have an uci_elo then
