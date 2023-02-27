@@ -746,7 +746,8 @@ namespace {
         else // Fall back to (semi)classical complexity for TT hits, the NNUE complexity is lost
         {
             complexity = abs(ss->staticEval - pos.psq_eg_stm());
-            if (PvNode)
+
+            if (PvNode || (is_ok((ss-1)->currentMove) && type_of(pos.piece_on(prevSq)) == KING))
                Eval::NNUE::hint_common_parent_position(pos);
         }
 
