@@ -747,7 +747,7 @@ namespace {
         {
             complexity = abs(ss->staticEval - pos.psq_eg_stm());
 
-            if (PvNode || (!cutNode && is_ok((ss-1)->currentMove) && type_of(pos.piece_on(prevSq)) == KING))
+            if (PvNode && (!is_ok((ss-1)->currentMove) || type_of(pos.piece_on(prevSq)) != KING))
                Eval::NNUE::hint_common_parent_position(pos);
         }
 
