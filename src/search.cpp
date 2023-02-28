@@ -733,7 +733,9 @@ namespace {
     else if (excludedMove)
     {
         // Providing the hint that this node's accumulator will be used often brings significant Elo gain (13 elo)
-        Eval::NNUE::hint_common_parent_position(pos);
+        if (!is_ok((ss-1)->currentMove) || type_of(pos.piece_on(prevSq)) != KING)
+            Eval::NNUE::hint_common_parent_position(pos);
+
         eval = ss->staticEval;
         complexity = abs(ss->staticEval - pos.psq_eg_stm());
     }
