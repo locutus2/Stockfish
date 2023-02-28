@@ -747,7 +747,7 @@ namespace {
         {
             complexity = abs(ss->staticEval - pos.psq_eg_stm());
 
-            if (PvNode || priorCapture)
+            if (PvNode || (priorCapture && !cutNode))
                Eval::NNUE::hint_common_parent_position(pos);
         }
 
