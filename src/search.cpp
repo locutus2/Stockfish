@@ -69,8 +69,8 @@ namespace {
   // Mid- and endgame weights for piece dependent reduction
   const int LmrWeight[2][6] = {
     //  Pawn, Knight, Bishop, Rook, Queen, King
-     {  -53,   -14,    -50,    86,    34,    62 }, // midgame
-     {  -63,   -18,     23,   -69,   -60,   -64 }  // endgame
+     {  -62,   -34,    -48,    69,    28,    58 }, // midgame
+     {  -34,   -25,     23,   -70,   -85,   -71 }  // endgame
   };
 
   // Reductions lookup table, initialized at startup
