@@ -747,7 +747,7 @@ namespace {
         {
             complexity = abs(ss->staticEval - pos.psq_eg_stm());
 
-            if (PvNode && depth > tte->depth())
+            if (PvNode && depth >= tte->depth())
                Eval::NNUE::hint_common_parent_position(pos);
         }
 
