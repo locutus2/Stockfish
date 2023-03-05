@@ -520,9 +520,9 @@ namespace {
 
   const double BASE_SCALE = 1.0/256;
 
-  const double OUT[DIM+1] = { 512, 256, 256, 256, 0, 256 };
+  int OUT[DIM+1] = { 512, 256, 256, 256, 0, 256 };
 
-  const double Q[DIM][DIM] = {
+  int Q[DIM][DIM] = {
       { 256, 0, 0, 0, 0,  },
       { 0, 256, 0, 0, 0,  },
       { 0, 0, 256, 0, 0,  },
@@ -530,7 +530,7 @@ namespace {
       { 0, 0, 0, 0, 256,  },
   };
 
-  const double K[DIM][DIM] = {
+  int K[DIM][DIM] = {
       { 256, 0, 0, 0, 0,  },
       { 0, 256, 0, 0, 0,  },
       { 0, 0, 256, 0, 0,  },
@@ -538,7 +538,7 @@ namespace {
       { 0, 0, 0, 0, 256,  },
   };
 
-  const double V[DIM][DIM] = {
+  int V[DIM][DIM] = {
       { 256, 0, 0, 0, 0,  },
       { 0, 256, 0, 0, 0,  },
       { 0, 0, 256, 0, 0,  },
@@ -547,14 +547,15 @@ namespace {
   };
 
   template <int T>
-  Range centered<T>(int v)
+  Range centered(int v)
   {
       return Range(v - T, v + T);
   }
 
   TUNE(SetRange(centered<256>), OUT, Q, K, V);
 
-  void mult(const double A[DIM][DIM], int v[DIM], double w[DIM], double s = 1) {
+  template <typename T>
+  void mult(const T A[DIM][DIM], int v[DIM], double w[DIM], double s = 1) {
 
       for (int i = 0; i < DIM; ++i)
       {
