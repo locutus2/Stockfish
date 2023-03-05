@@ -58,6 +58,16 @@ using namespace Search;
 
 namespace {
 
+  int A[6] = {512, 256, 256, 256, 0, 256 };
+
+  template<int T>
+  Range centered(int v)
+  {
+      return Range(v - T, v + T);
+  }
+
+  TUNE(SetRange(centered<256>), A);
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
@@ -1182,11 +1192,12 @@ moves_loop: // When in check, search starts here
           && (*contHist[0])[movedPiece][to_sq(move)] >= 3722)
           r--;
 
-      ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
-                     + (*contHist[0])[movedPiece][to_sq(move)]
-                     + (*contHist[1])[movedPiece][to_sq(move)]
-                     + (*contHist[3])[movedPiece][to_sq(move)]
-                     - 4182;
+      ss->statScore =  (A[0] * thisThread->mainHistory[us][from_to(move)]
+                     + A[1] * (*contHist[0])[movedPiece][to_sq(move)]
+                     + A[2] * (*contHist[1])[movedPiece][to_sq(move)]
+                     + A[3] * (*contHist[3])[movedPiece][to_sq(move)]
+                     + A[4] * (*contHist[5])[movedPiece][to_sq(move)]
+                     - A[5] * 4182) / 256;
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -= ss->statScore / (11791 + 3992 * (depth > 6 && depth < 19));
