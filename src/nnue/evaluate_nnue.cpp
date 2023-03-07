@@ -136,9 +136,10 @@ namespace Stockfish::Eval::NNUE {
     return (bool)stream;
   }
 
-  void hint_common_parent_position(const Position& pos) {
+  bool hint_common_parent_position(const Position& pos, bool checkOnly) {
     if (Eval::useNNUE)
-        featureTransformer->hint_common_access(pos);
+        return featureTransformer->hint_common_access(pos, checkOnly);
+    return false;
   }
 
   // Evaluation function. Perform differential calculation.

@@ -335,9 +335,10 @@ namespace Stockfish::Eval::NNUE {
       return psqt;
     } // end of function transform()
 
-    void hint_common_access(const Position& pos) const {
-      hint_common_access_for_perspective<WHITE>(pos);
-      hint_common_access_for_perspective<BLACK>(pos);
+    bool hint_common_access(const Position& pos, bool checkOnly) const {
+      bool a = hint_common_access_for_perspective<WHITE>(pos, checkOnly);
+      bool b = hint_common_access_for_perspective<BLACK>(pos, checkOnly);
+      return a || b;
     }
 
    private:
@@ -613,7 +614,7 @@ namespace Stockfish::Eval::NNUE {
     }
 
     template<Color Perspective>
-    void hint_common_access_for_perspective(const Position& pos) const {
+    bool hint_common_access_for_perspective(const Position& pos, bool checkOnly) const {
 
       // Works like update_accumulator, but performs less work.
       // Updates ONLY the accumulator for pos.
@@ -622,7 +623,10 @@ namespace Stockfish::Eval::NNUE {
       // of the estimated gain in terms of features to be added/subtracted.
       // Fast early exit.
       if (pos.state()->accumulator.computed[Perspective])
-        return;
+        return false;
+
+      if (checkOnly)
+        return true;
 
       auto [oldest_st, _] = try_find_computed_accumulator<Perspective>(pos);
 
@@ -636,6 +640,7 @@ namespace Stockfish::Eval::NNUE {
       {
         update_accumulator_refresh<Perspective>(pos);
       }
+      return true;
     }
 
     template<Color Perspective>
