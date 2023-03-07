@@ -818,9 +818,13 @@ namespace {
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
 
+
         pos.do_null_move(st);
+        StateInfo* childState = pos.state();
 
         Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
+
+        bool needComputationAfterNM = Eval::NNUE::hint_common_parent_position(pos, true);
 
         pos.undo_null_move();
 
@@ -847,6 +851,10 @@ namespace {
             if (v >= beta)
                 return nullValue;
         }
+
+        bool needComputationBeforeNM = Eval::NNUE::hint_common_parent_position(pos, true);
+        if (needComputationBeforeNM && !needComputationAfterNM)
+            pos.copyAccFrom(childState);
     }
 
     probCutBeta = beta + 186 - 54 * improving;

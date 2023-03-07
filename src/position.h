@@ -141,6 +141,7 @@ public:
   void undo_move(Move m);
   void do_null_move(StateInfo& newSt);
   void undo_null_move();
+  void copyAccFrom(const StateInfo* s);
 
   // Static Exchange Evaluation
   bool see_ge(Move m, Value threshold = VALUE_ZERO) const;
@@ -286,6 +287,10 @@ inline Square Position::castling_rook_square(CastlingRights cr) const {
 
 inline Bitboard Position::attackers_to(Square s) const {
   return attackers_to(s, pieces());
+}
+
+inline void Position::copyAccFrom(const StateInfo* s) {
+    std::memcpy(&(st->accumulator), &(s->accumulator), sizeof(s->accumulator));
 }
 
 template<PieceType Pt>
