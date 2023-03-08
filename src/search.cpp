@@ -1161,7 +1161,7 @@ moves_loop: // When in check, search starts here
           r += 2;
 
       // Increase reduction if ttMove is a capture (~3 Elo)
-      if (ttCapture && move != ttMove)
+      if (ttCapture)
           r++;
 
       // Decrease reduction for PvNodes based on depth
@@ -1242,7 +1242,7 @@ moves_loop: // When in check, search starts here
           if (!ttMove && cutNode)
               r += 2;
 
-          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4), !cutNode);
+          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4 && move != ttMove), !cutNode);
       }
 
       // For PV nodes only, do a full PV search on the first move or after a fail
