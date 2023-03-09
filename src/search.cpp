@@ -908,7 +908,7 @@ namespace {
     // Use qsearch if depth is equal or below zero (~9 Elo)
     if (    PvNode
         && !ttMove)
-        depth -= 3, depthOffset = -2;
+        depth -= 3, depthOffset = -3;
 
     if (depth <= 0)
         return qsearch<PV>(pos, ss, alpha, beta);
@@ -1246,6 +1246,7 @@ moves_loop: // When in check, search starts here
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4), !cutNode);
       }
 
+
       // For PV nodes only, do a full PV search on the first move or after a fail
       // high (in the latter case search only if value < beta), otherwise let the
       // parent node fail low with value <= alpha and try another move.
@@ -1253,6 +1254,13 @@ moves_loop: // When in check, search starts here
       {
           (ss+1)->pv = pv;
           (ss+1)->pv[0] = MOVE_NONE;
+
+          if (depthOffset < 0 && value > alpha)
+          {
+              depth -= depthOffset;
+              newDepth -= depthOffset;
+              depthOffset = 0;
+          }
 
           value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
       }
@@ -1329,8 +1337,6 @@ moves_loop: // When in check, search starts here
               if (PvNode && value < beta) // Update alpha! Always alpha < beta
               {
                   alpha = value;
-                  depth -= depthOffset;
-                  depthOffset = 0;
 
                   // Reduce other moves if we have found at least one score improvement
                   if (   depth > 1
