@@ -995,7 +995,7 @@ moves_loop: // When in check, search starts here
 
       Value delta = beta - alpha;
 
-      Depth r = baseReduction / 4 + reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
+      Depth r = baseReduction + reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
       // Step 14. Pruning at shallow depth (~120 Elo). Depth conditions are important for mate finding.
       if (  !rootNode
@@ -1129,7 +1129,7 @@ moves_loop: // When in check, search starts here
                    && (*contHist[0])[movedPiece][to_sq(move)] >= 5705)
               extension = 1;
 
-          baseReduction += extension;
+          baseReduction = baseReduction / 2 + extension;
       }
 
       // Add extension to new depth
