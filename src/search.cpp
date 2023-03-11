@@ -1129,7 +1129,7 @@ moves_loop: // When in check, search starts here
               extension = 1;
 
           if (extension < 0)
-              r += extension;
+              r -= extension;
       }
 
       // Add extension to new depth
