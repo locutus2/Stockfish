@@ -1184,11 +1184,11 @@ moves_loop: // When in check, search starts here
           && (*contHist[0])[movedPiece][to_sq(move)] >= 3722)
           r--;
 
-      ss->statScore = (  thisThread->mainHistory[us][from_to(move)] * (582 - 120 * capture)
-                       + (*contHist[0])[movedPiece][to_sq(move)]    * (255 -  24 * capture)
-                       + (*contHist[1])[movedPiece][to_sq(move)]    * (249 -  32 * capture)
-                       + (*contHist[3])[movedPiece][to_sq(move)]    * (230 -  48 * capture)) / 256
-                     - 3087;
+      ss->statScore = (  thisThread->mainHistory[us][from_to(move)] * (607 - 143 * capture)
+                       + (*contHist[0])[movedPiece][to_sq(move)]    * (288 -  53 * capture)
+                       + (*contHist[1])[movedPiece][to_sq(move)]    * (311 - 143 * capture)
+                       + (*contHist[3])[movedPiece][to_sq(move)]    * (234 -  83 * capture)) / 256
+                     + 327 * capture - 3300;
 
       // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
       r -= ss->statScore / (11791 + 3992 * (depth > 6 && depth < 19));
