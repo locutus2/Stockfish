@@ -38,6 +38,10 @@
 
 namespace Stockfish {
 
+int A[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+TUNE(SetRange(-100,100), A);
+
 namespace Search {
 
   LimitsType Limits;
@@ -1053,16 +1057,18 @@ moves_loop: // When in check, search starts here
           }
       }
 
+      bool C = is_ok((ss-1)->currentMove);
+
       // Step 15. Extensions (~100 Elo)
       // We take care to not overdo to avoid search getting stuck.
-      if (ss->ply < thisThread->rootDepth * 2)
+      if ((C || A[0] <= 0) && ss->ply < thisThread->rootDepth * 2)
       {
           // Singular extension search (~94 Elo). If all moves but one fail low on a
           // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
           // then that move is singular and should be extended. To verify this we do
           // a reduced search on all the other moves but the ttMove and if the
           // result is lower than ttValue minus a margin, then we will extend the ttMove.
-          if (   !rootNode
+          if ((C || A[1] <= 0) && !rootNode
               &&  depth >= 4 - (thisThread->completedDepth > 21) + 2 * (PvNode && tte->is_pv())
               &&  move == ttMove
               && !excludedMove // Avoid recursive singular search
@@ -1078,13 +1084,13 @@ moves_loop: // When in check, search starts here
               value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
               ss->excludedMove = MOVE_NONE;
 
-              if (value < singularBeta)
+              if ((C || A[2] <= 0) && value < singularBeta)
               {
                   extension = 1;
                   singularQuietLMR = !ttCapture;
 
                   // Avoid search explosion by limiting the number of double extensions
-                  if (  !PvNode
+                  if ((C || A[3] <= 0) &&   !PvNode
                       && value < singularBeta - 25
                       && ss->doubleExtensions <= 10)
                   {
@@ -1098,30 +1104,30 @@ moves_loop: // When in check, search starts here
               // search without the ttMove. So we assume this expected Cut-node is not singular,
               // that multiple moves fail high, and we can prune the whole subtree by returning
               // a soft bound.
-              else if (singularBeta >= beta)
+              else if ((C || A[4] <= 0) && singularBeta >= beta)
                   return singularBeta;
 
               // If the eval of ttMove is greater than beta, we reduce it (negative extension)
-              else if (ttValue >= beta)
+              else if ((C || A[5] <= 0) && ttValue >= beta)
                   extension = -2 - !PvNode;
 
               // If the eval of ttMove is less than value, we reduce it (negative extension)
-              else if (ttValue <= value)
+              else if ((C || A[6] <= 0) && ttValue <= value)
                   extension = -1;
 
               // If the eval of ttMove is less than alpha, we reduce it (negative extension)
-              else if (ttValue <= alpha)
+              else if ((C || A[7] <= 0) && ttValue <= alpha)
                   extension = -1;
           }
 
           // Check extensions (~1 Elo)
-          else if (   givesCheck
+          else if ((C || A[8] <= 0) &&    givesCheck
                    && depth > 10
                    && abs(ss->staticEval) > 88)
               extension = 1;
 
           // Quiet ttMove extensions (~1 Elo)
-          else if (   PvNode
+          else if ((C || A[9] <= 0) &&    PvNode
                    && move == ttMove
                    && move == ss->killers[0]
                    && (*contHist[0])[movedPiece][to_sq(move)] >= 5705)
