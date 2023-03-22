@@ -1025,9 +1025,9 @@ moves_loop: // When in check, search starts here
           }
           else
           {
-              int history = (  149 * (*contHist[0])[movedPiece][to_sq(move)]
-                             + 138 * (*contHist[1])[movedPiece][to_sq(move)]
-                             + 107 * (*contHist[3])[movedPiece][to_sq(move)]) / 128;
+              int history = (  145 * (*contHist[0])[movedPiece][to_sq(move)]
+                             +  99 * (*contHist[1])[movedPiece][to_sq(move)]
+                             +  95 * (*contHist[3])[movedPiece][to_sq(move)]) / 128;
 
               // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 5
