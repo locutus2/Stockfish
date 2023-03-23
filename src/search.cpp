@@ -1149,10 +1149,10 @@ moves_loop: // When in check, search starts here
       // and node is not likely to fail low. (~3 Elo)
       if (   ss->ttPv
           && !likelyFailLow)
-          r -= 2;
+          r -= 1 + capture;
 
       // Decrease reduction if opponent's move count is high (~1 Elo)
-      if ((ss-1)->moveCount > 7)
+      if ((ss-1)->moveCount > 7 && capture)
           r--;
 
       // Increase reduction for cut nodes (~3 Elo)
@@ -1173,12 +1173,13 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction if we move a threatened piece (~1 Elo)
       if (   depth > 9
-          && (mp.threatenedPieces & from_sq(move)))
+          && (mp.threatenedPieces & from_sq(move))
+          && !capture)
           r--;
 
       // Increase reduction if next ply has a lot of fail high
       if ((ss+1)->cutoffCnt > 3)
-          r++;
+          r += 2 - capture;
 
       // Decrease reduction if move is a killer and we have a good history
       if (move == ss->killers[0]
