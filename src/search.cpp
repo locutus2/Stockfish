@@ -38,6 +38,20 @@
 
 namespace Stockfish {
 
+int A[9][4] = {
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+};
+
+TUNE(SetRange(-100,100), A);
+
 namespace Search {
 
   LimitsType Limits;
@@ -1145,45 +1159,47 @@ moves_loop: // When in check, search starts here
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
 
+      bool C = capture;
+
       // Decrease reduction if position is or has been on the PV
       // and node is not likely to fail low. (~3 Elo)
       if (   ss->ttPv
           && !likelyFailLow)
-          r -= 2;
+          r -= 2 + (C && A[0][0] > 0) - (C && A[0][1] > 0) + (!C && A[0][2] > 0) - (!C && A[0][3] > 0);
 
       // Decrease reduction if opponent's move count is high (~1 Elo)
       if ((ss-1)->moveCount > 7)
-          r--;
+          r -= 1 + (C && A[1][0] > 0) - (C && A[1][1] > 0) + (!C && A[1][2] > 0) - (!C && A[1][3] > 0);
 
       // Increase reduction for cut nodes (~3 Elo)
       if (cutNode)
-          r += 2;
+          r += 2 + (C && A[2][0] > 0) - (C && A[2][1] > 0) + (!C && A[2][2] > 0) - (!C && A[2][3] > 0);
 
       // Increase reduction if ttMove is a capture (~3 Elo)
       if (ttCapture)
-          r++;
+          r += 1 + (C && A[3][0] > 0) - (C && A[3][1] > 0) + (!C && A[3][2] > 0) - (!C && A[3][3] > 0);
 
       // Decrease reduction for PvNodes based on depth
       if (PvNode)
-          r -= 1 + 12 / (3 + depth);
+          r -= 1 + 12 / (3 + depth) + (C && A[4][0] > 0) - (C && A[4][1] > 0) + (!C && A[4][2] > 0) - (!C && A[4][3] > 0);
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
-          r--;
+          r -= 1 + (C && A[5][0] > 0) - (C && A[5][1] > 0) + (!C && A[5][2] > 0) - (!C && A[5][3] > 0);
 
       // Decrease reduction if we move a threatened piece (~1 Elo)
       if (   depth > 9
           && (mp.threatenedPieces & from_sq(move)))
-          r--;
+          r -= 1 + (C && A[6][0] > 0) - (C && A[6][1] > 0) + (!C && A[6][2] > 0) - (!C && A[6][3] > 0);
 
       // Increase reduction if next ply has a lot of fail high
       if ((ss+1)->cutoffCnt > 3)
-          r++;
+          r += 1 + (C && A[7][0] > 0) - (C && A[7][1] > 0) + (!C && A[7][2] > 0) - (!C && A[7][3] > 0);
 
       // Decrease reduction if move is a killer and we have a good history
       if (move == ss->killers[0]
           && (*contHist[0])[movedPiece][to_sq(move)] >= 3722)
-          r--;
+          r -= 1 + (C && A[8][0] > 0) - (C && A[8][1] > 0) + (!C && A[8][2] > 0) - (!C && A[8][3] > 0);
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
