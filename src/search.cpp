@@ -1164,7 +1164,7 @@ moves_loop: // When in check, search starts here
           r -= 2;
 
       // Decrease reduction if opponent's move count is high (~1 Elo)
-      if ((ss-1)->moveCount > 7)
+      if ((ss-1)->moveCount > 7 && (capture || thisThread->nodes & 1))
           r--;
 
       // Increase reduction for cut nodes (~3 Elo)
@@ -1177,7 +1177,7 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
       if (PvNode)
-          r -= 2 + 12 / (3 + depth) - capture - ((thisThread->nodes & 0xF) < 7);
+          r -= 1 + 12 / (3 + depth);
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
