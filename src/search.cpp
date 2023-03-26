@@ -1164,7 +1164,7 @@ moves_loop: // When in check, search starts here
           r -= 2;
 
       // Decrease reduction if opponent's move count is high (~1 Elo)
-      if ((ss-1)->moveCount > 7 && capture)
+      if ((ss-1)->moveCount > 7)
           r--;
 
       // Increase reduction for cut nodes (~3 Elo)
@@ -1173,7 +1173,7 @@ moves_loop: // When in check, search starts here
 
       // Increase reduction if ttMove is a capture (~3 Elo)
       if (ttCapture)
-          r++;
+          r += 1 + (!capture && thisThread->nodes & 1);
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
       if (PvNode)
