@@ -1173,11 +1173,11 @@ moves_loop: // When in check, search starts here
 
       // Increase reduction if ttMove is a capture (~3 Elo)
       if (ttCapture)
-          r += 2 - capture;
+          r++;
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
       if (PvNode)
-          r -= 2 + 12 / (3 + depth) - capture;
+          r -= 1 + 12 / (3 + depth);
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
@@ -1190,7 +1190,7 @@ moves_loop: // When in check, search starts here
 
       // Increase reduction if next ply has a lot of fail high (~5 Elo)
       if ((ss+1)->cutoffCnt > 3)
-          r++;
+          r += 2 - capture - bool(thisThread->nodes & 7);
 
       // Decrease reduction if move is a killer and we have a good history (~1 Elo)
       if (move == ss->killers[0]
