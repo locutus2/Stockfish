@@ -1189,8 +1189,8 @@ moves_loop: // When in check, search starts here
           r--;
 
       // Increase reduction if next ply has a lot of fail high (~5 Elo)
-      if ((ss+1)->cutoffCnt > 3)
-          r++;
+      if ((ss+1)->cutoffCnt > 3 && !ss->inCheck)
+          r += 2;
 
       // Decrease reduction if move is a killer and we have a good history (~1 Elo)
       if (move == ss->killers[0]
