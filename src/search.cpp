@@ -1173,11 +1173,11 @@ moves_loop: // When in check, search starts here
 
       // Increase reduction if ttMove is a capture (~3 Elo)
       if (ttCapture)
-          r++;
+          r += 2 - capture;
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
       if (PvNode)
-          r -= 1 + 12 / (3 + depth);
+          r -= 2 + 12 / (3 + depth) - capture;
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
@@ -1185,7 +1185,6 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction if we move a threatened piece (~1 Elo)
       if (   depth > 9
-          && !capture
           && (mp.threatenedPieces & from_sq(move)))
           r--;
 
