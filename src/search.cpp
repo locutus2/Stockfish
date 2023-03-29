@@ -1161,11 +1161,11 @@ moves_loop: // When in check, search starts here
       // and node is not likely to fail low. (~3 Elo)
       if (   ss->ttPv
           && !likelyFailLow)
-          r -= 1 + capture + bool(thisThread->nodes & 7);
+          r -= 2;
 
       // Decrease reduction if opponent's move count is high (~1 Elo)
       if ((ss-1)->moveCount > 7)
-          r--;
+          r -= capture + ((thisThread->nodes & 0xF) < 11);
 
       // Increase reduction for cut nodes (~3 Elo)
       if (cutNode)
