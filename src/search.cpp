@@ -1163,7 +1163,7 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction if opponent's move count is high (~1 Elo)
       if ((ss-1)->moveCount > 7)
-          r -= 1 - (!capture && thisThread->nodes & 1);
+          r--;
 
       // Increase reduction for cut nodes (~3 Elo)
       if (cutNode)
@@ -1184,7 +1184,7 @@ moves_loop: // When in check, search starts here
       // Decrease reduction if we move a threatened piece (~1 Elo)
       if (   depth > 9
           && (mp.threatenedPieces & from_sq(move)))
-          r--;
+          r -= 1 - 2 * capture;
 
       // Increase reduction if next ply has a lot of fail high (~5 Elo)
       if ((ss+1)->cutoffCnt > 3)
