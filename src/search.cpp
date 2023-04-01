@@ -307,6 +307,15 @@ void Thread::search() {
 
   if (mainThread)
   {
+
+      int rootComplexity;
+      if (Eval::useNNUE)
+          Eval::NNUE::evaluate(rootPos, true, &rootComplexity);
+      else
+          Eval::evaluate(rootPos, &rootComplexity);
+
+      mainThread->complexity = std::min(1.03 + (rootComplexity - 241) / 1552.0, 1.45);
+
       if (mainThread->bestPreviousScore == VALUE_INFINITE)
           for (int i = 0; i < 4; ++i)
               mainThread->iterValue[i] = VALUE_ZERO;
@@ -324,8 +333,6 @@ void Thread::search() {
       multiPV = std::max(multiPV, (size_t)4);
 
   multiPV = std::min(multiPV, rootMoves.size());
-
-  complexityAverage.set(153, 1);
 
   optimism[us] = optimism[~us] = VALUE_ZERO;
 
@@ -486,10 +493,8 @@ void Thread::search() {
           timeReduction = lastBestMoveDepth + 8 < completedDepth ? 1.57 : 0.65;
           double reduction = (1.4 + mainThread->previousTimeReduction) / (2.08 * timeReduction);
           double bestMoveInstability = 1 + 1.8 * totBestMoveChanges / Threads.size();
-          int complexity = mainThread->complexityAverage.value();
-          double complexPosition = std::min(1.03 + (complexity - 241) / 1552.0, 1.45);
 
-          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * complexPosition;
+          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * mainThread->complexity;
 
           // Cap used time in case of a single legal move for a better viewer experience in tournaments
           // yielding correct scores and sufficiently fast moves.
@@ -769,8 +774,6 @@ namespace {
         tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
-    thisThread->complexityAverage.update(complexity);
-
     // Use static evaluation difference to improve quiet move ordering (~4 Elo)
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
@@ -910,11 +913,11 @@ namespace {
         Eval::NNUE::hint_common_parent_position(pos);
     }
 
-    // Step 11. If the position is not in TT, decrease depth by 3.
+    // Step 11. If the position is not in TT, decrease depth by 2 (or by 4 if the TT entry for the current position was hit and the stored depth is greater than or equal to the current depth).
     // Use qsearch if depth is equal or below zero (~9 Elo)
     if (    PvNode
         && !ttMove)
-        depth -= 3;
+        depth -= 2 + 2 * (ss->ttHit &&  tte->depth() >= depth);
 
     if (depth <= 0)
         return qsearch<PV>(pos, ss, alpha, beta);
@@ -1199,10 +1202,7 @@ moves_loop: // When in check, search starts here
       if (singularQuietLMR)
           r -= 1 + R(5, C);
 
-      // Decrease reduction if we move a threatened piece (~1 Elo)
-      if (   depth > 9
-          && (mp.threatenedPieces & from_sq(move)))
-          r -= 1 + R(6, C);
+      r += R(6, C);
 
       // Increase reduction if next ply has a lot of fail high (~5 Elo)
       if ((ss+1)->cutoffCnt > 3)
