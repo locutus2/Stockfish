@@ -1189,12 +1189,12 @@ moves_loop: // When in check, search starts here
           r++;
 
       // Decrease reduction if move is a killer and we have a good history (~1 Elo)
-      if (move == ss->killers[0]
+      if (   move == ss->killers[0]
           && (*contHist[0])[movedPiece][to_sq(move)] >= 3722)
           r--;
 
-      if (capture)
-          r--;
+      else if (!capture)
+          r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
