@@ -1173,7 +1173,7 @@ moves_loop: // When in check, search starts here
           r += 2;
 
       // Increase reduction if ttMove is a capture (~3 Elo)
-      if (ttCapture)
+      if (ttCapture || !capture)
           r++;
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
@@ -1185,7 +1185,7 @@ moves_loop: // When in check, search starts here
           r--;
 
       // Increase reduction if next ply has a lot of fail high (~5 Elo)
-      if ((ss+1)->cutoffCnt > 3 || capture)
+      if ((ss+1)->cutoffCnt > 3)
           r++;
 
       // Decrease reduction if move is a killer and we have a good history (~1 Elo)
@@ -1201,9 +1201,6 @@ moves_loop: // When in check, search starts here
 
       // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
       r -= ss->statScore / (11791 + 3992 * (depth > 6 && depth < 19));
-
-      if (capture)
-          r -= ((thisThread->nodes & 0x1F) < 29);
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
       // We use various heuristics for the sons of a node after the first son has
