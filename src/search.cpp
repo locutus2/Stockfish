@@ -1162,7 +1162,7 @@ moves_loop: // When in check, search starts here
       // and node is not likely to fail low. (~3 Elo)
       if (   ss->ttPv
           && !likelyFailLow)
-          r -= 2 + capture;
+          r -= 2;
 
       // Decrease reduction if opponent's move count is high (~1 Elo)
       if ((ss-1)->moveCount > 7)
@@ -1185,7 +1185,7 @@ moves_loop: // When in check, search starts here
           r--;
 
       // Increase reduction if next ply has a lot of fail high (~5 Elo)
-      if ((ss+1)->cutoffCnt > 3)
+      if ((ss+1)->cutoffCnt > 3 || capture)
           r++;
 
       // Decrease reduction if move is a killer and we have a good history (~1 Elo)
