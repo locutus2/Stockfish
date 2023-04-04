@@ -1193,7 +1193,7 @@ moves_loop: // When in check, search starts here
           && (*contHist[0])[movedPiece][to_sq(move)] >= 3722)
           r--;
 
-      if (!capture && !(thisThread->nodes & 0x1F))
+      if (!capture && !(thisThread->nodes & 0xF))
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
