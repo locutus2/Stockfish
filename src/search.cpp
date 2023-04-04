@@ -38,6 +38,11 @@
 
 namespace Stockfish {
 
+int A[27];
+int B[27];
+
+TUNE(SetRange(-100, 100), A, B);
+
 namespace Search {
 
   LimitsType Limits;
@@ -1157,6 +1162,52 @@ moves_loop: // When in check, search starts here
 
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
+
+      std::vector<bool> C = {
+          PvNode,
+          cutNode,
+          capture,
+          type_of(move) == PROMOTION,
+          improving,
+          ss->inCheck,
+          (ss-1)->inCheck,
+          givesCheck,
+          priorCapture,
+          ss->ttPv,
+          (ss-1)->ttPv,
+          likelyFailLow,
+          ttCapture,
+          move == ttMove,
+          move == countermove,
+          move == ss->killers[0],
+          move == ss->killers[1],
+          (ss-1)->moveCount > 7,
+          singularQuietLMR,
+          (ss+1)->cutoffCnt > 3,
+          type_of(movedPiece) == PAWN,
+          type_of(movedPiece) == KNIGHT,
+          type_of(movedPiece) == BISHOP,
+          type_of(movedPiece) == ROOK,
+          type_of(movedPiece) == QUEEN,
+          type_of(movedPiece) == KING,
+          (ss-1)->currentMove == MOVE_NULL,
+      };
+
+#define P(x, n, c) (((c) || (x)[(n)] < 50) && ((!(c) || (x)[(n)] > -50)))
+
+      bool moreRed = true;
+      bool lessRed = true;
+      for(int i = 0; i < int(C.size()) && (moreRed || lessRed); ++i)
+      {
+          moreRed = moreRed && P(A, i, C[i]);
+          lessRed = lessRed && P(B, i, C[i]);
+      }
+
+      if (moreRed)
+          r++;
+
+      if (lessRed)
+          r--;
 
       // Decrease reduction if position is or has been on the PV
       // and node is not likely to fail low. (~3 Elo)
