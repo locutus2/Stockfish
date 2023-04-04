@@ -1173,7 +1173,7 @@ moves_loop: // When in check, search starts here
           r += 2;
 
       // Increase reduction if ttMove is a capture (~3 Elo)
-      if (ttCapture || !capture)
+      if (ttCapture)
           r++;
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
@@ -1189,9 +1189,9 @@ moves_loop: // When in check, search starts here
           r++;
 
       // Decrease reduction if move is a killer and we have a good history (~1 Elo)
-      if (move == ss->killers[0]
+      if (   move == ss->killers[0]
           && (*contHist[0])[movedPiece][to_sq(move)] >= 3722)
-          r--;
+          r -= 1 + capture;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
