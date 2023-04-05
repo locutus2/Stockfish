@@ -1037,13 +1037,9 @@ moves_loop: // When in check, search starts here
               // No pruning for creation of a supported pawn lever
               if (   type_of(movedPiece) == PAWN
                   && type_of(move) != PROMOTION
-                  && pawn_attacks_bb(~us, to_sq(move)) & pos.pieces(us, PAWN))
-              {
-                  Bitboard b = pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us, PAWN);
-
-                  if (b && !more_than_one(b))
-                      goto after_pruning;
-              }
+                  && pawn_attacks_bb( us, to_sq(move)) & pos.pieces(~us, PAWN)
+                  && pawn_attacks_bb(~us, to_sq(move)) & pos.pieces( us, PAWN))
+                  goto after_pruning;
 
               int history =   (*contHist[0])[movedPiece][to_sq(move)]
                             + (*contHist[1])[movedPiece][to_sq(move)]
