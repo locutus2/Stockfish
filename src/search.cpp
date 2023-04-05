@@ -1039,7 +1039,7 @@ moves_loop: // When in check, search starts here
                   && type_of(move) != PROMOTION
                   && pawn_attacks_bb( us, to_sq(move)) & pos.pieces(~us, PAWN)
                   &&    popcount(pawn_attacks_bb( us, to_sq(move)) & pos.pieces(~us, PAWN))
-                     <= popcount(pawn_attacks_bb(~us, to_sq(move)) & pos.pieces( us, PAWN)) + 1)
+                     <= popcount(pawn_attacks_bb(~us, to_sq(move)) & pos.pieces( us, PAWN)))
                   goto after_pruning;
 
               int history =   (*contHist[0])[movedPiece][to_sq(move)]
