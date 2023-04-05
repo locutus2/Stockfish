@@ -1246,6 +1246,14 @@ moves_loop: // When in check, search starts here
               r += 2;
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4), !cutNode);
+
+          if (moveCount > 1 && newDepth >= depth && !capture)
+          {
+              int bonus = value > alpha ?  stat_bonus(newDepth)
+                                        : -stat_bonus(newDepth);
+
+              update_continuation_histories(ss, movedPiece, to_sq(move), bonus);
+          }
       }
 
       // For PV nodes only, do a full PV search on the first move or after a fail
@@ -1258,7 +1266,7 @@ moves_loop: // When in check, search starts here
 
           value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
 
-          if (moveCount > 1 && newDepth >= depth && !capture && value < beta)
+          if (moveCount > 1 && newDepth >= depth && !capture)
               update_continuation_histories(ss, movedPiece, to_sq(move), -stat_bonus(newDepth));
       }
 
