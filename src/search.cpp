@@ -1189,8 +1189,17 @@ moves_loop: // When in check, search starts here
           && (*contHist[0])[movedPiece][to_sq(move)] >= 3722)
           r--;
 
-      if (type_of(movedPiece) == PAWN && !capture && pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us))
-          r--;
+      // Decrease reduction for creation of a supported pawn lever
+      if (   type_of(movedPiece) == PAWN
+          && !capture
+          && type_of(move) != PROMOTION
+          && pawn_attacks_bb(~us, to_sq(move)) & pos.pieces(us, PAWN))
+      {
+          Bitboard b = pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us, PAWN);
+
+          if (b && !more_than_one(b))
+              r--;
+      }
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
