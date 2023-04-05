@@ -991,7 +991,11 @@ moves_loop: // When in check, search starts here
       // Step 14. Pruning at shallow depth (~120 Elo). Depth conditions are important for mate finding.
       if (  !rootNode
           && pos.non_pawn_material(us)
-          && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
+          && bestValue > VALUE_TB_LOSS_IN_MAX_PLY
+          && !(   type_of(movedPiece) == PAWN
+               && type_of(move) != PROMOTION
+               && pawn_attacks_bb( us, to_sq(move)) & pos.pieces(~us, PAWN)
+               && pawn_attacks_bb(~us, to_sq(move)) & pos.pieces( us, PAWN)))
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~8 Elo)
           moveCountPruning = moveCount >= futility_move_count(improving, depth);
@@ -1034,14 +1038,6 @@ moves_loop: // When in check, search starts here
           }
           else
           {
-              // No pruning for creation of a supported pawn lever
-              if (   type_of(movedPiece) == PAWN
-                  && type_of(move) != PROMOTION
-                  && pawn_attacks_bb( us, to_sq(move)) & pos.pieces(~us, PAWN)
-                  &&    popcount(pawn_attacks_bb( us, to_sq(move)) & pos.pieces(~us, PAWN))
-                     <= popcount(pawn_attacks_bb(~us, to_sq(move)) & pos.pieces( us, PAWN)))
-                  goto after_pruning;
-
               int history =   (*contHist[0])[movedPiece][to_sq(move)]
                             + (*contHist[1])[movedPiece][to_sq(move)]
                             + (*contHist[3])[movedPiece][to_sq(move)];
@@ -1069,8 +1065,6 @@ moves_loop: // When in check, search starts here
                   continue;
           }
       }
-
-after_pruning:
 
       // Step 15. Extensions (~100 Elo)
       // We take care to not overdo to avoid search getting stuck.
