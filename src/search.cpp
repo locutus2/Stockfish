@@ -1189,6 +1189,9 @@ moves_loop: // When in check, search starts here
           && (*contHist[0])[movedPiece][to_sq(move)] >= 3722)
           r--;
 
+      if (type_of(movedPiece) == PAWN && !capture && pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us))
+          r--;
+
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
                      + (*contHist[1])[movedPiece][to_sq(move)]
