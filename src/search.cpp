@@ -276,8 +276,6 @@ void Thread::search() {
   Color us = rootPos.side_to_move();
   int iterIdx = 0;
 
-  searchedPvMoves.fill(0);
-
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; --i)
   {
@@ -327,6 +325,8 @@ void Thread::search() {
          && !Threads.stop
          && !(Limits.depth && mainThread && rootDepth > Limits.depth))
   {
+      searchedPvMoves.fill(0);
+
       // Age out PV variability metric
       if (mainThread)
           totBestMoveChanges /= 2;
