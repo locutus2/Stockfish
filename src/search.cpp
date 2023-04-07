@@ -325,8 +325,6 @@ void Thread::search() {
          && !Threads.stop
          && !(Limits.depth && mainThread && rootDepth > Limits.depth))
   {
-      searchedPvMoves.fill(0);
-
       // Age out PV variability metric
       if (mainThread)
           totBestMoveChanges /= 2;
@@ -1176,10 +1174,7 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
       if (PvNode)
-      {
-          r -= 1 + 12 / (3 + depth) + !(thisThread->searchedPvMoves[movedPiece] & to_sq(move));
-          thisThread->searchedPvMoves[movedPiece] |= to_sq(move);
-      }
+          r -= 1 + 12 / (3 + depth);
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
@@ -1211,7 +1206,9 @@ moves_loop: // When in check, search starts here
           &&  moveCount > 1 + (PvNode && ss->ply <= 1)
           && (   !ss->ttPv
               || !capture
-              || (cutNode && (ss-1)->moveCount > 1)))
+              || (cutNode && (ss-1)->moveCount > 1))
+          && (   !PvNode
+              || thisThread->searchedPvMoves[movedPiece] & to_sq(move)))
       {
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
@@ -1278,6 +1275,9 @@ moves_loop: // When in check, search starts here
       // updating best move, PV and TT.
       if (Threads.stop.load(std::memory_order_relaxed))
           return VALUE_ZERO;
+
+      if (PvNode)
+          thisThread->searchedPvMoves[movedPiece] |= to_sq(move);
 
       if (rootNode)
       {
