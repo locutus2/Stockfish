@@ -61,8 +61,7 @@ void Thread::clear() {
   mainHistory.fill(0);
   captureHistory.fill(0);
 
-  for (auto& m : searchedPvMoves)
-      m.fill(0);
+  std::memset(searchedPvMoves, 0, sizeof(searchedPvMoves));
 
   for (bool inCheck : { false, true })
       for (StatsType c : { NoCaptures, Captures })

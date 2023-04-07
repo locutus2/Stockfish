@@ -74,7 +74,7 @@ public:
   ButterflyHistory mainHistory;
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory[2][2];
-  std::array<std::array<Bitboard, PIECE_NB>, MAX_PLY> searchedPvMoves;
+  Bitboard searchedPvMoves[PIECE_NB][SQUARE_NB][PIECE_NB];
 };
 
 

@@ -1174,7 +1174,10 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
       if (PvNode)
-          r -= 1 + 12 / (3 + depth) + !(thisThread->searchedPvMoves[ss->ply][movedPiece] & to_sq(move));
+          r -= 1 + 12 / (3 + depth) + !(thisThread->searchedPvMoves[pos.piece_on(to_sq((ss-1)->currentMove))]
+                                                                   [to_sq((ss-1)->currentMove)]
+                                                                   [movedPiece]
+                                                  & to_sq(move));
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
@@ -1258,7 +1261,10 @@ moves_loop: // When in check, search starts here
 
           value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
 
-          thisThread->searchedPvMoves[ss->ply][movedPiece] |= to_sq(move);
+          thisThread->searchedPvMoves[pos.piece_on(to_sq((ss-1)->currentMove))]
+                                     [to_sq((ss-1)->currentMove)]
+                                     [movedPiece]
+                    |= to_sq(move);
 
           if (moveCount > 1 && newDepth >= depth && !capture)
               update_continuation_histories(ss, movedPiece, to_sq(move), -stat_bonus(newDepth));
