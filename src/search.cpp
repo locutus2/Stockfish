@@ -1174,7 +1174,7 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
       if (PvNode)
-          r -= 1 + 12 / (3 + depth);
+          r -= 1 + 12 / (3 + depth) + !(thisThread->searchedPvMoves[movedPiece] & to_sq(move));
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
@@ -1206,9 +1206,7 @@ moves_loop: // When in check, search starts here
           &&  moveCount > 1 + (PvNode && ss->ply <= 1)
           && (   !ss->ttPv
               || !capture
-              || (cutNode && (ss-1)->moveCount > 1))
-          && (   !PvNode
-              || thisThread->searchedPvMoves[movedPiece] & to_sq(move)))
+              || (cutNode && (ss-1)->moveCount > 1)))
       {
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
@@ -1260,6 +1258,8 @@ moves_loop: // When in check, search starts here
 
           value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
 
+          thisThread->searchedPvMoves[movedPiece] |= to_sq(move);
+
           if (moveCount > 1 && newDepth >= depth && !capture)
               update_continuation_histories(ss, movedPiece, to_sq(move), -stat_bonus(newDepth));
       }
@@ -1275,9 +1275,6 @@ moves_loop: // When in check, search starts here
       // updating best move, PV and TT.
       if (Threads.stop.load(std::memory_order_relaxed))
           return VALUE_ZERO;
-
-      if (PvNode)
-          thisThread->searchedPvMoves[movedPiece] |= to_sq(move);
 
       if (rootNode)
       {
