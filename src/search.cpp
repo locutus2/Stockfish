@@ -991,7 +991,8 @@ moves_loop: // When in check, search starts here
       // Step 14. Pruning at shallow depth (~120 Elo). Depth conditions are important for mate finding.
       if (  !rootNode
           && pos.non_pawn_material(us)
-          && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
+          && bestValue > VALUE_TB_LOSS_IN_MAX_PLY
+          && (!PvNode || thisThread->searchedPvMoves[movedPiece] & to_sq(move)))
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~8 Elo)
           moveCountPruning = moveCount >= futility_move_count(improving, depth);
@@ -1174,7 +1175,7 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
       if (PvNode)
-          r -= 1 + 12 / (3 + depth) + !(thisThread->searchedPvMoves[movedPiece] & to_sq(move));
+          r -= 1 + 12 / (3 + depth);
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
@@ -1258,8 +1259,7 @@ moves_loop: // When in check, search starts here
 
           value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
 
-          if (depth > 9)
-              thisThread->searchedPvMoves[movedPiece] |= to_sq(move);
+          thisThread->searchedPvMoves[movedPiece] |= to_sq(move);
 
           if (moveCount > 1 && newDepth >= depth && !capture)
               update_continuation_histories(ss, movedPiece, to_sq(move), -stat_bonus(newDepth));
