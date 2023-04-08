@@ -1156,7 +1156,7 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction if position is or has been on the PV. (~5 Elo)
       if (ss->ttPv)
-          r -= 3 + 12 / (3 + depth) - 2 * likelyFailLow;
+          r -= 2 + 12 / (3 + depth) + PvNode - 2 * likelyFailLow;
 
       // Decrease reduction if opponent's move count is high (~1 Elo)
       if ((ss-1)->moveCount > 7)
