@@ -1258,7 +1258,7 @@ moves_loop: // When in check, search starts here
 
           value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
 
-          if (depth > 9)
+          if (thisThread->nodes & 1)
               thisThread->searchedPvMoves[movedPiece] |= to_sq(move);
 
           if (moveCount > 1 && newDepth >= depth && !capture)
