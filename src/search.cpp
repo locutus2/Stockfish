@@ -38,10 +38,11 @@
 
 namespace Stockfish {
 
-int A[27];
-int B[27];
+const int N = 12;
 
-TUNE(SetRange(-100, 100), A, B);
+int A[N][N][2];
+
+TUNE(SetRange(-100, 100), A);
 
 namespace Search {
 
@@ -1163,7 +1164,7 @@ moves_loop: // When in check, search starts here
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
 
-      std::vector<bool> C = {
+      bool C[N] = {
           PvNode,
           cutNode,
           capture,
@@ -1176,6 +1177,7 @@ moves_loop: // When in check, search starts here
           likelyFailLow,
           ttCapture,
           singularQuietLMR,
+          /*
           (ss-1)->inCheck,
           (ss-1)->ttPv,
           move == ttMove,
@@ -1191,23 +1193,31 @@ moves_loop: // When in check, search starts here
           type_of(movedPiece) == QUEEN,
           type_of(movedPiece) == KING,
           (ss-1)->currentMove == MOVE_NULL,
+          */
       };
 
-#define P(x, n, c) (((c) || (x)[(n)] < 50) && ((!(c) || (x)[(n)] > -50)))
+#define P(x, c) (((c) || (x) < 50) && ((!(c) || (x) > -50)))
 
-      bool moreRed = true;
-      bool lessRed = true;
-      for(int i = 0; i < int(C.size()) && (moreRed || lessRed); ++i)
-      {
-          moreRed = moreRed && P(A, i, C[i]);
-          lessRed = lessRed && P(B, i, C[i]);
-      }
+      for(int i = 0; i < N; ++i)
+          for(int j = 0; j < N; ++j)
+              if (i < j) // more reduction
+              {
+                  if (P(A[i][j][0], C[i]) && P(A[i][j][1], C[j]))
+                      r++;
+              }
+              else if (i > j) // less reduction
+              {
+                  if (P(A[i][j][0], C[i]) && P(A[i][j][1], C[j]))
+                      r--;
+              }
+              else // i == j
+              {
+                  if (P(A[i][i][0], C[i]))
+                      r++;
 
-      if (moreRed)
-          r++;
-
-      if (lessRed)
-          r--;
+                  if (P(A[i][i][1], C[i]))
+                      r--;
+              }
 
       // Decrease reduction if position is or has been on the PV
       // and node is not likely to fail low. (~3 Elo)
