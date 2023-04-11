@@ -370,7 +370,7 @@ void Thread::search() {
               optimism[~us] = -optimism[us];
           }
 
-          Value prevBeta = beta;
+          Value prevAlpha = alpha;
 
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
@@ -409,9 +409,10 @@ void Thread::search() {
               // re-search, otherwise exit the loop.
               if (bestValue <= alpha)
               {
-                  prevBeta = beta;
+                  Value lastAlpha = prevAlpha;
+                  prevAlpha = alpha;
                   beta = (alpha + beta) / 2;
-                  alpha = std::max(bestValue - delta, -VALUE_INFINITE);
+                  alpha = std::max(std::min(bestValue - delta, lastAlpha), -VALUE_INFINITE);
 
                   failedHighCnt = 0;
                   if (mainThread)
@@ -419,9 +420,7 @@ void Thread::search() {
               }
               else if (bestValue >= beta)
               {
-                  Value lastBeta = prevBeta;
-                  prevBeta = beta;
-                  beta = std::min(std::max(bestValue + delta, lastBeta), VALUE_INFINITE);
+                  beta = std::min(bestValue + delta, VALUE_INFINITE);
                   ++failedHighCnt;
               }
               else
