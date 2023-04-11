@@ -1186,7 +1186,10 @@ moves_loop: // When in check, search starts here
 
       // Increase reduction if next ply has a lot of fail high (~5 Elo)
       if ((ss+1)->cutoffCnt > 3)
-          r += 1 + (type_of(movedPiece) == KING && !cutNode && ss->inCheck);
+          r++;
+
+      if (move == ss->killers[0] && capture)
+          r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
