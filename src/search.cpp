@@ -1181,8 +1181,8 @@ moves_loop: // When in check, search starts here
           r -= 1 + 12 / (3 + depth);
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
-      if (!PvNode && singularQuietLMR)
-          r--;
+      if (singularQuietLMR)
+          r -= 1 + ss->inCheck;
 
       // Increase reduction if next ply has a lot of fail high (~5 Elo)
       if ((ss+1)->cutoffCnt > 3)
