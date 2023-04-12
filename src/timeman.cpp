@@ -72,6 +72,8 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   TimePoint timeLeft =  std::max(TimePoint(1),
       limits.time[us] + limits.inc[us] * (mtg - 1) - moveOverhead * (2 + mtg));
 
+  timeAdvantage = double(limits.time[us] - limits.time[~us]) / (limits.time[us] + limits.time[~us]);
+
   // Use extra time with larger increments
   double optExtra = std::clamp(1.0 + 12.0 * limits.inc[us] / limits.time[us], 1.0, 1.12);
 

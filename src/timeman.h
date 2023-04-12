@@ -31,6 +31,7 @@ namespace Stockfish {
 class TimeManagement {
 public:
   void init(Search::LimitsType& limits, Color us, int ply);
+  double  advantage() const { return timeAdvantage; }
   TimePoint optimum() const { return optimumTime; }
   TimePoint maximum() const { return maximumTime; }
   TimePoint elapsed() const { return Search::Limits.npmsec ?
@@ -42,6 +43,7 @@ private:
   TimePoint startTime;
   TimePoint optimumTime;
   TimePoint maximumTime;
+  double timeAdvantage;
 };
 
 extern TimeManagement Time;
