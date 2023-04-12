@@ -1160,8 +1160,9 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction if position is or has been on the PV
       // and node is not likely to fail low. (~3 Elo)
-      if (ss->ttPv)
-          r -= 1 + ttCapture - 2 * likelyFailLow;
+      if (   ss->ttPv
+          && !likelyFailLow)
+          r -= 2;
 
       // Decrease reduction if opponent's move count is high (~1 Elo)
       if ((ss-1)->moveCount > 7)
@@ -1191,6 +1192,9 @@ moves_loop: // When in check, search starts here
       if (move == ss->killers[0]
           && (*contHist[0])[movedPiece][to_sq(move)] >= 3722)
           r--;
+
+      if (givesCheck && type_of(move) != PROMOTION)
+          r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
