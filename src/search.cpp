@@ -1181,10 +1181,13 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
-          r -= 2 - priorCapture;
+          r--;
 
       // Increase reduction if next ply has a lot of fail high (~5 Elo)
       if ((ss+1)->cutoffCnt > 3)
+          r++;
+
+      if (type_of(move) == PROMOTION && improving)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
