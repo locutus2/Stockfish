@@ -1195,7 +1195,8 @@ moves_loop: // When in check, search starts here
           */
       };
 
-#define P(x, c) (((c) || (x) < 50) && ((!(c) || (x) > -50)))
+//#define P(x, c) (((c) || (x) < 50) && ((!(c) || (x) > -50)))
+#define P(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? !(c) : false)
 
       for(int i = 0; i < N; ++i)
           for(int j = 0; j < N; ++j)
