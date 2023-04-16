@@ -1313,16 +1313,16 @@ moves_loop: // When in check, search starts here
                   && !thisThread->pvIdx)
                   ++thisThread->bestMoveChanges;
 
-              // Remember position key for a 3 move transpostion in current best PV
-              if (int(rm.pv.size()) > 2)
+              // Remember position key for a 4 move transpostion in current best PV
+              if (int(rm.pv.size()) > 3)
               {
-                  StateInfo tmpSt[3];
-                  for (int i = 0; i <= 2; i++)
+                  StateInfo tmpSt[4];
+                  for (int i = 0; i <= 3; i++)
                       pos.do_move(rm.pv[i], tmpSt[i]);
 
                   thisThread->transpositionKey = pos.key();
 
-                  for (int i = 2; i >= 0; i--)
+                  for (int i = 3; i >= 0; i--)
                       pos.undo_move(rm.pv[i]);
               }
           }
