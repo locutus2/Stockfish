@@ -992,10 +992,7 @@ moves_loop: // When in check, search starts here
 
       Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
-      (ss+1)->onPreviousPv = ss->onPreviousPv && int(thisThread->previousPv.size()) > ss->ply + 2 && move == thisThread->previousPv[ss->ply + 2];
-
-      if ((ss+1)->onPreviousPv && depth <= 1)
-          depth++;
+      (ss+1)->onPreviousPv = ss->onPreviousPv && ss->ply + 2 < int(thisThread->previousPv.size()) && move == thisThread->previousPv[ss->ply + 2];
 
       // Step 14. Pruning at shallow depth (~120 Elo). Depth conditions are important for mate finding.
       if (  !rootNode
@@ -1212,7 +1209,8 @@ moves_loop: // When in check, search starts here
           &&  moveCount > 1 + (PvNode && ss->ply <= 1)
           && (   !ss->ttPv
               || !capture
-              || (cutNode && (ss-1)->moveCount > 1)))
+              || (cutNode && (ss-1)->moveCount > 1))
+          && !(ss+1)->onPreviousPv)
       {
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
