@@ -379,6 +379,7 @@ void Thread::search() {
               // Adjust the effective depth searched, but ensuring at least one effective increment for every
               // four searchAgain steps (see issue #2717).
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - 3 * (searchAgainCounter + 1) / 4);
+              ss->onPreviousPv = true;
               bestValue = Stockfish::search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
               // Bring the best move to the front. It is critical that sorting
@@ -505,6 +506,8 @@ void Thread::search() {
       mainThread->iterValue[iterIdx] = bestValue;
       iterIdx = (iterIdx + 1) & 3;
   }
+
+  previousPv = rootMoves[0].pv;
 
   if (!mainThread)
       return;
@@ -988,6 +991,11 @@ moves_loop: // When in check, search starts here
       Value delta = beta - alpha;
 
       Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
+
+      (ss+1)->onPreviousPv = ss->onPreviousPv && int(thisThread->previousPv.size()) > ss->ply + 2 && move == thisThread->previousPv[ss->ply + 2];
+
+      if ((ss+1)->onPreviousPv)
+          r--;
 
       // Step 14. Pruning at shallow depth (~120 Elo). Depth conditions are important for mate finding.
       if (  !rootNode
