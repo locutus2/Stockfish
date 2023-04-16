@@ -994,8 +994,8 @@ moves_loop: // When in check, search starts here
 
       (ss+1)->onPreviousPv = ss->onPreviousPv && int(thisThread->previousPv.size()) > ss->ply + 2 && move == thisThread->previousPv[ss->ply + 2];
 
-      if ((ss+1)->onPreviousPv)
-          r--;
+      if ((ss+1)->onPreviousPv && depth <= 1)
+          depth++;
 
       // Step 14. Pruning at shallow depth (~120 Elo). Depth conditions are important for mate finding.
       if (  !rootNode
