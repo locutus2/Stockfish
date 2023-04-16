@@ -378,6 +378,7 @@ void Thread::search() {
           {
               // Adjust the effective depth searched, but ensuring at least one effective increment for every
               // four searchAgain steps (see issue #2717).
+              transpositionKey = 0;
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - 3 * (searchAgainCounter + 1) / 4);
               bestValue = Stockfish::search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
@@ -1157,6 +1158,9 @@ moves_loop: // When in check, search starts here
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
 
+      if (pos.key() == thisThread->transpositionKey)
+          r++;
+
       // Decrease reduction if position is or has been on the PV
       // and node is not likely to fail low. (~3 Elo)
       if (   ss->ttPv
@@ -1308,6 +1312,19 @@ moves_loop: // When in check, search starts here
               if (   moveCount > 1
                   && !thisThread->pvIdx)
                   ++thisThread->bestMoveChanges;
+
+              // Remember position key for a 3 move transpostion in current best PV
+              if (int(rm.pv.size()) > 2)
+              {
+                  StateInfo tmpSt[3];
+                  for (int i = 0; i <= 2; i++)
+                      pos.do_move(rm.pv[i], tmpSt[i]);
+
+                  thisThread->transpositionKey = pos.key();
+
+                  for (int i = 2; i >= 0; i--)
+                      pos.undo_move(rm.pv[i]);
+              }
           }
           else
               // All other moves but the PV are set to the lowest value: this
