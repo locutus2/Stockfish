@@ -1316,18 +1316,18 @@ moves_loop: // When in check, search starts here
                   && !thisThread->pvIdx)
                   ++thisThread->bestMoveChanges;
 
-              // Remember position key for a 3 and 4 move transpostion in current best PV
-              if (int(rm.pv.size()) > 2)
+              // Remember position key for a 4 and 6 move transpostion in current best PV
+              if (int(rm.pv.size()) > 3)
               {
-                  int nPv = std::min(3, int(rm.pv.size()) - 1);
-                  StateInfo tmpSt[4];
+                  int nPv = std::min(5, int(rm.pv.size()) - 1);
+                  StateInfo tmpSt[6];
 
-                  for (int i = 0; i <= nPv; i++)
+                  for (int i = 0, k = 0; i <= nPv; i++)
                   {
                       pos.do_move(rm.pv[i], tmpSt[i]);
 
-                      if (i >= 2)
-                          thisThread->transpositionKey[i - 2] = pos.key();
+                      if (i >= 3 && i & 1)
+                          thisThread->transpositionKey[k++] = pos.key();
                   }
 
 
