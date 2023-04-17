@@ -379,7 +379,6 @@ void Thread::search() {
               // Adjust the effective depth searched, but ensuring at least one effective increment for every
               // four searchAgain steps (see issue #2717).
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - 3 * (searchAgainCounter + 1) / 4);
-              ss->onPreviousPv = true;
               bestValue = Stockfish::search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
               // Bring the best move to the front. It is critical that sorting
@@ -604,7 +603,10 @@ namespace {
             return alpha;
     }
     else
+    {
         thisThread->rootDelta = beta - alpha;
+        ss->onPreviousPv = true;
+    }
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
@@ -994,6 +996,9 @@ moves_loop: // When in check, search starts here
 
       (ss+1)->onPreviousPv = ss->onPreviousPv && ss->ply + 2 < int(thisThread->previousPv.size()) && move == thisThread->previousPv[ss->ply + 2];
 
+      if ((ss+1)->onPreviousPv && depth <= 2)
+          depth++;
+
       // Step 14. Pruning at shallow depth (~120 Elo). Depth conditions are important for mate finding.
       if (  !rootNode
           && pos.non_pawn_material(us)
@@ -1209,8 +1214,7 @@ moves_loop: // When in check, search starts here
           &&  moveCount > 1 + (PvNode && ss->ply <= 1)
           && (   !ss->ttPv
               || !capture
-              || (cutNode && (ss-1)->moveCount > 1))
-          && !(ss+1)->onPreviousPv)
+              || (cutNode && (ss-1)->moveCount > 1)))
       {
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
