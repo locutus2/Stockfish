@@ -1164,6 +1164,7 @@ moves_loop: // When in check, search starts here
       pos.do_move(move, st, givesCheck);
 
       bool C[N] = {
+          /*
           PvNode,
           cutNode,
           capture,
@@ -1176,7 +1177,7 @@ moves_loop: // When in check, search starts here
           likelyFailLow,
           ttCapture,
           singularQuietLMR,
-          /*
+          */
           (ss-1)->inCheck,
           (ss-1)->ttPv,
           move == ttMove,
@@ -1185,13 +1186,15 @@ moves_loop: // When in check, search starts here
           move == ss->killers[1],
           (ss-1)->moveCount > 7,
           (ss+1)->cutoffCnt > 3,
+          (ss-1)->currentMove == MOVE_NULL,
           type_of(movedPiece) == PAWN,
+          type_of(movedPiece) == KING,
+          more_than_one(pos.checkers()),
+          /*
           type_of(movedPiece) == KNIGHT,
           type_of(movedPiece) == BISHOP,
           type_of(movedPiece) == ROOK,
           type_of(movedPiece) == QUEEN,
-          type_of(movedPiece) == KING,
-          (ss-1)->currentMove == MOVE_NULL,
           */
       };
 
