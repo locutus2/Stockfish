@@ -1187,8 +1187,8 @@ moves_loop: // When in check, search starts here
       if ((ss+1)->cutoffCnt > 3)
           r++;
 
-      if (likelyFailLow && !improving)
-          r -= 2;
+      if (ttCapture && !likelyFailLow && improving && givesCheck)
+          r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
