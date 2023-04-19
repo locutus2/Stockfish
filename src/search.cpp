@@ -559,7 +559,7 @@ namespace {
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, improving, priorCapture, singularQuietLMR;
-    bool capture, moveCountPruning, ttCapture;
+    bool capture, moveCountPruning, ttCapture, bestMoveCapture;
     Piece movedPiece;
     int moveCount, captureCount, quietCount, improvement, complexity;
 
@@ -571,6 +571,7 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    bestMoveCapture    = false;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -1187,7 +1188,7 @@ moves_loop: // When in check, search starts here
       if ((ss+1)->cutoffCnt > 3)
           r++;
 
-      if (PvNode && bestMove && to_sq(move) == to_sq(bestMove))
+      if (PvNode && bestMove && from_sq(move) == from_sq(bestMove) && !capture && !bestMoveCapture)
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
@@ -1343,6 +1344,7 @@ moves_loop: // When in check, search starts here
 
                   assert(depth > 0);
                   alpha = value;
+                  bestMoveCapture = capture;
               }
               else
               {
