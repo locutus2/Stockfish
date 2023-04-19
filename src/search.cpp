@@ -562,6 +562,7 @@ namespace {
     bool capture, moveCountPruning, ttCapture;
     Piece movedPiece;
     int moveCount, captureCount, quietCount, improvement, complexity;
+    Bitboard bestMovesFrom;
 
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
@@ -571,6 +572,7 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    bestMovesFrom      = 0;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -1187,7 +1189,7 @@ moves_loop: // When in check, search starts here
       if ((ss+1)->cutoffCnt > 3)
           r++;
 
-      if (PvNode && bestMove && from_sq(move) == from_sq(bestMove))
+      if (PvNode && bestMovesFrom & from_sq(move))
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
@@ -1343,6 +1345,7 @@ moves_loop: // When in check, search starts here
 
                   assert(depth > 0);
                   alpha = value;
+                  bestMovesFrom |= from_sq(bestMove);
               }
               else
               {
