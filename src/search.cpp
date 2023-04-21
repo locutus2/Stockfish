@@ -38,9 +38,9 @@
 
 namespace Stockfish {
 
-const int N = 6;
+const int N = 8;
 
-int A[N][N][8];
+int A[N][N][5];
 
 TUNE(SetRange(-100, 100), A);
 
@@ -1168,10 +1168,11 @@ moves_loop: // When in check, search starts here
           cutNode,
           capture,
           //type_of(move) == PROMOTION,
-          //improving,
+          improving,
           ss->inCheck,
           givesCheck,
           priorCapture,
+          move == ttMove,
           /*
           ss->ttPv,
           likelyFailLow,
@@ -1214,14 +1215,7 @@ moves_loop: // When in check, search starts here
                           r++;
                       if (P(A[i][j][3], !C[i] && !C[j]))
                           r++;
-
                       if (P(A[i][j][4], C[i] == C[j]))
-                          r++;
-                      if (P(A[i][j][5], C[i] == !C[j]))
-                          r++;
-                      if (P(A[i][j][6], !C[i] == C[j]))
-                          r++;
-                      if (P(A[i][j][7], !C[i] == !C[j]))
                           r++;
                   }
                   else if (i > j) // less reduction
@@ -1234,35 +1228,22 @@ moves_loop: // When in check, search starts here
                           r--;
                       if (P(A[i][j][3], !C[i] && !C[j]))
                           r--;
-
                       if (P(A[i][j][4], C[i] == C[j]))
-                          r--;
-                      if (P(A[i][j][5], C[i] == !C[j]))
-                          r--;
-                      if (P(A[i][j][6], !C[i] == C[j]))
-                          r--;
-                      if (P(A[i][j][7], !C[i] == !C[j]))
                           r--;
                   }
                   else // i == j
                   {
                       if (P(A[i][i][0], C[i]))
-                          r += thisThread->nodes & 1;
+                          r += std::rand() & 1;
                       if (P(A[i][i][1], C[i]))
                           r++;
                       if (P(A[i][i][2], C[i]))
-                          r += 1 + (thisThread->nodes & 1);
-                      if (P(A[i][i][3], C[i]))
                           r += 2;
 
+                      if (P(A[i][i][3], C[i]))
+                          r -= std::rand() & 1;
                       if (P(A[i][i][4], C[i]))
-                          r -= thisThread->nodes & 1;
-                      if (P(A[i][i][5], C[i]))
                           r--;
-                      if (P(A[i][i][6], C[i]))
-                          r -= 1 + (thisThread->nodes & 1);
-                      if (P(A[i][i][7], C[i]))
-                          r -= 2;
                   }
       }
 
