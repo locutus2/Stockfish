@@ -38,9 +38,9 @@
 
 namespace Stockfish {
 
-const int N = 12;
+const int N = 6;
 
-int A[N][N][2];
+int A[N][N][8];
 
 TUNE(SetRange(-100, 100), A);
 
@@ -1164,20 +1164,19 @@ moves_loop: // When in check, search starts here
       pos.do_move(move, st, givesCheck);
 
       bool C[N] = {
-          /*
           PvNode,
           cutNode,
           capture,
-          type_of(move) == PROMOTION,
-          improving,
+          //type_of(move) == PROMOTION,
+          //improving,
           ss->inCheck,
           givesCheck,
           priorCapture,
+          /*
           ss->ttPv,
           likelyFailLow,
           ttCapture,
           singularQuietLMR,
-          */
           (ss-1)->inCheck,
           (ss-1)->ttPv,
           move == ttMove,
@@ -1190,7 +1189,6 @@ moves_loop: // When in check, search starts here
           type_of(movedPiece) == PAWN,
           type_of(movedPiece) == KING,
           more_than_one(pos.checkers()),
-          /*
           type_of(movedPiece) == KNIGHT,
           type_of(movedPiece) == BISHOP,
           type_of(movedPiece) == ROOK,
@@ -1201,26 +1199,72 @@ moves_loop: // When in check, search starts here
 //#define P(x, c) (((c) || (x) < 50) && ((!(c) || (x) > -50)))
 #define P(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? !(c) : false)
 
-      for(int i = 0; i < N; ++i)
-          for(int j = 0; j < N; ++j)
-              if (i < j) // more reduction
-              {
-                  if (P(A[i][j][0], C[i]) && P(A[i][j][1], C[j]))
-                      r++;
-              }
-              else if (i > j) // less reduction
-              {
-                  if (P(A[i][j][0], C[i]) && P(A[i][j][1], C[j]))
-                      r--;
-              }
-              else // i == j
-              {
-                  if (P(A[i][i][0], C[i]))
-                      r++;
+      bool CC = true;
+      if (CC)
+      {
+          for(int i = 0; i < N; ++i)
+              for(int j = 0; j < N; ++j)
+                  if (i < j) // more reduction
+                  {
+                      if (P(A[i][j][0], C[i] && C[j]))
+                          r++;
+                      if (P(A[i][j][1], C[i] && !C[j]))
+                          r++;
+                      if (P(A[i][j][2], !C[i] && C[j]))
+                          r++;
+                      if (P(A[i][j][3], !C[i] && !C[j]))
+                          r++;
 
-                  if (P(A[i][i][1], C[i]))
-                      r--;
-              }
+                      if (P(A[i][j][4], C[i] == C[j]))
+                          r++;
+                      if (P(A[i][j][5], C[i] == !C[j]))
+                          r++;
+                      if (P(A[i][j][6], !C[i] == C[j]))
+                          r++;
+                      if (P(A[i][j][7], !C[i] == !C[j]))
+                          r++;
+                  }
+                  else if (i > j) // less reduction
+                  {
+                      if (P(A[i][j][0], C[i] && C[j]))
+                          r--;
+                      if (P(A[i][j][1], C[i] && !C[j]))
+                          r--;
+                      if (P(A[i][j][2], !C[i] && C[j]))
+                          r--;
+                      if (P(A[i][j][3], !C[i] && !C[j]))
+                          r--;
+
+                      if (P(A[i][j][4], C[i] == C[j]))
+                          r--;
+                      if (P(A[i][j][5], C[i] == !C[j]))
+                          r--;
+                      if (P(A[i][j][6], !C[i] == C[j]))
+                          r--;
+                      if (P(A[i][j][7], !C[i] == !C[j]))
+                          r--;
+                  }
+                  else // i == j
+                  {
+                      if (P(A[i][i][0], C[i]))
+                          r += thisThread->nodes & 1;
+                      if (P(A[i][i][1], C[i]))
+                          r++;
+                      if (P(A[i][i][2], C[i]))
+                          r += 1 + (thisThread->nodes & 1);
+                      if (P(A[i][i][3], C[i]))
+                          r += 2;
+
+                      if (P(A[i][i][4], C[i]))
+                          r -= thisThread->nodes & 1;
+                      if (P(A[i][i][5], C[i]))
+                          r--;
+                      if (P(A[i][i][6], C[i]))
+                          r -= 1 + (thisThread->nodes & 1);
+                      if (P(A[i][i][7], C[i]))
+                          r -= 2;
+                  }
+      }
 
       // Decrease reduction if position is or has been on the PV
       // and node is not likely to fail low. (~3 Elo)
