@@ -937,6 +937,10 @@ moves_loop: // When in check, search starts here
                          && (tte->bound() & BOUND_UPPER)
                          && tte->depth() >= depth;
 
+    int i = std::rand() % N;
+    int j = std::rand() % N;
+    int k = std::rand() % 5;
+
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
@@ -1145,88 +1149,100 @@ moves_loop: // When in check, search starts here
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
 
-      bool C[N] = {
-          PvNode,
-          cutNode,
-          capture,
-          //type_of(move) == PROMOTION,
-          improving,
-          ss->inCheck,
-          givesCheck,
-          priorCapture,
-          move == ttMove,
-          /*
-          ss->ttPv,
-          likelyFailLow,
-          ttCapture,
-          singularQuietLMR,
-          (ss-1)->inCheck,
-          (ss-1)->ttPv,
-          move == ttMove,
-          move == countermove,
-          move == ss->killers[0],
-          move == ss->killers[1],
-          (ss-1)->moveCount > 7,
-          (ss+1)->cutoffCnt > 3,
-          (ss-1)->currentMove == MOVE_NULL,
-          type_of(movedPiece) == PAWN,
-          type_of(movedPiece) == KING,
-          more_than_one(pos.checkers()),
-          type_of(movedPiece) == KNIGHT,
-          type_of(movedPiece) == BISHOP,
-          type_of(movedPiece) == ROOK,
-          type_of(movedPiece) == QUEEN,
-          */
-      };
+      bool CC = true;
+      if (CC)
+      {
+          bool C[N] = {
+              PvNode,
+              cutNode,
+              capture,
+              //type_of(move) == PROMOTION,
+              improving,
+              ss->inCheck,
+              givesCheck,
+              priorCapture,
+              move == ttMove,
+              /*
+              ss->ttPv,
+              likelyFailLow,
+              ttCapture,
+              singularQuietLMR,
+              (ss-1)->inCheck,
+              (ss-1)->ttPv,
+              move == ttMove,
+              move == countermove,
+              move == ss->killers[0],
+              move == ss->killers[1],
+              (ss-1)->moveCount > 7,
+              (ss+1)->cutoffCnt > 3,
+              (ss-1)->currentMove == MOVE_NULL,
+              type_of(movedPiece) == PAWN,
+              type_of(movedPiece) == KING,
+              more_than_one(pos.checkers()),
+              type_of(movedPiece) == KNIGHT,
+              type_of(movedPiece) == BISHOP,
+              type_of(movedPiece) == ROOK,
+              type_of(movedPiece) == QUEEN,
+              */
+          };
 
 //#define P(x, c) (((c) || (x) < 50) && ((!(c) || (x) > -50)))
 #define P(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? !(c) : false)
 
-      bool CC = true;
-      if (CC)
-      {
-          for(int i = 0; i < N; ++i)
-              for(int j = 0; j < N; ++j)
-                  if (i < j) // more reduction
+          if (i == j)
+          {
+              if (P(A[i][i][k], C[i]))
+              {
+                  switch(k)
                   {
-                      if (P(A[i][j][0], C[i] && C[j]))
+                      case 0:
+                          r += std::rand()%2;
+                          break;
+                      case 1:
                           r++;
-                      if (P(A[i][j][1], C[i] && !C[j]))
-                          r++;
-                      if (P(A[i][j][2], !C[i] && C[j]))
-                          r++;
-                      if (P(A[i][j][3], !C[i] && !C[j]))
-                          r++;
-                      if (P(A[i][j][4], C[i] == C[j]))
-                          r++;
-                  }
-                  else if (i > j) // less reduction
-                  {
-                      if (P(A[i][j][0], C[i] && C[j]))
-                          r--;
-                      if (P(A[i][j][1], C[i] && !C[j]))
-                          r--;
-                      if (P(A[i][j][2], !C[i] && C[j]))
-                          r--;
-                      if (P(A[i][j][3], !C[i] && !C[j]))
-                          r--;
-                      if (P(A[i][j][4], C[i] == C[j]))
-                          r--;
-                  }
-                  else // i == j
-                  {
-                      if (P(A[i][i][0], C[i]))
-                          r += std::rand() & 1;
-                      if (P(A[i][i][1], C[i]))
-                          r++;
-                      if (P(A[i][i][2], C[i]))
+                          break;
+                      case 2:
                           r += 2;
-
-                      if (P(A[i][i][3], C[i]))
-                          r -= std::rand() & 1;
-                      if (P(A[i][i][4], C[i]))
+                          break;
+                      case 3:
+                          r -= std::rand()%2;
+                          break;
+                      case 4:
                           r--;
+                          break;
                   }
+              }
+          }
+          else
+          {
+              bool Q = false;
+              switch(k)
+              {
+                  case 0:
+                      Q = C[i] && C[j];
+                      break;
+                  case 1:
+                      Q = C[i] && !C[j];
+                      break;
+                  case 2:
+                      Q = !C[i] && C[j];
+                      break;
+                  case 3:
+                      Q = !C[i] && !C[j];
+                      break;
+                  case 4:
+                      Q = (C[i] == C[j]);
+                      break;
+              }
+
+              if(P(A[i][j][k], Q))
+              {
+                  if (i < j)
+                      r++;
+                  else
+                      r--;
+              }
+          }
       }
 
       // Decrease reduction if position is or has been on the PV
