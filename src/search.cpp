@@ -1190,10 +1190,10 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      // Decrease reduction if move unblocks an own pawn
+      // Decrease reduction if move blocks an own pawn
       if (   type_of(movedPiece) != PAWN
-          && relative_rank(us, from_sq(move)) >= RANK_3
-          && pos.pieces(us, PAWN) & (from_sq(move) - pawn_push(us)))
+          && relative_rank(us, to_sq(move)) >= RANK_3
+          && pos.pieces(us, PAWN) & (to_sq(move) - pawn_push(us)))
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
