@@ -774,6 +774,7 @@ namespace {
         &&  depth < 9
         &&  eval - futility_margin(depth, improving) - (ss-1)->statScore / 280 >= beta
         &&  eval >= beta
+        && !excludedMove
         &&  eval < 25128) // larger than VALUE_KNOWN_WIN, but smaller than TB wins
         return eval;
 
@@ -1047,12 +1048,6 @@ moves_loop: // When in check, search starts here
           }
       }
 
-      ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
-                     + (*contHist[0])[movedPiece][to_sq(move)]
-                     + (*contHist[1])[movedPiece][to_sq(move)]
-                     + (*contHist[3])[movedPiece][to_sq(move)]
-                     - 4082;
-
       // Step 15. Extensions (~100 Elo)
       // We take care to not overdo to avoid search getting stuck.
       if (ss->ply < thisThread->rootDepth * 2)
@@ -1177,6 +1172,12 @@ moves_loop: // When in check, search starts here
 
       else if (move == ttMove)
           r--;
+
+      ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
+                     + (*contHist[0])[movedPiece][to_sq(move)]
+                     + (*contHist[1])[movedPiece][to_sq(move)]
+                     + (*contHist[3])[movedPiece][to_sq(move)]
+                     - 4082;
 
       // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
       r -= ss->statScore / (11079 + 4626 * (depth > 6 && depth < 19));
