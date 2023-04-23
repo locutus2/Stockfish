@@ -1019,7 +1019,8 @@ moves_loop: // When in check, search starts here
           }
           else if (   type_of(movedPiece) != PAWN
                    || (   (!is_ok((ss-2)->currentMove) || to_sq(move) != from_sq((ss-2)->currentMove))
-                       && (!is_ok((ss-4)->currentMove) || to_sq(move) != from_sq((ss-4)->currentMove))))
+                       && (!is_ok((ss-4)->currentMove) || to_sq(move) != from_sq((ss-4)->currentMove))
+                       && (!is_ok((ss-6)->currentMove) || to_sq(move) != from_sq((ss-6)->currentMove))))
           {
               int history =   (*contHist[0])[movedPiece][to_sq(move)]
                             + (*contHist[1])[movedPiece][to_sq(move)]
