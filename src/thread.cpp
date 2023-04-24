@@ -66,6 +66,10 @@ void Thread::clear() {
           for (auto& to : continuationHistory[inCheck][c])
               for (auto& h : to)
                   h->fill(-71);
+
+  cond1 = std::rand() % N;
+  cond2 = std::rand() % N;
+  condOp = std::rand() % 5;
 }
 
 

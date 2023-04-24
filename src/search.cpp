@@ -38,8 +38,6 @@
 
 namespace Stockfish {
 
-const int N = 8;
-
 int A[N][N][5];
 
 TUNE(SetRange(-100, 100), A);
@@ -937,9 +935,12 @@ moves_loop: // When in check, search starts here
                          && (tte->bound() & BOUND_UPPER)
                          && tte->depth() >= depth;
 
-    int i = std::rand() % N;
-    int j = std::rand() % N;
-    int k = std::rand() % 5;
+    //int i = std::rand() % N;
+    //int j = std::rand() % N;
+    //int k = std::rand() % 5;
+    int i = thisThread->cond1;
+    int j = thisThread->cond2;
+    int k = thisThread->condOp;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.

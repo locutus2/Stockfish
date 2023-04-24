@@ -27,6 +27,8 @@
 
 namespace Stockfish {
 
+const int N = 8;
+
 class Position;
 
 namespace Search {
