@@ -409,7 +409,7 @@ void Thread::search() {
               else
                   break;
 
-              delta += std::abs(bestValue - prev) / 7 + 2;
+              delta += delta / 6 + std::abs(bestValue - prev) / 21 + 2;
               prev = bestValue;
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
