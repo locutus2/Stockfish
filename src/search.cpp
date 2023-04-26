@@ -409,7 +409,7 @@ void Thread::search() {
               else
                   break;
 
-              delta += delta / 4 + 4;
+              delta += delta * 17 / 64 + 2;
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
           }
