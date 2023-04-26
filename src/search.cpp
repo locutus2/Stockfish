@@ -1153,9 +1153,6 @@ moves_loop: // When in check, search starts here
       if (cutNode)
           r += 2;
 
-      if (capture)
-          r += 2;
-
       // Increase reduction if ttMove is a capture (~3 Elo)
       if (ttCapture)
           r++;
@@ -1173,6 +1170,9 @@ moves_loop: // When in check, search starts here
           r++;
 
       else if (move == ttMove)
+          r--;
+
+      if (move == ttMove && !priorCapture)
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
