@@ -1172,7 +1172,7 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if (!(thisThread->nodes & 0x7F) && (!PvNode || !ss->inCheck))
+      if (ss->inCheck != givesCheck)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
