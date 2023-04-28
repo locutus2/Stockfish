@@ -38,9 +38,9 @@
 
 namespace Stockfish {
 
-const int N = 8;
+const int N = 13;
 
-int A[N][N][5];
+int A[N][N][4];
 
 TUNE(SetRange(-100, 100), A);
 
@@ -1149,20 +1149,26 @@ moves_loop: // When in check, search starts here
           PvNode,
           cutNode,
           capture,
-          //type_of(move) == PROMOTION,
           improving,
           ss->inCheck,
           givesCheck,
           priorCapture,
-          move == ttMove,
-          /*
-          ss->ttPv,
+          (ss-1)->moveCount > 7,
+          (ss+1)->cutoffCnt > 3,
+          (ss-1)->currentMove == MOVE_NULL,
           likelyFailLow,
+          type_of(move) == PROMOTION,
+          move == ttMove,
+          //move == ttMove,
+          //type_of(move) == PROMOTION,
+          /*
+          type_of(movedPiece) == PAWN,
+          type_of(movedPiece) == KING,
+          ss->ttPv,
           ttCapture,
           singularQuietLMR,
           (ss-1)->inCheck,
           (ss-1)->ttPv,
-          move == ttMove,
           move == countermove,
           move == ss->killers[0],
           move == ss->killers[1],
@@ -1179,54 +1185,19 @@ moves_loop: // When in check, search starts here
           */
       };
 
-//#define P(x, c) (((c) || (x) < 50) && ((!(c) || (x) > -50)))
-#define P(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? !(c) : false)
+#define R(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? (-(c)) : 0)
 
-      bool CC = true;
+      bool CC = type_of(movedPiece) == PAWN;
       if (CC)
       {
           for(int i = 0; i < N; ++i)
-              for(int j = 0; j < N; ++j)
-                  if (i < j) // more reduction
-                  {
-                      if (P(A[i][j][0], C[i] && C[j]))
-                          r++;
-                      if (P(A[i][j][1], C[i] && !C[j]))
-                          r++;
-                      if (P(A[i][j][2], !C[i] && C[j]))
-                          r++;
-                      if (P(A[i][j][3], !C[i] && !C[j]))
-                          r++;
-                      if (P(A[i][j][4], C[i] == C[j]))
-                          r++;
-                  }
-                  else if (i > j) // less reduction
-                  {
-                      if (P(A[i][j][0], C[i] && C[j]))
-                          r--;
-                      if (P(A[i][j][1], C[i] && !C[j]))
-                          r--;
-                      if (P(A[i][j][2], !C[i] && C[j]))
-                          r--;
-                      if (P(A[i][j][3], !C[i] && !C[j]))
-                          r--;
-                      if (P(A[i][j][4], C[i] == C[j]))
-                          r--;
-                  }
-                  else // i == j
-                  {
-                      if (P(A[i][i][0], C[i]))
-                          r += std::rand() & 1;
-                      if (P(A[i][i][1], C[i]))
-                          r++;
-                      if (P(A[i][i][2], C[i]))
-                          r += 2;
-
-                      if (P(A[i][i][3], C[i]))
-                          r -= std::rand() & 1;
-                      if (P(A[i][i][4], C[i]))
-                          r--;
-                  }
+              for(int j = i + 1; j < N; ++j)
+              {
+                  r += R(A[i][j][0],  C[i] &&  C[j]);
+                  r += R(A[i][j][1],  C[i] && !C[j]);
+                  r += R(A[i][j][2], !C[i] &&  C[j]);
+                  r += R(A[i][j][3], !C[i] && !C[j]);
+              }
       }
 
       // Decrease reduction if position is or has been on the PV
