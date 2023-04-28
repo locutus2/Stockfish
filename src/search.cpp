@@ -1157,37 +1157,31 @@ moves_loop: // When in check, search starts here
           (ss+1)->cutoffCnt > 3,
           (ss-1)->currentMove == MOVE_NULL,
           likelyFailLow,
-          type_of(move) == PROMOTION,
+          //type_of(move) == PROMOTION,
+          ttCapture,
           move == ttMove,
           //move == ttMove,
-          //type_of(move) == PROMOTION,
           /*
-          type_of(movedPiece) == PAWN,
-          type_of(movedPiece) == KING,
           ss->ttPv,
-          ttCapture,
           singularQuietLMR,
           (ss-1)->inCheck,
           (ss-1)->ttPv,
           move == countermove,
           move == ss->killers[0],
           move == ss->killers[1],
-          (ss-1)->moveCount > 7,
-          (ss+1)->cutoffCnt > 3,
-          (ss-1)->currentMove == MOVE_NULL,
           type_of(movedPiece) == PAWN,
           type_of(movedPiece) == KING,
-          more_than_one(pos.checkers()),
           type_of(movedPiece) == KNIGHT,
           type_of(movedPiece) == BISHOP,
           type_of(movedPiece) == ROOK,
           type_of(movedPiece) == QUEEN,
+          more_than_one(pos.checkers()),
           */
       };
 
 #define R(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? (-(c)) : 0)
 
-      bool CC = type_of(movedPiece) == PAWN;
+      bool CC = type_of(movedPiece) == KING;
       if (CC)
       {
           for(int i = 0; i < N; ++i)
