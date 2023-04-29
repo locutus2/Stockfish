@@ -250,7 +250,18 @@ void MainThread::search() {
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
+  {
+      StateInfo si[2];
+      rootPos.do_move(bestThread->rootMoves[0].pv[0], si[0]);
+      rootPos.do_move(bestThread->rootMoves[0].pv[1], si[1]);
+      predictedPositionKey = rootPos.key();
+      rootPos.undo_move(bestThread->rootMoves[0].pv[1]);
+      rootPos.undo_move(bestThread->rootMoves[0].pv[0]);
+
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+  }
+  else
+      predictedPositionKey = 0;
 
   std::cout << sync_endl;
 }
@@ -464,8 +475,9 @@ void Thread::search() {
           timeReduction = lastBestMoveDepth + 8 < completedDepth ? 1.57 : 0.65;
           double reduction = (1.4 + mainThread->previousTimeReduction) / (2.08 * timeReduction);
           double bestMoveInstability = 1 + 1.8 * totBestMoveChanges / Threads.size();
+          double predictedOpponentMove = mainThread->predictedPositionKey == rootPos.key() ? 1.0 : 1.1;
 
-          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability;
+          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * predictedOpponentMove;
 
           // Cap used time in case of a single legal move for a better viewer experience in tournaments
           // yielding correct scores and sufficiently fast moves.
