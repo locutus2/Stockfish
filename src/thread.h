@@ -90,6 +90,7 @@ struct MainThread : public Thread {
   Value bestPreviousAverageScore;
   Value iterValue[4];
   Key predictedPositionKey;
+  double predictedProbability;
   int callsCnt;
   bool stopOnPonderhit;
   std::atomic_bool ponder;

@@ -197,6 +197,9 @@ void MainThread::search() {
 
   Eval::NNUE::verify();
 
+  if (predictedPositionKey)
+      predictedProbability += 0.1 * ((predictedPositionKey == rootPos.key()) - predictedProbability);
+
   if (rootMoves.empty())
   {
       rootMoves.emplace_back(MOVE_NONE);
@@ -475,7 +478,8 @@ void Thread::search() {
           timeReduction = lastBestMoveDepth + 8 < completedDepth ? 1.57 : 0.65;
           double reduction = (1.4 + mainThread->previousTimeReduction) / (2.08 * timeReduction);
           double bestMoveInstability = 1 + 1.8 * totBestMoveChanges / Threads.size();
-          double predictedOpponentMove = rootPos.captured_piece() && mainThread->predictedPositionKey == rootPos.key() ? 0.8 : 1.0;
+          double predictedOpponentMove = std::min(2.0, mainThread->predictedPositionKey == rootPos.key() ?
+                                                       0.9 : (1 - 0.9 * mainThread->predictedProbability) / (1 - mainThread->predictedProbability));
 
           double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * predictedOpponentMove;
 
