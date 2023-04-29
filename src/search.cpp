@@ -250,7 +250,18 @@ void MainThread::search() {
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
+  {
+      StateInfo si[2];
+      rootPos.do_move(bestThread->rootMoves[0].pv[0], si[0]);
+      rootPos.do_move(bestThread->rootMoves[0].pv[1], si[1]);
+      predictedPositionKey = rootPos.key();
+      rootPos.undo_move(bestThread->rootMoves[0].pv[1]);
+      rootPos.undo_move(bestThread->rootMoves[0].pv[0]);
+
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+  }
+  else
+      predictedPositionKey = 0;
 
   std::cout << sync_endl;
 }
@@ -289,6 +300,8 @@ void Thread::search() {
   ss->pv = pv;
 
   bestValue = -VALUE_INFINITE;
+
+  predictedOpponentMove = Threads.main()->predictedPositionKey == rootPos.key();
 
   if (mainThread)
   {
@@ -1153,7 +1166,7 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
       if (PvNode)
-          r -= 1 + 11 / (3 + depth);
+          r -= 2 + 11 / (3 + depth) - thisThread->predictedOpponentMove;
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
