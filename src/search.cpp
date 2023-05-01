@@ -1173,6 +1173,7 @@ moves_loop: // When in check, search starts here
           r--;
 
       if (   !PvNode
+          && !cutNode
           && type_of(movedPiece) == PAWN)
           r++;
 
