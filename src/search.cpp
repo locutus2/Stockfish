@@ -1175,7 +1175,7 @@ moves_loop: // When in check, search starts here
       if (   (ss-1)->currentMove == MOVE_NULL
           && !capture
           && !givesCheck
-          && move != ttMove
+          && moveCount > 1
           && type_of(move) == NORMAL)
           r++;
 
