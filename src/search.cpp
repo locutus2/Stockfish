@@ -1057,6 +1057,45 @@ moves_loop: // When in check, search starts here
       // We take care to not overdo to avoid search getting stuck.
       if (ss->ply < thisThread->rootDepth * 2)
       {
+          bool C[N] = {
+              PvNode,
+              cutNode,
+              capture,
+              improving,
+              ss->inCheck,
+              givesCheck,
+              priorCapture,
+              (ss-1)->moveCount > 7,
+              (ss+1)->cutoffCnt > 3,
+              (ss-1)->currentMove == MOVE_NULL,
+              likelyFailLow,
+              ttCapture,
+              move == ttMove,
+              //move == ttMove,
+              //type_of(move) == PROMOTION,
+              /*
+              type_of(movedPiece) == PAWN,
+              type_of(movedPiece) == KING,
+              ss->ttPv,
+              singularQuietLMR,
+              (ss-1)->inCheck,
+              (ss-1)->ttPv,
+              move == countermove,
+              move == ss->killers[0],
+              move == ss->killers[1],
+              (ss-1)->moveCount > 7,
+              (ss+1)->cutoffCnt > 3,
+              (ss-1)->currentMove == MOVE_NULL,
+              type_of(movedPiece) == PAWN,
+              type_of(movedPiece) == KING,
+              more_than_one(pos.checkers()),
+              type_of(movedPiece) == KNIGHT,
+              type_of(movedPiece) == BISHOP,
+              type_of(movedPiece) == ROOK,
+              type_of(movedPiece) == QUEEN,
+              */
+          };
+
           // Singular extension search (~94 Elo). If all moves but one fail low on a
           // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
           // then that move is singular and should be extended. To verify this we do
@@ -1126,6 +1165,21 @@ moves_loop: // When in check, search starts here
                    && move == ss->killers[0]
                    && (*contHist[0])[movedPiece][to_sq(move)] >= 5705)
               extension = 1;
+
+#define R(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? (-(c)) : 0)
+
+          bool CC = true;
+          if (CC)
+          {
+              for(int i = 0; i < N; ++i)
+                  for(int j = i + 1; j < N; ++j)
+                  {
+                      extension += R(A[i][j][0],  C[i] &&  C[j]);
+                      extension += R(A[i][j][1],  C[i] && !C[j]);
+                      extension += R(A[i][j][2], !C[i] &&  C[j]);
+                      extension += R(A[i][j][3], !C[i] && !C[j]);
+                  }
+          }
       }
 
       // Add extension to new depth
@@ -1144,61 +1198,6 @@ moves_loop: // When in check, search starts here
 
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
-
-      bool C[N] = {
-          PvNode,
-          cutNode,
-          capture,
-          improving,
-          ss->inCheck,
-          givesCheck,
-          priorCapture,
-          (ss-1)->moveCount > 7,
-          (ss+1)->cutoffCnt > 3,
-          (ss-1)->currentMove == MOVE_NULL,
-          likelyFailLow,
-          type_of(move) == PROMOTION,
-          move == ttMove,
-          //move == ttMove,
-          //type_of(move) == PROMOTION,
-          /*
-          type_of(movedPiece) == PAWN,
-          type_of(movedPiece) == KING,
-          ss->ttPv,
-          ttCapture,
-          singularQuietLMR,
-          (ss-1)->inCheck,
-          (ss-1)->ttPv,
-          move == countermove,
-          move == ss->killers[0],
-          move == ss->killers[1],
-          (ss-1)->moveCount > 7,
-          (ss+1)->cutoffCnt > 3,
-          (ss-1)->currentMove == MOVE_NULL,
-          type_of(movedPiece) == PAWN,
-          type_of(movedPiece) == KING,
-          more_than_one(pos.checkers()),
-          type_of(movedPiece) == KNIGHT,
-          type_of(movedPiece) == BISHOP,
-          type_of(movedPiece) == ROOK,
-          type_of(movedPiece) == QUEEN,
-          */
-      };
-
-#define R(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? (-(c)) : 0)
-
-      bool CC = type_of(movedPiece) == PAWN;
-      if (CC)
-      {
-          for(int i = 0; i < N; ++i)
-              for(int j = i + 1; j < N; ++j)
-              {
-                  r += R(A[i][j][0],  C[i] &&  C[j]);
-                  r += R(A[i][j][1],  C[i] && !C[j]);
-                  r += R(A[i][j][2], !C[i] &&  C[j]);
-                  r += R(A[i][j][3], !C[i] && !C[j]);
-              }
-      }
 
       // Decrease reduction if position is or has been on the PV
       // and node is not likely to fail low. (~3 Elo)
