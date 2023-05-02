@@ -1173,9 +1173,9 @@ moves_loop: // When in check, search starts here
           r--;
 
       if (   type_of(movedPiece) == KING
-          && givesCheck
-          && !ttCapture)
-          r--;
+          && move == ttMove
+          && ttCapture)
+          r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
