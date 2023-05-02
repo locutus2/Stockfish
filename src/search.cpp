@@ -1155,13 +1155,15 @@ moves_loop: // When in check, search starts here
           priorCapture,
           (ss-1)->moveCount > 7,
           (ss+1)->cutoffCnt > 3,
-          (ss-1)->currentMove == MOVE_NULL,
+          (ss-1)->inCheck,
           likelyFailLow,
+          ttCapture,
+          (ss-1)->currentMove == MOVE_NULL,
+          //type_of(move) == PROMOTION,
+          //(ss-1)->currentMove == MOVE_NULL,
+          /*
           type_of(move) == PROMOTION,
           move == ttMove,
-          //move == ttMove,
-          //type_of(move) == PROMOTION,
-          /*
           type_of(movedPiece) == PAWN,
           type_of(movedPiece) == KING,
           ss->ttPv,
@@ -1187,7 +1189,7 @@ moves_loop: // When in check, search starts here
 
 #define R(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? (-(c)) : 0)
 
-      bool CC = type_of(movedPiece) == PAWN;
+      bool CC = move == ttMove;
       if (CC)
       {
           for(int i = 0; i < N; ++i)
