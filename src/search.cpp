@@ -1172,10 +1172,10 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if (   !PvNode
-          && !cutNode
-          && type_of(movedPiece) == PAWN)
-          r++;
+      if (   type_of(movedPiece) == PAWN
+          && !capture
+          && (ss-1)->currentMove != MOVE_NULL)
+          r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
