@@ -40,6 +40,8 @@ namespace Stockfish {
 
 const int N = 13;
 
+int CI;
+
 int A[N][N][4];
 
 TUNE(SetRange(-100, 100), A);
@@ -166,6 +168,8 @@ namespace {
 /// Search::init() is called at startup to initialize various lookup tables
 
 void Search::init() {
+
+  CI = std::rand() % N;
 
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int((19.47 + std::log(Threads.size()) / 2) * std::log(i));
@@ -1171,14 +1175,20 @@ moves_loop: // When in check, search starts here
           bool CC = true;
           if (CC)
           {
-              for(int i = 0; i < N; ++i)
-                  for(int j = i + 1; j < N; ++j)
-                  {
-                      extension += R(A[i][j][0],  C[i] &&  C[j]);
-                      extension += R(A[i][j][1],  C[i] && !C[j]);
-                      extension += R(A[i][j][2], !C[i] &&  C[j]);
-                      extension += R(A[i][j][3], !C[i] && !C[j]);
-                  }
+              for (int j = CI + 1; j < N; ++j)
+              {
+                  extension += R(A[CI][j][0],  C[CI] &&  C[j]);
+                  extension += R(A[CI][j][1],  C[CI] && !C[j]);
+                  extension += R(A[CI][j][2], !C[CI] &&  C[j]);
+                  extension += R(A[CI][j][3], !C[CI] && !C[j]);
+              }
+              for (int j = 0; j < CI; ++j)
+              {
+                  extension += R(A[j][CI][0],  C[j] &&  C[CI]);
+                  extension += R(A[j][CI][1],  C[j] && !C[CI]);
+                  extension += R(A[j][CI][2], !C[j] &&  C[CI]);
+                  extension += R(A[j][CI][3], !C[j] && !C[CI]);
+              }
           }
       }
 
