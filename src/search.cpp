@@ -1173,8 +1173,8 @@ moves_loop: // When in check, search starts here
           r--;
 
       if (   type_of(movedPiece) == PAWN
-          && !capture
-          && (ss-1)->currentMove != MOVE_NULL)
+          && (ss-1)->currentMove == MOVE_NULL
+          && (ss-1)->moveCount <= 7)
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
