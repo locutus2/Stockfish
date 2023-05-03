@@ -1173,8 +1173,8 @@ moves_loop: // When in check, search starts here
           r--;
 
       if (   type_of(movedPiece) == PAWN
-          && ss->inCheck
-          && !capture)
+          && priorCapture
+          && type_of(move) != PROMOTION)
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
