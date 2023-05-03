@@ -1171,6 +1171,7 @@ moves_loop: // When in check, search starts here
           bool CC = true;
           if (CC)
           {
+              int ext = 0;
               for(int i = 0; i < N; ++i)
                   for(int j = i + 1; j < N; ++j)
                   {
@@ -1179,6 +1180,7 @@ moves_loop: // When in check, search starts here
                       extension += R(A[i][j][2], !C[i] &&  C[j]);
                       extension += R(A[i][j][3], !C[i] && !C[j]);
                   }
+              extension += std::clamp(ext, -1, 1);
           }
       }
 
