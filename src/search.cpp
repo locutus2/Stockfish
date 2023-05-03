@@ -1165,22 +1165,22 @@ moves_loop: // When in check, search starts here
                    && move == ss->killers[0]
                    && (*contHist[0])[movedPiece][to_sq(move)] >= 5705)
               extension = 1;
-
-#define R(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? (-(c)) : 0)
-
-          bool CC = true;
-          if (CC)
           {
-              int ext = 0;
-              for(int i = 0; i < N; ++i)
-                  for(int j = i + 1; j < N; ++j)
-                  {
-                      extension += R(A[i][j][0],  C[i] &&  C[j]);
-                      extension += R(A[i][j][1],  C[i] && !C[j]);
-                      extension += R(A[i][j][2], !C[i] &&  C[j]);
-                      extension += R(A[i][j][3], !C[i] && !C[j]);
-                  }
-              extension += std::clamp(ext, -1, 1);
+#define R(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? (-(c)) : 0)
+              bool CC = true;
+              if (CC)
+              {
+                  int ext = 0;
+                  for(int i = 0; i < N; ++i)
+                      for(int j = i + 1; j < N; ++j)
+                      {
+                          ext += R(A[i][j][0],  C[i] &&  C[j]);
+                          ext += R(A[i][j][1],  C[i] && !C[j]);
+                          ext += R(A[i][j][2], !C[i] &&  C[j]);
+                          ext += R(A[i][j][3], !C[i] && !C[j]);
+                      }
+                  extension += std::clamp(ext, -1, 1);
+              }
           }
       }
 
