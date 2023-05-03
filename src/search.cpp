@@ -929,7 +929,8 @@ moves_loop: // When in check, search starts here
     bool likelyFailLow =    PvNode
                          && ttMove
                          && (tte->bound() & BOUND_UPPER)
-                         && tte->depth() >= depth;
+                         && tte->depth() >= depth
+                         && ttValue <= alpha;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1118,7 +1119,6 @@ moves_loop: // When in check, search starts here
           else if (   PvNode
                    && move == ttMove
                    && move == ss->killers[0]
-                   && !likelyFailLow
                    && (*contHist[0])[movedPiece][to_sq(move)] >= 5705)
               extension = 1;
       }
