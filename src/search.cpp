@@ -1174,8 +1174,7 @@ moves_loop: // When in check, search starts here
           r--;
 
       if (   move == ttMove
-          && !improving
-          && !likelyFailLow)
+          && ss->inCheck)
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
