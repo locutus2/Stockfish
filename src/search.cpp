@@ -1175,7 +1175,7 @@ moves_loop: // When in check, search starts here
 
       if (   type_of(movedPiece) == KING
           && move == ttMove
-          && !priorCapture)
+          && !cutNode)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
