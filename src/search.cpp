@@ -1145,59 +1145,64 @@ moves_loop: // When in check, search starts here
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
 
-      bool C[N] = {
-          PvNode,
-          cutNode,
-          capture,
-          improving,
-          ss->inCheck,
-          givesCheck,
-          priorCapture,
-          (ss-1)->moveCount > 7,
-          (ss+1)->cutoffCnt > 3,
-          (ss-1)->currentMove == MOVE_NULL,
-          likelyFailLow,
-          type_of(move) == PROMOTION,
-          move == ttMove,
-          //move == ttMove,
-          //type_of(move) == PROMOTION,
-          /*
-          type_of(movedPiece) == PAWN,
-          type_of(movedPiece) == KING,
-          ss->ttPv,
-          ttCapture,
-          singularQuietLMR,
-          (ss-1)->inCheck,
-          (ss-1)->ttPv,
-          move == countermove,
-          move == ss->killers[0],
-          move == ss->killers[1],
-          (ss-1)->moveCount > 7,
-          (ss+1)->cutoffCnt > 3,
-          (ss-1)->currentMove == MOVE_NULL,
-          type_of(movedPiece) == PAWN,
-          type_of(movedPiece) == KING,
-          more_than_one(pos.checkers()),
-          type_of(movedPiece) == KNIGHT,
-          type_of(movedPiece) == BISHOP,
-          type_of(movedPiece) == ROOK,
-          type_of(movedPiece) == QUEEN,
-          */
-      };
-
 #define R(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? (-(c)) : 0)
 
-      bool CC = type_of(movedPiece) == PAWN;
+      bool CC = (ss-1)->currentMove == MOVE_NULL;
       if (CC)
       {
+          bool C[N] = {
+              PvNode,
+              cutNode,
+              capture,
+              more_than_one(pos.checkers()),
+              ss->inCheck,
+              givesCheck,
+              priorCapture,
+              (ss-1)->moveCount > 7,
+              (ss+1)->cutoffCnt > 3,
+              move == countermove,
+              move == ss->killers[0],
+              type_of(move) == PROMOTION,
+              move == ttMove,
+              //improving,
+              //likelyFailLow,
+              //move == ss->killers[1],
+              //(ss-1)->currentMove == MOVE_NULL,
+              //move == ttMove,
+              //type_of(move) == PROMOTION,
+              /*
+              type_of(movedPiece) == PAWN,
+              type_of(movedPiece) == KING,
+              ss->ttPv,
+              ttCapture,
+              singularQuietLMR,
+              (ss-1)->inCheck,
+              (ss-1)->ttPv,
+              move == countermove,
+              move == ss->killers[0],
+              move == ss->killers[1],
+              (ss-1)->moveCount > 7,
+              (ss+1)->cutoffCnt > 3,
+              (ss-1)->currentMove == MOVE_NULL,
+              type_of(movedPiece) == PAWN,
+              type_of(movedPiece) == KING,
+              type_of(movedPiece) == KNIGHT,
+              type_of(movedPiece) == BISHOP,
+              type_of(movedPiece) == ROOK,
+              type_of(movedPiece) == QUEEN,
+              */
+          };
+
+          int r1 = 0;
           for(int i = 0; i < N; ++i)
               for(int j = i + 1; j < N; ++j)
               {
-                  r += R(A[i][j][0],  C[i] &&  C[j]);
-                  r += R(A[i][j][1],  C[i] && !C[j]);
-                  r += R(A[i][j][2], !C[i] &&  C[j]);
-                  r += R(A[i][j][3], !C[i] && !C[j]);
+                  r1 += R(A[i][j][0],  C[i] &&  C[j]);
+                  r1 += R(A[i][j][1],  C[i] && !C[j]);
+                  r1 += R(A[i][j][2], !C[i] &&  C[j]);
+                  r1 += R(A[i][j][3], !C[i] && !C[j]);
               }
+          r += std::clamp(r1, -1, 1);
       }
 
       // Decrease reduction if position is or has been on the PV
