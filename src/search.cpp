@@ -1121,8 +1121,8 @@ moves_loop: // When in check, search starts here
                    && (*contHist[0])[movedPiece][to_sq(move)] >= 5705)
               extension = 1;
 
-          else if (   ss->inCheck
-                   && move == ttMove)
+          else if (   (ss-1)->currentMove == MOVE_NULL
+                   && givesCheck)
               extension = -1;
       }
 
