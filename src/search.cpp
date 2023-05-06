@@ -1122,8 +1122,8 @@ moves_loop: // When in check, search starts here
               extension = 1;
 
           else if (   (ss-1)->moveCount > 7
-                   && (ss+1)->cutoffCnt > 3)
-              extension = -1;
+                   && move == ttMove)
+              extension = 1;
       }
 
       // Add extension to new depth
