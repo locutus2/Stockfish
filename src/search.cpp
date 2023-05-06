@@ -1167,7 +1167,7 @@ moves_loop: // When in check, search starts here
           r--;
 
       // Increase reduction if next ply has a lot of fail high (~5 Elo)
-      if ((ss+1)->cutoffCnt > 3)
+      if ((ss+1)->cutoffCnt > 4)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
@@ -1227,7 +1227,7 @@ moves_loop: // When in check, search starts here
           if (!ttMove && cutNode)
               r += 2;
 
-          else if (move == ttMove && (ss+1)->cutoffCnt <= 4)
+          else if (move == ttMove && (ss+1)->cutoffCnt <= 2)
               r--;
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4), !cutNode);
