@@ -1006,7 +1006,7 @@ moves_loop: // When in check, search starts here
                   move == countermove,
                   move == ss->killers[0],
                   type_of(move) == PROMOTION,
-                  move == ttMove,
+                  move == ss->killers[1],
                   //improving,
                   //likelyFailLow,
                   //move == ss->killers[1],
