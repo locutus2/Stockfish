@@ -1231,8 +1231,8 @@ moves_loop: // When in check, search starts here
               r += 2;
 
           else if (   move == ttMove
-                   && cutNode
-                   && (ss-1)->moveCount <= 7)
+                   && givesCheck
+                   && (ss-1)->inCheck)
               r++;
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4), !cutNode);
