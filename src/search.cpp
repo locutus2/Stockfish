@@ -916,7 +916,13 @@ moves_loop: // When in check, search starts here
                                       &captureHistory,
                                       contHist,
                                       countermove,
-                                      ss->killers);
+                                      ss->killers,
+                                      (ss-1)->currentMove,
+                                      (ss-1)->moveCount,
+                                      (ss+1)->cutoffCnt,
+                                      PvNode,
+                                      cutNode,
+                                      improving);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;

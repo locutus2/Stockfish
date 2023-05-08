@@ -23,6 +23,12 @@
 
 namespace Stockfish {
 
+const int N = 13;
+
+int A[N][N][4];
+
+TUNE(SetRange(-100, 100), A);
+
 namespace {
 
   enum Stages {
@@ -61,9 +67,16 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
                                                              Move cm,
-                                                             const Move* killers)
+                                                             const Move* killers,
+                                                             Move pm,
+                                                             int pmc,
+                                                             int ccc,
+                                                             bool pv,
+                                                             bool cut,
+                                                             bool imp)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
+             ttMove(ttm), previousMove(pm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d),
+             previousMoveCount(pmc), childCutoffCnt(ccc), PvNode(pv), cutNode(cut), improving(imp)
 {
   assert(d > 0);
 
@@ -126,6 +139,40 @@ void MovePicker::score() {
                    +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))]) / 16;
 
       else if constexpr (Type == QUIETS)
+      {
+#define R(x, c) ((x) >= 50 ? (c) : (x) <= -50 ? (-(c)) : 0)
+          int c = 0;
+          bool CC = true;
+          if (CC)
+          {
+              Color us = pos.side_to_move();
+              bool C[N] = {
+                  PvNode,
+                  cutNode,
+                  improving,
+                  bool(pos.captured_piece()),
+                  type_of(pos.moved_piece(m)) == PAWN,
+                  type_of(pos.moved_piece(m)) == KING,
+                  pos.non_pawn_material() > QueenValueMg + 2 * RookValueMg + 4 * BishopValueMg,
+                  pos.count<PAWN>() >= 10,
+                  pos.non_pawn_material(us) > pos.non_pawn_material(~us),
+                  pos.count<PAWN>(us) > pos.count<PAWN>(~us),
+                  previousMove == MOVE_NULL,
+                  previousMoveCount > 7,
+                  childCutoffCnt > 3,
+              };
+
+              for(int i = 0; i < N; ++i)
+                  for(int j = i + 1; j < N; ++j)
+                  {
+                      c += R(A[i][j][0],  C[i] &&  C[j]);
+                      c += R(A[i][j][1],  C[i] && !C[j]);
+                      c += R(A[i][j][2], !C[i] &&  C[j]);
+                      c += R(A[i][j][3], !C[i] && !C[j]);
+                  }
+              c = std::clamp(c, -1, 1);
+          }
+
           m.value =  2 * (*mainHistory)[pos.side_to_move()][from_to(m)]
                    + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
@@ -137,7 +184,8 @@ void MovePicker::score() {
                           :                                         !(to_sq(m) & threatenedByPawn)  ? 15000
                           :                                                                           0)
                           :                                                                           0)
-                   +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384;
+                   +     (c + bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m))) * 16384;
+      }
       else // Type == EVASIONS
       {
           if (pos.capture_stage(m))
