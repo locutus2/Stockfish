@@ -1013,6 +1013,7 @@ void Position::do_null_move(StateInfo& newSt) {
   prefetch(TT.first_entry(key()));
 
   st->pliesFromNull = 0;
+  st->capturedPiece = NO_PIECE;
 
   sideToMove = ~sideToMove;
 
