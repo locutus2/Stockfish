@@ -1226,6 +1226,9 @@ moves_loop: // When in check, search starts here
           // Increase reduction for cut nodes and not ttMove (~1 Elo)
           if (!ttMove && cutNode)
               r += 2;
+          else if (   move == ttMove
+                   && (ss-1)->currentMove == MOVE_NULL)
+              r++;
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4), !cutNode);
       }
