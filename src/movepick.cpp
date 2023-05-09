@@ -26,10 +26,10 @@ namespace Stockfish {
 namespace {
 
   enum Stages {
-    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
-    EVASION_TT, EVASION_INIT, EVASION,
-    PROBCUT_TT, PROBCUT_INIT, PROBCUT,
-    QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
+    MAIN_TT, MAIN_PREV_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
+    EVASION_TT, EVASION_PREV_TT, EVASION_INIT, EVASION,
+    PROBCUT_TT, PROBCUT_PREV_TT, PROBCUT_INIT, PROBCUT,
+    QSEARCH_TT, QSEARCH_PREV_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
   };
 
   // partial_insertion_sort() sorts moves in descending order up to and including
@@ -57,28 +57,34 @@ namespace {
 /// ordering is at the current node.
 
 /// MovePicker constructor for the main search
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
+MovePicker::MovePicker(const Position& p, Move ttm, Move pttm, Depth d, const ButterflyHistory* mh,
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
                                                              Move cm,
                                                              const Move* killers)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
+             ttMove(ttm), prevTTMove(pttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
 {
   assert(d > 0);
+
+  if(!(pttm && pos.pseudo_legal(pttm)))
+      prevTTMove = MOVE_NONE;
 
   stage = (pos.checkers() ? EVASION_TT : MAIN_TT) +
           !(ttm && pos.pseudo_legal(ttm));
 }
 
 /// MovePicker constructor for quiescence search
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
+MovePicker::MovePicker(const Position& p, Move ttm, Move pttm, Depth d, const ButterflyHistory* mh,
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
                                                              Square rs)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), recaptureSquare(rs), depth(d)
+           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), prevTTMove(pttm), recaptureSquare(rs), depth(d)
 {
   assert(d <= 0);
+
+  if(!(pttm && pos.pseudo_legal(pttm)))
+      prevTTMove = MOVE_NONE;
 
   stage = (pos.checkers() ? EVASION_TT : QSEARCH_TT) +
           !(   ttm
@@ -87,10 +93,16 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 
 /// MovePicker constructor for ProbCut: we generate captures with SEE greater
 /// than or equal to the given threshold.
-MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph)
-           : pos(p), captureHistory(cph), ttMove(ttm), threshold(th)
+MovePicker::MovePicker(const Position& p, Move ttm, Move pttm, Value th, const CapturePieceToHistory* cph)
+           : pos(p), captureHistory(cph), ttMove(ttm), prevTTMove(pttm), threshold(th)
 {
   assert(!pos.checkers());
+
+  if(!(   pttm
+       && pos.capture_stage(pttm)
+       && pos.pseudo_legal(pttm)
+       && pos.see_ge(pttm, threshold)))
+      prevTTMove = MOVE_NONE;
 
   stage = PROBCUT_TT + !(ttm && pos.capture_stage(ttm)
                              && pos.pseudo_legal(ttm)
@@ -160,7 +172,7 @@ Move MovePicker::select(Pred filter) {
       if constexpr (T == Best)
           std::swap(*cur, *std::max_element(cur, endMoves));
 
-      if (*cur != ttMove && filter())
+      if (*cur != ttMove && *cur != prevTTMove && filter())
           return *cur++;
 
       cur++;
@@ -182,6 +194,15 @@ top:
   case PROBCUT_TT:
       ++stage;
       return ttMove;
+
+  case MAIN_PREV_TT:
+  case EVASION_PREV_TT:
+  case QSEARCH_PREV_TT:
+  case PROBCUT_PREV_TT:
+      ++stage;
+      if (prevTTMove && prevTTMove != ttMove)
+          return prevTTMove;
+      goto top;
 
   case CAPTURE_INIT:
   case PROBCUT_INIT:
