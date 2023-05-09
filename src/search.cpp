@@ -842,7 +842,7 @@ namespace {
     {
         assert(probCutBeta < VALUE_INFINITE);
 
-        MovePicker mp(pos, ss->ttMove, (ss-2)->ttMove, probCutBeta - ss->staticEval, &captureHistory);
+        MovePicker mp(pos, ss->ttMove, ss->inCheck ? MOVE_NONE : (ss-2)->ttMove, probCutBeta - ss->staticEval, &captureHistory);
 
         while ((move = mp.next_move()) != MOVE_NONE)
             if (move != excludedMove && pos.legal(move))
@@ -912,7 +912,7 @@ moves_loop: // When in check, search starts here
 
     Move countermove = prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
 
-    MovePicker mp(pos, ss->ttMove, (ss-2)->ttMove, depth, &thisThread->mainHistory,
+    MovePicker mp(pos, ss->ttMove, ss->inCheck ? MOVE_NONE : (ss-2)->ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
                                       contHist,
                                       countermove,
@@ -1511,7 +1511,7 @@ moves_loop: // When in check, search starts here
     // queen promotions, and other checks (only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
     Square prevSq = (ss-1)->currentMove != MOVE_NULL ? to_sq((ss-1)->currentMove) : SQ_NONE;
-    MovePicker mp(pos, ss->ttMove, (ss-2)->ttMove, depth, &thisThread->mainHistory,
+    MovePicker mp(pos, ss->ttMove, ss->inCheck ? MOVE_NONE : (ss-2)->ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
                                       contHist,
                                       prevSq);
