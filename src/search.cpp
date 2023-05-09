@@ -1170,10 +1170,6 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if (   type_of(movedPiece) == KING
-          && ss->inCheck)
-          r++;
-
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
                      + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1230,6 +1226,10 @@ moves_loop: // When in check, search starts here
           // Increase reduction for cut nodes and not ttMove (~1 Elo)
           if (!ttMove && cutNode)
               r += 2;
+
+          else if (   type_of(movedPiece) == KING
+                   && move == ttMove)
+              r++;
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 4), !cutNode);
       }
