@@ -1118,10 +1118,9 @@ moves_loop: // When in check, search starts here
                    && (*contHist[0])[movedPiece][to_sq(move)] >= 5705)
               extension = 1;
 
-          else if (   (ss-1)->currentMove == MOVE_NULL
-                   && givesCheck)
-              extension = -2;
-
+          if (   (ss-1)->currentMove == MOVE_NULL
+              && givesCheck)
+              extension--;
       }
 
       // Add extension to new depth
