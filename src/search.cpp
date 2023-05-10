@@ -917,7 +917,7 @@ moves_loop: // When in check, search starts here
                                           contHist,
                                           countermove,
                                           ss->killers,
-                                          PvNode || cutNode ? MOVE_NONE : (ss-2)->ttMove);
+                                          (ss-2)->ttMove);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
@@ -1515,7 +1515,8 @@ moves_loop: // When in check, search starts here
     MovePicker mp(pos, ss->ttMove, depth, &thisThread->mainHistory,
                                           &thisThread->captureHistory,
                                           contHist,
-                                          prevSq);
+                                          prevSq,
+                                          (ss-2)->ttMove);
 
     int quietCheckEvasions = 0;
 

@@ -27,7 +27,7 @@ namespace {
 
   enum Stages {
     MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
-    EVASION_TT, EVASION_INIT, EVASION,
+    EVASION_TT, EVASION_PREV_TT, EVASION_INIT, EVASION,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
   };
@@ -64,7 +64,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              const Move* killers,
                                                              Move pttm)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}, {pttm, 0}}, depth(d)
+             ttMove(ttm), prevTTMove(pttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
 {
   assert(d > 0);
 
@@ -76,8 +76,9 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
-                                                             Square rs)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), recaptureSquare(rs), depth(d)
+                                                             Square rs,
+                                                             Move pttm)
+           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), prevTTMove(pttm), recaptureSquare(rs), depth(d)
 {
   assert(d <= 0);
 
@@ -184,6 +185,12 @@ top:
       ++stage;
       return ttMove;
 
+  case EVASION_PREV_TT:
+      ++stage;
+      if (prevTTMove && prevTTMove != ttMove && pos.pseudo_legal(prevTTMove))
+          return prevTTMove;
+      goto top;
+
   case CAPTURE_INIT:
   case PROBCUT_INIT:
   case QCAPTURE_INIT:
@@ -206,19 +213,10 @@ top:
       cur = std::begin(refutations);
       endMoves = std::end(refutations);
 
-      // If previous tt move is the same as a killer or counter move, skip it
-      if (   refutations[0].move == refutations[3].move
-          || refutations[1].move == refutations[3].move
-          || refutations[2].move == refutations[3].move)
-          --endMoves;
-
       // If the countermove is the same as a killer, skip it
       if (   refutations[0].move == refutations[2].move
           || refutations[1].move == refutations[2].move)
-      {
-          refutations[2] = refutations[3];
           --endMoves;
-      }
 
       ++stage;
       [[fallthrough]];
@@ -271,7 +269,7 @@ top:
       [[fallthrough]];
 
   case EVASION:
-      return select<Best>([](){ return true; });
+      return select<Best>([&](){ return *cur != prevTTMove; });
 
   case PROBCUT:
       return select<Next>([&](){ return pos.see_ge(*cur, threshold); });
