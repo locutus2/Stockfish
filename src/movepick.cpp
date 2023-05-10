@@ -246,8 +246,7 @@ top:
       if (   !skipQuiets
           && select<Next>([&](){return   *cur != refutations[0].move
                                       && *cur != refutations[1].move
-                                      && *cur != refutations[2].move
-                                      && *cur != refutations[3].move;}))
+                                      && *cur != refutations[2].move;}))
           return *(cur - 1);
 
       // Prepare the pointers to loop over the bad captures
