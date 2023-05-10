@@ -119,16 +119,17 @@ class MovePicker {
 public:
   MovePicker(const MovePicker&) = delete;
   MovePicker& operator=(const MovePicker&) = delete;
-  MovePicker(const Position&, Move, Move, Depth, const ButterflyHistory*,
+  MovePicker(const Position&, Move, Depth, const ButterflyHistory*,
                                            const CapturePieceToHistory*,
                                            const PieceToHistory**,
                                            Move,
-                                           const Move*);
-  MovePicker(const Position&, Move, Move, Depth, const ButterflyHistory*,
+                                           const Move*,
+                                           Move);
+  MovePicker(const Position&, Move, Depth, const ButterflyHistory*,
                                            const CapturePieceToHistory*,
                                            const PieceToHistory**,
                                            Square);
-  MovePicker(const Position&, Move, Move, Value, const CapturePieceToHistory*);
+  MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
   Move next_move(bool skipQuiets = false);
 
 private:
@@ -141,8 +142,8 @@ private:
   const ButterflyHistory* mainHistory;
   const CapturePieceToHistory* captureHistory;
   const PieceToHistory** continuationHistory;
-  Move ttMove, prevTTMove;
-  ExtMove refutations[3], *cur, *endMoves, *endBadCaptures;
+  Move ttMove;
+  ExtMove refutations[4], *cur, *endMoves, *endBadCaptures;
   int stage;
   Square recaptureSquare;
   Value threshold;
