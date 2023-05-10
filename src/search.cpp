@@ -917,7 +917,7 @@ moves_loop: // When in check, search starts here
                                           contHist,
                                           countermove,
                                           ss->killers,
-                                          PvNode || cutNode ? MOVE_NONE : (ss-2)->ttMove);
+                                          ss->ply < depth ? (ss-2)->ttMove : MOVE_NONE);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
