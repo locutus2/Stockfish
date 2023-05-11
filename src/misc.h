@@ -58,7 +58,7 @@ inline TimePoint now() {
 template<class Entry, int Size>
 struct HashTable {
   Entry* operator[](Key key) { return &table[(uint32_t)key & (Size - 1)]; }
-
+  void clear() { table.assign(Size, Entry()); }
 private:
   std::vector<Entry> table = std::vector<Entry>(Size); // Allocate on the heap
 };

@@ -106,6 +106,25 @@ using PieceToHistory = Stats<int16_t, 29952, PIECE_NB, SQUARE_NB>;
 using ContinuationHistory = Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB>;
 
 
+// A SequenceTable contains the best move after a sequences of moves.
+// The move sequence is determined by the XOR of the hash keys of the start and end position.
+using SequenceTable = HashTable<Move, 16384>;
+
+extern SequenceTable sequenceTable;
+
+Move sequence_probe(Key key);
+void sequence_save(Key key, Move move);
+
+inline Move sequence_probe(Key key) {
+    return *sequenceTable[key];
+}
+
+inline void sequence_save(Key key, Move move){
+    if (move != MOVE_NONE)
+        *sequenceTable[key] = move;
+}
+
+
 /// MovePicker class is used to pick one pseudo-legal move at a time from the
 /// current position. The most important method is next_move(), which returns a
 /// new pseudo-legal move each time it is called, until there are no moves left,

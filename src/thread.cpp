@@ -20,6 +20,7 @@
 
 #include <algorithm> // For std::count
 #include "movegen.h"
+#include "movepick.h"
 #include "search.h"
 #include "thread.h"
 #include "uci.h"

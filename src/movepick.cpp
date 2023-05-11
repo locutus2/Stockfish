@@ -292,4 +292,6 @@ top:
   return MOVE_NONE; // Silence warning
 }
 
+SequenceTable sequenceTable;
+
 } // namespace Stockfish

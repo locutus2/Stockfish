@@ -174,6 +174,7 @@ void Search::clear() {
 
   Time.availableNodes = 0;
   TT.clear();
+  sequenceTable.clear();
   Threads.clear();
   Tablebases::init(Options["SyzygyPath"]); // Free mapped files
 }
@@ -541,7 +542,6 @@ namespace {
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     TTEntry* tte;
-    Key posKey;
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
@@ -601,8 +601,8 @@ namespace {
 
     // Step 4. Transposition table lookup.
     excludedMove = ss->excludedMove;
-    posKey = pos.key();
-    tte = TT.probe(posKey, ss->ttHit);
+    ss->posKey = pos.key();
+    tte = TT.probe(ss->posKey, ss->ttHit);
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ss->ttHit    ? tte->move() : MOVE_NONE;
@@ -683,7 +683,7 @@ namespace {
                 if (    b == BOUND_EXACT
                     || (b == BOUND_LOWER ? value >= beta : value <= alpha))
                 {
-                    tte->save(posKey, value_to_tt(value, ss->ply), ss->ttPv, b,
+                    tte->save(ss->posKey, value_to_tt(value, ss->ply), ss->ttPv, b,
                               std::min(MAX_PLY - 1, depth + 6),
                               MOVE_NONE, VALUE_NONE);
 
@@ -736,7 +736,7 @@ namespace {
     {
         ss->staticEval = eval = evaluate(pos);
         // Save static evaluation into transposition table
-        tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
+        tte->save(ss->posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
     // Use static evaluation difference to improve quiet move ordering (~4 Elo)
@@ -869,7 +869,7 @@ namespace {
                 if (value >= probCutBeta)
                 {
                     // Save ProbCut data into transposition table
-                    tte->save(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER, depth - 3, move, ss->staticEval);
+                    tte->save(ss->posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER, depth - 3, move, ss->staticEval);
                     return value;
                 }
             }
@@ -1384,7 +1384,7 @@ moves_loop: // When in check, search starts here
 
     // Write gathered information in transposition table
     if (!excludedMove && !(rootNode && thisThread->pvIdx))
-        tte->save(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
+        tte->save(ss->posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
                   depth, bestMove, ss->staticEval);
@@ -1413,7 +1413,6 @@ moves_loop: // When in check, search starts here
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     TTEntry* tte;
-    Key posKey;
     Move ttMove, move, bestMove;
     Depth ttDepth;
     Value bestValue, value, ttValue, futilityValue, futilityBase;
@@ -1446,8 +1445,8 @@ moves_loop: // When in check, search starts here
                                                       : DEPTH_QS_NO_CHECKS;
 
     // Step 3. Transposition table lookup
-    posKey = pos.key();
-    tte = TT.probe(posKey, ss->ttHit);
+    ss->posKey = pos.key();
+    tte = TT.probe(ss->posKey, ss->ttHit);
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove = ss->ttHit ? tte->move() : MOVE_NONE;
     pvHit = ss->ttHit && tte->is_pv();
@@ -1490,7 +1489,7 @@ moves_loop: // When in check, search starts here
         {
             // Save gathered info in transposition table
             if (!ss->ttHit)
-                tte->save(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
+                tte->save(ss->posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
                           DEPTH_NONE, MOVE_NONE, ss->staticEval);
 
             return bestValue;
@@ -1626,7 +1625,7 @@ moves_loop: // When in check, search starts here
     }
 
     // Save gathered info in transposition table
-    tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit,
+    tte->save(ss->posKey, value_to_tt(bestValue, ss->ply), pvHit,
               bestValue >= beta ? BOUND_LOWER : BOUND_UPPER,
               ttDepth, bestMove, ss->staticEval);
 
