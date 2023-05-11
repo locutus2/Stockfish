@@ -115,7 +115,7 @@ struct SequenceEntry {
 
 // A SequenceTable contains the best move after a sequences of moves.
 // The move sequence is determined by the XOR of the hash keys of the start and end position.
-using SequenceTable = HashTable<SequenceEntry, 32768>;
+using SequenceTable = HashTable<SequenceEntry, 131072>;
 
 extern SequenceTable sequenceTable;
 
