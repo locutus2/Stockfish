@@ -26,10 +26,10 @@ namespace Stockfish {
 namespace {
 
   enum Stages {
-    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
-    EVASION_TT, EVASION_INIT, EVASION,
-    PROBCUT_TT, PROBCUT_INIT, PROBCUT,
-    QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
+    MAIN_TT, MAIN_SEQ_MOVE, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
+    EVASION_TT, EVASION_SEQ_MOVE, EVASION_INIT, EVASION,
+    PROBCUT_TT, PROBCUT_SEQ_MOVE, PROBCUT_INIT, PROBCUT,
+    QSEARCH_TT, QSEARCH_SEQ_MOVE, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
   };
 
   // partial_insertion_sort() sorts moves in descending order up to and including
@@ -57,13 +57,13 @@ namespace {
 /// ordering is at the current node.
 
 /// MovePicker constructor for the main search
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
+MovePicker::MovePicker(const Position& p, Move ttm, Move sm, Depth d, const ButterflyHistory* mh,
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
                                                              Move cm,
                                                              const Move* killers)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
+             ttMove(ttm), sequenceMove(sm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
 {
   assert(d > 0);
 
@@ -72,11 +72,11 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 }
 
 /// MovePicker constructor for quiescence search
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
+MovePicker::MovePicker(const Position& p, Move ttm, Move sm, Depth d, const ButterflyHistory* mh,
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
                                                              Square rs)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), recaptureSquare(rs), depth(d)
+           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), sequenceMove(sm), recaptureSquare(rs), depth(d)
 {
   assert(d <= 0);
 
@@ -87,8 +87,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 
 /// MovePicker constructor for ProbCut: we generate captures with SEE greater
 /// than or equal to the given threshold.
-MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph)
-           : pos(p), captureHistory(cph), ttMove(ttm), threshold(th)
+MovePicker::MovePicker(const Position& p, Move ttm, Move sm, Value th, const CapturePieceToHistory* cph)
+           : pos(p), captureHistory(cph), ttMove(ttm), sequenceMove(sm), threshold(th)
 {
   assert(!pos.checkers());
 
@@ -160,7 +160,7 @@ Move MovePicker::select(Pred filter) {
       if constexpr (T == Best)
           std::swap(*cur, *std::max_element(cur, endMoves));
 
-      if (*cur != ttMove && filter())
+      if (*cur != ttMove && *cur != sequenceMove && filter())
           return *cur++;
 
       cur++;
@@ -182,6 +182,22 @@ top:
   case PROBCUT_TT:
       ++stage;
       return ttMove;
+
+  case MAIN_SEQ_MOVE:
+  case EVASION_SEQ_MOVE:
+  case QSEARCH_SEQ_MOVE:
+      ++stage;
+      if (sequenceMove && sequenceMove != ttMove && pos.pseudo_legal(sequenceMove))
+          return sequenceMove;
+      goto top;
+
+  case PROBCUT_SEQ_MOVE:
+      ++stage;
+      if (sequenceMove && sequenceMove != ttMove && pos.capture_stage(sequenceMove)
+                                                 && pos.pseudo_legal(sequenceMove)
+                                                 && pos.see_ge(sequenceMove, threshold))
+          return sequenceMove;
+      goto top;
 
   case CAPTURE_INIT:
   case PROBCUT_INIT:
