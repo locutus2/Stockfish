@@ -106,9 +106,16 @@ using PieceToHistory = Stats<int16_t, 29952, PIECE_NB, SQUARE_NB>;
 using ContinuationHistory = Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB>;
 
 
+struct SequenceEntry {
+    Key key;
+    Move move;
+
+    SequenceEntry() : key(0), move(MOVE_NONE) {}
+};
+
 // A SequenceTable contains the best move after a sequences of moves.
 // The move sequence is determined by the XOR of the hash keys of the start and end position.
-using SequenceTable = HashTable<Move, 16384>;
+using SequenceTable = HashTable<SequenceEntry, 16384>;
 
 extern SequenceTable sequenceTable;
 
@@ -116,12 +123,17 @@ Move sequence_probe(Key key);
 void sequence_save(Key key, Move move);
 
 inline Move sequence_probe(Key key) {
-    return *sequenceTable[key];
+    const auto *e = sequenceTable[key];
+    return e->key == key ? e->move : MOVE_NONE;
 }
 
 inline void sequence_save(Key key, Move move){
     if (move != MOVE_NONE)
-        *sequenceTable[key] = move;
+    {
+        auto *e = sequenceTable[key];
+        e->key = key;
+        e->move = move;
+    }
 }
 
 
