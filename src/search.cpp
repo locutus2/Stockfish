@@ -1171,8 +1171,8 @@ moves_loop: // When in check, search starts here
           r--;
 
       if (   (ss-1)->currentMove == MOVE_NULL
-          && !cutNode
-          && (ss+1)->cutoffCnt > 3)
+          && type_of(move) != PROMOTION
+          && !more_than_one(pos.checkers()))
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
