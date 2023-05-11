@@ -608,7 +608,7 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ss->ttHit    ? tte->move() : MOVE_NONE;
     ttCapture = ttMove && pos.capture_stage(ttMove);
-    sequenceKey = ss->posKey ^ (ss-3)->posKey;
+    sequenceKey = ss->posKey ^ (ss-4)->posKey;
     sequenceMove = sequence_probe(sequenceKey);
 
     // At this point, if excluded, skip straight to step 6, static eval. However,
@@ -1457,7 +1457,7 @@ moves_loop: // When in check, search starts here
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove = ss->ttHit ? tte->move() : MOVE_NONE;
     pvHit = ss->ttHit && tte->is_pv();
-    sequenceKey = ss->posKey ^ (ss-3)->posKey;
+    sequenceKey = ss->posKey ^ (ss-4)->posKey;
     sequenceMove = sequence_probe(sequenceKey);
 
     // At non-PV nodes we check for an early TT cutoff
