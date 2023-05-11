@@ -107,7 +107,7 @@ using ContinuationHistory = Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB>
 
 
 struct SequenceEntry {
-    Key key;
+    uint32_t key;
     Move move;
 
     SequenceEntry() : key(0), move(MOVE_NONE) {}
@@ -124,14 +124,14 @@ void sequence_save(Key key, Move move);
 
 inline Move sequence_probe(Key key) {
     const auto *e = sequenceTable[key];
-    return e->key == key ? e->move : MOVE_NONE;
+    return e->key == (uint32_t)(key >> 32) ? e->move : MOVE_NONE;
 }
 
 inline void sequence_save(Key key, Move move){
     if (move != MOVE_NONE)
     {
         auto *e = sequenceTable[key];
-        e->key = key;
+        e->key = key >> 32;
         e->move = move;
     }
 }
