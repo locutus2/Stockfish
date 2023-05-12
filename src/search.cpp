@@ -979,7 +979,7 @@ moves_loop: // When in check, search starts here
           moveCountPruning = moveCount >= futility_move_count(improving, depth);
 
           // Reduced depth of the next LMR search
-          int lmrDepth = std::max(newDepth - r - (type_of(move) == PROMOTION), 0);
+          int lmrDepth = std::max(newDepth - r - (PvNode && type_of(move) == PROMOTION), 0);
 
           if (   capture
               || givesCheck)
