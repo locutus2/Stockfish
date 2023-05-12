@@ -970,6 +970,12 @@ moves_loop: // When in check, search starts here
 
       Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
+      if (   type_of(move) == PROMOTION
+          && move != countermove
+          && move != ss->killers[0]
+          && move != ss->killers[1])
+          r++;
+
       // Step 14. Pruning at shallow depth (~120 Elo). Depth conditions are important for mate finding.
       if (  !rootNode
           && pos.non_pawn_material(us)
@@ -978,11 +984,6 @@ moves_loop: // When in check, search starts here
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~8 Elo)
           moveCountPruning = moveCount >= futility_move_count(improving, depth);
 
-          if (   type_of(move) == PROMOTION
-              && move != countermove
-              && move != ss->killers[0]
-              && move != ss->killers[1])
-              r++;
 
           // Reduced depth of the next LMR search
           int lmrDepth = std::max(newDepth - r, 0);
