@@ -279,7 +279,7 @@ void Thread::search() {
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; --i)
   {
-      Color c = Color(us ^ (i & 1));
+      Color c = Color(us ^ (i & 1) ^ 1);
       (ss-i)->continuationHistory = &this->continuationHistory[0][0][NO_PIECE][0]; // Use as a sentinel
       (ss-i)->kingContinuationHistory = &this->continuationHistory[0][0][make_piece(c, KING)][rootPos.square<KING>(c)]; // Use as a sentinel
       (ss-i)->staticEval = VALUE_NONE;
@@ -797,7 +797,7 @@ namespace {
 
         pos.do_null_move(st);
 
-        ss->kingContinuationHistory = &thisThread->continuationHistory[0][0][make_piece(us, KING)][pos.square<KING>(us)];
+        ss->kingContinuationHistory = &thisThread->continuationHistory[0][0][make_piece(~us, KING)][pos.square<KING>(~us)];
 
         Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
 
@@ -861,7 +861,7 @@ namespace {
 
                 pos.do_move(move, st);
 
-                ss->kingContinuationHistory = &thisThread->continuationHistory[ss->inCheck][true][make_piece(us, KING)][pos.square<KING>(us)];
+                ss->kingContinuationHistory = &thisThread->continuationHistory[ss->inCheck][true][make_piece(~us, KING)][pos.square<KING>(~us)];
 
                 // Perform a preliminary qsearch to verify that the move holds
                 value = -qsearch<NonPV>(pos, ss+1, -probCutBeta, -probCutBeta+1);
@@ -1142,7 +1142,7 @@ moves_loop: // When in check, search starts here
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
 
-      ss->kingContinuationHistory = &thisThread->continuationHistory[ss->inCheck][capture][make_piece(us, KING)][pos.square<KING>(us)];
+      ss->kingContinuationHistory = &thisThread->continuationHistory[ss->inCheck][capture][make_piece(~us, KING)][pos.square<KING>(~us)];
 
       // Decrease reduction if position is or has been on the PV
       // and node is not likely to fail low. (~3 Elo)
