@@ -859,6 +859,7 @@ namespace {
                                                                           [true]
                                                                           [pos.moved_piece(move)]
                                                                           [to_sq(move)];
+
                 pos.do_move(move, st);
 
                 ss->kingContinuationHistory[WHITE] = &thisThread->continuationHistory[ss->inCheck][true][W_KING][pos.square<KING>(WHITE)];
