@@ -917,7 +917,8 @@ moves_loop: // When in check, search starts here
                                       contHist,
                                       countermove,
                                       ss->killers,
-                                      !PvNode && pos.count<PAWN>(us) <= pos.count<PAWN>(~us) ? -16384 : 0);
+                                         pos.non_pawn_material(us) > pos.non_pawn_material(~us)
+                                      && pos.count<PAWN>(us) > pos.count<PAWN>(~us) ? 16384 : 0);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
