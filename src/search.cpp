@@ -917,7 +917,7 @@ moves_loop: // When in check, search starts here
                                       contHist,
                                       countermove,
                                       ss->killers,
-                                      cutNode && priorCapture ? 16384 : 0);
+                                      cutNode);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;

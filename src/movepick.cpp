@@ -62,9 +62,9 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              const PieceToHistory** ch,
                                                              Move cm,
                                                              const Move* killers,
-                                                             int so)
+                                                             bool cfb)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d), sortOffset(so)
+             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d), checkForBonus(cfb)
 {
   assert(d > 0);
 
@@ -138,7 +138,8 @@ void MovePicker::score() {
                           :                                         !(to_sq(m) & threatenedByPawn)  ? 15000
                           :                                                                           0)
                           :                                                                           0)
-                   +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384;
+                   +     (  bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m))
+                          + (checkForBonus && type_of(pos.moved_piece(m)) == KING)) * 16384;
       else // Type == EVASIONS
       {
           if (pos.capture_stage(m))
@@ -229,7 +230,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, sortOffset - 3000 * depth);
+          partial_insertion_sort(cur, endMoves, -3000 * depth);
       }
 
       ++stage;
