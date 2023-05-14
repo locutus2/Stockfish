@@ -917,7 +917,7 @@ moves_loop: // When in check, search starts here
                                       contHist,
                                       countermove,
                                       ss->killers,
-                                      !cutNode && pos.count<PAWN>() >= 10 ? -16384 : 0);
+                                      !cutNode && (ss-1)->moveCount <= 7 ? -16384 : 0);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
