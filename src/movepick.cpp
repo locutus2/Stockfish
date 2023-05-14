@@ -109,7 +109,6 @@ void MovePicker::score() {
   if constexpr (Type == QUIETS)
   {
       Color us = pos.side_to_move();
-
       threatenedByPawn  = pos.attacks_by<PAWN>(~us);
       threatenedByMinor = pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us) | threatenedByPawn;
       threatenedByRook  = pos.attacks_by<ROOK>(~us) | threatenedByMinor;
@@ -137,7 +136,8 @@ void MovePicker::score() {
                           :                                         !(to_sq(m) & threatenedByPawn)  ? 15000
                           :                                                                           0)
                           :                                                                           0)
-                   +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384;
+                   +     (  bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m))
+                          + !(pos.pieces(pos.side_to_move(), PAWN, KING) & from_sq(m))) * 16384;
       else // Type == EVASIONS
       {
           if (pos.capture_stage(m))
