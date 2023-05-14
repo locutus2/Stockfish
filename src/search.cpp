@@ -1755,7 +1755,7 @@ moves_loop: // When in check, search starts here
 
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
-    (*(ss-1)->kingContinuationHistory)[pc][to] << bonus;
+    (*(ss-1)->kingContinuationHistory)[pc][to] << bonus / 2;
 
     for (int i : {1, 2, 4, 6})
     {
