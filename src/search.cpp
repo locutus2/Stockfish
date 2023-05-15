@@ -1024,15 +1024,16 @@ moves_loop: // When in check, search starts here
           {
               int history =   (*contHist[0])[movedPiece][to_sq(move)]
                             + (*contHist[1])[movedPiece][to_sq(move)]
-                            + (*contHist[2])[movedPiece][to_sq(move)]
                             + (*contHist[3])[movedPiece][to_sq(move)];
 
               // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 5
-                  && history < -4405 * depth - 3568)
+                  && history < -4405 * (depth - 1))
                   continue;
 
-              history += 2 * thisThread->mainHistory[us][from_to(move)];
+              history +=  2 * thisThread->mainHistory[us][from_to(move)]
+                        +     (*contHist[2])[movedPiece][to_sq(move)]
+                        +     4076;
 
               lmrDepth += history / 7278;
               lmrDepth = std::max(lmrDepth, -2);
