@@ -611,7 +611,10 @@ namespace {
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
     if (!excludedMove)
+    {
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
+        ss->pvDistance = PvNode ? 0 : (ss-1)->pvDistance + 1;
+    }
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -1021,7 +1024,7 @@ moves_loop: // When in check, search starts here
                             + (*contHist[3])[movedPiece][to_sq(move)];
 
               // Continuation history based pruning (~2 Elo)
-              if (   lmrDepth < 5
+              if (   lmrDepth < 5 + (ss->pvDistance >= 10)
                   && history < -4405 * (depth - 1))
                   continue;
 
