@@ -982,7 +982,7 @@ moves_loop: // When in check, search starts here
           moveCountPruning = moveCount >= futility_move_count(improving, depth);
 
           // Reduced depth of the next LMR search
-          int lmrDepth = std::max(newDepth - r, 0);
+          int lmrDepth = newDepth - r;
 
           if (   capture
               || givesCheck)
@@ -1024,8 +1024,8 @@ moves_loop: // When in check, search starts here
                             + (*contHist[3])[movedPiece][to_sq(move)];
 
               // Continuation history based pruning (~2 Elo)
-              if (   lmrDepth < 4 + (ss->pvDistance >= 3)
-                  && history < -4405 * (depth - 1))
+              if (   lmrDepth < 5 + (ss->pvDistance >= 3)
+                  && history < -4405 * depth)
                   continue;
 
               history += 2 * thisThread->mainHistory[us][from_to(move)];
