@@ -613,7 +613,7 @@ namespace {
     if (!excludedMove)
     {
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
-        ss->pvDistance = PvNode ? 0 : (ss-1)->pvDistance + 1;
+        ss->pvDistance = PvNode ? 0 : (ss-1)->pvDistance + ((ss-1)->moveCount != 1);
     }
 
     // At non-PV nodes we check for an early TT cutoff
