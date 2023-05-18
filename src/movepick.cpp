@@ -23,8 +23,8 @@
 
 namespace Stockfish {
 
-int A = -3000, B = 0, C = 0;
-TUNE(SetRange(0, 6000), A);
+int A = 0, B = 0, C = 0;
+TUNE(SetRange(-3000, 3000), A);
 TUNE(SetRange(-3000, 3000), B);
 TUNE(SetRange(-10000, 10000), C);
 
@@ -234,7 +234,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, A * depth + B * pvDistance + C);
+          partial_insertion_sort(cur, endMoves, (A - 3000) * depth + B * pvDistance + C);
       }
 
       ++stage;
