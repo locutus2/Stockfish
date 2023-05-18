@@ -38,6 +38,10 @@
 
 namespace Stockfish {
 
+int A = 0, B = 0;
+TUNE(SetRange(-10000, 10000), A);
+TUNE(SetRange(-10000, 10000), B);
+
 namespace Search {
 
   LimitsType Limits;
@@ -611,7 +615,10 @@ namespace {
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
     if (!excludedMove)
+    {
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
+        ss->pvDistance = PvNode ? 0 : (ss-1)->pvDistance + ((ss-1)->moveCount != 1);
+    }
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -1174,6 +1181,7 @@ moves_loop: // When in check, search starts here
                      + (*contHist[0])[movedPiece][to_sq(move)]
                      + (*contHist[1])[movedPiece][to_sq(move)]
                      + (*contHist[3])[movedPiece][to_sq(move)]
+                     + A * ss->pvDistance + B
                      - 4082;
 
       // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
