@@ -61,48 +61,47 @@ namespace {
 
   constexpr int N_IN = 3;
   constexpr int N_LAYERS = 2;
-  constexpr int N_HIDDEN = 16;
-  constexpr int W_SCALE = 1 << 14;
+  constexpr int N_HIDDEN = 8;
+  constexpr int W_SCALE = 16384;
 
   int W_IN[N_HIDDEN][N_IN+1];
   int W_HIDDEN[N_LAYERS-1][N_HIDDEN][N_HIDDEN+1];
   int W_OUT[N_HIDDEN+1];
 
-  //TUNE(SetRange(-8 * W_SCALE, 8 * W_SCALE), W_IN, W_OUT, W_HIDDEN);
   TUNE(SetRange(-65536, 65536), W_IN, W_OUT, W_HIDDEN);
 
   double calculateTimeCorrection(double fallingEval, double reduction, double bestMoveInstability)
   {
-      return 1;
       double input[N_IN] = {fallingEval - 1, reduction - 1, bestMoveInstability - 1};
       double hidden[N_LAYERS][N_HIDDEN];
+      double sum;
 
-      auto f = [](double x)->double { return std::clamp(x, -1.0, 1.0); };
+      auto f = [](double x)->double { return std::max(x, 0.0); }; // relu
 
       for(int j = 0; j < N_HIDDEN; ++j)
       {
-          hidden[0][j] = W_IN[j][N_IN];
+          sum = W_IN[j][N_IN];
           for(int i = 0; i < N_IN; ++i)
-              hidden[0][j] += W_IN[j][i] * input[i];
-          hidden[0][j] = f(hidden[0][j] / W_SCALE);
+              sum += W_IN[j][i] * input[i];
+          hidden[0][j] = f(sum / W_SCALE);
       }
 
       for(int k = 1; k < N_LAYERS; ++k)
       {
           for(int j = 0; j < N_HIDDEN; ++j)
           {
-              hidden[k][j] = W_HIDDEN[k][j][N_HIDDEN];
+              sum = W_HIDDEN[k-1][j][N_HIDDEN];
               for(int i = 0; i < N_HIDDEN; ++i)
-                  hidden[k][j] += W_HIDDEN[k][j][i] * hidden[k-1][i];
-              hidden[k][j] = f(hidden[k][j] / W_SCALE);
+                  sum += W_HIDDEN[k-1][j][i] * hidden[k-1][i];
+              hidden[k][j] = f(sum / W_SCALE);
           }
       }
 
-      double output = W_OUT[N_HIDDEN+1];
+      sum = W_OUT[N_HIDDEN];
       for(int i = 0; i < N_HIDDEN; ++i)
-          output += W_OUT[i] * hidden[N_LAYERS-1][i];
+          sum += W_OUT[i] * hidden[N_LAYERS-1][i];
 
-      return 1 + f(output / W_SCALE);
+      return 1 + std::clamp(sum / W_SCALE, -1.0, 1.0);
   }
 
   // Different node types, used as a template parameter
