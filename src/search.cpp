@@ -405,8 +405,12 @@ void Thread::search() {
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-                  minBeta = std::min(bestValue + 1, VALUE_INFINITE);
                   ++failedHighCnt;
+
+                  if (minBeta == -VALUE_INFINITE)
+                      minBeta = beta;
+                  else
+                      minBeta += (beta - minBeta) / 2;
               }
               else
                   break;
