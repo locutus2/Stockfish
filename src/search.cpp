@@ -59,6 +59,70 @@ using namespace Search;
 
 namespace {
 
+  constexpr int N_IN = 3;
+  constexpr int N_LAYERS = 2;
+  constexpr int N_HIDDEN = 8;
+
+  double W_IN[N_HIDDEN][N_IN+1] = {
+    { 0.000290527, -0.00109314, 0.000656738, 0.000366821, },
+    { -0.000334473, -2.74658e-05, 0.00105713, 0.00122314, },
+    { -0.00064209, -0.000276489, -0.000327148, 0.000574341, },
+    { -0.000357056, -0.000285645, 0.000360107, 0.00074707, },
+    { 3.23486e-05, 0.000332642, -0.000452271, 0.00192322, },
+    { 0.00020752, -0.000739136, 0.000485229, -1.46484e-05, },
+    { 0.000216675, 0.00101257, -0.000298462, 0.000490112, },
+    { 0.000150757, 0.000922241, 0.000559082, 0.0013269, },
+  };
+
+  double W_OUT[N_HIDDEN+1] = { 0.00184387, 0.000888062, -0.000562744, -0.00153503, 0.000494995, -0.000189819, 0.000435181, -0.00145691, -0.000797729, };
+
+  double W_HIDDEN[N_LAYERS-1][N_HIDDEN][N_HIDDEN+1] = {
+    {
+      {-0.000143433, -0.000153809, 4.76074e-05, 0.000331421, 5.49316e-05, 0.000662231, 0.00132202, -6.71387e-05, 0.000153198, },
+      {-6.16455e-05, -0.000139771, 0.000582886, 0.000165405, -4.39453e-05, -0.00207642, -0.000376587, 1.95313e-05, 0.00059082, },
+      {-0.00115112, 4.3335e-05, 0.000862427, -0.000715332, 0.00173401, 0.000496216, 0.000965576, 0.000118408, -0.000550537, },
+      {0.000267944, -0.0016626, 0.000794067, -0.000341187, 0.00053894, 0.000571289, -0.000223389, -0.000521851, 0.000459595, },
+      {-0.000853271, -0.000892334, -0.000637817, 0.00031311, -0.000446167, 0.000724487, 0.00106506, -9.8877e-05, 0.000115967, },
+      {-0.00127258, 0.00120544, -0.000876465, 3.17383e-05, 0.00111389, 0.0003302, 0.000296021, 0.000650635, -0.0012207, },
+      {0.00106812, -0.00048584, -0.000288696, -0.000513306, -0.00121948, -0.000123291, -6.71387e-05, 0.00122681, 0.000923462, },
+      {-2.86865e-05, -0.000673828, 0.000546875, 0.000407715, 0.000673828, -0.000797729, 0.000856323, -0.000881348, -7.56836e-05, },
+    },
+  };
+
+  double calculateTimeCorrection(double fallingEval, double reduction, double bestMoveInstability)
+  {
+      double input[N_IN] = {fallingEval - 1, reduction - 1, bestMoveInstability - 1};
+      double hidden[N_LAYERS][N_HIDDEN];
+      double sum;
+
+      auto f = [](double x)->double { return std::max(x, 0.0); }; // relu
+
+      for(int j = 0; j < N_HIDDEN; ++j)
+      {
+          sum = W_IN[j][N_IN];
+          for(int i = 0; i < N_IN; ++i)
+              sum += W_IN[j][i] * input[i];
+          hidden[0][j] = f(sum);
+      }
+
+      for(int k = 1; k < N_LAYERS; ++k)
+      {
+          for(int j = 0; j < N_HIDDEN; ++j)
+          {
+              sum = W_HIDDEN[k-1][j][N_HIDDEN];
+              for(int i = 0; i < N_HIDDEN; ++i)
+                  sum += W_HIDDEN[k-1][j][i] * hidden[k-1][i];
+              hidden[k][j] = f(sum);
+          }
+      }
+
+      sum = W_OUT[N_HIDDEN];
+      for(int i = 0; i < N_HIDDEN; ++i)
+          sum += W_OUT[i] * hidden[N_LAYERS-1][i];
+
+      return 1 + std::clamp(sum, -1.0, 1.0);
+  }
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
@@ -465,7 +529,7 @@ void Thread::search() {
           double reduction = (1.4 + mainThread->previousTimeReduction) / (2.08 * timeReduction);
           double bestMoveInstability = 1 + 1.8 * totBestMoveChanges / Threads.size();
 
-          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability;
+          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * calculateTimeCorrection(fallingEval, reduction, bestMoveInstability);
 
           // Cap used time in case of a single legal move for a better viewer experience in tournaments
           // yielding correct scores and sufficiently fast moves.
