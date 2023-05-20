@@ -268,7 +268,7 @@ void Thread::search() {
   // The latter is needed for statScore and killer initialization.
   Stack stack[MAX_PLY+10], *ss = stack+7;
   Move  pv[MAX_PLY+1];
-  Value alpha, beta, delta;
+  Value alpha, beta, delta, minBeta;
   Move  lastBestMove = MOVE_NONE;
   Depth lastBestMoveDepth = 0;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
@@ -345,6 +345,7 @@ void Thread::search() {
 
           // Reset UCI info selDepth for each depth and each PV line
           selDepth = 0;
+          minBeta = -VALUE_INFINITE;
 
           // Reset aspiration window starting size
           Value prev = rootMoves[pvIdx].averageScore;
@@ -394,7 +395,7 @@ void Thread::search() {
               // re-search, otherwise exit the loop.
               if (bestValue <= alpha)
               {
-                  beta = (alpha + beta) / 2;
+                  beta = std::max((alpha + beta) / 2, minBeta);
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
 
                   failedHighCnt = 0;
@@ -403,7 +404,7 @@ void Thread::search() {
               }
               else if (bestValue >= beta)
               {
-                  beta = std::min(bestValue + delta, VALUE_INFINITE);
+                  minBeta = beta = std::min(bestValue + delta, VALUE_INFINITE);
                   ++failedHighCnt;
               }
               else
