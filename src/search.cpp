@@ -611,10 +611,7 @@ namespace {
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
     if (!excludedMove)
-    {
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
-        ss->pvDistance = PvNode ? 0 : (ss-1)->pvDistance + ((ss-1)->moveCount != 1);
-    }
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -919,8 +916,7 @@ moves_loop: // When in check, search starts here
                                       &captureHistory,
                                       contHist,
                                       countermove,
-                                      ss->killers,
-                                      ss->pvDistance);
+                                      ss->killers);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
