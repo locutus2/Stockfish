@@ -1163,7 +1163,7 @@ moves_loop: // When in check, search starts here
 
       // Increase reduction if next ply has a lot of fail high (~5 Elo)
       if ((ss+1)->cutoffCnt > 3)
-          r++;
+          r += 1 + ((ss+1)->cutoffCnt > 350);
 
       else if (move == ttMove)
           r--;
@@ -1182,8 +1182,7 @@ moves_loop: // When in check, search starts here
       // been searched. In general we would like to reduce them, but there are many
       // cases where we extend a son if it has good chances to be "interesting".
       if (    depth >= 2
-          && (   moveCount > 1 + (PvNode && ss->ply <= 1)
-              || (ss+1)->cutoffCnt > 350)
+          &&  moveCount > 1 + (PvNode && ss->ply <= 1)
           && (   !ss->ttPv
               || !capture
               || (cutNode && (ss-1)->moveCount > 1)))
