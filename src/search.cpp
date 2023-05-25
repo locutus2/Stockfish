@@ -1014,7 +1014,7 @@ moves_loop: // When in check, search starts here
           }
           else
           {
-              if ((ss+1)->cutoffCnt > 150)
+              if ((ss+1)->cutoffCnt > 30)
                   continue;
 
               int history =   (*contHist[0])[movedPiece][to_sq(move)]
