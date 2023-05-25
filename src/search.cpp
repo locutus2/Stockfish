@@ -1014,9 +1014,6 @@ moves_loop: // When in check, search starts here
           }
           else
           {
-              if ((ss+1)->cutoffCnt > 30)
-                  continue;
-
               int history =   (*contHist[0])[movedPiece][to_sq(move)]
                             + (*contHist[1])[movedPiece][to_sq(move)]
                             + (*contHist[3])[movedPiece][to_sq(move)];
@@ -1047,7 +1044,7 @@ moves_loop: // When in check, search starts here
 
       // Step 15. Extensions (~100 Elo)
       // We take care to not overdo to avoid search getting stuck.
-      if (ss->ply < thisThread->rootDepth * 2)
+      if (ss->ply < thisThread->rootDepth * 2 && (ss+1)->cutoffCnt < 350)
       {
           // Singular extension search (~94 Elo). If all moves but one fail low on a
           // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
