@@ -73,7 +73,6 @@ public:
   ButterflyHistory mainHistory;
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory[2][2];
-  bool predictedOpponentMove;
 };
 
 
@@ -91,6 +90,7 @@ struct MainThread : public Thread {
   Value bestPreviousAverageScore;
   Value iterValue[4];
   Key predictedPositionKey;
+  Move predictedOwnNextMove;
   int callsCnt;
   bool stopOnPonderhit;
   std::atomic_bool ponder;

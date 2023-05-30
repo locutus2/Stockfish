@@ -161,6 +161,7 @@ void ThreadPool::clear() {
   main()->bestPreviousAverageScore = VALUE_INFINITE;
   main()->previousTimeReduction = 1.0;
   main()->predictedPositionKey = 0;
+  main()->predictedOwnNextMove = MOVE_NONE;
 }
 
 
