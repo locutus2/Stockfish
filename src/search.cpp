@@ -301,6 +301,8 @@ void Thread::search() {
 
   bestValue = -VALUE_INFINITE;
 
+  predictedOpponentMove = Threads.main()->predictedPositionKey == rootPos.key();
+
   if (mainThread)
   {
       if (mainThread->bestPreviousScore == VALUE_INFINITE)
@@ -475,9 +477,8 @@ void Thread::search() {
           timeReduction = lastBestMoveDepth + 8 < completedDepth ? 1.57 : 0.65;
           double reduction = (1.4 + mainThread->previousTimeReduction) / (2.08 * timeReduction);
           double bestMoveInstability = 1 + 1.8 * totBestMoveChanges / Threads.size();
-          double predictedOpponentMove = mainThread->predictedPositionKey == rootPos.key() ? 0.9 : 1.025;
 
-          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * predictedOpponentMove;
+          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability;
 
           // Cap used time in case of a single legal move for a better viewer experience in tournaments
           // yielding correct scores and sufficiently fast moves.
@@ -1165,7 +1166,7 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
       if (PvNode)
-          r -= 1 + 11 / (3 + depth);
+          r -= 1 + 11 / (3 + depth) - thisThread->predictedOpponentMove;
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
