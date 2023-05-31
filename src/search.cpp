@@ -1175,6 +1175,7 @@ moves_loop: // When in check, search starts here
 
       if (   rootNode
           && (   posKey   != Threads.main()->predictedPositionKey
+              || !Threads.main()->predictedOwnNextMove
               || bestMove != Threads.main()->predictedOwnNextMove))
           r--;
 
