@@ -1175,7 +1175,7 @@ moves_loop: // When in check, search starts here
 
       if (   rootNode
           && posKey   == Threads.main()->predictedPositionKey
-          && bestMove != Threads.main()->predictedOwnNextMove)
+          && !Threads.main()->predictedOwnNextMove)
           r--;
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
