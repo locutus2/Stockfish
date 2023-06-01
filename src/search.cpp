@@ -1174,7 +1174,6 @@ moves_loop: // When in check, search starts here
           r -= 1 + 11 / (3 + depth);
 
       if (   rootNode
-          && bestValue < Threads.main()->bestPreviousScore
           && posKey   == Threads.main()->predictedPositionKey
           && bestMove != Threads.main()->predictedOwnNextMove)
           r--;
