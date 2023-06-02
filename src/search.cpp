@@ -1758,7 +1758,7 @@ moves_loop: // When in check, search starts here
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus) {
 
     // Update killers
-    if (ss->killers[0] != move && (!pos.captured_piece() || !ss->killers[1]))
+    if (ss->killers[0] != move && is_ok((ss-1)->currentMove))
     {
         ss->killers[1] = ss->killers[0];
         ss->killers[0] = move;
