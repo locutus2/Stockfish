@@ -64,7 +64,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              Move fm,
                                                              const Move* killers)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), refutations{{killers[0], 0}, {fm, 0}, {cm, 0}, {killers[1], 0}}, depth(d)
+             ttMove(ttm), refutations{{killers[0], 0}, {killers[1] ? killers[1] : fm, 0}, {cm ? cm : fm, 0}}, depth(d)
 {
   assert(d > 0);
 
@@ -206,18 +206,10 @@ top:
       cur = std::begin(refutations);
       endMoves = std::end(refutations);
 
-      // If the second killer is the same as a followupmove or countermove, skip it
-      if (   refutations[1].move == refutations[3].move
-          || refutations[2].move == refutations[3].move)
+      // If the countermove is the same as a killer, skip it
+      if (   refutations[0].move == refutations[2].move
+          || refutations[1].move == refutations[2].move)
           --endMoves;
-
-      // If the first killer is the same as the followupmove, skip it
-      if (refutations[0].move == refutations[1].move)
-          ++cur;
-
-      // If the countermove is the same as the followupmove, skip it
-      if (refutations[1].move == refutations[2].move)
-          refutations[2].move = MOVE_NONE;
 
       ++stage;
       [[fallthrough]];
@@ -247,8 +239,7 @@ top:
       if (   !skipQuiets
           && select<Next>([&](){return   *cur != refutations[0].move
                                       && *cur != refutations[1].move
-                                      && *cur != refutations[2].move
-                                      && *cur != refutations[3].move;}))
+                                      && *cur != refutations[2].move;}))
           return *(cur - 1);
 
       // Prepare the pointers to loop over the bad captures
