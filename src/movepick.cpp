@@ -209,8 +209,8 @@ top:
       if (refutations[1].move == refutations[2].move)
           --endMoves;
 
-      else if (refutations[0].move == refutations[1].move)
-          refutations[1].move = MOVE_NONE;
+      if (refutations[0].move == refutations[1].move)
+          ++cur;
 
       ++stage;
       [[fallthrough]];
