@@ -64,7 +64,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              Move fm,
                                                              const Move* killers)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}, {fm, 0}}, depth(d)
+             ttMove(ttm), refutations{{killers[0], 0}, {fm, 0}, {killers[1], 0}, {cm, 0}}, depth(d)
 {
   assert(d > 0);
 
@@ -206,15 +206,18 @@ top:
       cur = std::begin(refutations);
       endMoves = std::end(refutations);
 
-      // If the followupmove is the same as a killer or countermove, skip it
+      // If the countermove is the same as a followupmove or killers, skip it
       if (   refutations[0].move == refutations[3].move
           || refutations[1].move == refutations[3].move
           || refutations[2].move == refutations[3].move)
           --endMoves;
 
-      // If the countermove is the same as a killer, skip it
-      if (   refutations[0].move == refutations[2].move
-          || refutations[1].move == refutations[2].move)
+      // If the first killer is the same as the followupmove, skip it
+      if (refutations[0].move == refutations[1].move)
+          ++cur;
+
+      // If the second killer is the same as the followupmove, skip it
+      if (refutations[1].move == refutations[2].move)
           refutations[2].move = MOVE_NONE;
 
       ++stage;
