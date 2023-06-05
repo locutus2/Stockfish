@@ -1138,6 +1138,9 @@ moves_loop: // When in check, search starts here
       if (PvNode)
           r -= 1 + 12 / (3 + depth);
 
+      if (rootNode && bestValue < Threads.main()->bestPreviousScore)
+          r -= 2;
+
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
           r--;
@@ -1205,9 +1208,6 @@ moves_loop: // When in check, search starts here
           // Increase reduction for cut nodes and not ttMove (~1 Elo)
           if (!ttMove && cutNode)
               r += 2;
-
-          if (rootNode && bestValue < Threads.main()->bestPreviousScore)
-              r--;
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - (r > 3), !cutNode);
       }
