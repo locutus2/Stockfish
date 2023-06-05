@@ -911,20 +911,13 @@ moves_loop: // When in check, search starts here
 
     Move countermove = prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
     Move followupmove = prevSq2 != SQ_NONE ? thisThread->followupMoves[pos.piece_on(prevSq2)][prevSq2] : MOVE_NONE;
-    Move killers[2] = { ss->killers[0], ss->killers[1] };
-
-    if (   followupmove
-        && followupmove != ttMove
-        && followupmove != killers[0]
-        && followupmove != countermove
-        && !pos.capture_stage(followupmove))
-        killers[1] = followupmove;
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
                                       contHist,
                                       countermove,
-                                      killers);
+                                      followupmove,
+                                      ss->killers);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
