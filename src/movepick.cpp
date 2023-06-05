@@ -62,9 +62,9 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              const PieceToHistory** ch,
                                                              Move cm,
                                                              Move fm,
-                                                             const Move* killers)
+                                                             Move killer)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}, {fm, 0}}, depth(d)
+             ttMove(ttm), refutations{{killer, 0}, {cm, 0}, {fm, 0}}, depth(d)
 {
   assert(d > 0);
 
@@ -207,15 +207,13 @@ top:
       endMoves = std::end(refutations);
 
       // If the followupmove is the same as a killer or countermove, skip it
-      if (   refutations[0].move == refutations[3].move
-          || refutations[1].move == refutations[3].move
-          || refutations[2].move == refutations[3].move)
-          --endMoves;
-
-      // If the countermove is the same as a killer, skip it
       if (   refutations[0].move == refutations[2].move
           || refutations[1].move == refutations[2].move)
-          refutations[2].move = MOVE_NONE;
+          --endMoves;
+
+      // If the killer is the same as the countermove, skip it
+      if (refutations[0].move == refutations[1].move)
+          ++cur;
 
       ++stage;
       [[fallthrough]];
@@ -245,8 +243,7 @@ top:
       if (   !skipQuiets
           && select<Next>([&](){return   *cur != refutations[0].move
                                       && *cur != refutations[1].move
-                                      && *cur != refutations[2].move
-                                      && *cur != refutations[3].move;}))
+                                      && *cur != refutations[2].move;}))
           return *(cur - 1);
 
       // Prepare the pointers to loop over the bad captures
