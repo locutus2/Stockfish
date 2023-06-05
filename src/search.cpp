@@ -597,6 +597,7 @@ namespace {
     (ss+2)->cutoffCnt    = 0;
     ss->doubleExtensions = (ss-1)->doubleExtensions;
     Square prevSq        = is_ok((ss-1)->currentMove) ? to_sq((ss-1)->currentMove) : SQ_NONE;
+    Square prevSq2       = is_ok((ss-2)->currentMove) ? to_sq((ss-2)->currentMove) : SQ_NONE;
     ss->statScore        = 0;
 
     // Step 4. Transposition table lookup.
@@ -909,12 +910,21 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-6)->continuationHistory };
 
     Move countermove = prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
+    Move followupmove = prevSq2 != SQ_NONE ? thisThread->followupMoves[pos.piece_on(prevSq2)][prevSq2] : MOVE_NONE;
+    Move killers[2] = { ss->killers[0], ss->killers[1] };
+
+    if (   followupmove
+        && followupmove != ttMove
+        && followupmove != killers[0]
+        && followupmove != countermove
+        && !pos.capture_stage(followupmove))
+        killers[1] = followupmove;
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
                                       contHist,
                                       countermove,
-                                      ss->killers);
+                                      killers);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
@@ -1758,6 +1768,13 @@ moves_loop: // When in check, search starts here
     {
         Square prevSq = to_sq((ss-1)->currentMove);
         thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] = move;
+    }
+
+    // Update followupmove history
+    if (is_ok((ss-2)->currentMove))
+    {
+        Square prevSq = to_sq((ss-2)->currentMove);
+        thisThread->followupMoves[pos.piece_on(prevSq)][prevSq] = move;
     }
   }
 
