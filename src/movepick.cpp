@@ -211,8 +211,9 @@ top:
           || refutations[2].move == refutations[3].move)
           --endMoves;
 
-      // If the first killer is the same as the followupmove, skip it
-      if (refutations[0].move == refutations[1].move)
+      // If the first killer is the same as the followupmove or countermove, skip it
+      if (   refutations[0].move == refutations[1].move
+          || refutations[0].move == refutations[2].move)
           ++cur;
 
       // If the countermove is the same as the followupmove, skip it
