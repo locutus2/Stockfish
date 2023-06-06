@@ -980,7 +980,8 @@ moves_loop: // When in check, search starts here
           int lmrDepth = newDepth - r;
 
           if (   capture
-              || givesCheck)
+              || givesCheck
+              || type_of(move) == PROMOTION)
           {
               // Futility pruning for captures (~2 Elo)
               if (   !givesCheck
