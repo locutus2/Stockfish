@@ -149,7 +149,7 @@ void MovePicker::score() {
                                    pos.this_thread()->rootMoves.end(), m);
 
               if (rm != pos.this_thread()->rootMoves.end())
-                  m.value += rm->countBestMove * 200000;
+                  m.value += rm->countBestMove * 200000 / depth;
           }
       }
       else // Type == EVASIONS
