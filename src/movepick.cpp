@@ -28,6 +28,7 @@ namespace Stockfish {
 namespace {
 
   enum Stages {
+    ROOT_TT, ROOT_INIT, ROOT,
     MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
     EVASION_TT, EVASION_INIT, EVASION,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
@@ -64,13 +65,13 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              const PieceToHistory** ch,
                                                              Move cm,
                                                              const Move* killers,
-                                                             bool root)
+                                                             bool rootNode)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d), rootNode(root)
+             ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
 {
   assert(d > 0);
 
-  stage = (pos.checkers() ? EVASION_TT : MAIN_TT) +
+  stage = (rootNode ? ROOT_TT : pos.checkers() ? EVASION_TT : MAIN_TT) +
           !(ttm && pos.pseudo_legal(ttm));
 }
 
@@ -79,7 +80,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
                                                              Square rs)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), recaptureSquare(rs), depth(d), rootNode(false)
+           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), recaptureSquare(rs), depth(d)
 {
   assert(d <= 0);
 
@@ -91,7 +92,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 /// MovePicker constructor for ProbCut: we generate captures with SEE greater
 /// than or equal to the given threshold.
 MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph)
-           : pos(p), captureHistory(cph), ttMove(ttm), threshold(th), rootNode(false)
+           : pos(p), captureHistory(cph), ttMove(ttm), threshold(th)
 {
   assert(!pos.checkers());
 
@@ -129,7 +130,6 @@ void MovePicker::score() {
                    +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))]) / 16;
 
       else if constexpr (Type == QUIETS)
-      {
           m.value =  2 * (*mainHistory)[pos.side_to_move()][from_to(m)]
                    + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
@@ -142,16 +142,6 @@ void MovePicker::score() {
                           :                                                                           0)
                           :                                                                           0)
                    +     bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384;
-
-          if (rootNode)
-          {
-              auto rm = std::find(pos.this_thread()->rootMoves.begin(),
-                                   pos.this_thread()->rootMoves.end(), m);
-
-              if (rm != pos.this_thread()->rootMoves.end())
-                  m.value += rm->countBestMove * 200000 / depth;
-          }
-      }
       else // Type == EVASIONS
       {
           if (pos.capture_stage(m))
@@ -191,12 +181,29 @@ Move MovePicker::next_move(bool skipQuiets) {
 top:
   switch (stage) {
 
+  case ROOT_TT:
   case MAIN_TT:
   case EVASION_TT:
   case QSEARCH_TT:
   case PROBCUT_TT:
       ++stage;
       return ttMove;
+
+  case ROOT_INIT:
+      cur = endMoves = moves;
+
+      for (const Search::RootMove& rm : pos.this_thread()->rootMoves)
+      {
+          endMoves->move = rm.pv[0];
+          endMoves->value = rm.countBestMove;
+          endMoves++;
+      }
+
+      ++stage;
+      [[fallthrough]];
+
+  case ROOT:
+      return select<Best>([](){ return true; });
 
   case CAPTURE_INIT:
   case PROBCUT_INIT:
