@@ -422,7 +422,10 @@ void Thread::search() {
               sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
       }
 
-      rootMoves[0].countBestMove++;
+      for(RootMove& rm : rootMoves)
+          rm.countBestMove /= 2;
+
+      rootMoves[0].countBestMove += rootDepth;
 
       if (!Threads.stop)
           completedDepth = rootDepth;
