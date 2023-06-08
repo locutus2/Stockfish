@@ -423,7 +423,9 @@ void Thread::search() {
       }
 
       for(RootMove& rm : rootMoves)
-          rm.countBestMove /= 2;
+          rm.countBestMove = rm.countBestMove * 3 / 4;
+
+      rootMoves[0].countBestMove += 1024 * rootDepth;
 
       if (!Threads.stop)
           completedDepth = rootDepth;
@@ -1249,7 +1251,6 @@ moves_loop: // When in check, search starts here
               rm.score =  rm.uciScore = value;
               rm.selDepth = thisThread->selDepth;
               rm.scoreLowerbound = rm.scoreUpperbound = false;
-              rm.countBestMove += 1024 * depth;
 
               if (value >= beta)
               {
