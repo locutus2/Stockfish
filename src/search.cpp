@@ -423,7 +423,7 @@ void Thread::search() {
       }
 
       for(RootMove& rm : rootMoves)
-          rm.countBestMove = rm.countBestMove * 3 / 4;
+          rm.countBestMove /= 3;
 
       rootMoves[0].countBestMove += 1024 * rootDepth;
 
