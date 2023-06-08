@@ -1251,6 +1251,7 @@ moves_loop: // When in check, search starts here
               rm.score =  rm.uciScore = value;
               rm.selDepth = thisThread->selDepth;
               rm.scoreLowerbound = rm.scoreUpperbound = false;
+              rm.countBestMove += 256 * depth;
 
               if (value >= beta)
               {
