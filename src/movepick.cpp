@@ -195,7 +195,7 @@ top:
       for (const Search::RootMove& rm : pos.this_thread()->rootMoves)
       {
           endMoves->move = rm.pv[0];
-          endMoves->value = rm.countBestMove + (*mainHistory)[pos.side_to_move()][from_to(rm.pv[0])] / 8;
+          endMoves->value = rm.countBestMove;
           endMoves++;
       }
 

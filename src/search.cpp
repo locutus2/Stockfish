@@ -312,6 +312,9 @@ void Thread::search() {
 
   int searchAgainCounter = 0;
 
+  for(RootMove& rm : rootMoves)
+      rm.countBestMove = mainHistory[us][from_to(rm.pv[0])];
+
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
          && !Threads.stop
