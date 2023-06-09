@@ -425,7 +425,8 @@ void Thread::search() {
       for(RootMove& rm : rootMoves)
           rm.countBestMove /= 2;
 
-      rootMoves[0].countBestMove += 16384 * rootDepth;
+      for(int i = 0; i < int(rootMoves.size()) && rootMoves[i].score != -VALUE_INFINITE; ++i)
+          rootMoves[i].countBestMove += 1024 * rootDepth / (i + 1);
 
       if (!Threads.stop)
           completedDepth = rootDepth;
