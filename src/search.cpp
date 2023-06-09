@@ -290,6 +290,10 @@ void Thread::search() {
 
   bestValue = -VALUE_INFINITE;
 
+  bestMoveList.clear();
+  for (const RootMove& rm : rootMoves)
+      bestMoveList.push_back(rm.pv[0]);
+
   if (mainThread)
   {
       if (mainThread->bestPreviousScore == VALUE_INFINITE)
@@ -914,7 +918,8 @@ moves_loop: // When in check, search starts here
                                       &captureHistory,
                                       contHist,
                                       countermove,
-                                      ss->killers);
+                                      ss->killers,
+                                      rootNode);
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
@@ -1238,6 +1243,13 @@ moves_loop: // When in check, search starts here
                                     thisThread->rootMoves.end(), move);
 
           rm.averageScore = rm.averageScore != -VALUE_INFINITE ? (2 * value + rm.averageScore) / 3 : value;
+
+          if (value > alpha)
+          {
+              auto bm = std::find(thisThread->bestMoveList.begin(), thisThread->bestMoveList.end(), move);
+              thisThread->bestMoveList.erase(bm);
+              thisThread->bestMoveList.push_front(move);
+          }
 
           // PV move or new best move?
           if (moveCount == 1 || value > alpha)
