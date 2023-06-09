@@ -295,12 +295,12 @@ void Thread::search() {
                                         nullptr                   , (ss-4)->continuationHistory,
                                         nullptr                   , (ss-6)->continuationHistory };
 
-  MovePicker mp(rootPos, MOVE_NONE, 1, &mainHistory,
-                                       &captureHistory,
-                                       contHist,
-                                       MOVE_NONE,
-                                       ss->killers,
-                                       false);
+  MovePicker mp(rootPos, MOVE_NONE, MAX_PLY, &mainHistory,
+                                             &captureHistory,
+                                             contHist,
+                                             counterMoves[0][0],
+                                             ss->killers,
+                                             false);
 
   bestMoveList.clear();
   while((move = mp.next_move(false)) != MOVE_NONE)
