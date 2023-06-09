@@ -20,12 +20,15 @@
 
 #include "bitboard.h"
 #include "movepick.h"
+#include "search.h"
+#include "thread.h"
 
 namespace Stockfish {
 
 namespace {
 
   enum Stages {
+    ROOT_TT, ROOT_INIT, ROOT,
     MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
     EVASION_TT, EVASION_INIT, EVASION,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
@@ -61,13 +64,14 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
                                                              const CapturePieceToHistory* cph,
                                                              const PieceToHistory** ch,
                                                              Move cm,
-                                                             const Move* killers)
+                                                             const Move* killers,
+                                                             bool rootNode)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
              ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
 {
   assert(d > 0);
 
-  stage = (pos.checkers() ? EVASION_TT : MAIN_TT) +
+  stage = (rootNode ? ROOT_TT : pos.checkers() ? EVASION_TT : MAIN_TT) +
           !(ttm && pos.pseudo_legal(ttm));
 }
 
@@ -148,6 +152,7 @@ void MovePicker::score() {
               m.value =  (*mainHistory)[pos.side_to_move()][from_to(m)]
                        + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
       }
+
 }
 
 /// MovePicker::select() returns the next move satisfying a predicate function.
@@ -176,12 +181,47 @@ Move MovePicker::next_move(bool skipQuiets) {
 top:
   switch (stage) {
 
+  case ROOT_TT:
   case MAIN_TT:
   case EVASION_TT:
   case QSEARCH_TT:
   case PROBCUT_TT:
       ++stage;
       return ttMove;
+
+  case ROOT_INIT:
+      cur = endMoves = moves;
+
+      {
+          Move move;
+          Move killers[2] = { refutations[0].move, refutations[1].move };
+          MovePicker mp(pos, ttMove, depth, mainHistory,
+                                            captureHistory,
+                                            continuationHistory,
+                                            refutations[2].move,
+                                            killers,
+                                            false);
+
+          while((move = mp.next_move(false)) != MOVE_NONE)
+          {
+              const auto rm = std::find(pos.this_thread()->rootMoves.begin(), pos.this_thread()->rootMoves.end(), move);
+
+              if (rm != pos.this_thread()->rootMoves.end())
+                 endMoves->value = rm->countBestMove;
+              else
+                 endMoves->value = 0;
+
+              endMoves->move = move;
+              endMoves++;
+          }
+      }
+
+      partial_insertion_sort(cur, endMoves, std::numeric_limits<int>::min());
+      ++stage;
+      [[fallthrough]];
+
+  case ROOT:
+      return select<Next>([](){ return true; });
 
   case CAPTURE_INIT:
   case PROBCUT_INIT:
