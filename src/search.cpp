@@ -290,9 +290,25 @@ void Thread::search() {
 
   bestValue = -VALUE_INFINITE;
 
+  Move move;
+  const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
+                                        nullptr                   , (ss-4)->continuationHistory,
+                                        nullptr                   , (ss-6)->continuationHistory };
+
+  MovePicker mp(rootPos, MOVE_NONE, 1, &mainHistory,
+                                       &captureHistory,
+                                       contHist,
+                                       MOVE_NONE,
+                                       ss->killers,
+                                       false);
+
   bestMoveList.clear();
-  for (const RootMove& rm : rootMoves)
-      bestMoveList.push_back(rm.pv[0]);
+  while((move = mp.next_move(false)) != MOVE_NONE)
+  {
+      const auto rm = std::find(rootMoves.begin(), rootMoves.end(), move);
+      if (rm != rootMoves.end())
+          bestMoveList.push_back(move);
+  }
 
   if (mainThread)
   {
