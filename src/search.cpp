@@ -281,6 +281,7 @@ void Thread::search() {
   {
       (ss-i)->continuationHistory = &this->continuationHistory[0][0][NO_PIECE][0]; // Use as a sentinel
       (ss-i)->staticEval = VALUE_NONE;
+      (ss-i)->countermove = &this->counterMoves[NO_PIECE][0];
   }
 
   for (int i = 0; i <= MAX_PLY + 2; ++i)
@@ -791,6 +792,7 @@ namespace {
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+        ss->countermove = &thisThread->counterMoves[NO_PIECE][0];
 
         pos.do_null_move(st);
 
@@ -867,6 +869,7 @@ namespace {
                                                                           [true]
                                                                           [pos.moved_piece(move)]
                                                                           [to_sq(move)];
+                ss->countermove = &thisThread->counterMoves[pos.moved_piece(move)][to_sq(move)];
 
                 pos.do_move(move, st);
 
@@ -908,12 +911,10 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-4)->continuationHistory,
                                           nullptr                   , (ss-6)->continuationHistory };
 
-    Move countermove = prevSq != SQ_NONE ? thisThread->counterMoves[type_of((ss-1)->currentMove) == PROMOTION ? make_piece(~us, PAWN) : pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
-
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &captureHistory,
                                       contHist,
-                                      countermove,
+                                      *(ss-1)->countermove,
                                       ss->killers);
 
     value = bestValue;
@@ -1111,6 +1112,7 @@ moves_loop: // When in check, search starts here
                                                                 [capture]
                                                                 [movedPiece]
                                                                 [to_sq(move)];
+      ss->countermove = &thisThread->counterMoves[movedPiece][to_sq(move)];
 
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
@@ -1564,6 +1566,7 @@ moves_loop: // When in check, search starts here
                                                                 [capture]
                                                                 [pos.moved_piece(move)]
                                                                 [to_sq(move)];
+      ss->countermove = &thisThread->counterMoves[pos.moved_piece(move)][to_sq(move)];
 
       quietCheckEvasions += !capture && ss->inCheck;
 
@@ -1755,10 +1758,7 @@ moves_loop: // When in check, search starts here
 
     // Update countermove history
     if (is_ok((ss-1)->currentMove))
-    {
-        Square prevSq = to_sq((ss-1)->currentMove);
-        thisThread->counterMoves[type_of((ss-1)->currentMove) == PROMOTION ? make_piece(~us, PAWN) : pos.piece_on(prevSq)][prevSq] = move;
-    }
+        *(ss-1)->countermove = move;
   }
 
   // When playing with strength handicap, choose best move among a set of RootMoves
