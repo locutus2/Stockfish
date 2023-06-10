@@ -38,6 +38,39 @@
 
 namespace Stockfish {
 
+const int N = 26;
+int A[N][2] = {
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+    {0, 50},
+};
+
+TUNE(SetRange(0, 100), A);
+
+
 namespace Search {
 
   LimitsType Limits;
@@ -1157,6 +1190,49 @@ moves_loop: // When in check, search starts here
 
       // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
       r -= ss->statScore / (11124 + 4740 * (depth > 5 && depth < 22));
+
+      bool CC = true;
+      if (CC)
+      {
+          bool C[N] = {
+              PvNode,
+              cutNode,
+              !PvNode&&!cutNode,
+              capture,
+              givesCheck,
+              priorCapture,
+              improving,
+              move == ttMove,
+              move == countermove,
+              move == ss->killers[0],
+              move == ss->killers[1],
+              type_of(move) == PROMOTION,
+              singularQuietLMR,
+              ttCapture,
+              likelyFailLow,
+              ss->inCheck,
+              (ss-1)->inCheck,
+              ss->ttPv,
+              (ss-1)->ttPv,
+              ss->statScore < 0,
+              (ss-1)->statScore < 0,
+              (ss+1)->cutoffCnt > 3,
+              (ss-1)->moveCount > 8,
+              ss->ply > depth,
+              extension > 0,
+              extension < 0,
+          };
+
+#define R(a, c) (std::rand() % 100 >  (a[0]) ? true :\
+                 std::rand() % 100 <= (a[1]) ? (c) : !(c))
+
+          bool P = true;
+          for(int i = 0; i < N && P; ++i)
+              P = P && R(A[i], C[i]);
+
+          if (P)
+              r++;
+      }
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
       // We use various heuristics for the sons of a node after the first son has
