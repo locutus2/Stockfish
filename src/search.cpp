@@ -980,7 +980,8 @@ moves_loop: // When in check, search starts here
           int lmrDepth = newDepth - r;
 
           if (   capture
-              || givesCheck)
+              || givesCheck
+              || (type_of(movedPiece) == PAWN && pos.pawn_passed(us, to_sq(move))))
           {
               // Futility pruning for captures (~2 Elo)
               if (   !givesCheck
@@ -991,9 +992,8 @@ moves_loop: // When in check, search starts here
                   continue;
 
               // SEE based pruning (~11 Elo)
-              if (  (capture || !pos.discovered_check(move))
-                  && !pos.see_ge(move, Value(-205) * depth))
-                      continue;
+              if (!pos.see_ge(move, Value(-205) * depth))
+                  continue;
           }
           else
           {

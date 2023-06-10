@@ -127,7 +127,6 @@ public:
   bool capture(Move m) const;
   bool capture_stage(Move m) const;
   bool gives_check(Move m) const;
-  bool discovered_check(Move m) const;
   Piece moved_piece(Move m) const;
   Piece captured_piece() const;
 
@@ -443,19 +442,6 @@ inline void Position::do_move(Move m, StateInfo& newSt) {
 inline StateInfo* Position::state() const {
 
   return st;
-}
-
-inline bool Position::discovered_check(Move m) const {
-
-  assert(is_ok(m));
-  assert(color_of(moved_piece(m)) == sideToMove);
-
-  Square from = from_sq(m);
-  Square to = to_sq(m);
-
-  // Is there a discovered check?
-  return   (blockers_for_king(~sideToMove) & from)
-        && !aligned(from, to, square<KING>(~sideToMove));
 }
 
 } // namespace Stockfish
