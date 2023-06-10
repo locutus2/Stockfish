@@ -128,7 +128,7 @@ void MovePicker::score() {
 
       else if constexpr (Type == QUIETS)
           m.value =  2 * (*mainHistory)[pos.side_to_move()][from_to(m)]
-                   +     (pos.tactical_move(m) ? (*tacticalHistory)[pos.side_to_move()][from_to(m)] : 0)
+                   +     (pos.tactical_move(m) ? (*tacticalHistory)[pos.moved_piece(m)][to_sq(m)] : 0)
                    + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]

@@ -639,7 +639,7 @@ namespace {
                 int penalty = -stat_bonus(depth);
                 thisThread->mainHistory[us][from_to(ttMove)] << penalty;
                 if (pos.tactical_move(ttMove))
-                    thisThread->tacticalHistory[us][from_to(ttMove)] << penalty;
+                    thisThread->tacticalHistory[pos.moved_piece(ttMove)][to_sq(ttMove)] << penalty;
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -1698,7 +1698,7 @@ moves_loop: // When in check, search starts here
         {
             thisThread->mainHistory[us][from_to(quietsSearched[i])] << -bonus2;
             if (pos.tactical_move(quietsSearched[i]))
-                thisThread->tacticalHistory[us][from_to(quietsSearched[i])] << -bonus2;
+                thisThread->tacticalHistory[pos.moved_piece(quietsSearched[i])][to_sq(quietsSearched[i])] << -bonus2;
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1757,7 +1757,7 @@ moves_loop: // When in check, search starts here
     Thread* thisThread = pos.this_thread();
     thisThread->mainHistory[us][from_to(move)] << bonus;
     if (pos.tactical_move(move))
-        thisThread->tacticalHistory[us][from_to(move)] << bonus;
+        thisThread->tacticalHistory[pos.moved_piece(move)][to_sq(move)] << bonus;
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
