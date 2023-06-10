@@ -127,6 +127,7 @@ public:
   bool capture(Move m) const;
   bool capture_stage(Move m) const;
   bool gives_check(Move m) const;
+  bool tactical_move(Move m) const;
   Piece moved_piece(Move m) const;
   Piece captured_piece() const;
 
@@ -437,6 +438,11 @@ inline void Position::move_piece(Square from, Square to) {
 
 inline void Position::do_move(Move m, StateInfo& newSt) {
   do_move(m, newSt, gives_check(m));
+}
+
+inline bool Position::tactical_move(Move m) const {
+
+  return type_of(moved_piece(m)) == PAWN && pawn_passed(sideToMove, to_sq(m));
 }
 
 inline StateInfo* Position::state() const {

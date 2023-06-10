@@ -545,7 +545,7 @@ namespace {
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
-    bool givesCheck, improving, priorCapture, singularQuietLMR;
+    bool givesCheck, improving, priorCapture, singularQuietLMR, tacticalMove;
     bool capture, moveCountPruning, ttCapture;
     Piece movedPiece;
     int moveCount, captureCount, quietCount, improvement;
@@ -637,7 +637,7 @@ namespace {
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
-                thisThread->mainHistory[us][from_to(ttMove)] << penalty;
+                thisThread->mainHistory[us][from_to(ttMove)][pos.tactical_move(ttMove)] << penalty;
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -742,7 +742,7 @@ namespace {
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-18 * int((ss-1)->staticEval + ss->staticEval), -1817, 1817);
-        thisThread->mainHistory[~us][from_to((ss-1)->currentMove)] << bonus;
+        thisThread->mainHistory[~us][from_to((ss-1)->currentMove)][0] << bonus;
     }
 
     // Set up the improvement variable, which is the difference between the current
@@ -960,6 +960,7 @@ moves_loop: // When in check, search starts here
       capture = pos.capture_stage(move);
       movedPiece = pos.moved_piece(move);
       givesCheck = pos.gives_check(move);
+      tacticalMove = pos.tactical_move(move);
 
       // Calculate new depth for this move
       newDepth = depth - 1;
@@ -1005,7 +1006,7 @@ moves_loop: // When in check, search starts here
                   && history < -3832 * depth)
                   continue;
 
-              history += 2 * thisThread->mainHistory[us][from_to(move)];
+              history += 2 * thisThread->mainHistory[us][from_to(move)][tacticalMove];
 
               lmrDepth += history / 7011;
               lmrDepth = std::max(lmrDepth, -2);
@@ -1149,7 +1150,7 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
+      ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)][tacticalMove]
                      + (*contHist[0])[movedPiece][to_sq(move)]
                      + (*contHist[1])[movedPiece][to_sq(move)]
                      + (*contHist[3])[movedPiece][to_sq(move)]
@@ -1693,7 +1694,7 @@ moves_loop: // When in check, search starts here
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
-            thisThread->mainHistory[us][from_to(quietsSearched[i])] << -bonus2;
+            thisThread->mainHistory[us][from_to(quietsSearched[i])][pos.tactical_move(quietsSearched[i])] << -bonus2;
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bonus2);
         }
     }
@@ -1750,7 +1751,7 @@ moves_loop: // When in check, search starts here
 
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    thisThread->mainHistory[us][from_to(move)] << bonus;
+    thisThread->mainHistory[us][from_to(move)][pos.tactical_move(move)] << bonus;
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history

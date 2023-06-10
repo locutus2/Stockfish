@@ -126,7 +126,7 @@ void MovePicker::score() {
                    +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))]) / 16;
 
       else if constexpr (Type == QUIETS)
-          m.value =  2 * (*mainHistory)[pos.side_to_move()][from_to(m)]
+          m.value =  2 * (*mainHistory)[pos.side_to_move()][from_to(m)][pos.tactical_move(m)]
                    + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
@@ -145,7 +145,7 @@ void MovePicker::score() {
                        - Value(type_of(pos.moved_piece(m)))
                        + (1 << 28);
           else
-              m.value =  (*mainHistory)[pos.side_to_move()][from_to(m)]
+              m.value =  (*mainHistory)[pos.side_to_move()][from_to(m)][pos.tactical_move(m)]
                        + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
       }
 }
