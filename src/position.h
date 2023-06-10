@@ -442,7 +442,9 @@ inline void Position::do_move(Move m, StateInfo& newSt) {
 
 inline bool Position::tactical_move(Move m) const {
 
-  return type_of(moved_piece(m)) == PAWN && pawn_passed(sideToMove, to_sq(m));
+  return   type_of(moved_piece(m)) == PAWN
+        && (   pawn_passed(sideToMove, to_sq(m))
+            || (pawn_attacks_bb(sideToMove, to_sq(m)) & pieces(~sideToMove)));
 }
 
 inline StateInfo* Position::state() const {
