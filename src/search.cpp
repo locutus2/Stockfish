@@ -981,7 +981,9 @@ moves_loop: // When in check, search starts here
 
           if (   capture
               || givesCheck
-              || (type_of(movedPiece) == PAWN && pos.pawn_passed(us, to_sq(move))))
+              || (   type_of(movedPiece) == PAWN
+                  && pos.pawn_passed(us, to_sq(move))
+                  && !pos.pawn_passed(us, from_sq(move))))
           {
               // Futility pruning for captures (~2 Elo)
               if (   !givesCheck
