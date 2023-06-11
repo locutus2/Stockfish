@@ -1173,8 +1173,7 @@ moves_loop: // When in check, search starts here
           && (ss-1)->moveCount > 8
           && ttCapture
           && move == ss->killers[1]
-          && (ss-1)->ttPv
-          && likelyFailLow)
+          && (ss-1)->ttPv)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
