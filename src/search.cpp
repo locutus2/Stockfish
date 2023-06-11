@@ -1223,7 +1223,7 @@ moves_loop: // When in check, search starts here
               extension < 0,
           };
 
-#define R(a, c) (std::rand() % 100 >  (a[0]) ? true :\
+#define R(a, c) (std::rand() % 100 >= (a[0]) ? true :\
                  std::rand() % 100 <= (a[1]) ? (c) : !(c))
 
           bool P = true;
