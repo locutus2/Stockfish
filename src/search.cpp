@@ -39,36 +39,9 @@
 namespace Stockfish {
 
 const int N = 26;
-int A[N][2] = {
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-    {0, 50},
-};
+int A[N];
 
-TUNE(SetRange(0, 100), A);
+TUNE(SetRange(-100, 100), A);
 
 
 namespace Search {
@@ -1223,12 +1196,11 @@ moves_loop: // When in check, search starts here
               extension < 0,
           };
 
-#define R(a, c) (std::rand() % 100 >= (a[0]) ? true :\
-                 std::rand() % 100 <= (a[1]) ? (c) : !(c))
+#define R(a, c) (std::rand() % 100 >= abs(a) ? true : (a) < 0 ? !(c) : (c))
 
           bool P = true;
           for(int i = 0; i < N && P; ++i)
-              P = P && R(A[i], C[i]);
+              P = R(A[i], C[i]);
 
           if (P)
               r++;
