@@ -1168,11 +1168,15 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if (   improving
-          && move == ss->killers[0]
+      if (   PvNode
+          && improving
           && move == countermove
+          && likelyFailLow
+          && move == ss->killers[0]
+          && (ss+1)->cutoffCnt > 3
+          && priorCapture
           && ttCapture
-          && likelyFailLow)
+          && ss->statScore >= 0)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
