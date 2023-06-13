@@ -1175,8 +1175,7 @@ moves_loop: // When in check, search starts here
           && improving
           && move == countermove
           && likelyFailLow
-          && move == ss->killers[0]
-          && (ss+1)->cutoffCnt > 3)
+          && move == ss->killers[0])
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
