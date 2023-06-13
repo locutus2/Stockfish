@@ -38,7 +38,7 @@
 
 namespace Stockfish {
 
-const int N = 44;
+const int N = 75;
 int A[N];
 
 TUNE(SetRange(-100, 100), A);
@@ -967,6 +967,8 @@ moves_loop: // When in check, search starts here
       movedPiece = pos.moved_piece(move);
       givesCheck = pos.gives_check(move);
       discoveredCheck = pos.discovered_check(move);
+      bool passedPawnPush = type_of(movedPiece) == PAWN && pos.pawn_passed(us, to_sq(move));
+      bool forkOnMajors = type_of(movedPiece) == KNIGHT && more_than_one(attacks_bb<KNIGHT>(to_sq(move)) & (pos.pieces(~us, QUEEN, ROOK) ^ pos.pieces(~us, KING)));
 
       // Calculate new depth for this move
       newDepth = depth - 1;
@@ -1235,6 +1237,37 @@ moves_loop: // When in check, search starts here
               (ss-1)->moveCount == 0,
               (ss-1)->moveCount == 1,
               discoveredCheck,
+              eval >= beta,
+              eval >= ss->staticEval,
+              ss->staticEval >= beta,
+              moveCount == 1,
+              (ss-2)->currentMove == MOVE_NULL,
+              bool((ss-2)->excludedMove),
+              (ss-2)->inCheck,
+              (ss-2)->ttHit,
+              (ss-2)->ttPv,
+              (ss-2)->statScore < 0,
+              move == (ss-2)->killers[0],
+              move == (ss-2)->killers[1],
+              to_sq(move) == to_sq(ttMove),
+              to_sq(move) == to_sq(countermove),
+              to_sq(move) == to_sq(ss->killers[0]),
+              to_sq(move) == to_sq(ss->killers[1]),
+              to_sq(move) == to_sq((ss-2)->killers[0]),
+              to_sq(move) == to_sq((ss-2)->killers[1]),
+              from_sq(move) == from_sq(ttMove),
+              from_sq(move) == from_sq(countermove),
+              from_sq(move) == from_sq(ss->killers[0]),
+              from_sq(move) == from_sq(ss->killers[1]),
+              from_sq(move) == from_sq((ss-2)->killers[0]),
+              from_sq(move) == from_sq((ss-2)->killers[1]),
+              to_sq(move) == from_sq((ss-1)->killers[0]),
+              to_sq(move) == from_sq((ss-1)->killers[1]),
+              passedPawnPush,
+              forkOnMajors,
+              bool(pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
+              more_than_one(pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
+              ss->ply & 1,
           };
 
 #define R(a, c) (std::rand() % 100 >= abs(a) ? true : (a) < 0 ? !(c) : (c))
