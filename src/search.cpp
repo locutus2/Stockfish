@@ -38,7 +38,7 @@
 
 namespace Stockfish {
 
-const int N = 26;
+const int N = 44;
 int A[N];
 
 TUNE(SetRange(-100, 100), A);
@@ -551,7 +551,7 @@ namespace {
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
-    bool givesCheck, improving, priorCapture, singularQuietLMR;
+    bool givesCheck, discoveredCheck, improving, priorCapture, singularQuietLMR;
     bool capture, moveCountPruning, ttCapture;
     Piece movedPiece;
     int moveCount, captureCount, quietCount, improvement;
@@ -966,6 +966,7 @@ moves_loop: // When in check, search starts here
       capture = pos.capture_stage(move);
       movedPiece = pos.moved_piece(move);
       givesCheck = pos.gives_check(move);
+      discoveredCheck = pos.discovered_check(move);
 
       // Calculate new depth for this move
       newDepth = depth - 1;
@@ -1216,6 +1217,24 @@ moves_loop: // When in check, search starts here
               ss->ply > depth,
               extension > 0,
               extension < 0,
+              ss->ttHit,
+              (ss-1)->ttHit,
+              bool(excludedMove),
+              bool((ss-1)->excludedMove),
+              ss->cutoffCnt > 3,
+              prevSq != SQ_NONE && prevSq == to_sq(move),
+              is_ok((ss-2)->currentMove) && from_sq(move) == to_sq((ss-2)->currentMove),
+              type_of(movedPiece) == PAWN,
+              type_of(movedPiece) == KNIGHT,
+              type_of(movedPiece) == BISHOP,
+              type_of(movedPiece) == ROOK,
+              type_of(movedPiece) == QUEEN,
+              type_of(movedPiece) == KING,
+              more_than_one(pos.checkers()),
+              (ss-1)->currentMove == MOVE_NULL,
+              (ss-1)->moveCount == 0,
+              (ss-1)->moveCount == 1,
+              discoveredCheck,
           };
 
 #define R(a, c) (std::rand() % 100 >= abs(a) ? true : (a) < 0 ? !(c) : (c))
@@ -1225,7 +1244,7 @@ moves_loop: // When in check, search starts here
               P = R(A[i], C[i]);
 
           if (P)
-              r++;
+              r--;
       }
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
