@@ -1174,8 +1174,7 @@ moves_loop: // When in check, search starts here
       if (   PvNode
           && improving
           && move == countermove
-          && likelyFailLow
-          && move == ss->killers[0])
+          && likelyFailLow)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
