@@ -1172,8 +1172,7 @@ moves_loop: // When in check, search starts here
           r--;
 
       if (   !improving
-          && type_of(move) == PROMOTION
-          && givesCheck)
+          && type_of(move) == PROMOTION)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
