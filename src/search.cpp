@@ -1172,7 +1172,8 @@ moves_loop: // When in check, search starts here
           r--;
 
       if (   move == ttMove
-          && move == ss->killers[1])
+          && move == ss->killers[1]
+          && type_of(move) == PROMOTION)
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
