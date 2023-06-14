@@ -1171,10 +1171,7 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if (   !improving
-          && type_of(move) == PROMOTION
-          && givesCheck
-          && PvNode)
+      if (likelyFailLow && improving)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
