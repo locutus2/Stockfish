@@ -1171,8 +1171,9 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if (   likelyFailLow
+      if (   move == countermove
           && move == ss->killers[0]
+          && likelyFailLow
           && improving)
           r++;
 
