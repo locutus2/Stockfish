@@ -1171,10 +1171,8 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if (   move == ttMove
-          && move == ss->killers[1]
-          && type_of(move) == PROMOTION
-          && singularQuietLMR)
+      if (   move == ss->killers[1]
+          && PvNode)
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
