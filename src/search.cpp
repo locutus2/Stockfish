@@ -1570,7 +1570,6 @@ moves_loop: // When in check, search starts here
     // Step 4. Static evaluation of the position
     if (ss->inCheck)
     {
-        ss->staticEval = VALUE_NONE;
         bestValue = futilityBase = -VALUE_INFINITE;
     }
     else
