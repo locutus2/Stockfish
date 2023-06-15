@@ -38,7 +38,7 @@
 
 namespace Stockfish {
 
-const int N = 75;
+const int N = 81;
 int A[N];
 
 TUNE(SetRange(-100, 100), A);
@@ -1268,6 +1268,12 @@ moves_loop: // When in check, search starts here
               bool(pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
               more_than_one(pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
               ss->ply & 1,
+              thisThread->captureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())] > 0,
+              thisThread->mainHistory[us][from_to(move)] > 0,
+              (*contHist[0])[movedPiece][to_sq(move)] > 0,
+              (*contHist[1])[movedPiece][to_sq(move)] > 0,
+              (*contHist[3])[movedPiece][to_sq(move)] > 0,
+              (*contHist[5])[movedPiece][to_sq(move)] > 0,
           };
 
 #define R(a, c) (std::rand() % 100 >= abs(a) ? true : (a) < 0 ? !(c) : (c))
