@@ -1158,7 +1158,7 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction for PvNodes based on depth (~2 Elo)
       if (PvNode)
-          r -= 1 + 12 / (3 + depth);
+          r -= 1 + 12 / (3 + depth) + (type_of(move) == PROMOTION);
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
@@ -1169,11 +1169,6 @@ moves_loop: // When in check, search starts here
           r++;
 
       else if (move == ttMove)
-          r--;
-
-      if (   move == ss->killers[1]
-          && PvNode
-          && type_of(move) == PROMOTION)
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
