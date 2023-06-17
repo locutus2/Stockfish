@@ -38,7 +38,7 @@
 
 namespace Stockfish {
 
-const int N = 81;
+const int N = 85;
 int A[N];
 
 TUNE(SetRange(-100, 100), A);
@@ -552,7 +552,7 @@ namespace {
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, discoveredCheck, improving, priorCapture, singularQuietLMR;
-    bool capture, moveCountPruning, ttCapture;
+    bool capture, moveCountPruning, ttCapture, nullMoveFailed;
     Piece movedPiece;
     int moveCount, captureCount, quietCount, improvement;
 
@@ -564,6 +564,7 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    nullMoveFailed     = false;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -826,6 +827,7 @@ namespace {
             if (v >= beta)
                 return nullValue;
         }
+        nullMoveFailed = true;
     }
 
     // Step 10. If the position doesn't have a ttMove, decrease depth by 2
@@ -1056,7 +1058,7 @@ moves_loop: // When in check, search starts here
               if (!pos.see_ge(move, Value(-27 * lmrDepth * lmrDepth - 16 * lmrDepth)))
                   continue;
 
-              bool CC = true;
+              bool CC = lmrDepth < 1;
               if (CC)
               {
                   bool C[N] = {
@@ -1141,6 +1143,10 @@ moves_loop: // When in check, search starts here
                       (*contHist[1])[movedPiece][to_sq(move)] > 0,
                       (*contHist[3])[movedPiece][to_sq(move)] > 0,
                       (*contHist[5])[movedPiece][to_sq(move)] > 0,
+                      bool(bestMove),
+                      bool(ttMove),
+                      nullMoveFailed,
+                      moveCountPruning,
                   };
 
 #define USE_COND(a) (std::rand() % 100 < abs(a))
