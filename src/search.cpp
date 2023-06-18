@@ -1024,6 +1024,11 @@ moves_loop: // When in check, search starts here
                   && history < -3832 * depth)
                   continue;
 
+              if (   lmrDepth < 1
+                  && (ss-1)->moveCount != 1
+                  && !(ss->ply & 1))
+                  continue;
+
               history += 2 * thisThread->mainHistory[us][from_to(move)];
 
               lmrDepth += history / 7011;
