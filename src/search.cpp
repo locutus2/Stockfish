@@ -60,67 +60,64 @@ using namespace Search;
 namespace {
 
   constexpr int N_IN = 3;
-  constexpr int N_LAYERS = 2;
   constexpr int N_HIDDEN = 8;
 
-  constexpr double W_IN[N_HIDDEN][N_IN+1] = {
-    { -0.0212689, -0.0032489, 0.0173041, 0.00461548, },
-    { -0.0287262, -0.0370087, -0.0205615, -0.00814392, },
-    { -0.0328448, -0.0190649, -0.0325085, -0.0148297, },
-    { -0.0269354, -0.00155212, 0.00937256, -0.0405597, },
-    { -0.0191937, -0.021889, 0.031991, 0.0333307, },
-    { 0.0211969, 0.00148865, 0.000675049, -0.00362915, },
-    { -0.000670776, -0.0282037, 0.0222906, 0.00745605, },
-    { 0.0152399, 0.0271246, 0.0359802, 0.0283856, },
+  constexpr int W_IN[N_HIDDEN][N_IN+1] = {
+    { -21, -3, 17, 4, },
+    { -29, -37, -21, -8, },
+    { -33, -19, -33, -15, },
+    { -27, -1, 9, -41, },
+    { -19, -22, 32, 34, },
+    { 21, 1, 0, -3, },
+    { 0, -28, 22, 7, },
+    { 15, 27, 36, 29, },
   };
 
-  constexpr double W_HIDDEN[N_LAYERS-1][N_HIDDEN][N_HIDDEN+1] = {
-    {
-      { 0.0280005, -0.0432996, 0.0574835, 0.0237531, 0.0283093, -7.20215e-05, 0.018302, -0.0141284, -0.0158905, },
-      { 0.0465723, 0.0135205, 0.0123572, -0.0183374, -0.00329956, 0.0113782, -0.0168542, 0.00557068, 0.0094281, },
-      { -0.0508191, -0.0114691, 0.0456793, 0.0115698, -0.0124731, 0.022356, 0.0243384, -0.0177496, -0.0136359, },
-      { -0.000128784, -0.00886047, -0.00255676, -0.0281378, 0.00705811, -0.00396545, 0.0212421, -0.00876282, 0.00201843, },
-      { -0.0178223, 0.018111, -0.0248236, -0.0169592, -0.00362976, 8.11768e-05, -0.0256232, -0.02961, 0.0086731, },
-      { -0.00626099, -0.0578552, -0.0178522, -0.000842285, -0.0215649, -0.00316406, -0.0485864, 0.0524268, 0.00868042, },
-      { 0.0330786, -0.0348346, -0.0220013, -0.000344238, -0.0123645, -0.0136664, 0.0250049, -0.0181244, -0.0139319, },
-      { -0.00780518, 0.00115356, -0.0444342, -0.0146356, 0.00200928, 0.0383234, -0.0179126, 0.00452026, 0.000735474, },
-    },
+  constexpr int W_HIDDEN[N_HIDDEN][N_HIDDEN+1] = {
+    { 28, -44, 58, 24, 28, 0, 18, -14, -16, },
+    { 47, 13, 12, -18, -3, 11, -17, 5, 9, },
+    { -52, -11, 46, 11, -12, 22, 24, -18, -13, },
+    { 0, -9, -2, -28, 7, -4, 21, -8, 2, },
+    { -18, 18, -25, -17, -3, 0, -26, -30, 8, },
+    { -6, -59, -18, 0, -22, -3, -49, 53, 8, },
+    { 33, -35, -22, 0, -12, -13, 25, -18, -14, },
+    { -7, 1, -45, -14, 2, 39, -18, 4, 0, },
   };
 
-  constexpr double W_OUT[N_HIDDEN+1] = { -0.00505066, -0.00943359, -0.0297137, -0.00516907, 0.00727051, 0.0101544, -0.0307404, 0.0104034, -0.0200146, };
+  constexpr int W_OUT[N_HIDDEN+1] = { -5, -9, -30, -5, 7, 10, -31, 10, -20, };
 
   double calculateTimeCorrection(double fallingEval, double reduction, double bestMoveInstability)
   {
-      double input[N_IN] = {fallingEval - 1, reduction - 1, bestMoveInstability - 1};
-      double hidden[N_LAYERS][N_HIDDEN];
-      double sum;
+      constexpr int SCALE = 1024;
+      int input[N_IN] = {int(SCALE * std::clamp(fallingEval - 1        , -1.0, 1.0)),
+                         int(SCALE * std::clamp(reduction - 1          , -1.0, 1.0)),
+                         int(SCALE * std::clamp(bestMoveInstability - 1, -1.0, 1.0)) };
+      int hidden[2][N_HIDDEN];
+      int sum;
 
-      auto f = [](double x)->double { return std::max(x, 0.0); }; // relu
+      auto f = [](int x)->int { return std::max(x, 0); }; // relu
 
       for(int j = 0; j < N_HIDDEN; ++j)
       {
-          sum = W_IN[j][N_IN];
+          sum = W_IN[j][N_IN] * SCALE;
           for(int i = 0; i < N_IN; ++i)
               sum += W_IN[j][i] * input[i];
-          hidden[0][j] = f(sum);
+          hidden[0][j] = f(sum / SCALE);
       }
 
-      for(int k = 1; k < N_LAYERS; ++k)
+      for(int j = 0; j < N_HIDDEN; ++j)
       {
-          for(int j = 0; j < N_HIDDEN; ++j)
-          {
-              sum = W_HIDDEN[k-1][j][N_HIDDEN];
-              for(int i = 0; i < N_HIDDEN; ++i)
-                  sum += W_HIDDEN[k-1][j][i] * hidden[k-1][i];
-              hidden[k][j] = f(sum);
-          }
+          sum = W_HIDDEN[j][N_HIDDEN] * SCALE;
+          for(int i = 0; i < N_HIDDEN; ++i)
+              sum += W_HIDDEN[j][i] * hidden[0][i];
+          hidden[1][j] = f(sum / SCALE);
       }
 
-      sum = W_OUT[N_HIDDEN];
+      sum = W_OUT[N_HIDDEN] * SCALE;
       for(int i = 0; i < N_HIDDEN; ++i)
-          sum += W_OUT[i] * hidden[N_LAYERS-1][i];
+          sum += W_OUT[i] * hidden[1][i];
 
-      return 1 + std::clamp(sum, -1.0, 1.0);
+      return 1 + std::clamp(sum / double(SCALE * SCALE), -1.0, 1.0);
   }
 
   // Different node types, used as a template parameter
