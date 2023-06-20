@@ -1025,10 +1025,10 @@ moves_loop: // When in check, search starts here
                   continue;
 
               if (   lmrDepth < 1
-                  && !(ss->ply & 1)
-                  && (ss-1)->moveCount != 1
                   && move == countermove
-                  && to_sq(move) == to_sq(ss->killers[1]))
+                  && (ss-1)->moveCount == 0
+                  && to_sq(move) == to_sq(ss->killers[1])
+                  && !(ss->ply & 1))
                   continue;
 
               history += 2 * thisThread->mainHistory[us][from_to(move)];
