@@ -1023,8 +1023,8 @@ moves_loop: // When in check, search starts here
               if (   lmrDepth < 6
                   && history < -3832 * depth
                   && (   (*contHist[1])[movedPiece][to_sq(move)] <= 0
-                      || (ss-1)->ttPv
-                      || ss->staticEval < beta))
+                      || ss->staticEval < beta
+                      || move != (ss-2)->killers[1]))
                   continue;
 
               history += 2 * thisThread->mainHistory[us][from_to(move)];
