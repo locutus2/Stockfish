@@ -1027,6 +1027,7 @@ moves_loop: // When in check, search starts here
               if (   lmrDepth < 1
                   && !(ss->ply & 1)
                   && (ss-1)->moveCount != 1
+                  && move == countermove
                   && to_sq(move) == to_sq(ss->killers[1]))
                   continue;
 
