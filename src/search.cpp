@@ -38,6 +38,7 @@
 
 namespace Stockfish {
 
+const int USED_C = 5;
 const int N = 85;
 int A[N];
 
@@ -1037,11 +1038,11 @@ moves_loop: // When in check, search starts here
                             + (*contHist[3])[movedPiece][to_sq(move)];
 
               // Continuation history based pruning (~2 Elo)
-              if (   lmrDepth < 6
+              if (   lmrDepth < 7
                   && history < -3832 * depth)
               {
-                  bool P = false;
-                  bool CC = true;
+                  bool P = true;
+                  bool CC = lmrDepth == 6;
                   if (CC)
                   {
                       bool C[N] = {
@@ -1117,8 +1118,8 @@ moves_loop: // When in check, search starts here
                           to_sq(move) == from_sq((ss-1)->killers[1]),
                           passedPawnPush,
                           forkOnMajors,
-                          bool(pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
-                          more_than_one(pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
+                          type_of(movedPiece) == PAWN && (pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
+                          type_of(movedPiece) == PAWN && more_than_one(pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
                           bool(ss->ply & 1),
                           thisThread->captureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())] > 0,
                           thisThread->mainHistory[us][from_to(move)] > 0,
@@ -1135,12 +1136,21 @@ moves_loop: // When in check, search starts here
 #define USE_COND(a) (std::rand() % 100 < abs(a))
 #define GET_COND(a, c) ((a) < 0 ? !(c) : (c))
 
+                      std::vector<bool> usedC;
                       for(int i = 0; i < N; ++i)
                           if(USE_COND(A[i]))
-                              if(!(P = GET_COND(A[i], C[i])))
-                                  break;
+                              usedC.push_back(GET_COND(A[i], C[i]));
+
+                      if (usedC.size() > USED_C)
+                      {
+                          std::random_shuffle(usedC.begin(), usedC.end());
+                          usedC.resize(USED_C);
+                      }
+
+                      for (bool c : usedC)
+                          P = P && c;
                   }
-                  if (!P)
+                  if (P)
                       continue;
               }
 
