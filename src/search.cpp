@@ -1025,6 +1025,7 @@ moves_loop: // When in check, search starts here
                   && (   move != (ss-2)->killers[1]
                       || (*contHist[1])[movedPiece][to_sq(move)] <= 0
                       || !excludedMove
+                      || type_of(movedPiece) != PAWN
                       || ss->staticEval < beta
                       || (ss-1)->ttPv))
                   continue;
