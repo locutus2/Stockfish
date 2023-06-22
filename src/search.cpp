@@ -1023,7 +1023,8 @@ moves_loop: // When in check, search starts here
                                      && eval >= ss->staticEval
                                      && is_ok((ss-2)->killers[1])
                                      && to_sq(move) == to_sq((ss-2)->killers[1])
-                                     && thisThread->mainHistory[us][from_to(move)] > 0)
+                                     && thisThread->mainHistory[us][from_to(move)] > 0
+                                     && ss->cutoffCnt > 3)
                   && history < -3832 * depth)
                   continue;
 
