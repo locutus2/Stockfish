@@ -1023,6 +1023,7 @@ moves_loop: // When in check, search starts here
                                      && is_ok((ss-2)->killers[1])
                                      && to_sq(move) == to_sq((ss-2)->killers[1])
                                      && thisThread->mainHistory[us][from_to(move)] > 0
+                                     && improving
                                      && !(ss-2)->inCheck)
                   && history < -3832 * depth)
                   continue;
