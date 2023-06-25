@@ -38,7 +38,8 @@
 
 namespace Stockfish {
 
-const int N = 81;
+const int USED_C = 5;
+const int N = 86;
 int A[N];
 
 TUNE(SetRange(-100, 100), A);
@@ -552,7 +553,7 @@ namespace {
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, discoveredCheck, improving, priorCapture, singularQuietLMR;
-    bool capture, moveCountPruning, ttCapture;
+    bool capture, moveCountPruning, ttCapture, nullMoveFailed;
     Piece movedPiece;
     int moveCount, captureCount, quietCount, improvement;
 
@@ -564,6 +565,7 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    nullMoveFailed     = false;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -825,6 +827,7 @@ namespace {
             if (v >= beta)
                 return nullValue;
         }
+        nullMoveFailed = true;
     }
 
     // Step 10. If the position doesn't have a ttMove, decrease depth by 2
@@ -1192,97 +1195,114 @@ moves_loop: // When in check, search starts here
       if (CC)
       {
           bool C[N] = {
-              PvNode,
-              cutNode,
-              !PvNode&&!cutNode,
-              capture,
-              givesCheck,
-              priorCapture,
-              improving,
-              move == ttMove,
-              move == countermove,
-              move == ss->killers[0],
-              move == ss->killers[1],
-              type_of(move) == PROMOTION,
-              singularQuietLMR,
-              ttCapture,
-              likelyFailLow,
-              ss->inCheck,
-              (ss-1)->inCheck,
-              ss->ttPv,
-              (ss-1)->ttPv,
-              ss->statScore < 0,
-              (ss-1)->statScore < 0,
-              (ss+1)->cutoffCnt > 3,
-              (ss-1)->moveCount > 8,
-              ss->ply > depth,
-              extension > 0,
-              extension < 0,
-              ss->ttHit,
-              (ss-1)->ttHit,
-              bool(excludedMove),
-              bool((ss-1)->excludedMove),
-              ss->cutoffCnt > 3,
-              prevSq != SQ_NONE && prevSq == to_sq(move),
-              is_ok((ss-2)->currentMove) && from_sq(move) == to_sq((ss-2)->currentMove),
-              type_of(movedPiece) == PAWN,
-              type_of(movedPiece) == KNIGHT,
-              type_of(movedPiece) == BISHOP,
-              type_of(movedPiece) == ROOK,
-              type_of(movedPiece) == QUEEN,
-              type_of(movedPiece) == KING,
-              more_than_one(pos.checkers()),
-              (ss-1)->currentMove == MOVE_NULL,
-              (ss-1)->moveCount == 0,
-              (ss-1)->moveCount == 1,
-              discoveredCheck,
-              eval >= beta,
-              eval >= ss->staticEval,
-              ss->staticEval >= beta,
-              moveCount == 1,
-              (ss-2)->currentMove == MOVE_NULL,
-              bool((ss-2)->excludedMove),
-              (ss-2)->inCheck,
-              (ss-2)->ttHit,
-              (ss-2)->ttPv,
-              (ss-2)->statScore < 0,
-              move == (ss-2)->killers[0],
-              move == (ss-2)->killers[1],
-              to_sq(move) == to_sq(ttMove),
-              to_sq(move) == to_sq(countermove),
-              to_sq(move) == to_sq(ss->killers[0]),
-              to_sq(move) == to_sq(ss->killers[1]),
-              to_sq(move) == to_sq((ss-2)->killers[0]),
-              to_sq(move) == to_sq((ss-2)->killers[1]),
-              from_sq(move) == from_sq(ttMove),
-              from_sq(move) == from_sq(countermove),
-              from_sq(move) == from_sq(ss->killers[0]),
-              from_sq(move) == from_sq(ss->killers[1]),
-              from_sq(move) == from_sq((ss-2)->killers[0]),
-              from_sq(move) == from_sq((ss-2)->killers[1]),
-              to_sq(move) == from_sq((ss-1)->killers[0]),
-              to_sq(move) == from_sq((ss-1)->killers[1]),
-              passedPawnPush,
-              forkOnMajors,
-              bool(pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
-              more_than_one(pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
-              ss->ply & 1,
-              thisThread->captureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())] > 0,
-              thisThread->mainHistory[us][from_to(move)] > 0,
-              (*contHist[0])[movedPiece][to_sq(move)] > 0,
-              (*contHist[1])[movedPiece][to_sq(move)] > 0,
-              (*contHist[3])[movedPiece][to_sq(move)] > 0,
-              (*contHist[5])[movedPiece][to_sq(move)] > 0,
+                          PvNode,
+                          cutNode,
+                          !PvNode&&!cutNode,
+                          capture,
+                          givesCheck,
+                          priorCapture,
+                          improving,
+                          move == ttMove,
+                          move == countermove,
+                          move == ss->killers[0],
+                          move == ss->killers[1],
+                          type_of(move) == PROMOTION,
+                          singularQuietLMR,
+                          ttCapture,
+                          likelyFailLow,
+                          ss->inCheck,
+                          (ss-1)->inCheck,
+                          ss->ttPv,
+                          (ss-1)->ttPv,
+                          ss->statScore < 0,
+                          (ss-1)->statScore < 0,
+                          (ss+1)->cutoffCnt > 3,
+                          (ss-1)->moveCount > 8,
+                          ss->ply > depth,
+                          extension > 0,
+                          extension < 0,
+                          ss->ttHit,
+                          (ss-1)->ttHit,
+                          bool(excludedMove),
+                          bool((ss-1)->excludedMove),
+                          ss->cutoffCnt > 3,
+                          prevSq != SQ_NONE && prevSq == to_sq(move),
+                          is_ok((ss-2)->currentMove) && from_sq(move) == to_sq((ss-2)->currentMove),
+                          type_of(movedPiece) == PAWN,
+                          type_of(movedPiece) == KNIGHT,
+                          type_of(movedPiece) == BISHOP,
+                          type_of(movedPiece) == ROOK,
+                          type_of(movedPiece) == QUEEN,
+                          type_of(movedPiece) == KING,
+                          more_than_one(pos.checkers()),
+                          (ss-1)->currentMove == MOVE_NULL,
+                          (ss-1)->moveCount == 0,
+                          (ss-1)->moveCount == 1,
+                          discoveredCheck,
+                          eval >= beta,
+                          eval >= ss->staticEval,
+                          ss->staticEval >= beta,
+                          moveCount == 1,
+                          (ss-2)->currentMove == MOVE_NULL,
+                          bool((ss-2)->excludedMove),
+                          (ss-2)->inCheck,
+                          (ss-2)->ttHit,
+                          (ss-2)->ttPv,
+                          (ss-2)->statScore < 0,
+                          move == (ss-2)->killers[0],
+                          move == (ss-2)->killers[1],
+                          is_ok(ttMove) && to_sq(move) == to_sq(ttMove),
+                          is_ok(countermove) && to_sq(move) == to_sq(countermove),
+                          is_ok(ss->killers[0]) && to_sq(move) == to_sq(ss->killers[0]),
+                          is_ok(ss->killers[1]) && to_sq(move) == to_sq(ss->killers[1]),
+                          is_ok((ss-2)->killers[0]) && to_sq(move) == to_sq((ss-2)->killers[0]),
+                          is_ok((ss-2)->killers[1]) && to_sq(move) == to_sq((ss-2)->killers[1]),
+                          is_ok(ttMove) && from_sq(move) == from_sq(ttMove),
+                          is_ok(countermove) && from_sq(move) == from_sq(countermove),
+                          is_ok(ss->killers[0]) && from_sq(move) == from_sq(ss->killers[0]),
+                          is_ok(ss->killers[1]) && from_sq(move) == from_sq(ss->killers[1]),
+                          is_ok((ss-2)->killers[0]) && from_sq(move) == from_sq((ss-2)->killers[0]),
+                          is_ok((ss-2)->killers[1]) && from_sq(move) == from_sq((ss-2)->killers[1]),
+                          is_ok((ss-1)->killers[0]) && to_sq(move) == from_sq((ss-1)->killers[0]),
+                          is_ok((ss-1)->killers[1]) && to_sq(move) == from_sq((ss-1)->killers[1]),
+                          passedPawnPush,
+                          forkOnMajors,
+                          type_of(movedPiece) == PAWN && (pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
+                          type_of(movedPiece) == PAWN && more_than_one(pawn_attacks_bb(us, to_sq(move)) & pos.pieces(~us)),
+                          bool(ss->ply & 1),
+                          thisThread->captureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())] > 0,
+                          thisThread->mainHistory[us][from_to(move)] > 0,
+                          (*contHist[0])[movedPiece][to_sq(move)] > 0,
+                          (*contHist[1])[movedPiece][to_sq(move)] > 0,
+                          (*contHist[3])[movedPiece][to_sq(move)] > 0,
+                          (*contHist[5])[movedPiece][to_sq(move)] > 0,
+                          bool(bestMove),
+                          bool(ttMove),
+                          nullMoveFailed,
+                          moveCountPruning,
+                          rootNode,
           };
 
-#define R(a, c) (std::rand() % 100 >= abs(a) ? true : (a) < 0 ? !(c) : (c))
+#define USE_COND(a) (std::rand() % 100 < abs(a))
+#define GET_COND(a, c) ((a) < 0 ? !(c) : (c))
+
+          std::vector<bool> usedC;
+          for(int i = 0; i < N; ++i)
+              if(USE_COND(A[i]))
+                  usedC.push_back(GET_COND(A[i], C[i]));
+
+          if (usedC.size() > USED_C)
+          {
+              std::random_shuffle(usedC.begin(), usedC.end());
+              usedC.resize(USED_C);
+          }
 
           bool P = true;
-          for(int i = 0; i < N && P; ++i)
-              P = R(A[i], C[i]);
+          for (bool c : usedC)
+              P = P && c;
 
-          if (P)
-              r--;
+          if (P && !usedC.empty())
+              r++;
       }
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
