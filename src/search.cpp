@@ -1022,7 +1022,8 @@ moves_loop: // When in check, search starts here
               if (   lmrDepth < 6 + (    (ss-2)->ttPv
                                      && is_ok((ss-2)->killers[1])
                                      && to_sq(move) == to_sq((ss-2)->killers[1])
-                                     && thisThread->mainHistory[us][from_to(move)] > 0)
+                                     && thisThread->mainHistory[us][from_to(move)] > 0
+                                     && !(ss-2)->inCheck)
                   && history < -3832 * depth)
                   continue;
 
