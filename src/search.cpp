@@ -546,7 +546,7 @@ namespace {
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, improving, priorCapture, singularQuietLMR;
-    bool capture, moveCountPruning, ttCapture;
+    bool capture, moveCountPruning, nullMoveFailed, ttCapture;
     Piece movedPiece;
     int moveCount, captureCount, quietCount, improvement;
 
@@ -558,6 +558,7 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    nullMoveFailed     = false;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -819,6 +820,7 @@ namespace {
             if (v >= beta)
                 return nullValue;
         }
+        nullMoveFailed = true;
     }
 
     // Step 10. If the position doesn't have a ttMove, decrease depth by 2
@@ -1170,11 +1172,10 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if(   (ss-1)->currentMove != MOVE_NULL
-         && type_of(movedPiece) != KING
-         && !singularQuietLMR
-         && (!is_ok((ss-1)->killers[0]) || to_sq(move) != from_sq((ss-1)->killers[0]))
-         && (!is_ok(ttMove) || to_sq(move) != to_sq(ttMove)))
+      if(   nullMoveFailed
+         && (ss-2)->excludedMove
+         && (ss-2)->ttPv
+         && type_of(movedPiece) != KING)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
