@@ -1170,8 +1170,7 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if(   ss->inCheck
-         && (ss-1)->currentMove != MOVE_NULL
+      if(   (ss-1)->currentMove != MOVE_NULL
          && type_of(movedPiece) != KING
          && !singularQuietLMR
          && (!is_ok((ss-1)->killers[0]) || to_sq(move) != from_sq((ss-1)->killers[0]))
