@@ -1172,10 +1172,11 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if(   nullMoveFailed
-         && (ss-2)->excludedMove
-         && (ss-2)->ttPv
-         && type_of(movedPiece) != KING)
+      if (   nullMoveFailed
+          && ss->cutoffCnt > 3
+          && (ss-2)->ttPv
+          && type_of(movedPiece) != KING
+          && (!is_ok((ss-1)->killers[0]) || to_sq(move) != from_sq((ss-1)->killers[0])))
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
