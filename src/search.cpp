@@ -1124,7 +1124,7 @@ moves_loop: // When in check, search starts here
               extension = 1;
 
           else
-              extension = globalExtension;
+              extension = std::max(globalExtension, -1);
       }
 
       // Add extension to new depth
