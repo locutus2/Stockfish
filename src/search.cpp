@@ -1104,11 +1104,11 @@ moves_loop: // When in check, search starts here
 
               // If the eval of ttMove is less than value, we reduce it (negative extension) (~1 Elo)
               else if (ttValue <= value)
-                  globalExtension = extension = -1;
+                  extension = -1;
 
               // If the eval of ttMove is less than alpha, we reduce it (negative extension) (~1 Elo)
               else if (ttValue <= alpha)
-                  globalExtension = extension = -1;
+                  extension = -1;
           }
 
           // Check extensions (~1 Elo)
@@ -1124,7 +1124,7 @@ moves_loop: // When in check, search starts here
               extension = 1;
 
           else
-              extension = std::max(globalExtension, -1);
+              extension = std::min(globalExtension + 1, 0);
       }
 
       // Add extension to new depth
