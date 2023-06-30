@@ -1171,8 +1171,8 @@ moves_loop: // When in check, search starts here
           r--;
 
       if (   move == countermove
-          && move != ttMove
-          && !excludedMove
+          && ss->ply <= depth
+          && (ss+1)->cutoffCnt > 3
           && !(ss-1)->excludedMove
           && type_of(move) != PROMOTION)
           r++;
