@@ -62,6 +62,71 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
+  constexpr int CaptureStatScoreOffset[64] = {
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	2929,
+	0,
+	6384,
+	11124,
+	0,
+	0,
+	454,
+	7089,
+	9253,
+	487,
+	576,
+	1031,
+	948,
+	873,
+	686,
+	1381,
+	2330,
+	2291,
+	1274,
+	760,
+	809,
+	101,
+	336,
+	1753,
+	2313,
+	2309,
+	1430,
+	786,
+	269,
+	372,
+	425,
+	444,
+	496,
+	435,
+	599,
+	659,
+	592,
+	305,
+	250,
+	216,
+	202,
+	201,
+	265,
+	138,
+	162,
+	107,
+	152,
+	70,
+	215,
+	173,
+	146,
+	28,
+	0,
+	16,
+	0,
+	0,
+  };
+
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
     return Value(140 * (d - improving));
@@ -1181,7 +1246,8 @@ moves_loop: // When in check, search starts here
                      - 4006;
 
       // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
-      r -= ss->statScore / (11124 + 4740 * (depth > 5 && depth < 22));
+      r -=  (ss->statScore + capture * CaptureStatScoreOffset[std::min(moveCount, 63)])
+          / (11124 + 4740 * (depth > 5 && depth < 22));
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
       // We use various heuristics for the sons of a node after the first son has
