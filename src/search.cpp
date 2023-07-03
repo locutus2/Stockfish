@@ -1176,7 +1176,6 @@ moves_loop: // When in check, search starts here
 
       if (   is_ok((ss-2)->killers[1])
           && from_sq(move) == from_sq((ss-2)->killers[1])
-          && cutNode
           && (*contHist[0])[movedPiece][to_sq(move)] <= 0
           && (*contHist[1])[movedPiece][to_sq(move)] <= 0
           && (!is_ok((ss-2)->killers[0]) || to_sq(move) != to_sq((ss-2)->killers[0])))
