@@ -1174,7 +1174,7 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if (moveCount >= 40 && improving)
+      if (moveCount >= 30 && improving)
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
