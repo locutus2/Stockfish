@@ -1175,7 +1175,7 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if ((moveCount == 9 || moveCount == 14) && capture)
+      if (moveCount == 14 && capture)
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
