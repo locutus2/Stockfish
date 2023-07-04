@@ -62,6 +62,9 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
+  int A[64][2];
+  TUNE(SetRange(-11124, 11124), A);
+
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
     return Value(140 * (d - improving));
@@ -1182,7 +1185,7 @@ moves_loop: // When in check, search starts here
                      - 4006;
 
       // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
-      r -= ss->statScore / (11124 + 4740 * (depth > 5 && depth < 22));
+      r -= (ss->statScore + A[std::min(moveCount, 63)][capture]) / (11124 + 4740 * (depth > 5 && depth < 22));
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
       // We use various heuristics for the sons of a node after the first son has
