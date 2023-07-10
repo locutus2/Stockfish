@@ -1184,11 +1184,18 @@ moves_loop: // When in check, search starts here
                      + (*contHist[3])[movedPiece][to_sq(move)]
                      - 4006;
 
+      constexpr int N = 3;
+      int offset = 0, weights = 0, start = std::clamp(moveCount - N, 0, 63), end = std::min(moveCount + N, 63);
+      for (int mc = start; mc <= end; mc++)
+      {
+          int w = N + 1 - std::abs(moveCount - mc);
+          weights += w;
+          offset += w * A[std::clamp(mc, 0, 63)][capture];
+      }
+      offset /= weights;
+
       // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
-      r -=  (ss->statScore + (  A[std::min(moveCount-1, 63)][capture]
-                              + A[std::min(moveCount  , 63)][capture]
-                              + A[std::min(moveCount+1, 63)][capture]) / 3)
-          / (11124 + 4740 * (depth > 5 && depth < 22));
+      r -=  (ss->statScore + offset) / (11124 + 4740 * (depth > 5 && depth < 22));
 
       // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
       // We use various heuristics for the sons of a node after the first son has
