@@ -62,7 +62,7 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
-  constexpr double Sigma = 3;
+  constexpr double Sigma = 2;
   double Weights[64];
   int A[64][2];
   TUNE(SetRange(-11124, 11124), A);
