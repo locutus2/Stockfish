@@ -62,6 +62,8 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
+  constexpr double Sigma = 3;
+  double Weights[64];
   int A[64][2];
   TUNE(SetRange(-11124, 11124), A);
 
@@ -166,6 +168,8 @@ void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int((20.57 + std::log(Threads.size()) / 2) * std::log(i));
+  for (int i = 0; i < 64; ++i)
+      Weights[i] = std::exp(-0.5*std::pow(i/Sigma, 2));
 }
 
 
@@ -1184,13 +1188,12 @@ moves_loop: // When in check, search starts here
                      + (*contHist[3])[movedPiece][to_sq(move)]
                      - 4006;
 
-      constexpr double Sigma = 3;
       double weights = 0;
       double offset = 0;
       int mc = std::min(moveCount, 63);
       for(int i = 0; i <= 63; i++)
       {
-          double w = std::exp(-0.5*std::pow((i-mc)/Sigma, 2));
+          double w = Weights[std::abs(i-mc)];
           weights += w;
           offset += w * A[i][capture];
       }
