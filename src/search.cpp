@@ -703,15 +703,7 @@ namespace {
     CapturePieceToHistory& captureHistory = thisThread->captureHistory;
 
     // Step 6. Static evaluation of the position
-    if (ss->inCheck)
-    {
-        // Skip early pruning when in check
-        ss->staticEval = eval = VALUE_NONE;
-        improving = false;
-        improvement = 0;
-        goto moves_loop;
-    }
-    else if (excludedMove)
+    if (excludedMove)
     {
         // Providing the hint that this node's accumulator will be used often brings significant Elo gain (13 Elo)
         Eval::NNUE::hint_common_parent_position(pos);
@@ -753,6 +745,9 @@ namespace {
                   : (ss-4)->staticEval != VALUE_NONE ? ss->staticEval - (ss-4)->staticEval
                   :                                    173;
     improving = improvement > 0;
+
+    if (ss->inCheck)
+        goto moves_loop;
 
     // Step 7. Razoring (~1 Elo).
     // If eval is really low check with qsearch if it can exceed alpha, if it can't,
