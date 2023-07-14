@@ -1461,42 +1461,37 @@ moves_loop: // When in check, search starts here
         return ttValue;
 
     // Step 4. Static evaluation of the position
-    if (ss->inCheck)
-        bestValue = futilityBase = -VALUE_INFINITE;
-    else
+    if (ss->ttHit)
     {
-        if (ss->ttHit)
-        {
-            // Never assume anything about values stored in TT
-            if ((ss->staticEval = bestValue = tte->eval()) == VALUE_NONE)
-                ss->staticEval = bestValue = evaluate(pos);
+        // Never assume anything about values stored in TT
+        if ((ss->staticEval = bestValue = tte->eval()) == VALUE_NONE)
+            ss->staticEval = bestValue = evaluate(pos);
 
-            // ttValue can be used as a better position evaluation (~13 Elo)
-            if (    ttValue != VALUE_NONE
-                && (tte->bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER)))
-                bestValue = ttValue;
-        }
-        else
-            // In case of null move search use previous static eval with a different sign
-            ss->staticEval = bestValue = (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
-                                                                          : -(ss-1)->staticEval;
-
-        // Stand pat. Return immediately if static value is at least beta
-        if (bestValue >= beta)
-        {
-            // Save gathered info in transposition table
-            if (!ss->ttHit)
-                tte->save(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
-                          DEPTH_NONE, MOVE_NONE, ss->staticEval);
-
-            return bestValue;
-        }
-
-        if (PvNode && bestValue > alpha)
-            alpha = bestValue;
-
-        futilityBase = bestValue + 200;
+        // ttValue can be used as a better position evaluation (~13 Elo)
+        if (    ttValue != VALUE_NONE
+            && (tte->bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER)))
+            bestValue = ttValue;
     }
+    else
+        // In case of null move search use previous static eval with a different sign
+        ss->staticEval = bestValue = (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
+                                                                      : -(ss-1)->staticEval;
+
+    // Stand pat. Return immediately if static value is at least beta
+    if (bestValue >= beta)
+    {
+        // Save gathered info in transposition table
+        if (!ss->ttHit)
+            tte->save(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
+                      DEPTH_NONE, MOVE_NONE, ss->staticEval);
+
+        return bestValue;
+    }
+
+    if (PvNode && bestValue > alpha)
+        alpha = bestValue;
+
+    futilityBase = bestValue + 200;
 
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
                                           nullptr                   , (ss-4)->continuationHistory,
