@@ -614,10 +614,10 @@ namespace {
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
 
     // At non-PV nodes we check for an early TT cutoff
-    if (  !excludedMove
+    if (   !PvNode
+        && !excludedMove
         && tte->depth() > depth - (tte->bound() == BOUND_EXACT)
-        && ttValue != VALUE_NONE // Possible in case of TT access race or if !ttHit
-        && (tte->bound() & (ttValue >= beta ? BOUND_LOWER : BOUND_UPPER)))
+        && ttValue != VALUE_NONE) // Possible in case of TT access race or if !ttHit
     {
         // If ttMove is quiet, update move sorting heuristics on TT hit (~2 Elo)
         if (ttMove)
@@ -643,7 +643,8 @@ namespace {
 
         // Partial workaround for the graph history interaction problem
         // For high rule50 counts don't produce transposition table cutoffs.
-        if (!PvNode && pos.rule50_count() < 90)
+        if (   (tte->bound() & (ttValue >= beta ? BOUND_LOWER : BOUND_UPPER))
+            && pos.rule50_count() < 90)
             return ttValue;
     }
 
