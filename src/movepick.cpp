@@ -105,7 +105,7 @@ void MovePicker::score() {
 
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-  [[maybe_unused]] Bitboard threatenedByPawn, threatenedByMinor, threatenedByRook, threatenedPieces;
+  [[maybe_unused]] Bitboard threatenedByPawn, threatenedByMinor, threatenedByRook, threatenedByOpp, threatenedPieces, notDefendedPieces, hangingPieces;
   if constexpr (Type == QUIETS)
   {
       Color us = pos.side_to_move();
@@ -113,11 +113,20 @@ void MovePicker::score() {
       threatenedByPawn  = pos.attacks_by<PAWN>(~us);
       threatenedByMinor = pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us) | threatenedByPawn;
       threatenedByRook  = pos.attacks_by<ROOK>(~us) | threatenedByMinor;
+      threatenedByOpp   = pos.attacks_by<KING>(~us) | pos.attacks_by<QUEEN>(~us) | threatenedByRook;
 
       // Pieces threatened by pieces of lesser material value
       threatenedPieces = (pos.pieces(us, QUEEN) & threatenedByRook)
                        | (pos.pieces(us, ROOK)  & threatenedByMinor)
                        | (pos.pieces(us, KNIGHT, BISHOP) & threatenedByPawn);
+
+      notDefendedPieces = pos.pieces(us) & ~(  pos.attacks_by<PAWN>(us)
+                                             | pos.attacks_by<KNIGHT>(us)
+                                             | pos.attacks_by<BISHOP>(us)
+                                             | pos.attacks_by<ROOK>(us)
+                                             | pos.attacks_by<QUEEN>(us)
+                                             | pos.attacks_by<KING>(us));
+      hangingPieces = notDefendedPieces & ~threatenedPieces & threatenedByOpp;
   }
 
   for (auto& m : *this)
@@ -160,6 +169,14 @@ void MovePicker::score() {
                        : pt != PAWN ?    bool(to & threatenedByPawn)  * 15000
                        :                                                0 )
                        :                                                0 ;
+
+          // bonus for escaping of a hanging piece
+          m.value += hangingPieces & from ?
+                       (pt == QUEEN ? 50000
+                      : pt == ROOK  ? 25000
+                      : pt != PAWN  ? 15000
+                      :                   0 )
+                      :                   0 ;
       }
       
       else // Type == EVASIONS
