@@ -171,12 +171,7 @@ void MovePicker::score() {
                        :                                                0 ;
 
           // bonus for escaping of a hanging piece
-          m.value += hangingPieces & from ?
-                       (pt == QUEEN ? 100000
-                      : pt == ROOK  ? 50000
-                      : pt != PAWN  ? 30000
-                      :               0 )
-                      :               0 ;
+          m.value += (hangingPieces & from && pt != PAWN) * 100000;
       }
       
       else // Type == EVASIONS
