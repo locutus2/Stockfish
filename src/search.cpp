@@ -63,8 +63,8 @@ namespace {
   enum NodeType { NonPV, PV, Root };
 
   // Futility margin
-  Value futility_margin(Depth d, bool improving) {
-    return Value(140 * (d - improving));
+  Value futility_margin(Depth d, bool noTtCutNode, bool improving) {
+    return Value((140 - 40 * noTtCutNode) * (d - improving));
   }
 
   // Reductions lookup table initialized at startup
@@ -614,8 +614,9 @@ namespace {
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
 
     // At non-PV nodes we check for an early TT cutoff
-    if (   !excludedMove
-        && tte->depth() > depth - (tte->bound() == BOUND_EXACT)
+    if (   !PvNode
+        && !excludedMove
+        && tte->depth() > depth
         && ttValue != VALUE_NONE // Possible in case of TT access race or if !ttHit
         && (tte->bound() & (ttValue > alpha ? BOUND_LOWER : BOUND_UPPER)))
     {
@@ -744,8 +745,8 @@ namespace {
     }
 
     // Set up the improving flag, which is true if current static evaluation is
-    // bigger than the previous static evaluation at our turn (if we were in 
-    // check at our previous move we look at static evaluaion at move prior to it
+    // bigger than the previous static evaluation at our turn (if we were in
+    // check at our previous move we look at static evaluation at move prior to it
     // and if we were in check at move prior to it flag is set to true) and is
     // false otherwise. The improving flag is used in various pruning heuristics.
     improving =   (ss-2)->staticEval != VALUE_NONE ? ss->staticEval > (ss-2)->staticEval
@@ -766,7 +767,7 @@ namespace {
     // The depth condition is important for mate finding.
     if (   !ss->ttPv
         &&  depth < 9
-        &&  eval - futility_margin(depth, improving) - (ss-1)->statScore / 306 >= beta
+        &&  eval - futility_margin(depth, cutNode && !ss->ttHit, improving) - (ss-1)->statScore / 306 >= beta
         &&  eval >= beta
         &&  eval < 24923) // larger than VALUE_KNOWN_WIN, but smaller than TB wins
         return eval;
@@ -1102,10 +1103,6 @@ moves_loop: // When in check, search starts here
 
               // If the eval of ttMove is less than value, we reduce it (negative extension) (~1 Elo)
               else if (ttValue <= value)
-                  extension = -1;
-
-              // If the eval of ttMove is less than alpha, we reduce it (negative extension) (~1 Elo)
-              else if (ttValue <= alpha)
                   extension = -1;
           }
 
@@ -1495,7 +1492,7 @@ moves_loop: // When in check, search starts here
             return bestValue;
         }
 
-        if (PvNode && bestValue > alpha)
+        if (bestValue > alpha)
             alpha = bestValue;
 
         futilityBase = bestValue + 200;
@@ -1607,7 +1604,7 @@ moves_loop: // When in check, search starts here
                 if (PvNode) // Update pv even in fail-high case
                     update_pv(ss->pv, move, (ss+1)->pv);
 
-                if (PvNode && value < beta) // Update alpha here!
+                if (value < beta) // Update alpha here!
                     alpha = value;
                 else
                     break; // Fail high
@@ -1827,7 +1824,7 @@ void MainThread::check_time() {
       return;
 
   // When using nodes, ensure checking rate is not lower than 0.1% of nodes
-  callsCnt = Limits.nodes ? std::min(1024, int(Limits.nodes / 1024)) : 1024;
+  callsCnt = Limits.nodes ? std::min(512, int(Limits.nodes / 1024)) : 512;
 
   static TimePoint lastInfoTime = now();
 
@@ -1844,7 +1841,7 @@ void MainThread::check_time() {
   if (ponder)
       return;
 
-  if (   (Limits.use_time_management() && (elapsed > Time.maximum() - 10 || stopOnPonderhit))
+  if (   (Limits.use_time_management() && (elapsed > Time.maximum() || stopOnPonderhit))
       || (Limits.movetime && elapsed >= Limits.movetime)
       || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
       Threads.stop = true;
