@@ -542,7 +542,7 @@ namespace {
 
     TTEntry* tte;
     Key posKey;
-    Move ttMove, move, excludedMove, bestMove;
+    Move ttMove, move, excludedMove, bestMove, singularCounterMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, improving, priorCapture, singularQuietLMR;
@@ -592,7 +592,7 @@ namespace {
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
-    (ss+1)->excludedMove = bestMove = MOVE_NONE;
+    (ss+1)->excludedMove = bestMove = singularCounterMove = MOVE_NONE;
     (ss+2)->killers[0]   = (ss+2)->killers[1] = MOVE_NONE;
     (ss+2)->cutoffCnt    = 0;
     ss->doubleExtensions = (ss-1)->doubleExtensions;
@@ -1056,7 +1056,7 @@ moves_loop: // When in check, search starts here
           // so changing them requires tests at this type of time controls.
           if (   !rootNode
               &&  depth >= 4 - (thisThread->completedDepth > 22) + 2 * (PvNode && tte->is_pv())
-              &&  move == ttMove
+              && (move == ttMove || move == singularCounterMove)
               && !excludedMove // Avoid recursive singular search
            /* &&  ttValue != VALUE_NONE Already implicit in the next condition */
               &&  abs(ttValue) < VALUE_KNOWN_WIN
@@ -1073,7 +1073,7 @@ moves_loop: // When in check, search starts here
               if (value < singularBeta)
               {
                   extension = 1;
-                  singularQuietLMR = !ttCapture && !givesCheck;
+                  singularQuietLMR = !capture;
 
                   // Avoid search explosion by limiting the number of double extensions
                   if (  !PvNode
@@ -1094,16 +1094,21 @@ moves_loop: // When in check, search starts here
                   return singularBeta;
 
               // If the eval of ttMove is greater than beta, we reduce it (negative extension) (~7 Elo)
-              else if (ttValue >= beta)
-                  extension = -2 - !PvNode;
+              else
+              {
+                  singularCounterMove = ss->currentMove;
 
-              // If we are on a cutNode, reduce it based on depth (negative extension) (~1 Elo)
-              else if (cutNode)
-                  extension = depth > 8 && depth < 17 ? -3 : -1;
+                  if (ttValue >= beta)
+                      extension = -2 - !PvNode;
 
-              // If the eval of ttMove is less than value, we reduce it (negative extension) (~1 Elo)
-              else if (ttValue <= value)
-                  extension = -1;
+                  // If we are on a cutNode, reduce it based on depth (negative extension) (~1 Elo)
+                  else if (cutNode)
+                      extension = depth > 8 && depth < 17 ? -3 : -1;
+
+                  // If the eval of ttMove is less than value, we reduce it (negative extension) (~1 Elo)
+                  else if (ttValue <= value)
+                      extension = -1;
+              }
           }
 
           // Check extensions (~1 Elo)
