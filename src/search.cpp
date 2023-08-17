@@ -1140,6 +1140,9 @@ moves_loop: // When in check, search starts here
       if (PvNode)
           r--;
 
+      if (!PvNode && !cutNode && ss->ttPv)
+          r++;
+
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
           r--;
@@ -1166,9 +1169,9 @@ moves_loop: // When in check, search starts here
       // cases where we extend a son if it has good chances to be "interesting".
       if (    depth >= 2
           &&  moveCount > 1 + (PvNode && ss->ply <= 1)
-          && (   !capture
-              || (!ss->inCheck && (  !ss->ttPv
-                                   || (cutNode && (ss-1)->moveCount > 1)))))
+          && (   !ss->ttPv
+              || !capture
+              || (cutNode && (ss-1)->moveCount > 1)))
       {
           // In general we want to cap the LMR depth search at newDepth, but when
           // reduction is negative, we allow this move a limited search extension
