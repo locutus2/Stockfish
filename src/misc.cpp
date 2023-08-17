@@ -303,7 +303,7 @@ std::string compiler_info() {
 
 
 /// Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 1001;
+constexpr int MaxDebugSlots = 10*999+2;
 
 namespace {
 
@@ -319,7 +319,12 @@ DebugInfo<2> mean[MaxDebugSlots];
 DebugInfo<3> stdev[MaxDebugSlots];
 DebugInfo<6> correl[MaxDebugSlots];
 
+
 }  // namespace
+
+namespace Learn {
+    std::ostream& print(int i, std::ostream& out);
+}
 
 void dbg_hit_on(bool cond, int slot) {
 
@@ -359,10 +364,22 @@ void dbg_print() {
 
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = hit[i][0]))
-            std::cerr << "Hit #" << i
+        {
+            std::cerr << i << " ";
+            if(i&1)
+                Learn::print(i/10, std::cerr);
+            else
+            {
+                std::cerr << "!(";
+                Learn::print(i/10, std::cerr);
+                std::cerr << ")";
+            }
+            std::cerr << " "
+                      << "Hit #" << i
                       << ": Total " << n << " Hits " << hit[i][1]
                       << " Hit Rate (%) " << 100.0 * E(hit[i][1])
                       << std::endl;
+        }
 
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = mean[i][0]))

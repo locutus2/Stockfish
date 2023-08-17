@@ -181,15 +181,17 @@ namespace Learn {
         root = (stack.empty() ? new Constant<1>() : stack[0]);
     }
 
-    const int N = 1000;
+    const int N = 100;
 
-    std::vector<Function*> func;
+    Function* func[N];
 
     void init()
     {
         uint64_t START = 0;
         for(int i = 0; i < N; ++i, ++START)
-            func.push_back(new Function(START));
+            func[i] = new Function(START);
+        //std::cerr << *func[44] << std::endl;
+        //std::exit(1);
     }
 
     void learn(bool T, const std::vector<int>& C)
@@ -199,6 +201,10 @@ namespace Learn {
             bool R = (*func[i])(C);
             dbg_hit_on(T, 10*i+R);
         }
+    }
+
+    std::ostream& print(int i, std::ostream& out = std::cerr) {
+        return out << *func[i];
     }
 }
 
