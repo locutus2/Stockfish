@@ -251,6 +251,104 @@ namespace Learn {
         }
     };
 
+    class Equal : public Term
+    {
+        static int id;
+
+        Term* operand1;
+        Term* operand2;
+
+        public:
+        Equal(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("==")), operand1(op1), operand2(op2)
+        {
+        }
+
+        std::ostream& print(std::ostream& out) const
+        {
+            if (operand1 != nullptr && operand2 != nullptr)
+            {
+                out << (operand1->getCount() ? "(" : "");
+                operand1->print(out);
+                out << (operand1->getCount() ? ")" : "");
+                out << name;
+                out << (operand2->getCount() ? "(" : "");
+                operand2->print(out);
+                out << (operand2->getCount() ? ")" : "");
+            }
+            else
+                out << name;
+
+            return out;
+        }
+
+        int operator()(const std::vector<int> &args) const { return (*operand1)(args) == (*operand2)(args); };
+
+        void setOperand(Term* term, int i)
+        {
+            (i ? operand2 : operand1) = term;
+        }
+
+        Term* create() const
+        {
+            return new Equal();
+        }
+
+        virtual ~Equal()
+        {
+        }
+    };
+
+    class If : public Term
+    {
+        static int id;
+
+        Term* operand1;
+        Term* operand2;
+        Term* operand3;
+
+        public:
+        If(Term* op1 = nullptr, Term* op2 = nullptr, Term* op3 = nullptr) : Term(id ? id : (id = generateId()), 3, std::string("?")), operand1(op1), operand2(op2), operand3(op3)
+        {
+        }
+
+        std::ostream& print(std::ostream& out) const
+        {
+            if (operand1 != nullptr && operand2 != nullptr && operand3 != nullptr)
+            {
+                out << (operand1->getCount() ? "(" : "");
+                operand1->print(out);
+                out << (operand1->getCount() ? ")" : "");
+                out << name;
+                out << (operand2->getCount() ? "(" : "");
+                operand2->print(out);
+                out << (operand2->getCount() ? ")" : "");
+                out << ':';
+                out << (operand3->getCount() ? "(" : "");
+                operand3->print(out);
+                out << (operand3->getCount() ? ")" : "");
+            }
+            else
+                out << name;
+
+            return out;
+        }
+
+        int operator()(const std::vector<int> &args) const { return (*operand1)(args) ? (*operand2)(args) : (*operand3)(args); };
+
+        void setOperand(Term* term, int i)
+        {
+            (i == 2 ? operand3 : i == 1 ? operand2 : operand1) = term;
+        }
+
+        Term* create() const
+        {
+            return new If();
+        }
+
+        virtual ~If()
+        {
+        }
+    };
     class Function
     {
         static bool initialized;

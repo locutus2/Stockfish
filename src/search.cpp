@@ -53,9 +53,18 @@ namespace Learn {
     template <> int Variable<3>::id = 0;
     template <> int Variable<4>::id = 0;
     template <> int Variable<5>::id = 0;
+    template <> int Variable<6>::id = 0;
+    template <> int Variable<7>::id = 0;
+    template <> int Variable<8>::id = 0;
+    template <> int Variable<9>::id = 0;
+    template <> int Variable<10>::id = 0;
+    template <> int Variable<11>::id = 0;
+    template <> int Variable<12>::id = 0;
     int Not::id = 0;
     int And::id = 0;
     int Or::id = 0;
+    int Equal::id = 0;
+    int If::id = 0;
 
     bool Function::initialized = false;
     std::vector<Term*> Function::functions;
@@ -74,9 +83,18 @@ namespace Learn {
             new Variable<3>(),
             new Variable<4>(),
             new Variable<5>(),
+            new Variable<6>(),
+            new Variable<7>(),
+            new Variable<8>(),
+            new Variable<9>(),
+            new Variable<10>(),
+            new Variable<11>(),
+            new Variable<12>(),
             new Not(),
             new Or(),
             new And(),
+            new Equal(),
+            new If(),
         };
 
         MaxF0 = 0;
@@ -165,6 +183,18 @@ namespace Learn {
                 case 2:
                     if (int(stack.size()) >= 2)
                     {
+                        term->setOperand(*(stack.rbegin()), 1);
+                        stack.pop_back();
+                        term->setOperand(*(stack.rbegin()), 0);
+                        stack.pop_back();
+                        stack.push_back(term);
+                    }
+                    break;
+                case 3:
+                    if (int(stack.size()) >= 3)
+                    {
+                        term->setOperand(*(stack.rbegin()), 2);
+                        stack.pop_back();
                         term->setOperand(*(stack.rbegin()), 1);
                         stack.pop_back();
                         term->setOperand(*(stack.rbegin()), 0);
@@ -1294,6 +1324,13 @@ moves_loop: // When in check, search starts here
           ss->inCheck,
           capture,
           givesCheck,
+          improving,
+          ttCapture,
+          ss->ttPv,
+          ss->ttHit,
+          priorCapture,
+          bool(excludedMove),
+          likelyFailLow,
       };
 
       // Decrease reduction if position is or has been on the PV
