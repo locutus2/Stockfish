@@ -303,7 +303,7 @@ std::string compiler_info() {
 
 
 /// Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 10*999+2;
+constexpr int MaxDebugSlots = 10 * Learn::N;
 
 namespace {
 

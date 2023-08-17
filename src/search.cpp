@@ -124,29 +124,29 @@ namespace Learn {
         std::vector<Term*> stack;
         do
         {
-            int N = int(functions.size());
-            int M = (f || int(stack.size()) < 2? 0 : MaxF1+1);
+            int n = int(functions.size());
+            int m = (f || int(stack.size()) < 2? 0 : MaxF1);
 
             switch(int(stack.size()))
             {
                 case 0:
-                    N = MaxF0+1;
+                    n = MaxF0;
                     break;
                 case 1:
-                    N = MaxF1+1;
+                    n = MaxF1;
                     break;
                 case 2:
-                    N = MaxF2+1;
+                    n = MaxF2;
                     break;
                 case 3:
-                    N = MaxF3+1;
+                    n = MaxF3;
                     break;
                 default:
                     break;
             }
 
-            unsigned int code = f % (N - M) + M;
-            f /= N - M;
+            unsigned int code = f % (n - m) + m;
+            f /= n - m;
 
             Term* term = functions[code]->create();
             switch(term->getCount())
@@ -181,7 +181,7 @@ namespace Learn {
         root = (stack.empty() ? new Constant<1>() : stack[0]);
     }
 
-    const int N = 100;
+    //const int N = 200;
 
     Function* func[N];
 
