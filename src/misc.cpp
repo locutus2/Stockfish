@@ -365,7 +365,8 @@ void dbg_print() {
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = hit[i][0]))
         {
-            std::cerr << i << " ";
+            Learn::print(i, std::cerr);
+            /*
             if(i&1)
                 Learn::print(i/10, std::cerr);
             else
@@ -374,6 +375,7 @@ void dbg_print() {
                 Learn::print(i/10, std::cerr);
                 std::cerr << ")";
             }
+            */
             std::cerr << " "
                       << "Hit #" << i
                       << ": Total " << n << " Hits " << hit[i][1]

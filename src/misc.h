@@ -34,7 +34,7 @@
 namespace Stockfish {
 
 namespace Learn {
-    constexpr int N = 50000;
+    constexpr int N = 1000;
 }
 
 std::string engine_info(bool to_uci = false);

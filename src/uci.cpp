@@ -199,6 +199,48 @@ namespace {
          << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
   }
 
+  void learn(Position& pos, istream& args, StateListPtr& states) {
+
+    string token;
+    uint64_t nodes = 0;
+
+    vector<string> list = setup_learn(pos, args);
+    //num = count_if(list.begin(), list.end(), [](const string& s) { return s.find("go ") == 0 || s.find("eval") == 0; });
+
+    TimePoint elapsed = now();
+
+    for (const auto& cmd : list)
+    {
+        istringstream is(cmd);
+        is >> skipws >> token;
+
+        if (token == "go" || token == "eval")
+        {
+            //cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
+            if (token == "go")
+            {
+               go(pos, is, states);
+               Threads.main()->wait_for_search_finished();
+               nodes += Threads.nodes_searched();
+            }
+            else
+               trace_eval(pos);
+        }
+        else if (token == "setoption")  setoption(is);
+        else if (token == "position")   position(pos, is, states);
+        else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take a while
+    }
+
+    elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
+
+    dbg_print();
+
+    //cerr << "\n==========================="
+    //     << "\nTotal time (ms) : " << elapsed
+    //     << "\nNodes searched  : " << nodes
+    //     << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
+  }
+
   // The win rate model returns the probability of winning (in per mille units) given an
   // eval and a game ply. It fits the LTC fishtest statistics rather accurately.
   int win_rate_model(Value v, int ply) {
@@ -280,6 +322,7 @@ void UCI::loop(int argc, char* argv[]) {
       // These commands must not be used during a search!
       else if (token == "flip")     pos.flip();
       else if (token == "bench")    bench(pos, is, states);
+      else if (token == "learn")    learn(pos, is, states);
       else if (token == "d")        sync_cout << pos << sync_endl;
       else if (token == "eval")     trace_eval(pos);
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;

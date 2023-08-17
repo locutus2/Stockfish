@@ -64,6 +64,10 @@ namespace Learn {
     int And::id = 0;
     int Or::id = 0;
     int Equal::id = 0;
+    int Littler::id = 0;
+    int Add::id = 0;
+    int Subtract::id = 0;
+    int Mult::id = 0;
     int If::id = 0;
 
     bool Function::initialized = false;
@@ -94,6 +98,10 @@ namespace Learn {
             new Or(),
             new And(),
             new Equal(),
+            new Littler(),
+            new Add(),
+            new Subtract(),
+            new Mult(),
             new If(),
         };
 
@@ -211,15 +219,17 @@ namespace Learn {
         root = (stack.empty() ? new Constant<1>() : stack[0]);
     }
 
-    //const int N = 200;
-
+    uint64_t START = 0;
     Function* func[N];
 
     void init()
     {
-        uint64_t START = 0;
+        //uint64_t START = 0;
         for(int i = 0; i < N; ++i, ++START)
+        {
             func[i] = new Function(START);
+            func[i]->simplify();
+        }
         //std::cerr << *func[44] << std::endl;
         //std::exit(1);
     }
@@ -229,7 +239,8 @@ namespace Learn {
         for(int i = 0; i < N; ++i)
         {
             bool R = (*func[i])(C);
-            dbg_hit_on(T, 10*i+R);
+            if(R) dbg_hit_on(T, i);
+            //dbg_hit_on(T, 10*i+R);
         }
     }
 
