@@ -43,6 +43,92 @@ namespace Search {
   LimitsType Limits;
 }
 
+namespace Learn {
+
+    bool Function::initialized = false;
+    int Term::id = 1;
+
+    template <> int Constant<1>::id = 0;
+    template <> int Variable<0>::id = 0;
+    template <> int Variable<1>::id = 0;
+    template <> int Variable<2>::id = 0;
+    template <> int Variable<3>::id = 0;
+    template <> int Variable<4>::id = 0;
+    template <> int Variable<5>::id = 0;
+    int Not::id = 0;
+    int And::id = 0;
+    int Or::id = 0;
+
+    std::vector<Term*> Function::functions;
+
+    void Function::initFunctions()
+    {
+        functions = {
+            new Or(),
+            new And(),
+            new Not(),
+            new Constant<1>(),
+            new Variable<0>(),
+            new Variable<1>(),
+            new Variable<2>(),
+            new Variable<3>(),
+            new Variable<4>(),
+            new Variable<5>(),
+        };
+       
+       /* 
+        for(auto* x : functions)
+        {
+            x->print(std::cerr);
+            std::cerr << std::endl;
+        }
+        */
+    }
+   
+    void Function::init(uint64_t f)
+    {
+        const unsigned int N = functions.size();
+
+        std::vector<Term*> stack;
+        do
+        {
+            unsigned int code = f % N;
+            f /= N;
+
+            Term* term = functions[code]->create();
+            switch(term->getCount())
+            {
+                case 0:
+                    stack.push_back(term);
+                    break;
+                case 1:
+                    if (int(stack.size()) >= 1)
+                    {
+                        term->setOperand(*(stack.rbegin()), 0);
+                        stack.pop_back();
+                        stack.push_back(term);
+                    }
+                    break;
+                case 2:
+                    if (int(stack.size()) >= 2)
+                    {
+                        term->setOperand(*(stack.rbegin()), 1);
+                        stack.pop_back();
+                        term->setOperand(*(stack.rbegin()), 0);
+                        stack.pop_back();
+                        stack.push_back(term);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        while(f || int(stack.size()) >= 2);
+
+        root = stack[0];
+    }
+}
+
 namespace Tablebases {
 
   int Cardinality;
@@ -163,6 +249,8 @@ void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int((20.57 + std::log(Threads.size()) / 2) * std::log(i));
+
+  Learn::Function::initFunctions();
 }
 
 

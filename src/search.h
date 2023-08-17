@@ -19,7 +19,9 @@
 #ifndef SEARCH_H_INCLUDED
 #define SEARCH_H_INCLUDED
 
+#include <string>
 #include <vector>
+#include <ostream>
 
 #include "misc.h"
 #include "movepick.h"
@@ -28,6 +30,265 @@
 namespace Stockfish {
 
 class Position;
+
+namespace Learn {
+
+    class Term
+    {
+        protected:
+        static int id;
+
+        const int code;
+        const int count;
+        const std::string name;
+
+        public:
+        Term(int c, int ac, const std::string& n) : code(c), count(ac), name(n)
+        {
+        }
+
+        int getCode() { return code; }
+        int getCount() { return count; }
+        const std::string& getName() { return name; }
+        int generateId() const { return id++; }
+
+        virtual int operator()(const std::vector<int> &args) const = 0;
+        virtual Term* create() const = 0;
+
+        virtual std::ostream& print(std::ostream& out) const
+        {
+            return out << name;
+        }
+
+        virtual void setOperand(Term* term, int i)
+        {
+            (void)term;
+            (void)i;
+        }
+
+        virtual ~Term()
+        {
+        }
+    };
+
+    template <int V>
+    class Constant : public Term
+    {
+        static int id;
+
+        public:
+        Constant() : Term(id ? id : (id = generateId()), 0, std::string("v") + std::to_string(V))
+        {
+        }
+
+
+        int operator()(const std::vector<int> &args) const { (void)args; return V; };
+
+        Term* create() const
+        {
+            return new Constant<V>();
+        }
+
+        ~Constant()
+        {
+        }
+    };
+
+    template <int I>
+    class Variable : public Term
+    {
+        static int id;
+
+        public:
+        Variable() : Term(id ? id : (id = generateId()), 0, std::string("x") + std::to_string(I))
+        {
+        }
+
+        int operator()(const std::vector<int> &args) const { return args[I]; };
+
+        Term* create() const
+        {
+            return new Variable<I>();
+        }
+
+        virtual ~Variable()
+        {
+        }
+    };
+
+    class Not : public Term
+    {
+        static int id;
+
+        Term* operand;
+
+        public:
+        Not(Term* op = nullptr) : Term(id ? id : (id = generateId()), 0, std::string("!")), operand(op)
+        {
+        }
+
+        std::ostream& print(std::ostream& out) const
+        {
+            out << name;
+            if (operand != nullptr)
+            {
+                out << (operand->getCount() ? "(" : "");
+                operand->print(out);
+                out << (operand->getCount() ? ")" : "");
+            }
+            return out;
+        }
+
+        int operator()(const std::vector<int> &args) const { return !(*operand)(args); };
+
+        void setOperand(Term* term, int i)
+        {
+            (void)i;
+            operand = term;
+        }
+
+        Term* create() const
+        {
+            return new Not();
+        }
+
+        virtual ~Not()
+        {
+        }
+    };
+
+    class And : public Term
+    {
+        static int id;
+
+        Term* operand1;
+        Term* operand2;
+
+        public:
+        And(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 0, std::string("&&")), operand1(op1), operand2(op2)
+        {
+        }
+
+        std::ostream& print(std::ostream& out) const
+        {
+            if (operand1 != nullptr && operand2 != nullptr)
+            {
+                out << (operand1->getCount() ? "(" : "");
+                operand1->print(out);
+                out << (operand1->getCount() ? ")" : "");
+                out << name;
+                out << (operand2->getCount() ? "(" : "");
+                operand2->print(out);
+                out << (operand2->getCount() ? ")" : "");
+            }
+            else
+                out << name;
+
+            return out;
+        }
+
+        int operator()(const std::vector<int> &args) const { return (*operand1)(args) && (*operand2)(args); };
+
+        void setOperand(Term* term, int i)
+        {
+            (i ? operand2 : operand1) = term;
+        }
+
+        Term* create() const
+        {
+            return new And();
+        }
+
+        virtual ~And()
+        {
+        }
+    };
+
+    class Or : public Term
+    {
+        static int id;
+
+        Term* operand1;
+        Term* operand2;
+
+        public:
+        Or(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 0, std::string("||")), operand1(op1), operand2(op2)
+        {
+        }
+
+        std::ostream& print(std::ostream& out) const
+        {
+            if (operand1 != nullptr && operand2 != nullptr)
+            {
+                out << (operand1->getCount() ? "(" : "");
+                operand1->print(out);
+                out << (operand1->getCount() ? ")" : "");
+                out << name;
+                out << (operand2->getCount() ? "(" : "");
+                operand2->print(out);
+                out << (operand2->getCount() ? ")" : "");
+            }
+            else
+                out << name;
+
+            return out;
+        }
+
+        int operator()(const std::vector<int> &args) const { return (*operand1)(args) || (*operand2)(args); };
+
+        void setOperand(Term* term, int i)
+        {
+            (i ? operand2 : operand1) = term;
+        }
+
+        Term* create() const
+        {
+            return new Or();
+        }
+
+        virtual ~Or()
+        {
+        }
+    };
+
+    class Function
+    {
+        static bool initialized;
+        static std::vector<Term*> functions;
+
+        protected:
+        Term *root;
+         
+        public:
+        Function(uint64_t f)
+        {
+            if (!initialized)
+            {
+                initialized = true;
+                initFunctions();
+            }
+
+            init(f);
+        }
+
+        bool operator()(const std::vector<int> &args) const { return (*root)(args); };
+
+        std::ostream& print(std::ostream& out) const
+        {
+            return root->print(out);
+        }
+
+        static void initFunctions();
+        void init(uint64_t f);
+
+        
+    };
+
+    inline std::ostream& operator<<(std::ostream& out, const Function& f)
+    {
+        return f.print(out);
+    }
+}
 
 namespace Search {
 
