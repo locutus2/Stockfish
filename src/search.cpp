@@ -45,9 +45,7 @@ namespace Search {
 
 namespace Learn {
 
-    bool Function::initialized = false;
     int Term::id = 1;
-
     template <> int Constant<1>::id = 0;
     template <> int Variable<0>::id = 0;
     template <> int Variable<1>::id = 0;
@@ -59,14 +57,16 @@ namespace Learn {
     int And::id = 0;
     int Or::id = 0;
 
+    bool Function::initialized = false;
     std::vector<Term*> Function::functions;
+    int Function::MaxF0;
+    int Function::MaxF1;
+    int Function::MaxF2;
+    int Function::MaxF3;
 
     void Function::initFunctions()
     {
         functions = {
-            new Or(),
-            new And(),
-            new Not(),
             new Constant<1>(),
             new Variable<0>(),
             new Variable<1>(),
@@ -74,7 +74,41 @@ namespace Learn {
             new Variable<3>(),
             new Variable<4>(),
             new Variable<5>(),
+            new Not(),
+            new Or(),
+            new And(),
         };
+
+        MaxF0 = 0;
+        MaxF1 = 0;
+        MaxF2 = 0;
+        MaxF3 = 0;
+
+        for (int i = 0; i < int(functions.size()); ++i)
+        {
+            switch(functions[i]->getCount())
+            {
+                case 0:
+                    ++MaxF0;
+                    break;
+                case 1:
+                    ++MaxF1;
+                    break;
+                case 2:
+                    ++MaxF2;
+                    break;
+                case 3:
+                    ++MaxF3;
+                    break;
+                default:
+                    std::exit(1);
+                    break;
+            }
+        }
+
+        MaxF1 += MaxF0;
+        MaxF2 += MaxF1;
+        MaxF3 += MaxF2;
        
        /* 
         for(auto* x : functions)
@@ -87,13 +121,32 @@ namespace Learn {
    
     void Function::init(uint64_t f)
     {
-        const unsigned int N = functions.size();
-
         std::vector<Term*> stack;
         do
         {
-            unsigned int code = f % N;
-            f /= N;
+            int N = int(functions.size());
+            int M = (f || int(stack.size()) < 2? 0 : MaxF1+1);
+
+            switch(int(stack.size()))
+            {
+                case 0:
+                    N = MaxF0+1;
+                    break;
+                case 1:
+                    N = MaxF1+1;
+                    break;
+                case 2:
+                    N = MaxF2+1;
+                    break;
+                case 3:
+                    N = MaxF3+1;
+                    break;
+                default:
+                    break;
+            }
+
+            unsigned int code = f % (N - M) + M;
+            f /= N - M;
 
             Term* term = functions[code]->create();
             switch(term->getCount())
@@ -125,7 +178,27 @@ namespace Learn {
         }
         while(f || int(stack.size()) >= 2);
 
-        root = stack[0];
+        root = (stack.empty() ? new Constant<1>() : stack[0]);
+    }
+
+    const int N = 1000;
+
+    std::vector<Function*> func;
+
+    void init()
+    {
+        uint64_t START = 0;
+        for(int i = 0; i < N; ++i, ++START)
+            func.push_back(new Function(START));
+    }
+
+    void learn(bool T, const std::vector<int>& C)
+    {
+        for(int i = 0; i < N; ++i)
+        {
+            bool R = (*func[i])(C);
+            dbg_hit_on(T, 10*i+R);
+        }
     }
 }
 
@@ -251,6 +324,7 @@ void Search::init() {
       Reductions[i] = int((20.57 + std::log(Threads.size()) / 2) * std::log(i));
 
   Learn::Function::initFunctions();
+  Learn::init();
 }
 
 
@@ -1205,6 +1279,17 @@ moves_loop: // When in check, search starts here
       // Step 16. Make the move
       pos.do_move(move, st, givesCheck);
 
+      bool CC = true;
+
+      std::vector<int> C = {
+          PvNode,
+          cutNode,
+          !PvNode&&!cutNode,
+          ss->inCheck,
+          capture,
+          givesCheck,
+      };
+
       // Decrease reduction if position is or has been on the PV
       // and node is not likely to fail low. (~3 Elo)
       // Decrease further on cutNodes. (~1 Elo)
@@ -1366,6 +1451,12 @@ moves_loop: // When in check, search starts here
               // is not a problem when sorting because the sort is stable and the
               // move position in the list is preserved - just the PV is pushed up.
               rm.score = -VALUE_INFINITE;
+      }
+
+      if(CC)
+      {
+          bool T = value > alpha;
+          Learn::learn(T, C);
       }
 
       if (value > bestValue)

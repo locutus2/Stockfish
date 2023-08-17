@@ -123,7 +123,7 @@ namespace Learn {
         Term* operand;
 
         public:
-        Not(Term* op = nullptr) : Term(id ? id : (id = generateId()), 0, std::string("!")), operand(op)
+        Not(Term* op = nullptr) : Term(id ? id : (id = generateId()), 1, std::string("!")), operand(op)
         {
         }
 
@@ -165,7 +165,7 @@ namespace Learn {
         Term* operand2;
 
         public:
-        And(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 0, std::string("&&")), operand1(op1), operand2(op2)
+        And(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("&&")), operand1(op1), operand2(op2)
         {
         }
 
@@ -212,7 +212,7 @@ namespace Learn {
         Term* operand2;
 
         public:
-        Or(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 0, std::string("||")), operand1(op1), operand2(op2)
+        Or(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("||")), operand1(op1), operand2(op2)
         {
         }
 
@@ -255,6 +255,10 @@ namespace Learn {
     {
         static bool initialized;
         static std::vector<Term*> functions;
+        static int MaxF0;
+        static int MaxF1;
+        static int MaxF2;
+        static int MaxF3;
 
         protected:
         Term *root;
