@@ -165,11 +165,61 @@ namespace Learn {
             operand = operand->simplify();
             Not* next = dynamic_cast<Not*>(operand);
             if (next != nullptr)
-                return next->operand;
+                return next->operand->simplify();
             return this;
         }
 
         virtual ~Not()
+        {
+        }
+    };
+
+    class Negate : public Term
+    {
+        static int id;
+
+        Term* operand;
+
+        public:
+        Negate(Term* op = nullptr) : Term(id ? id : (id = generateId()), 1, std::string("-")), operand(op)
+        {
+        }
+
+        std::ostream& print(std::ostream& out) const
+        {
+            out << name;
+            if (operand != nullptr)
+            {
+                out << (operand->getCount() ? "(" : "");
+                operand->print(out);
+                out << (operand->getCount() ? ")" : "");
+            }
+            return out;
+        }
+
+        int operator()(const std::vector<int> &args) const { return -(*operand)(args); };
+
+        void setOperand(Term* term, int i)
+        {
+            (void)i;
+            operand = term;
+        }
+
+        Term* create() const
+        {
+            return new Negate();
+        }
+
+        Term* simplify()
+        {
+            operand = operand->simplify();
+            Negate* next = dynamic_cast<Negate*>(operand);
+            if (next != nullptr)
+                return next->operand->simplify();
+            return this;
+        }
+
+        virtual ~Negate()
         {
         }
     };
@@ -503,6 +553,53 @@ namespace Learn {
         }
     };
 
+    class Div : public Term
+    {
+        static int id;
+
+        Term* operand1;
+        Term* operand2;
+
+        public:
+        Div(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("/")), operand1(op1), operand2(op2)
+        {
+        }
+
+        std::ostream& print(std::ostream& out) const
+        {
+            if (operand1 != nullptr && operand2 != nullptr)
+            {
+                out << (operand1->getCount() ? "(" : "");
+                operand1->print(out);
+                out << (operand1->getCount() ? ")" : "");
+                out << name;
+                out << (operand2->getCount() ? "(" : "");
+                operand2->print(out);
+                out << (operand2->getCount() ? ")" : "");
+            }
+            else
+                out << name;
+
+            return out;
+        }
+
+        int operator()(const std::vector<int> &args) const { int denom = (*operand2)(args); return (denom ? (*operand1)(args) / denom : 0); };
+
+        void setOperand(Term* term, int i)
+        {
+            (i ? operand2 : operand1) = term;
+        }
+
+        Term* create() const
+        {
+            return new Div();
+        }
+
+        virtual ~Div()
+        {
+        }
+    };
+
     class If : public Term
     {
         static int id;
@@ -601,6 +698,7 @@ namespace Learn {
     {
         return f.print(out);
     }
+
 }
 
 namespace Search {

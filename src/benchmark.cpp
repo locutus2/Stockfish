@@ -177,7 +177,7 @@ vector<string> setup_learn(const Position& current, istream& is) {
   string fenFile   = (is >> token) ? token : "default";
   string limitType = (is >> token) ? token : "depth";
 
-  Learn::START = std::stoull(start) * Learn::N;
+  Learn::START = std::stoul(start);
 
   go = limitType == "eval" ? "eval" : "go " + limitType + " " + limit;
 

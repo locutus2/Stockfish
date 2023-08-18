@@ -22,6 +22,8 @@
 #include <cstring>   // For std::memset
 #include <iostream>
 #include <sstream>
+#include <random>
+#include <chrono>
 
 #include "evaluate.h"
 #include "misc.h"
@@ -47,6 +49,7 @@ namespace Learn {
 
     int Term::id = 1;
     template <> int Constant<1>::id = 0;
+    template <> int Constant<2>::id = 0;
     template <> int Variable<0>::id = 0;
     template <> int Variable<1>::id = 0;
     template <> int Variable<2>::id = 0;
@@ -61,6 +64,7 @@ namespace Learn {
     template <> int Variable<11>::id = 0;
     template <> int Variable<12>::id = 0;
     int Not::id = 0;
+    int Negate::id = 0;
     int And::id = 0;
     int Or::id = 0;
     int Equal::id = 0;
@@ -68,6 +72,7 @@ namespace Learn {
     int Add::id = 0;
     int Subtract::id = 0;
     int Mult::id = 0;
+    int Div::id = 0;
     int If::id = 0;
 
     bool Function::initialized = false;
@@ -81,6 +86,7 @@ namespace Learn {
     {
         functions = {
             new Constant<1>(),
+            new Constant<2>(),
             new Variable<0>(),
             new Variable<1>(),
             new Variable<2>(),
@@ -95,6 +101,7 @@ namespace Learn {
             new Variable<11>(),
             new Variable<12>(),
             new Not(),
+            new Negate(),
             new Or(),
             new And(),
             new Equal(),
@@ -102,6 +109,7 @@ namespace Learn {
             new Add(),
             new Subtract(),
             new Mult(),
+            new Div(),
             new If(),
         };
 
@@ -222,17 +230,44 @@ namespace Learn {
     uint64_t START = 0;
     Function* func[N];
 
+    void init();
+
     void init()
     {
         //uint64_t START = 0;
-        for(int i = 0; i < N; ++i, ++START)
+        if (START)
         {
-            func[i] = new Function(START);
-            func[i]->simplify();
+            uint64_t start = (START-1) * N;
+            for(int i = 0; i < N; ++i, ++start)
+            {
+                func[i] = new Function(start);
+                func[i]->simplify();
+            }
+        }
+        else
+        {
+            //std::random_device rd;
+            //std::mt19937_64 e2(rd());
+            unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+            std::mt19937_64 e2(seed);
+            //std::uniform_int_distribution<uint64_t> dist();
+
+            for(int i = 0; i < N; ++i)
+            {
+                //uint64_t start = dist();
+                uint64_t start = e2();
+                //std::cerr << i << " " << start << std::endl;
+                func[i] = new Function(start);
+                func[i]->simplify();
+                //func[i]->print(std::cerr);
+                //std::cerr << std::endl;
+            }
         }
         //std::cerr << *func[44] << std::endl;
         //std::exit(1);
     }
+
+    void learn(bool T, const std::vector<int>& C);
 
     void learn(bool T, const std::vector<int>& C)
     {
@@ -243,6 +278,8 @@ namespace Learn {
             //dbg_hit_on(T, 10*i+R);
         }
     }
+
+    std::ostream& print(int i, std::ostream& out);
 
     std::ostream& print(int i, std::ostream& out = std::cerr) {
         return out << *func[i];
