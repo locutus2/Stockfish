@@ -63,6 +63,10 @@ namespace Learn {
     template <> int Variable<10>::id = 0;
     template <> int Variable<11>::id = 0;
     template <> int Variable<12>::id = 0;
+    template <> int Variable<13>::id = 0;
+    template <> int Variable<14>::id = 0;
+    template <> int Variable<15>::id = 0;
+    template <> int Variable<16>::id = 0;
     int Not::id = 0;
     int Negate::id = 0;
     int And::id = 0;
@@ -100,6 +104,10 @@ namespace Learn {
             new Variable<10>(),
             new Variable<11>(),
             new Variable<12>(),
+            new Variable<13>(),
+            new Variable<14>(),
+            new Variable<15>(),
+            new Variable<16>(),
             new Not(),
             new Negate(),
             new Or(),
@@ -1379,6 +1387,10 @@ moves_loop: // When in check, search starts here
           priorCapture,
           bool(excludedMove),
           likelyFailLow,
+          move == ttMove,
+          move == countermove,
+          move == ss->killers[0],
+          move == ss->killers[1],
       };
 
       // Decrease reduction if position is or has been on the PV
