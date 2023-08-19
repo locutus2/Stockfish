@@ -70,7 +70,7 @@ namespace Learn {
             (void)i;
         }
 
-        virtual Term* simplify() { return this; }
+        virtual Term* simplify() = 0;
 
         virtual ~Term()
         {
@@ -97,6 +97,8 @@ namespace Learn {
             return new Constant<V>();
         }
 
+        Term* simplify() { return this; }
+        
         ~Constant()
         {
         }
@@ -118,6 +120,8 @@ namespace Learn {
         {
             return new Variable<I>();
         }
+
+        Term* simplify() { return this; }
 
         virtual ~Variable()
         {
@@ -165,7 +169,7 @@ namespace Learn {
             operand = operand->simplify();
             Not* next = dynamic_cast<Not*>(operand);
             if (next != nullptr)
-                return next->operand->simplify();
+                return next->operand;
             return this;
         }
 
@@ -215,7 +219,7 @@ namespace Learn {
             operand = operand->simplify();
             Negate* next = dynamic_cast<Negate*>(operand);
             if (next != nullptr)
-                return next->operand->simplify();
+                return next->operand;
             return this;
         }
 
@@ -266,6 +270,19 @@ namespace Learn {
             return new And();
         }
 
+        Term* simplify()
+        {
+            operand1 = operand1->simplify();
+            operand2 = operand2->simplify();
+            Constant<1>* next = dynamic_cast<Constant<1>*>(operand1);
+            if (next != nullptr)
+                return operand2;
+            next = dynamic_cast<Constant<1>*>(operand2);
+            if (next != nullptr)
+                return operand1;
+            return this;
+        }
+
         virtual ~And()
         {
         }
@@ -311,6 +328,19 @@ namespace Learn {
         Term* create() const
         {
             return new Or();
+        }
+
+        Term* simplify()
+        {
+            operand1 = operand1->simplify();
+            operand2 = operand2->simplify();
+            Constant<1>* next = dynamic_cast<Constant<1>*>(operand1);
+            if (next != nullptr)
+                return next;
+            next = dynamic_cast<Constant<1>*>(operand2);
+            if (next != nullptr)
+                return next;
+            return this;
         }
 
         virtual ~Or()
@@ -360,6 +390,13 @@ namespace Learn {
             return new Equal();
         }
 
+        Term* simplify()
+        {
+            operand1 = operand1->simplify();
+            operand2 = operand2->simplify();
+            return this;
+        }
+
         virtual ~Equal()
         {
         }
@@ -405,6 +442,13 @@ namespace Learn {
         Term* create() const
         {
             return new Littler();
+        }
+
+        Term* simplify()
+        {
+            operand1 = operand1->simplify();
+            operand2 = operand2->simplify();
+            return this;
         }
 
         virtual ~Littler()
@@ -454,6 +498,13 @@ namespace Learn {
             return new Add();
         }
 
+        Term* simplify()
+        {
+            operand1 = operand1->simplify();
+            operand2 = operand2->simplify();
+            return this;
+        }
+
         virtual ~Add()
         {
         }
@@ -499,6 +550,13 @@ namespace Learn {
         Term* create() const
         {
             return new Subtract();
+        }
+
+        Term* simplify()
+        {
+            operand1 = operand1->simplify();
+            operand2 = operand2->simplify();
+            return this;
         }
 
         virtual ~Subtract()
@@ -548,6 +606,19 @@ namespace Learn {
             return new Mult();
         }
 
+        Term* simplify()
+        {
+            operand1 = operand1->simplify();
+            operand2 = operand2->simplify();
+            Constant<1>* next = dynamic_cast<Constant<1>*>(operand1);
+            if (next != nullptr)
+                return operand2;
+            next = dynamic_cast<Constant<1>*>(operand2);
+            if (next != nullptr)
+                return operand1;
+            return this;
+        }
+
         virtual ~Mult()
         {
         }
@@ -593,6 +664,16 @@ namespace Learn {
         Term* create() const
         {
             return new Div();
+        }
+
+        Term* simplify()
+        {
+            operand1 = operand1->simplify();
+            operand2 = operand2->simplify();
+            Constant<1>* next = dynamic_cast<Constant<1>*>(operand2);
+            if (next != nullptr)
+                return operand1;
+            return this;
         }
 
         virtual ~Div()
@@ -645,6 +726,17 @@ namespace Learn {
         Term* create() const
         {
             return new If();
+        }
+
+        Term* simplify()
+        {
+            operand1 = operand1->simplify();
+            operand2 = operand2->simplify();
+            operand3 = operand3->simplify();
+            Constant<1>* next = dynamic_cast<Constant<1>*>(operand1);
+            if (next != nullptr)
+                return operand2;
+            return this;
         }
 
         virtual ~If()
