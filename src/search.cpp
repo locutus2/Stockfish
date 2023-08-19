@@ -246,6 +246,18 @@ namespace Learn {
         root = (stack.empty() ? new Constant<1>() : stack[0]);
     }
 
+    void Function::replaceOrWithAnd()
+    {
+        if (dynamic_cast<Or*>(root) != nullptr)
+        {
+            Term* node = new And();
+            node->setOperand(root->getOperand(0), 0);
+            node->setOperand(root->getOperand(1), 1);
+            root = node;
+            simplify();
+        }
+    }
+
     uint64_t START = 0;
     Function* func[N];
 
@@ -276,6 +288,8 @@ namespace Learn {
                 //std::cerr << i << " " << start << std::endl;
                 func[i] = new Function(start);
                 func[i]->simplify();
+
+                func[i]->replaceOrWithAnd();
                 //func[i]->print(std::cerr);
                 //std::cerr << std::endl;
             }

@@ -70,6 +70,12 @@ namespace Learn {
             (void)i;
         }
 
+        virtual Term* getOperand(int i) const
+        {
+            (void)i;
+            return nullptr;
+        }
+
         virtual Term* simplify() = 0;
 
         virtual ~Term()
@@ -127,6 +133,12 @@ namespace Learn {
         {
             (void)i;
             operand = term;
+        }
+
+        Term* getOperand(int i) const
+        {
+            (void)i;
+            return operand;
         }
 
         Term* simplify()
@@ -191,6 +203,11 @@ namespace Learn {
         void setOperand(Term* term, int i)
         {
             (i ? operand2 : operand1) = term;
+        }
+
+        Term* getOperand(int i) const
+        {
+            return i ? operand2 : operand1;
         }
 
         Term* simplify()
@@ -423,6 +440,7 @@ namespace Learn {
 
         static void initFunctions();
         void init(uint64_t f);
+        void replaceOrWithAnd();
         
     };
 
