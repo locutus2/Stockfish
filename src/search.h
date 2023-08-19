@@ -45,15 +45,17 @@ namespace Learn {
         const int code;
         const int count;
         const std::string name;
+        bool is_associative;
 
         public:
-        Term(int c, int ac, const std::string& n) : code(c), count(ac), name(n)
+        Term(int c, int ac, const std::string& n, bool assoc = false) : code(c), count(ac), name(n), is_associative(assoc)
         {
         }
 
-        int getCode() { return code; }
-        int getCount() { return count; }
-        const std::string& getName() { return name; }
+        int getCode() const { return code; }
+        int getCount() const { return count; }
+        int isAssociative() const { return is_associative; }
+        const std::string& getName() const { return name; }
         int generateId() const { return nextId++; }
 
         virtual int operator()(const std::vector<int> &args) const = 0;
@@ -177,15 +179,15 @@ namespace Learn {
         Term* operand1;
         Term* operand2;
 
-        BinaryFunction(int id, const std::string& n, Term* op1 = nullptr, Term* op2 = nullptr) : Term(id, 2, n), operand1(op1), operand2(op2) { }
+        BinaryFunction(int id, const std::string& n, Term* op1 = nullptr, Term* op2 = nullptr, bool assoc = false) : Term(id, 2, n, assoc), operand1(op1), operand2(op2) { }
 
         public:
         std::ostream& print(std::ostream& out) const
         {
             if (operand1 != nullptr && operand2 != nullptr)
             {
-                bool parentOp1 = operand1->getCount() > 1 && (code != operand1->getCode() || count != 2);
-                bool parentOp2 = operand2->getCount() > 1 && (code != operand2->getCode() || count != 2);
+                bool parentOp1 = operand1->getCount() > 1 && (code != operand1->getCode() || getCount() != 2 || !isAssociative());
+                bool parentOp2 = operand2->getCount() > 1 && (code != operand2->getCode() || getCount() != 2 || !isAssociative());
                 out << (parentOp1 ? "(" : "");
                 operand1->print(out);
                 out << (parentOp1 ? ")" : "");
@@ -223,7 +225,7 @@ namespace Learn {
         static int id;
 
         public:
-        And(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("&&"), op1, op2) { }
+        And(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("&&"), op1, op2, true) { }
         int operator()(const std::vector<int> &args) const { return (*operand1)(args) && (*operand2)(args); };
         Term* create() const { return new And(); }
 
@@ -246,7 +248,7 @@ namespace Learn {
         static int id;
 
         public:
-        Or(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("||"), op1, op2) { }
+        Or(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("||"), op1, op2, true) { }
         int operator()(const std::vector<int> &args) const { return (*operand1)(args) || (*operand2)(args); };
         Term* create() const { return new Or(); }
 
@@ -289,7 +291,7 @@ namespace Learn {
         static int id;
 
         public:
-        Add(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("+"), op1, op2) { }
+        Add(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("+"), op1, op2, true) { }
         int operator()(const std::vector<int> &args) const { return (*operand1)(args) + (*operand2)(args); };
         Term* create() const { return new Add(); }
     };
@@ -309,7 +311,7 @@ namespace Learn {
         static int id;
 
         public:
-        Mult(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("*"), op1, op2) { }
+        Mult(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("*"), op1, op2, true) { }
         int operator()(const std::vector<int> &args) const { return (*operand1)(args) * (*operand2)(args); };
         Term* create() const { return new Mult(); }
 
