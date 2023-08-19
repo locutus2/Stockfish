@@ -1134,7 +1134,7 @@ moves_loop: // When in check, search starts here
 
       // Increase reduction if ttMove is a capture (~3 Elo)
       if (ttCapture)
-          r += 1 + !(capture || improving);
+          r += 1 + (PvNode && priorCapture && !capture);
 
       // Decrease reduction for PvNodes (~2 Elo)
       if (PvNode)
