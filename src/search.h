@@ -39,9 +39,9 @@ namespace Learn {
 
     class Term
     {
-        protected:
-        static int id;
+        static int nextId;
 
+        protected:
         const int code;
         const int count;
         const std::string name;
@@ -54,7 +54,7 @@ namespace Learn {
         int getCode() { return code; }
         int getCount() { return count; }
         const std::string& getName() { return name; }
-        int generateId() const { return id++; }
+        int generateId() const { return nextId++; }
 
         virtual int operator()(const std::vector<int> &args) const = 0;
         virtual Term* create() const = 0;
@@ -85,23 +85,10 @@ namespace Learn {
         static int id;
 
         public:
-        Constant() : Term(id ? id : (id = generateId()), 0, std::to_string(V))
-        {
-        }
-
-
+        Constant() : Term(id ? id : (id = generateId()), 0, std::to_string(V)) { }
         int operator()(const std::vector<int> &args) const { (void)args; return V; };
-
-        Term* create() const
-        {
-            return new Constant<V>();
-        }
-
+        Term* create() const { return new Constant<V>(); }
         Term* simplify() { return this; }
-        
-        ~Constant()
-        {
-        }
     };
 
     template <int I>
@@ -110,35 +97,20 @@ namespace Learn {
         static int id;
 
         public:
-        Variable() : Term(id ? id : (id = generateId()), 0, std::string("C") + std::to_string(I))
-        {
-        }
-
+        Variable() : Term(id ? id : (id = generateId()), 0, std::string("C") + std::to_string(I)) { }
         int operator()(const std::vector<int> &args) const { return args[I]; };
-
-        Term* create() const
-        {
-            return new Variable<I>();
-        }
-
+        Term* create() const { return new Variable<I>(); }
         Term* simplify() { return this; }
-
-        virtual ~Variable()
-        {
-        }
     };
 
-    class Not : public Term
+    class UnaryFunction : public Term
     {
-        static int id;
-
+        protected:
         Term* operand;
 
-        public:
-        Not(Term* op = nullptr) : Term(id ? id : (id = generateId()), 1, std::string("!")), operand(op)
-        {
-        }
+        UnaryFunction(int id, const std::string& n, Term* op = nullptr) : Term(id, 1, n), operand(op) { }
 
+        public:
         std::ostream& print(std::ostream& out) const
         {
             out << name;
@@ -151,95 +123,51 @@ namespace Learn {
             return out;
         }
 
+        void setOperand(Term* term, int i)
+        {
+            (void)i;
+            operand = term;
+        }
+
+        Term* simplify()
+        {
+            operand = operand->simplify();
+            UnaryFunction* next = dynamic_cast<UnaryFunction*>(operand);
+            if (next != nullptr && code == next->code)
+                return next->operand;
+            return this;
+        }
+    };
+
+    class Not : public UnaryFunction
+    {
+        static int id;
+
+        public:
+        Not(Term* op = nullptr) : UnaryFunction(id ? id : (id = generateId()), std::string("!"), op) { }
         int operator()(const std::vector<int> &args) const { return !(*operand)(args); };
-
-        void setOperand(Term* term, int i)
-        {
-            (void)i;
-            operand = term;
-        }
-
-        Term* create() const
-        {
-            return new Not();
-        }
-
-        Term* simplify()
-        {
-            operand = operand->simplify();
-            Not* next = dynamic_cast<Not*>(operand);
-            if (next != nullptr)
-                return next->operand;
-            return this;
-        }
-
-        virtual ~Not()
-        {
-        }
+        Term* create() const { return new Not(); }
     };
 
-    class Negate : public Term
+    class Negate : public UnaryFunction
     {
         static int id;
 
-        Term* operand;
-
         public:
-        Negate(Term* op = nullptr) : Term(id ? id : (id = generateId()), 1, std::string("-")), operand(op)
-        {
-        }
-
-        std::ostream& print(std::ostream& out) const
-        {
-            out << name;
-            if (operand != nullptr)
-            {
-                out << (operand->getCount() > 1 ? "(" : "");
-                operand->print(out);
-                out << (operand->getCount() > 1 ? ")" : "");
-            }
-            return out;
-        }
-
+        Negate(Term* op = nullptr) : UnaryFunction(id ? id : (id = generateId()), std::string("-"), op) { }
         int operator()(const std::vector<int> &args) const { return -(*operand)(args); };
-
-        void setOperand(Term* term, int i)
-        {
-            (void)i;
-            operand = term;
-        }
-
-        Term* create() const
-        {
-            return new Negate();
-        }
-
-        Term* simplify()
-        {
-            operand = operand->simplify();
-            Negate* next = dynamic_cast<Negate*>(operand);
-            if (next != nullptr)
-                return next->operand;
-            return this;
-        }
-
-        virtual ~Negate()
-        {
-        }
+        Term* create() const { return new Negate(); }
     };
 
-    class And : public Term
+    class BinaryFunction : public Term
     {
-        static int id;
-
+        protected:
         Term* operand1;
         Term* operand2;
 
-        public:
-        And(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("&&")), operand1(op1), operand2(op2)
-        {
-        }
+        BinaryFunction(int id, const std::string& n, Term* op1 = nullptr, Term* op2 = nullptr) : Term(id, 2, n), operand1(op1), operand2(op2) { }
 
+        public:
         std::ostream& print(std::ostream& out) const
         {
             if (operand1 != nullptr && operand2 != nullptr)
@@ -258,17 +186,27 @@ namespace Learn {
             return out;
         }
 
+        void setOperand(Term* term, int i)
+        {
+            (i ? operand2 : operand1) = term;
+        }
+
+        Term* simplify()
+        {
+            operand1 = operand1->simplify();
+            operand2 = operand2->simplify();
+            return this;
+        }
+    };
+
+    class And : public BinaryFunction
+    {
+        static int id;
+
+        public:
+        And(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("&&"), op1, op2) { }
         int operator()(const std::vector<int> &args) const { return (*operand1)(args) && (*operand2)(args); };
-
-        void setOperand(Term* term, int i)
-        {
-            (i ? operand2 : operand1) = term;
-        }
-
-        Term* create() const
-        {
-            return new And();
-        }
+        Term* create() const { return new And(); }
 
         Term* simplify()
         {
@@ -282,53 +220,16 @@ namespace Learn {
                 return operand1;
             return this;
         }
-
-        virtual ~And()
-        {
-        }
     };
 
-    class Or : public Term
+    class Or : public BinaryFunction
     {
         static int id;
 
-        Term* operand1;
-        Term* operand2;
-
         public:
-        Or(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("||")), operand1(op1), operand2(op2)
-        {
-        }
-
-        std::ostream& print(std::ostream& out) const
-        {
-            if (operand1 != nullptr && operand2 != nullptr)
-            {
-                out << (operand1->getCount() > 1 ? "(" : "");
-                operand1->print(out);
-                out << (operand1->getCount() > 1 ? ")" : "");
-                out << name;
-                out << (operand2->getCount() > 1 ? "(" : "");
-                operand2->print(out);
-                out << (operand2->getCount() > 1 ? ")" : "");
-            }
-            else
-                out << name;
-
-            return out;
-        }
-
+        Or(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("||"), op1, op2) { }
         int operator()(const std::vector<int> &args) const { return (*operand1)(args) || (*operand2)(args); };
-
-        void setOperand(Term* term, int i)
-        {
-            (i ? operand2 : operand1) = term;
-        }
-
-        Term* create() const
-        {
-            return new Or();
-        }
+        Term* create() const { return new Or(); }
 
         Term* simplify()
         {
@@ -342,269 +243,56 @@ namespace Learn {
                 return next;
             return this;
         }
-
-        virtual ~Or()
-        {
-        }
     };
 
-    class Equal : public Term
+    class Equal : public BinaryFunction
     {
         static int id;
 
-        Term* operand1;
-        Term* operand2;
-
         public:
-        Equal(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("==")), operand1(op1), operand2(op2)
-        {
-        }
-
-        std::ostream& print(std::ostream& out) const
-        {
-            if (operand1 != nullptr && operand2 != nullptr)
-            {
-                out << (operand1->getCount() > 1 ? "(" : "");
-                operand1->print(out);
-                out << (operand1->getCount() > 1 ? ")" : "");
-                out << name;
-                out << (operand2->getCount() > 1 ? "(" : "");
-                operand2->print(out);
-                out << (operand2->getCount() > 1 ? ")" : "");
-            }
-            else
-                out << name;
-
-            return out;
-        }
-
+        Equal(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("=="), op1, op2) { }
         int operator()(const std::vector<int> &args) const { return (*operand1)(args) == (*operand2)(args); };
-
-        void setOperand(Term* term, int i)
-        {
-            (i ? operand2 : operand1) = term;
-        }
-
-        Term* create() const
-        {
-            return new Equal();
-        }
-
-        Term* simplify()
-        {
-            operand1 = operand1->simplify();
-            operand2 = operand2->simplify();
-            return this;
-        }
-
-        virtual ~Equal()
-        {
-        }
+        Term* create() const { return new Equal(); }
     };
 
-    class Littler : public Term
+    class Littler : public BinaryFunction
     {
         static int id;
 
-        Term* operand1;
-        Term* operand2;
-
         public:
-        Littler(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("<")), operand1(op1), operand2(op2)
-        {
-        }
-
-        std::ostream& print(std::ostream& out) const
-        {
-            if (operand1 != nullptr && operand2 != nullptr)
-            {
-                out << (operand1->getCount() > 1 ? "(" : "");
-                operand1->print(out);
-                out << (operand1->getCount() > 1 ? ")" : "");
-                out << name;
-                out << (operand2->getCount() > 1 ? "(" : "");
-                operand2->print(out);
-                out << (operand2->getCount() > 1 ? ")" : "");
-            }
-            else
-                out << name;
-
-            return out;
-        }
-
+        Littler(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("<"), op1, op2) { }
         int operator()(const std::vector<int> &args) const { return (*operand1)(args) < (*operand2)(args); };
-
-        void setOperand(Term* term, int i)
-        {
-            (i ? operand2 : operand1) = term;
-        }
-
-        Term* create() const
-        {
-            return new Littler();
-        }
-
-        Term* simplify()
-        {
-            operand1 = operand1->simplify();
-            operand2 = operand2->simplify();
-            return this;
-        }
-
-        virtual ~Littler()
-        {
-        }
+        Term* create() const { return new Littler(); }
     };
 
-    class Add : public Term
+    class Add : public BinaryFunction
     {
         static int id;
 
-        Term* operand1;
-        Term* operand2;
-
         public:
-        Add(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("+")), operand1(op1), operand2(op2)
-        {
-        }
-
-        std::ostream& print(std::ostream& out) const
-        {
-            if (operand1 != nullptr && operand2 != nullptr)
-            {
-                out << (operand1->getCount() > 1 ? "(" : "");
-                operand1->print(out);
-                out << (operand1->getCount() > 1 ? ")" : "");
-                out << name;
-                out << (operand2->getCount() > 1 ? "(" : "");
-                operand2->print(out);
-                out << (operand2->getCount() > 1 ? ")" : "");
-            }
-            else
-                out << name;
-
-            return out;
-        }
-
+        Add(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("+"), op1, op2) { }
         int operator()(const std::vector<int> &args) const { return (*operand1)(args) + (*operand2)(args); };
-
-        void setOperand(Term* term, int i)
-        {
-            (i ? operand2 : operand1) = term;
-        }
-
-        Term* create() const
-        {
-            return new Add();
-        }
-
-        Term* simplify()
-        {
-            operand1 = operand1->simplify();
-            operand2 = operand2->simplify();
-            return this;
-        }
-
-        virtual ~Add()
-        {
-        }
+        Term* create() const { return new Add(); }
     };
 
-    class Subtract : public Term
+    class Subtract : public BinaryFunction
     {
         static int id;
 
-        Term* operand1;
-        Term* operand2;
-
         public:
-        Subtract(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("-")), operand1(op1), operand2(op2)
-        {
-        }
-
-        std::ostream& print(std::ostream& out) const
-        {
-            if (operand1 != nullptr && operand2 != nullptr)
-            {
-                out << (operand1->getCount() > 1 ? "(" : "");
-                operand1->print(out);
-                out << (operand1->getCount() > 1 ? ")" : "");
-                out << name;
-                out << (operand2->getCount() > 1 ? "(" : "");
-                operand2->print(out);
-                out << (operand2->getCount() > 1 ? ")" : "");
-            }
-            else
-                out << name;
-
-            return out;
-        }
-
+        Subtract(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("-"), op1, op2) { }
         int operator()(const std::vector<int> &args) const { return (*operand1)(args) - (*operand2)(args); };
-
-        void setOperand(Term* term, int i)
-        {
-            (i ? operand2 : operand1) = term;
-        }
-
-        Term* create() const
-        {
-            return new Subtract();
-        }
-
-        Term* simplify()
-        {
-            operand1 = operand1->simplify();
-            operand2 = operand2->simplify();
-            return this;
-        }
-
-        virtual ~Subtract()
-        {
-        }
+        Term* create() const { return new Subtract(); }
     };
 
-    class Mult : public Term
+    class Mult : public BinaryFunction
     {
         static int id;
 
-        Term* operand1;
-        Term* operand2;
-
         public:
-        Mult(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("*")), operand1(op1), operand2(op2)
-        {
-        }
-
-        std::ostream& print(std::ostream& out) const
-        {
-            if (operand1 != nullptr && operand2 != nullptr)
-            {
-                out << (operand1->getCount() > 1 ? "(" : "");
-                operand1->print(out);
-                out << (operand1->getCount() > 1 ? ")" : "");
-                out << name;
-                out << (operand2->getCount() > 1 ? "(" : "");
-                operand2->print(out);
-                out << (operand2->getCount() > 1 ? ")" : "");
-            }
-            else
-                out << name;
-
-            return out;
-        }
-
+        Mult(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("*"), op1, op2) { }
         int operator()(const std::vector<int> &args) const { return (*operand1)(args) * (*operand2)(args); };
-
-        void setOperand(Term* term, int i)
-        {
-            (i ? operand2 : operand1) = term;
-        }
-
-        Term* create() const
-        {
-            return new Mult();
-        }
+        Term* create() const { return new Mult(); }
 
         Term* simplify()
         {
@@ -618,53 +306,16 @@ namespace Learn {
                 return operand1;
             return this;
         }
-
-        virtual ~Mult()
-        {
-        }
     };
 
-    class Div : public Term
+    class Div : public BinaryFunction
     {
         static int id;
 
-        Term* operand1;
-        Term* operand2;
-
         public:
-        Div(Term* op1 = nullptr, Term* op2 = nullptr) : Term(id ? id : (id = generateId()), 2, std::string("/")), operand1(op1), operand2(op2)
-        {
-        }
-
-        std::ostream& print(std::ostream& out) const
-        {
-            if (operand1 != nullptr && operand2 != nullptr)
-            {
-                out << (operand1->getCount() > 1 ? "(" : "");
-                operand1->print(out);
-                out << (operand1->getCount() > 1 ? ")" : "");
-                out << name;
-                out << (operand2->getCount() > 1 ? "(" : "");
-                operand2->print(out);
-                out << (operand2->getCount() > 1 ? ")" : "");
-            }
-            else
-                out << name;
-
-            return out;
-        }
-
+        Div(Term* op1 = nullptr, Term* op2 = nullptr) : BinaryFunction(id ? id : (id = generateId()), std::string("/"), op1, op2) { }
         int operator()(const std::vector<int> &args) const { int denom = (*operand2)(args); return (denom ? (*operand1)(args) / denom : 0); };
-
-        void setOperand(Term* term, int i)
-        {
-            (i ? operand2 : operand1) = term;
-        }
-
-        Term* create() const
-        {
-            return new Div();
-        }
+        Term* create() const { return new Div(); }
 
         Term* simplify()
         {
@@ -675,24 +326,21 @@ namespace Learn {
                 return operand1;
             return this;
         }
-
-        virtual ~Div()
-        {
-        }
     };
 
     class If : public Term
     {
         static int id;
 
+        protected:
         Term* operand1;
         Term* operand2;
         Term* operand3;
 
         public:
-        If(Term* op1 = nullptr, Term* op2 = nullptr, Term* op3 = nullptr) : Term(id ? id : (id = generateId()), 3, std::string("?")), operand1(op1), operand2(op2), operand3(op3)
-        {
-        }
+        If(Term* op1 = nullptr, Term* op2 = nullptr, Term* op3 = nullptr) : Term(id ? id : (id = generateId()), 3, std::string("?")), operand1(op1), operand2(op2), operand3(op3) { }
+        int operator()(const std::vector<int> &args) const { return (*operand1)(args) ? (*operand2)(args) : (*operand3)(args); };
+        Term* create() const { return new If(); }
 
         std::ostream& print(std::ostream& out) const
         {
@@ -716,16 +364,10 @@ namespace Learn {
             return out;
         }
 
-        int operator()(const std::vector<int> &args) const { return (*operand1)(args) ? (*operand2)(args) : (*operand3)(args); };
 
         void setOperand(Term* term, int i)
         {
             (i == 2 ? operand3 : i == 1 ? operand2 : operand1) = term;
-        }
-
-        Term* create() const
-        {
-            return new If();
         }
 
         Term* simplify()
@@ -737,10 +379,6 @@ namespace Learn {
             if (next != nullptr)
                 return operand2;
             return this;
-        }
-
-        virtual ~If()
-        {
         }
     };
 

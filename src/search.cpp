@@ -47,7 +47,7 @@ namespace Search {
 
 namespace Learn {
 
-    int Term::id = 1;
+    int Term::nextId = 1;
     template <> int Constant<1>::id = 0;
     template <> int Constant<2>::id = 0;
     template <> int Variable<0>::id = 0;
