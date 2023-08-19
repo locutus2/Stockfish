@@ -1134,7 +1134,7 @@ moves_loop: // When in check, search starts here
 
       // Increase reduction if ttMove is a capture (~3 Elo)
       if (ttCapture)
-          r += 1 + (PvNode && priorCapture && !capture && move != ss->killers[0]);
+          r += 1 + (likelyFailLow && !capture);
 
       // Decrease reduction for PvNodes (~2 Elo)
       if (PvNode)
