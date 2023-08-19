@@ -133,7 +133,7 @@ namespace Learn {
         {
             operand = operand->simplify();
             UnaryFunction* next = dynamic_cast<UnaryFunction*>(operand);
-            if (next != nullptr && code == next->code)
+            if (next != nullptr && code == next->getCode())
                 return next->operand;
             return this;
         }
