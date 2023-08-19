@@ -172,13 +172,15 @@ namespace Learn {
         {
             if (operand1 != nullptr && operand2 != nullptr)
             {
-                out << (operand1->getCount() > 1 ? "(" : "");
+                bool parentOp1 = operand1->getCount() > 1 && code != operand1->getCode();
+                bool parentOp2 = operand2->getCount() > 1 && code != operand2->getCode();
+                out << (parentOp1 ? "(" : "");
                 operand1->print(out);
-                out << (operand1->getCount() > 1 ? ")" : "");
+                out << (parentOp1 ? ")" : "");
                 out << name;
-                out << (operand2->getCount() > 1 ? "(" : "");
+                out << (parentOp2 ? "(" : "");
                 operand2->print(out);
-                out << (operand2->getCount() > 1 ? ")" : "");
+                out << (parentOp2 ? ")" : "");
             }
             else
                 out << name;
