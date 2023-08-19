@@ -47,6 +47,8 @@ namespace Search {
 
 namespace Learn {
 
+    constexpr bool RANDOMIZE_FINISH = true;
+
     int Term::nextId = 1;
     template <> int Constant<1>::id = 0;
     template <> int Constant<2>::id = 0;
@@ -86,8 +88,13 @@ namespace Learn {
     int Function::MaxF2;
     int Function::MaxF3;
 
+    std::mt19937_64 RNG;
+
     void Function::initFunctions()
     {
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        RNG.seed(seed);
+
         functions = {
             //new Constant<1>(),
             //new Constant<2>(),
@@ -187,8 +194,12 @@ namespace Learn {
                     break;
             }
 
+            bool randomize = RANDOMIZE_FINISH && f == 0;
             unsigned int code = f % (n - m) + m;
             f /= n - m;
+
+            if (randomize)
+                code = m + RNG() % (n - m);
 
             Term* term = functions[code]->create();
             switch(term->getCount())
@@ -256,14 +267,12 @@ namespace Learn {
         {
             //std::random_device rd;
             //std::mt19937_64 e2(rd());
-            unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-            std::mt19937_64 e2(seed);
             //std::uniform_int_distribution<uint64_t> dist();
 
             for(int i = 0; i < N; ++i)
             {
                 //uint64_t start = dist();
-                uint64_t start = e2();
+                uint64_t start = RNG();
                 //std::cerr << i << " " << start << std::endl;
                 func[i] = new Function(start);
                 func[i]->simplify();
