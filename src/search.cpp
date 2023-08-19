@@ -89,8 +89,8 @@ namespace Learn {
     void Function::initFunctions()
     {
         functions = {
-            new Constant<1>(),
-            new Constant<2>(),
+            //new Constant<1>(),
+            //new Constant<2>(),
             new Variable<0>(),
             new Variable<1>(),
             new Variable<2>(),
@@ -109,16 +109,16 @@ namespace Learn {
             new Variable<15>(),
             new Variable<16>(),
             new Not(),
-            new Negate(),
+            //new Negate(),
             new And(),
             new Or(),
-            new Equal(),
-            new Littler(),
-            new Add(),
-            new Subtract(),
-            new Mult(),
-            new Div(),
-            new If(),
+            //new Equal(),
+            //new Littler(),
+            //new Add(),
+            //new Subtract(),
+            //new Mult(),
+            //new Div(),
+            //new If(),
         };
 
         MaxF0 = 0;

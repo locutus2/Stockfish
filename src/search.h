@@ -144,9 +144,9 @@ namespace Learn {
             out << name;
             if (operand != nullptr)
             {
-                out << (operand->getCount() ? "(" : "");
+                out << (operand->getCount() > 1 ? "(" : "");
                 operand->print(out);
-                out << (operand->getCount() ? ")" : "");
+                out << (operand->getCount() > 1 ? ")" : "");
             }
             return out;
         }
@@ -194,9 +194,9 @@ namespace Learn {
             out << name;
             if (operand != nullptr)
             {
-                out << (operand->getCount() ? "(" : "");
+                out << (operand->getCount() > 1 ? "(" : "");
                 operand->print(out);
-                out << (operand->getCount() ? ")" : "");
+                out << (operand->getCount() > 1 ? ")" : "");
             }
             return out;
         }
@@ -244,13 +244,13 @@ namespace Learn {
         {
             if (operand1 != nullptr && operand2 != nullptr)
             {
-                out << (operand1->getCount() ? "(" : "");
+                out << (operand1->getCount() > 1 ? "(" : "");
                 operand1->print(out);
-                out << (operand1->getCount() ? ")" : "");
+                out << (operand1->getCount() > 1 ? ")" : "");
                 out << name;
-                out << (operand2->getCount() ? "(" : "");
+                out << (operand2->getCount() > 1 ? "(" : "");
                 operand2->print(out);
-                out << (operand2->getCount() ? ")" : "");
+                out << (operand2->getCount() > 1 ? ")" : "");
             }
             else
                 out << name;
@@ -304,13 +304,13 @@ namespace Learn {
         {
             if (operand1 != nullptr && operand2 != nullptr)
             {
-                out << (operand1->getCount() ? "(" : "");
+                out << (operand1->getCount() > 1 ? "(" : "");
                 operand1->print(out);
-                out << (operand1->getCount() ? ")" : "");
+                out << (operand1->getCount() > 1 ? ")" : "");
                 out << name;
-                out << (operand2->getCount() ? "(" : "");
+                out << (operand2->getCount() > 1 ? "(" : "");
                 operand2->print(out);
-                out << (operand2->getCount() ? ")" : "");
+                out << (operand2->getCount() > 1 ? ")" : "");
             }
             else
                 out << name;
@@ -364,13 +364,13 @@ namespace Learn {
         {
             if (operand1 != nullptr && operand2 != nullptr)
             {
-                out << (operand1->getCount() ? "(" : "");
+                out << (operand1->getCount() > 1 ? "(" : "");
                 operand1->print(out);
-                out << (operand1->getCount() ? ")" : "");
+                out << (operand1->getCount() > 1 ? ")" : "");
                 out << name;
-                out << (operand2->getCount() ? "(" : "");
+                out << (operand2->getCount() > 1 ? "(" : "");
                 operand2->print(out);
-                out << (operand2->getCount() ? ")" : "");
+                out << (operand2->getCount() > 1 ? ")" : "");
             }
             else
                 out << name;
@@ -418,13 +418,13 @@ namespace Learn {
         {
             if (operand1 != nullptr && operand2 != nullptr)
             {
-                out << (operand1->getCount() ? "(" : "");
+                out << (operand1->getCount() > 1 ? "(" : "");
                 operand1->print(out);
-                out << (operand1->getCount() ? ")" : "");
+                out << (operand1->getCount() > 1 ? ")" : "");
                 out << name;
-                out << (operand2->getCount() ? "(" : "");
+                out << (operand2->getCount() > 1 ? "(" : "");
                 operand2->print(out);
-                out << (operand2->getCount() ? ")" : "");
+                out << (operand2->getCount() > 1 ? ")" : "");
             }
             else
                 out << name;
@@ -472,13 +472,13 @@ namespace Learn {
         {
             if (operand1 != nullptr && operand2 != nullptr)
             {
-                out << (operand1->getCount() ? "(" : "");
+                out << (operand1->getCount() > 1 ? "(" : "");
                 operand1->print(out);
-                out << (operand1->getCount() ? ")" : "");
+                out << (operand1->getCount() > 1 ? ")" : "");
                 out << name;
-                out << (operand2->getCount() ? "(" : "");
+                out << (operand2->getCount() > 1 ? "(" : "");
                 operand2->print(out);
-                out << (operand2->getCount() ? ")" : "");
+                out << (operand2->getCount() > 1 ? ")" : "");
             }
             else
                 out << name;
@@ -526,13 +526,13 @@ namespace Learn {
         {
             if (operand1 != nullptr && operand2 != nullptr)
             {
-                out << (operand1->getCount() ? "(" : "");
+                out << (operand1->getCount() > 1 ? "(" : "");
                 operand1->print(out);
-                out << (operand1->getCount() ? ")" : "");
+                out << (operand1->getCount() > 1 ? ")" : "");
                 out << name;
-                out << (operand2->getCount() ? "(" : "");
+                out << (operand2->getCount() > 1 ? "(" : "");
                 operand2->print(out);
-                out << (operand2->getCount() ? ")" : "");
+                out << (operand2->getCount() > 1 ? ")" : "");
             }
             else
                 out << name;
@@ -580,13 +580,13 @@ namespace Learn {
         {
             if (operand1 != nullptr && operand2 != nullptr)
             {
-                out << (operand1->getCount() ? "(" : "");
+                out << (operand1->getCount() > 1 ? "(" : "");
                 operand1->print(out);
-                out << (operand1->getCount() ? ")" : "");
+                out << (operand1->getCount() > 1 ? ")" : "");
                 out << name;
-                out << (operand2->getCount() ? "(" : "");
+                out << (operand2->getCount() > 1 ? "(" : "");
                 operand2->print(out);
-                out << (operand2->getCount() ? ")" : "");
+                out << (operand2->getCount() > 1 ? ")" : "");
             }
             else
                 out << name;
@@ -640,13 +640,13 @@ namespace Learn {
         {
             if (operand1 != nullptr && operand2 != nullptr)
             {
-                out << (operand1->getCount() ? "(" : "");
+                out << (operand1->getCount() > 1 ? "(" : "");
                 operand1->print(out);
-                out << (operand1->getCount() ? ")" : "");
+                out << (operand1->getCount() > 1 ? ")" : "");
                 out << name;
-                out << (operand2->getCount() ? "(" : "");
+                out << (operand2->getCount() > 1 ? "(" : "");
                 operand2->print(out);
-                out << (operand2->getCount() ? ")" : "");
+                out << (operand2->getCount() > 1 ? ")" : "");
             }
             else
                 out << name;
@@ -698,17 +698,17 @@ namespace Learn {
         {
             if (operand1 != nullptr && operand2 != nullptr && operand3 != nullptr)
             {
-                out << (operand1->getCount() ? "(" : "");
+                out << (operand1->getCount() > 1 ? "(" : "");
                 operand1->print(out);
-                out << (operand1->getCount() ? ")" : "");
+                out << (operand1->getCount() > 1 ? ")" : "");
                 out << name;
-                out << (operand2->getCount() ? "(" : "");
+                out << (operand2->getCount() > 1 ? "(" : "");
                 operand2->print(out);
-                out << (operand2->getCount() ? ")" : "");
+                out << (operand2->getCount() > 1 ? ")" : "");
                 out << ':';
-                out << (operand3->getCount() ? "(" : "");
+                out << (operand3->getCount() > 1 ? "(" : "");
                 operand3->print(out);
-                out << (operand3->getCount() ? ")" : "");
+                out << (operand3->getCount() > 1 ? ")" : "");
             }
             else
                 out << name;
