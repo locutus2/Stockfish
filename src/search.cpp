@@ -298,7 +298,8 @@ void Thread::search() {
 
   ss->pv = pv;
 
-  bestValue = -VALUE_INFINITE;
+  bestValue[ us] = -VALUE_INFINITE;
+  bestValue[~us] = -bestValue[us];
 
   if (mainThread)
   {
@@ -376,7 +377,8 @@ void Thread::search() {
               // Adjust the effective depth searched, but ensure at least one effective increment for every
               // four searchAgain steps (see issue #2717).
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - 3 * (searchAgainCounter + 1) / 4);
-              bestValue = Stockfish::search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false);
+              bestValue[ us] = Stockfish::search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false);
+              bestValue[~us] = -bestValue[us];
 
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
@@ -396,24 +398,24 @@ void Thread::search() {
               // the UI) before a re-search.
               if (   mainThread
                   && multiPV == 1
-                  && (bestValue <= alpha || bestValue >= beta)
+                  && (bestValue[us] <= alpha || bestValue[us] >= beta)
                   && Time.elapsed() > 3000)
                   sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
 
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
-              if (bestValue <= alpha)
+              if (bestValue[us] <= alpha)
               {
                   beta = (alpha + beta) / 2;
-                  alpha = std::max(bestValue - delta, -VALUE_INFINITE);
+                  alpha = std::max(bestValue[us] - delta, -VALUE_INFINITE);
 
                   failedHighCnt = 0;
                   if (mainThread)
                       mainThread->stopOnPonderhit = false;
               }
-              else if (bestValue >= beta)
+              else if (bestValue[us] >= beta)
               {
-                  beta = std::min(bestValue + delta, VALUE_INFINITE);
+                  beta = std::min(bestValue[us] + delta, VALUE_INFINITE);
                   ++failedHighCnt;
               }
               else
@@ -443,8 +445,8 @@ void Thread::search() {
 
       // Have we found a "mate in x"?
       if (   Limits.mate
-          && bestValue >= VALUE_MATE_IN_MAX_PLY
-          && VALUE_MATE - bestValue <= 2 * Limits.mate)
+          && bestValue[us] >= VALUE_MATE_IN_MAX_PLY
+          && VALUE_MATE - bestValue[us] <= 2 * Limits.mate)
           Threads.stop = true;
 
       if (!mainThread)
@@ -466,8 +468,8 @@ void Thread::search() {
           && !Threads.stop
           && !mainThread->stopOnPonderhit)
       {
-          double fallingEval = (69 + 13 * (mainThread->bestPreviousAverageScore - bestValue)
-                                    +  6 * (mainThread->iterValue[iterIdx] - bestValue)) / 619.6;
+          double fallingEval = (69 + 13 * (mainThread->bestPreviousAverageScore - bestValue[us])
+                                    +  6 * (mainThread->iterValue[iterIdx] - bestValue[us])) / 619.6;
           fallingEval = std::clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
@@ -499,7 +501,7 @@ void Thread::search() {
               Threads.increaseDepth = true;
       }
 
-      mainThread->iterValue[iterIdx] = bestValue;
+      mainThread->iterValue[iterIdx] = bestValue[us];
       iterIdx = (iterIdx + 1) & 3;
   }
 

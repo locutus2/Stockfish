@@ -161,7 +161,7 @@ Value Eval::evaluate(const Position& pos) {
 
   bool lazy = abs(simpleEval) >=   RookValue + KnightValue
                                  + 16 * shuffling * shuffling
-                                 + abs(pos.this_thread()->bestValue)
+                                 + abs(pos.this_thread()->bestValue[stm] - simpleEval)
                                  + abs(pos.this_thread()->rootSimpleEval);
 
   if (lazy)
@@ -202,10 +202,11 @@ std::string Eval::trace(Position& pos) {
       return "Final evaluation: none (in check)";
 
   // Reset any global variable used in eval
-  pos.this_thread()->bestValue       = VALUE_ZERO;
-  pos.this_thread()->rootSimpleEval  = VALUE_ZERO;
-  pos.this_thread()->optimism[WHITE] = VALUE_ZERO;
-  pos.this_thread()->optimism[BLACK] = VALUE_ZERO;
+  pos.this_thread()->bestValue[WHITE] = VALUE_ZERO;
+  pos.this_thread()->bestValue[BLACK] = VALUE_ZERO;
+  pos.this_thread()->rootSimpleEval   = VALUE_ZERO;
+  pos.this_thread()->optimism[WHITE]  = VALUE_ZERO;
+  pos.this_thread()->optimism[BLACK]  = VALUE_ZERO;
 
   std::stringstream ss;
   ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2);
