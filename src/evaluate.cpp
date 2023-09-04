@@ -162,7 +162,7 @@ Value Eval::evaluate(const Position& pos) {
   bool lazy = abs(simpleEval) >=   RookValue + KnightValue
                                  + 16 * shuffling * shuffling
                                  + abs(pos.this_thread()->bestValue)
-                                 + abs(pos.this_thread()->rootSimpleEval);
+                                 + abs(pos.this_thread()->rootSimpleEval[stm] - simpleEval);
 
   if (lazy)
       v = Value(simpleEval);
@@ -203,7 +203,8 @@ std::string Eval::trace(Position& pos) {
 
   // Reset any global variable used in eval
   pos.this_thread()->bestValue       = VALUE_ZERO;
-  pos.this_thread()->rootSimpleEval  = VALUE_ZERO;
+  pos.this_thread()->rootSimpleEval[WHITE] = VALUE_ZERO;
+  pos.this_thread()->rootSimpleEval[BLACK] = VALUE_ZERO;
   pos.this_thread()->optimism[WHITE] = VALUE_ZERO;
   pos.this_thread()->optimism[BLACK] = VALUE_ZERO;
 
