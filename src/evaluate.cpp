@@ -161,8 +161,8 @@ Value Eval::evaluate(const Position& pos) {
 
   bool lazy = abs(simpleEval) >=   RookValue + KnightValue
                                  + 16 * shuffling * shuffling
-                                 + std::max(abs(pos.this_thread()->bestValue),
-                                            abs(pos.this_thread()->rootSimpleEval));
+                                 +  2 * std::max(abs(pos.this_thread()->bestValue),
+                                                 abs(pos.this_thread()->rootSimpleEval));
 
   if (lazy)
       v = Value(simpleEval);
