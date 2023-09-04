@@ -163,7 +163,7 @@ Value Eval::evaluate(const Position& pos) {
                                  + 16 * shuffling * shuffling
                                  + abs(pos.this_thread()->bestValue)
                                  + abs(pos.this_thread()->rootSimpleEval[stm])
-                                 + abs(pos.this_thread()->rootSimpleEval[stm] - simpleEval);
+                                 - abs(pos.this_thread()->rootSimpleEval[stm] - simpleEval);
 
   if (lazy)
       v = Value(simpleEval);
