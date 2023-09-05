@@ -80,7 +80,7 @@ namespace {
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
   Depth reduction(bool i, Depth d, int mn, Value delta, Value rootDelta, bool cutNode) {
-    int reductionScale = Reductions[d] * Reductions[mn] * (64 + cutNode) / 64;
+    int reductionScale = Reductions[d] * Reductions[mn] * (256 + cutNode) / 256;
     return  (reductionScale + 1372 - int(delta) * 1073 / int(rootDelta)) / 1024
           + (!i && reductionScale > 936);
   }
