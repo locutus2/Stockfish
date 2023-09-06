@@ -175,7 +175,7 @@ Value Eval::evaluate(const Position& pos) {
 
       // Blend optimism and eval with nnue complexity and material imbalance
       optimism  += optimism  * (nnueComplexity + abs(simpleEval - nnue)) / 512;
-      shuffling -= shuffling * (nnueComplexity + abs(simpleEval - nnue)) / 512;
+      shuffling -= shuffling * (nnueComplexity + abs(simpleEval - nnue)) / 4096;
       nnue      -= nnue      * (nnueComplexity + abs(simpleEval - nnue)) / 32768;
 
       int npm = pos.non_pawn_material() / 64;
