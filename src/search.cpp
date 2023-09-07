@@ -415,7 +415,7 @@ void Thread::search() {
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
 
-                  if (mainThread)
+                  if (mainThread || nodes & 3)
                      ++failedHighCnt;
               }
               else
