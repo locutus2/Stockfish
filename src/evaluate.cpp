@@ -175,7 +175,7 @@ Value Eval::evaluate(const Position& pos) {
 
       // Measurements shows that simple eval underestimate/overestimates final eval for low/high simple eval.
       // So try a logistic formula to shift simple eval nearer to final eval.
-      simpleEval -= simpleEval * (5 + 11 * (simpleEval - 1800) / (abs(simpleEval - 1800) + 200)) / 50;
+      simpleEval -= simpleEval * (5 + 11 * (abs(simpleEval) - 1800) / (abs(abs(simpleEval) - 1800) + 200)) / 50;
 
       // Blend optimism and eval with nnue complexity and material imbalance
       optimism += optimism * (nnueComplexity + abs(simpleEval - nnue)) / 512;
