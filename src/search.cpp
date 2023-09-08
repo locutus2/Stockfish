@@ -321,6 +321,7 @@ void Thread::search() {
   multiPV = std::min(multiPV, rootMoves.size());
 
   int searchAgainCounter = 0;
+  int doneSearchesCount = 0;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -377,6 +378,7 @@ void Thread::search() {
               // four searchAgain steps (see issue #2717).
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - 3 * (searchAgainCounter + 1) / 4);
               bestValue = Stockfish::search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false);
+              doneSearchesCount++;
 
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
@@ -415,7 +417,7 @@ void Thread::search() {
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
 
-                  if (mainThread || nodes & 3)
+                  if (mainThread || (id() + doneSearchesCount) & 3)
                      ++failedHighCnt;
               }
               else
