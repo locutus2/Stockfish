@@ -165,17 +165,19 @@ Value Eval::evaluate(const Position& pos) {
                                  + abs(pos.this_thread()->rootSimpleEval);
 
   if (lazy)
+  {
+      // Measurements shows that simple eval underestimate/overestimates final eval for low/high simple eval.
+      // So try a logistic formula to shift simple eval nearer to final eval.
+      simpleEval -= simpleEval * (5 + 11 * (abs(simpleEval) - 1800) / (abs(abs(simpleEval) - 1800) + 200)) / 50;
+
       v = Value(simpleEval);
+  }
   else
   {
       int nnueComplexity;
       Value nnue = NNUE::evaluate(pos, true, &nnueComplexity);
 
       Value optimism = pos.this_thread()->optimism[stm];
-
-      // Measurements shows that simple eval underestimate/overestimates final eval for low/high simple eval.
-      // So try a logistic formula to shift simple eval nearer to final eval.
-      simpleEval -= simpleEval * (5 + 11 * (abs(simpleEval) - 1800) / (abs(abs(simpleEval) - 1800) + 200)) / 50;
 
       // Blend optimism and eval with nnue complexity and material imbalance
       optimism += optimism * (nnueComplexity + abs(simpleEval - nnue)) / 512;
