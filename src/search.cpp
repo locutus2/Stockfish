@@ -612,9 +612,16 @@ namespace {
     excludedMove = ss->excludedMove;
     posKey = pos.key();
     tte = TT.probe(posKey, ss->ttHit);
-    ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ss->ttHit    ? tte->move() : MOVE_NONE;
+
+    if (ss->ttHit && ttMove && (!pos.pseudo_legal(ttMove) || !pos.legal(ttMove)))
+    {
+        ss->ttHit = false;
+        ttMove = MOVE_NULL;
+    }
+
+    ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttCapture = ttMove && pos.capture_stage(ttMove);
 
     // At this point, if excluded, skip straight to step 6, static eval. However,
