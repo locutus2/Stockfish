@@ -615,7 +615,7 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ss->ttHit    ? tte->move() : MOVE_NONE;
 
-    if (ss->ply < depth && ss->ttHit && ttMove && (!pos.pseudo_legal(ttMove) || !pos.legal(ttMove)))
+    if ((PvNode || tte->is_pv()) && ss->ttHit && ttMove && (!pos.pseudo_legal(ttMove) || !pos.legal(ttMove)))
     {
         ss->ttHit = false;
         ttMove = MOVE_NULL;
