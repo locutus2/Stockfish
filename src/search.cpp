@@ -1009,7 +1009,7 @@ moves_loop: // When in check, search starts here
                             + (*contHist[3])[movedPiece][to_sq(move)];
 
               // Continuation history based pruning (~2 Elo)
-              if (   lmrDepth < 6
+              if (   lmrDepth < ((*contHist[0])[movedPiece][to_sq(move)] > 0 ? 5 : 6)
                   && history < -3832 * depth)
                   continue;
 
