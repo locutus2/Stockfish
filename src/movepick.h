@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <limits>
 #include <type_traits>
+#include <vector>
 
 #include "movegen.h"
 #include "types.h"
@@ -134,6 +135,11 @@ public:
   MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
   Move next_move(bool skipQuiets = false);
 
+  void delayMove(Move move)
+  {
+      delayedMoves.push_back(move);
+  }
+
 private:
   template<PickType T, typename Pred> Move select(Pred);
   template<GenType> void score();
@@ -151,6 +157,7 @@ private:
   Value threshold;
   Depth depth;
   ExtMove moves[MAX_MOVES];
+  std::vector<Move> delayedMoves;
 };
 
 } // namespace Stockfish

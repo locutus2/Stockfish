@@ -31,8 +31,8 @@ namespace Stockfish {
 namespace {
 
   enum Stages {
-    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
-    EVASION_TT, EVASION_INIT, EVASION,
+    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE, INIT_DELAYED_MOVES, DELAYED_MOVES,
+    EVASION_TT, EVASION_INIT, EVASION, INIT_EVASION_DELAYED_MOVES, EVASION_DELAYED_MOVES,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
   };
@@ -278,6 +278,22 @@ top:
       [[fallthrough]];
 
   case BAD_CAPTURE:
+      if (select<Next>([](){ return true; }))
+          return *(cur - 1);
+
+      ++stage;
+      [[fallthrough]];
+
+  case INIT_DELAYED_MOVES:
+  case INIT_EVASION_DELAYED_MOVES:
+      cur = moves;
+      endMoves = std::copy(delayedMoves.begin(), delayedMoves.end(), cur);
+
+      ++stage;
+      [[fallthrough]];
+
+  case DELAYED_MOVES:
+  case EVASION_DELAYED_MOVES:
       return select<Next>([](){ return true; });
 
   case EVASION_INIT:
@@ -289,7 +305,11 @@ top:
       [[fallthrough]];
 
   case EVASION:
-      return select<Best>([](){ return true; });
+      if (select<Best>([](){ return true; }))
+          return *(cur - 1);
+
+      ++stage;
+      goto top;
 
   case PROBCUT:
       return select<Next>([&](){ return pos.see_ge(*cur, threshold); });
