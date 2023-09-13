@@ -1167,7 +1167,7 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if (!PvNode && pos.key() == thisThread->PV3PliesKey)
+      if (!PvNode && posKey == thisThread->PV3PliesKey)
           r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
