@@ -355,6 +355,7 @@ void Thread::search() {
 
           // Reset UCI info selDepth for each depth and each PV line
           selDepth = 0;
+          PV3PliesKey = 0;
 
           // Reset aspiration window starting size
           Value prev = rootMoves[pvIdx].averageScore;
@@ -1166,6 +1167,9 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
+      if (!PvNode && pos.key() == thisThread->PV3PliesKey)
+          r++;
+
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
                      + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1286,6 +1290,17 @@ moves_loop: // When in check, search starts here
               if (   moveCount > 1
                   && !thisThread->pvIdx)
                   ++thisThread->bestMoveChanges;
+
+              if (value > alpha && value < beta && rm.pv.size() >= 3)
+              {
+                  StateInfo si[3];
+                  for(int i = 0; i < 3; ++i)
+                      pos.do_move(rm.pv[i], si[i]);
+
+                  thisThread->PV3PliesKey = pos.key();
+                  for(int i = 2; i >= 0; --i)
+                      pos.undo_move(rm.pv[i]);
+              }
           }
           else
               // All other moves but the PV, are set to the lowest value: this
