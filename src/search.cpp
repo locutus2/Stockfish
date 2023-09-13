@@ -1014,7 +1014,8 @@ moves_loop: // When in check, search starts here
                   && history < -3832 * depth
                   && !mp.isDelayedMove())
               {
-                  mp.delayMove(move);
+                  if (moveCount <= 2)
+                      mp.delayMove(move);
                   continue;
               }
 
