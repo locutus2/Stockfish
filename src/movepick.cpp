@@ -32,7 +32,7 @@ namespace {
 
   enum Stages {
     MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE, INIT_DELAYED_MOVES, DELAYED_MOVES,
-    EVASION_TT, EVASION_INIT, EVASION, INIT_EVASION_DELAYED_MOVES, EVASION_DELAYED_MOVES,
+    EVASION_TT, EVASION_INIT, EVASION,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
   };
@@ -103,7 +103,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 }
 
 bool MovePicker::isDelayedMove() const {
-    return stage == DELAYED_MOVES || stage == EVASION_DELAYED_MOVES;
+    return stage == DELAYED_MOVES;
 }
 
 /// MovePicker::score() assigns a numerical value to each move in a list, used
@@ -289,7 +289,6 @@ top:
       [[fallthrough]];
 
   case INIT_DELAYED_MOVES:
-  case INIT_EVASION_DELAYED_MOVES:
       cur = moves;
       endMoves = std::copy(delayedMoves.begin(), delayedMoves.end(), cur);
 
@@ -297,7 +296,6 @@ top:
       [[fallthrough]];
 
   case DELAYED_MOVES:
-  case EVASION_DELAYED_MOVES:
       return select<Next>([](){ return true; });
 
   case EVASION_INIT:
@@ -309,11 +307,7 @@ top:
       [[fallthrough]];
 
   case EVASION:
-      if (select<Best>([](){ return true; }))
-          return *(cur - 1);
-
-      ++stage;
-      goto top;
+      return select<Best>([](){ return true; });
 
   case PROBCUT:
       return select<Next>([&](){ return pos.see_ge(*cur, threshold); });
