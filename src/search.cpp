@@ -1011,8 +1011,12 @@ moves_loop: // When in check, search starts here
 
               // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 6
-                  && history < -3832 * depth)
+                  && history < -3832 * depth
+                  && !mp.isDelayedMove())
+              {
+                  mp.delayMove(move);
                   continue;
+              }
 
               history += 2 * thisThread->mainHistory[us][from_to(move)];
 
@@ -1028,11 +1032,8 @@ moves_loop: // When in check, search starts here
               lmrDepth = std::max(lmrDepth, 0);
 
               // Prune moves with negative SEE (~4 Elo)
-              if (!mp.isDelayedMove() && !pos.see_ge(move, Value(-31 * lmrDepth * lmrDepth)))
-              {
-                  mp.delayMove(move);
+              if (!pos.see_ge(move, Value(-31 * lmrDepth * lmrDepth)))
                   continue;
-              }
           }
       }
 
