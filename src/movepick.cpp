@@ -102,6 +102,10 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
                              && pos.see_ge(ttm, threshold));
 }
 
+bool MovePicker::isDelayedMove() const {
+    return stage == DELAYED_MOVES || stage == EVASION_DELAYED_MOVES;
+}
+
 /// MovePicker::score() assigns a numerical value to each move in a list, used
 /// for sorting. Captures are ordered by Most Valuable Victim (MVV), preferring
 /// captures with a good history. Quiets moves are ordered using the history tables.
