@@ -1012,7 +1012,7 @@ moves_loop: // When in check, search starts here
               // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 6
                   && history < -3832 * depth
-                  && (lmrDepth >= 0 || ss->inCheck))
+                  && (moveCount > 2 || move != ss->killers[0]))
                   continue;
 
               history += 2 * thisThread->mainHistory[us][from_to(move)];
