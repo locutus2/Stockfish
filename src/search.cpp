@@ -1291,7 +1291,7 @@ moves_loop: // When in check, search starts here
                   && !thisThread->pvIdx)
                   ++thisThread->bestMoveChanges;
 
-              if (value > alpha && value < beta && rm.pv.size() >= 3)
+              if (value > alpha && value < beta && rm.pv.size() >= 2)
               {
                   StateInfo si[2];
                   for(int i = 0; i < 2; ++i)
