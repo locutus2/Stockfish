@@ -47,6 +47,14 @@
 
 namespace Stockfish {
 
+int A[3][2] = {
+    { 0, 0 },
+    { 0, 0 },
+    { 0, 0 },
+};
+
+TUNE(SetRange(0, 100), A);
+
 namespace Search {
 
   LimitsType Limits;
@@ -1164,6 +1172,12 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction for first generated move (ttMove)
       else if (move == ttMove)
+          r--;
+
+      int nt = 2 * cutNode + PvNode;
+      if (moveCount > A[nt][0])
+          r++;
+      if (moveCount > A[nt][1])
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
