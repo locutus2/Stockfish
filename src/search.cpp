@@ -1141,6 +1141,9 @@ moves_loop: // When in check, search starts here
       if (cutNode)
           r += 2;
 
+      else if (!PvNode && moveCount < 7)
+          r++;
+
       // Increase reduction if ttMove is a capture (~3 Elo)
       if (ttCapture)
           r++;
