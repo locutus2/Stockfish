@@ -929,6 +929,9 @@ net: netvariables
 		fi; \
 	fi; \
 
+format: .depend
+	awk '{for(i=1;i<=NF;i++) print $$i}' .depend | grep -v '[\\:]$$' | xargs realpath | sort | uniq | grep -v incbin | xargs clang-format -i -style=file
+	
 # default target
 default:
 	help
