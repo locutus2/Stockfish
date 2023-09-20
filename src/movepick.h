@@ -124,25 +124,25 @@ class MovePicker {
     };
 
    public:
-    MovePicker(const MovePicker&)            = delete;
-    MovePicker& operator=(const MovePicker&) = delete;
-    MovePicker(const Position&,
-               Move,
-               Depth,
-               const ButterflyHistory*,
-               const CapturePieceToHistory*,
-               const PieceToHistory**,
-               Move,
-               const Move*);
-    MovePicker(const Position&,
-               Move,
-               Depth,
-               const ButterflyHistory*,
-               const CapturePieceToHistory*,
-               const PieceToHistory**,
-               Square);
-    MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
-    Move next_move(bool skipQuiets = false);
+                MovePicker(const MovePicker&) = delete;
+    MovePicker& operator=(const MovePicker&)  = delete;
+                MovePicker(const Position&,
+                           Move,
+                           Depth,
+                           const ButterflyHistory*,
+                           const CapturePieceToHistory*,
+                           const PieceToHistory**,
+                           Move,
+                           const Move*);
+                MovePicker(const Position&,
+                           Move,
+                           Depth,
+                           const ButterflyHistory*,
+                           const CapturePieceToHistory*,
+                           const PieceToHistory**,
+                           Square);
+                MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
+    Move        next_move(bool skipQuiets = false);
 
    private:
     template<PickType T, typename Pred> Move select(Pred);

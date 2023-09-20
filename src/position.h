@@ -78,8 +78,8 @@ class Position {
    public:
     static void init();
 
-    Position()                           = default;
-    Position(const Position&)            = delete;
+              Position()                 = default;
+              Position(const Position&)  = delete;
     Position& operator=(const Position&) = delete;
 
     // FEN string input/output

@@ -48,8 +48,8 @@ class Thread {
     NativeThread            stdThread;
 
    public:
-    explicit Thread(size_t);
-    virtual ~Thread();
+    explicit     Thread(size_t);
+    virtual ~    Thread();
     virtual void search();
     void         clear();
     void         idle_loop();

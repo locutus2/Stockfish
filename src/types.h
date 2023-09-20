@@ -93,13 +93,13 @@ constexpr bool HasPopCnt = false;
     #ifdef USE_PEXT
 constexpr bool HasPext = true;
     #else
-constexpr bool HasPext   = false;
+constexpr bool HasPext = false;
     #endif
 
     #ifdef IS_64BIT
 constexpr bool Is64Bit = true;
     #else
-constexpr bool Is64Bit   = false;
+constexpr bool Is64Bit = false;
     #endif
 
 using Key      = uint64_t;
@@ -468,6 +468,6 @@ constexpr Key make_key(uint64_t seed) { return seed * 6364136223846793005ULL + 1
 
 }  // namespace Stockfish
 
-#endif             // #ifndef TYPES_H_INCLUDED
+#endif  // #ifndef TYPES_H_INCLUDED
 
 #include "tune.h"  // Global visibility to tuning setup

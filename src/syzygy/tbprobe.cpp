@@ -94,7 +94,7 @@ constexpr std::string_view PieceToChar = " PNBRQK  pnbrqk";
 int MapPawns[SQUARE_NB];
 int MapB1H1H7[SQUARE_NB];
 int MapA1D1D4[SQUARE_NB];
-int MapKK[10][SQUARE_NB];       // [MapA1D1D4][SQUARE_NB]
+int MapKK[10][SQUARE_NB];  // [MapA1D1D4][SQUARE_NB]
 
 int Binomial[6][SQUARE_NB];     // [k][n] k elements from a set of n elements
 int LeadPawnIdx[6][SQUARE_NB];  // [leadPawnsCnt][SQUARE_NB]
@@ -470,7 +470,7 @@ void TBTables::add(const std::vector<PieceType>& pieces) {
 
     TBFile file(code.insert(code.find('K', 1), "v") + ".rtbw");  // KRK -> KRvK
 
-    if (!file.is_open())                                         // Only WDL file is checked
+    if (!file.is_open())  // Only WDL file is checked
         return;
 
     file.close();

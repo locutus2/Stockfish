@@ -80,8 +80,8 @@ class Tune {
 
     using PostUpdate = void();  // Post-update function
 
-    Tune() { read_results(); }
-    Tune(const Tune&)           = delete;
+         Tune() { read_results(); }
+         Tune(const Tune&)      = delete;
     void operator=(const Tune&) = delete;
     void read_results();
 
@@ -92,7 +92,7 @@ class Tune {
 
     // Use polymorphism to accommodate Entry of different types in the same vector
     struct EntryBase {
-        virtual ~EntryBase()       = default;
+        virtual ~    EntryBase()   = default;
         virtual void init_option() = 0;
         virtual void read_option() = 0;
     };
