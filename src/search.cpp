@@ -47,10 +47,10 @@
 
 namespace Stockfish {
 
-int A[3][2] = {
-    { 0, 0 },
-    { 0, 0 },
-    { 0, 0 },
+int A[3][2][2] = {
+    { { 0, 0 }, { 0, 0 } },
+    { { 0, 0 }, { 0, 0 } },
+    { { 0, 0 }, { 0, 0 } },
 };
 
 TUNE(SetRange(0, 100), A);
@@ -1175,9 +1175,9 @@ moves_loop: // When in check, search starts here
           r--;
 
       int nt = 2 * cutNode + PvNode;
-      if (moveCount > A[nt][0])
+      if (moveCount > A[nt][priorCapture][0])
           r++;
-      if (moveCount > A[nt][1])
+      if (moveCount > A[nt][priorCapture][1])
           r--;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
