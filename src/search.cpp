@@ -1324,6 +1324,8 @@ moves_loop: // When in check, search starts here
                   alpha = value; // Update alpha! Always alpha < beta
               }
           }
+          else if (rootNode && --depth <= 0)
+              break;
       }
 
 
