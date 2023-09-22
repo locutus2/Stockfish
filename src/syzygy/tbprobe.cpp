@@ -1054,7 +1054,7 @@ uint8_t* set_dtz_map(TBTable<DTZ>& e, uint8_t* data, File maxFile) {
         auto flags = e.get(0, f)->flags;
         if (flags & TBFlag::Mapped) {
             if (flags & TBFlag::Wide) {
-                data += (uintptr_t)data & 1;  // Word alignment, we may have a mixed table
+                data += uintptr_t(data) & 1;  // Word alignment, we may have a mixed table
                 for (int i = 0; i < 4; ++i) { // Sequence like 3,x,x,x,1,x,0,2,x,x
                     e.get(0, f)->map_idx[i] = uint16_t((uint16_t*)data - (uint16_t*)e.map + 1);
                     data += 2 * number<uint16_t, LittleEndian>(data) + 2;
@@ -1110,7 +1110,7 @@ void set(T& e, uint8_t* data) {
             set_groups(e, e.get(i, f), order[i], f);
     }
 
-    data += (uintptr_t)data & 1; // Word alignment
+    data += uintptr_t(data) & 1; // Word alignment
 
     for (File f = FILE_A; f <= maxFile; ++f)
         for (int i = 0; i < sides; i++)

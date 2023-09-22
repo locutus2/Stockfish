@@ -490,13 +490,13 @@ static void* aligned_large_pages_alloc_windows([[maybe_unused]] size_t allocSize
   if (!hAdvapi32)
       hAdvapi32 = LoadLibrary(TEXT("advapi32.dll"));
 
-  auto fun6 = (fun6_t)(void(*)())GetProcAddress(hAdvapi32, "OpenProcessToken");
+  auto fun6 = fun6_t((void(*)())GetProcAddress(hAdvapi32, "OpenProcessToken"));
   if (!fun6)
       return nullptr;
-  auto fun7 = (fun7_t)(void(*)())GetProcAddress(hAdvapi32, "LookupPrivilegeValueA");
+  auto fun7 = fun7_t((void(*)())GetProcAddress(hAdvapi32, "LookupPrivilegeValueA"));
   if (!fun7)
       return nullptr;
-  auto fun8 = (fun8_t)(void(*)())GetProcAddress(hAdvapi32, "AdjustTokenPrivileges");
+  auto fun8 = fun8_t((void(*)())GetProcAddress(hAdvapi32, "AdjustTokenPrivileges"));
   if (!fun8)
       return nullptr;
 
@@ -598,7 +598,6 @@ void aligned_large_pages_free(void *mem) {
 
 #endif
 
-
 namespace WinProcGroup {
 
 #ifndef _WIN32
@@ -621,7 +620,7 @@ static int best_node(size_t idx) {
 
   // Early exit if the needed API is not available at runtime
   HMODULE k32 = GetModuleHandle(TEXT("Kernel32.dll"));
-  auto fun1 = (fun1_t)(void(*)())GetProcAddress(k32, "GetLogicalProcessorInformationEx");
+  auto fun1 = fun1_t((void(*)())GetProcAddress(k32, "GetLogicalProcessorInformationEx"));
   if (!fun1)
       return -1;
 
@@ -691,10 +690,10 @@ void bindThisThread(size_t idx) {
 
   // Early exit if the needed API are not available at runtime
   HMODULE k32 = GetModuleHandle(TEXT("Kernel32.dll"));
-  auto fun2 = (fun2_t)(void(*)())GetProcAddress(k32, "GetNumaNodeProcessorMaskEx");
-  auto fun3 = (fun3_t)(void(*)())GetProcAddress(k32, "SetThreadGroupAffinity");
-  auto fun4 = (fun4_t)(void(*)())GetProcAddress(k32, "GetNumaNodeProcessorMask2");
-  auto fun5 = (fun5_t)(void(*)())GetProcAddress(k32, "GetMaximumProcessorGroupCount");
+  auto fun2 = fun2_t((void(*)())GetProcAddress(k32, "GetNumaNodeProcessorMaskEx"));
+  auto fun3 = fun3_t((void(*)())GetProcAddress(k32, "SetThreadGroupAffinity"));
+  auto fun4 = fun4_t((void(*)())GetProcAddress(k32, "GetNumaNodeProcessorMask2"));
+  auto fun5 = fun5_t((void(*)())GetProcAddress(k32, "GetMaximumProcessorGroupCount"));
 
   if (!fun2 || !fun3)
       return;
