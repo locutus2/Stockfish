@@ -69,9 +69,9 @@ using namespace Search;
 namespace {
 
   constexpr int MoveCountThreshold[3][2][2] = {
-      { { 62, 30 }, { 71, 45 } },
-      { { 36, 47 }, { 30, 36 } },
-      { { 50, 36 }, { 75, 52 } },
+      { { 56, 27 }, { 77, 41 } },
+      { { 34, 42 }, { 31, 36 } },
+      { { 35, 34 }, { 75, 58 } },
   };
 
   // Different node types, used as a template parameter
