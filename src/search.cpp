@@ -1139,7 +1139,7 @@ moves_loop: // When in check, search starts here
 
       // Increase reduction for cut nodes (~3 Elo)
       if (cutNode)
-          r += 2;
+          r += 2 + (moveCount > 34 && !priorCapture);
 
       // Increase reduction if ttMove is a capture (~3 Elo)
       if (ttCapture)
@@ -1147,7 +1147,7 @@ moves_loop: // When in check, search starts here
 
       // Decrease reduction for PvNodes (~2 Elo)
       if (PvNode)
-          r -= 1 + (priorCapture && moveCount > 52);
+          r--;
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
