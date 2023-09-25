@@ -230,6 +230,29 @@ namespace {
      return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
   }
 
+  // Calculates the NoramlizeToPawn array based on the current win rate model
+
+  void normalize_to_pawn() {
+
+      for(int ply = 0; ply <= 240; ++ply)
+      {
+          int val = -1;
+          for(int v = 0; v < 1000; v++)
+          {
+              if(win_rate_model(Value(v), ply) >= 500)
+              {
+                  val = v;
+                  break;
+              }
+          }
+
+          if (val < 0)
+              std::cerr << ply << " ?," << std::endl;
+          else
+              std::cerr << val << ", ";
+      }
+  }
+
 } // namespace
 
 
@@ -285,6 +308,7 @@ void UCI::loop(int argc, char* argv[]) {
       // These commands must not be used during a search!
       else if (token == "flip")     pos.flip();
       else if (token == "bench")    bench(pos, is, states);
+      else if (token == "normalize") normalize_to_pawn();
       else if (token == "d")        sync_cout << pos << sync_endl;
       else if (token == "eval")     trace_eval(pos);
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
