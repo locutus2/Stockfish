@@ -1324,7 +1324,7 @@ moves_loop: // When in check, search starts here
                   alpha = value; // Update alpha! Always alpha < beta
               }
           }
-          else if (rootNode && move == ttMove && --depth <= 0)
+          else if (rootNode && !bestMove && moveCount > 1)
               break;
       }
 
