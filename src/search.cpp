@@ -1173,7 +1173,7 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if (depth < 14)
+      if (depth > 4)
       {
           if (moveCount > mcThreshold[1] && moveCount <= mcThreshold[0])
               r--;
