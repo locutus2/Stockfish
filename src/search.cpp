@@ -926,7 +926,6 @@ moves_loop: // When in check, search starts here
 
     value = bestValue;
     moveCountPruning = singularQuietLMR = false;
-    int bestValueCount = 0;
 
     // Indicate PvNodes that will probably fail low if the node was searched
     // at a depth equal to or greater than the current depth, and the result
@@ -1325,7 +1324,8 @@ moves_loop: // When in check, search starts here
                   alpha = value; // Update alpha! Always alpha < beta
               }
           }
-          else if (rootNode && !bestMove && ++bestValueCount >= 3)
+          else if (   rootNode && !bestMove && !capture && moveCount > 1
+                   && move != countermove && move != ss->killers[0] && move != ss->killers[1])
               break;
       }
 
