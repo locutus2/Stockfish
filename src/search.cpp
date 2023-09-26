@@ -371,6 +371,7 @@ void Thread::search() {
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
           int failedHighCnt = 0;
+          failedLowCnt = 0;
           while (true)
           {
               // Adjust the effective depth searched, but ensure at least one effective increment for every
@@ -407,6 +408,7 @@ void Thread::search() {
                   beta = (alpha + beta) / 2;
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
 
+                  ++failedLowCnt;
                   failedHighCnt = 0;
                   if (mainThread)
                       mainThread->stopOnPonderhit = false;
@@ -415,6 +417,7 @@ void Thread::search() {
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
                   ++failedHighCnt;
+                  failedLowCnt = 0;
               }
               else
                   break;
@@ -1324,6 +1327,8 @@ moves_loop: // When in check, search starts here
                   alpha = value; // Update alpha! Always alpha < beta
               }
           }
+          else if (rootNode && !bestMove && moveCount > 1 && thisThread->failedLowCnt > 0)
+              break;
       }
 
 
