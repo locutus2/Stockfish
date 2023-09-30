@@ -47,6 +47,12 @@
 
 namespace Stockfish {
 
+int A[PIECE_TYPE_NB] = {0, 64, 64, 64, 64, 64, 64, 0};
+
+Range centered_range(int v) { return Range(v - 64, v + 64); }
+
+TUNE(SetRange(centered_range), A);
+
 namespace Search {
 
 LimitsType Limits;
@@ -1708,6 +1714,8 @@ void update_all_stats(const Position& pos,
 // Updates histories of the move pairs formed
 // by moves at ply -1, -2, -4, and -6 with current move.
 void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
+
+    bonus = (bonus * A[type_of(pc)]) / 64;
 
     for (int i : {1, 2, 3, 4, 6})
     {
