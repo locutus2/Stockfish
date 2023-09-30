@@ -1719,12 +1719,11 @@ moves_loop: // When in check, search starts here
     PieceType captured;
 
     int quietMoveBonus = stat_bonus(depth + 1);
+    int bestMoveBonus = bestValue > beta + 145 ? quietMoveBonus     // larger bonus
+                                               : stat_bonus(depth); // smaller bonus
 
     if (!pos.capture_stage(bestMove))
     {
-        int bestMoveBonus = bestValue > beta + 145 ? quietMoveBonus  // larger bonus
-                                            : stat_bonus(depth);     // smaller bonus
-
         // Increase stats for the best move in case it was a quiet move
         update_quiet_stats(pos, ss, bestMove, bestMoveBonus);
     }
@@ -1745,8 +1744,8 @@ moves_loop: // When in check, search starts here
     // Decrease stats for all non-best quiet moves
     for (int i = 0; i < quietCount; ++i)
     {
-        thisThread->mainHistory[us][from_to(quietsSearched[i])] << -quietMoveBonus;
-        update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -quietMoveBonus);
+        thisThread->mainHistory[us][from_to(quietsSearched[i])] << -bestMoveBonus;
+        update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -bestMoveBonus);
     }
 
     // Decrease stats for all non-best capture moves
