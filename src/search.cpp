@@ -69,9 +69,9 @@ using namespace Search;
 namespace {
 
   constexpr int MoveCountThreshold[3][2][2] = {
-      { { 56, 27 }, { 77, 41 } },
-      { { 34, 42 }, { 31, 36 } },
-      { { 35, 34 }, { 75, 58 } },
+      { { 49, 35 }, { 73, 35 } },
+      { { 44, 41 }, { 37, 16 } },
+      { { 22, 30 }, { 50, 78 } },
   };
 
   // Different node types, used as a template parameter
@@ -1174,14 +1174,11 @@ moves_loop: // When in check, search starts here
       else if (move == ttMove)
           r--;
 
-      if (depth > 5)
-      {
-          if (moveCount > mcThreshold[1] && moveCount <= mcThreshold[0])
-              r--;
+      if (moveCount > mcThreshold[1] && moveCount <= mcThreshold[0])
+          r--;
 
-          else if (moveCount > mcThreshold[0] && moveCount <= mcThreshold[1])
-              r++;
-      }
+      else if (moveCount > mcThreshold[0] && moveCount <= mcThreshold[1])
+          r++;
 
       ss->statScore =  2 * thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)]
