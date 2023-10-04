@@ -527,8 +527,15 @@ namespace {
     constexpr bool rootNode = nodeType == Root;
 
     // Dive into quiescence search when the depth reaches zero
-    if (depth <= !((ss-1)->ttPv || (ss->ply & 1)))
+    if (depth <= 0)
         return qsearch<PvNode ? PV : NonPV>(pos, ss, alpha, beta);
+
+    else if (!PvNode && !cutNode && depth <= 1)
+    {
+        Value qValue = qsearch<NonPV>(pos, ss, alpha, beta);
+        if (qValue <= alpha)
+            return qValue;
+    }
 
     // Check if we have an upcoming move that draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
