@@ -1147,8 +1147,8 @@ moves_loop: // When in check, search starts here
           r++;
 
       // Decrease reduction for PvNodes (~2 Elo)
-      if (PvNode && ss->ply & 1)
-          r -= 2;
+      if (PvNode)
+          r -= 1 + (ss->ply & 1);
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
