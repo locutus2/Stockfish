@@ -1146,9 +1146,9 @@ moves_loop: // When in check, search starts here
       if (ttCapture)
           r++;
 
-      // Decrease reduction for PvNodes if opponent is side to move (~2 Elo)
+      // Decrease reduction for PvNodes (~2 Elo)
       if (PvNode && ss->ply & 1)
-          r--;
+          r -= 2;
 
       // Decrease reduction if ttMove has been singularly extended (~1 Elo)
       if (singularQuietLMR)
