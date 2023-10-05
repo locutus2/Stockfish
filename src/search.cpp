@@ -530,7 +530,7 @@ namespace {
     if (depth <= 0)
         return qsearch<PvNode ? PV : NonPV>(pos, ss, alpha, beta);
 
-    else if (!PvNode && !cutNode && depth <= 1)
+    if (depth <= 1 && !PvNode && !cutNode && pos.captured_piece())
     {
         Value qValue = qsearch<NonPV>(pos, ss, alpha, beta);
         if (qValue <= alpha)
