@@ -1370,7 +1370,7 @@ moves_loop: // When in check, search starts here
         int bonus = (depth > 5) + (PvNode || cutNode) + (bestValue < alpha - 800) + ((ss-1)->moveCount > 12);
 
         if (priorCapture)
-            thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(pos.captured_piece())] << stat_bonus(depth) * bonus / 2;
+            thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(pos.captured_piece())] << stat_bonus(depth) * bonus;
 
         else
         {
