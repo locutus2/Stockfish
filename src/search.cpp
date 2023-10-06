@@ -527,7 +527,7 @@ namespace {
     constexpr bool rootNode = nodeType == Root;
 
     // Dive into quiescence search when the depth reaches zero
-    if (depth <= (!PvNode && !cutNode && !(ss-4)->ttPv))
+    if (depth <= (!PvNode && !cutNode && (ss-1)->PVdistance >= 5))
         return qsearch<PvNode ? PV : NonPV>(pos, ss, alpha, beta);
 
     // Check if we have an upcoming move that draws by repetition, or
@@ -568,6 +568,7 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    ss->PVdistance     = PvNode ? 0 : (ss-1)->PVdistance + 1;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
