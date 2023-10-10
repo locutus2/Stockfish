@@ -526,7 +526,7 @@ namespace {
     constexpr bool PvNode = nodeType != NonPV;
     constexpr bool rootNode = nodeType == Root;
 
-    if (depth <= (!PvNode && !cutNode && (ss-1)->PVdistance >= 5))
+    if (depth <= (!PvNode && !cutNode && pos.captured_piece()))
         return qsearch<PvNode ? PV : NonPV>(pos, ss, alpha, beta);
 
     // Check if we have an upcoming move that draws by repetition, or
@@ -620,10 +620,7 @@ namespace {
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
     if (!excludedMove)
-    {
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
-        ss->PVdistance = PvNode ? 0 : (ss-1)->PVdistance + 1;
-    }
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
