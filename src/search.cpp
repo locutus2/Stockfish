@@ -759,7 +759,7 @@ namespace {
     // check at our previous move we look at static evaluation at move prior to it
     // and if we were in check at move prior to it flag is set to true) and is
     // false otherwise. The improving flag is used in various pruning heuristics.
-    improving =   !priorCapture
+    improving =   !(ss-1)->inCheck
                && ( (ss-2)->staticEval != VALUE_NONE ? ss->staticEval > (ss-2)->staticEval
                   : (ss-4)->staticEval != VALUE_NONE ? ss->staticEval > (ss-4)->staticEval
                   : true);
