@@ -1330,7 +1330,7 @@ moves_loop: // When in check, search starts here
                   assert(depth > 0);
                   alpha = value; // Update alpha! Always alpha < beta
 
-                  if (PvNode && !rootNode)
+                  if (PvNode && ss->ply & 1)
                   {
                       bestValueTotal += value;
                       bestValueCount++;
@@ -1366,7 +1366,7 @@ moves_loop: // When in check, search starts here
 
     assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
 
-    if (PvNode && bestValueCount > 1 && bestValue < beta)
+    if (PvNode && !rootNode && bestValueCount > 1 && bestValue < beta)
         bestValue = bestValueTotal / bestValueCount;
 
     if (!moveCount)
