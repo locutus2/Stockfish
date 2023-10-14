@@ -47,9 +47,11 @@
 
 namespace Stockfish {
 
-int A[7];
+int A[7] = { 0, 61, 67, 16, 62, 0, 31 };
 
-TUNE(SetRange(-64, 64), A);
+Range centered_range(int v) { return Range(v - 64, v + 64); }
+
+TUNE(SetRange(centered_range), A);
 
 namespace Search {
 
@@ -1778,7 +1780,7 @@ moves_loop: // When in check, search starts here
         if (ss->inCheck && i > 2)
             break;
         if (is_ok((ss-i)->currentMove))
-            (*(ss-i)->continuationHistory)[pc][to] << (bonus * ((i == 3 ? 16 : 64) + A[i]) / 64);
+            (*(ss-i)->continuationHistory)[pc][to] << (bonus * A[i] / 64);
     }
   }
 
