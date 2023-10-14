@@ -554,11 +554,11 @@ namespace {
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
-    Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
+    Value bestValue, bestValueTotal, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, improving, priorCapture, singularQuietLMR;
     bool capture, moveCountPruning, ttCapture;
     Piece movedPiece;
-    int moveCount, captureCount, quietCount;
+    int moveCount, captureCount, quietCount, bestValueCount;
 
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
@@ -567,6 +567,8 @@ namespace {
     Color us           = pos.side_to_move();
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
+    bestValueTotal     = VALUE_ZERO;
+    bestValueCount     = 0;
     maxValue           = VALUE_INFINITE;
 
     // Check for the available remaining time
@@ -1308,7 +1310,11 @@ moves_loop: // When in check, search starts here
               bestMove = move;
 
               if (PvNode && !rootNode) // Update pv even in fail-high case
+              {
                   update_pv(ss->pv, move, (ss+1)->pv);
+                  bestValueTotal += value;
+                  bestValueCount++;
+              }
 
               if (value >= beta)
               {
@@ -1357,6 +1363,9 @@ moves_loop: // When in check, search starts here
     // return a fail low score.
 
     assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
+
+    if (PvNode && bestValueCount > 1)
+        bestValue = bestValueTotal / bestValueCount;
 
     if (!moveCount)
         bestValue = excludedMove ? alpha :
