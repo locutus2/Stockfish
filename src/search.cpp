@@ -71,7 +71,7 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
-  const int CMHBonusFactor[7] = { 0, 61, 67, -4, 62, 8, 31 };
+  const int CMHBonusFactor[7] = { 0, 61, 64, 5, 45, 0, 37 };
 
   // Futility margin
   Value futility_margin(Depth d, bool noTtCutNode, bool improving) {
@@ -1766,7 +1766,7 @@ moves_loop: // When in check, search starts here
 
 
   // update_continuation_histories() updates histories of the move pairs formed
-  // by moves at ply -1, -2, -4, and -6 with current move.
+  // by moves at ply -1, -2, -3, -4, and -6 with current move.
 
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
@@ -1776,7 +1776,7 @@ moves_loop: // When in check, search starts here
         if (ss->inCheck && i > 2)
             break;
         if (is_ok((ss-i)->currentMove))
-            (*(ss-i)->continuationHistory)[pc][to] << (bonus  * CMHBonusFactor[i] / 64);
+            (*(ss-i)->continuationHistory)[pc][to] << (bonus * CMHBonusFactor[i] / 64);
     }
   }
 
