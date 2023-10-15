@@ -554,7 +554,7 @@ namespace {
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
-    Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
+    Value bestValue, secondBestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, improving, priorCapture, singularQuietLMR;
     bool capture, moveCountPruning, ttCapture;
     Piece movedPiece;
@@ -567,6 +567,7 @@ namespace {
     Color us           = pos.side_to_move();
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
+    secondBestValue    = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
 
     // Check for the available remaining time
@@ -1014,6 +1015,9 @@ moves_loop: // When in check, search starts here
                             + (*contHist[1])[movedPiece][to_sq(move)]
                             + (*contHist[3])[movedPiece][to_sq(move)];
 
+              if (secondBestValue > VALUE_TB_LOSS_IN_MAX_PLY)
+                  history += 32 * (bestValue - secondBestValue);
+
               // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 6
                   && history < -3232 * depth)
@@ -1301,6 +1305,7 @@ moves_loop: // When in check, search starts here
 
       if (value > bestValue)
       {
+          secondBestValue = bestValue;
           bestValue = value;
 
           if (value > alpha)
