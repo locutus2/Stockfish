@@ -1015,7 +1015,7 @@ moves_loop: // When in check, search starts here
                             + (*contHist[1])[movedPiece][to_sq(move)]
                             + (*contHist[3])[movedPiece][to_sq(move)];
 
-              if (secondBestValue > VALUE_TB_LOSS_IN_MAX_PLY)
+              if (PvNode && secondBestValue > VALUE_TB_LOSS_IN_MAX_PLY)
                   history += 32 * (bestValue - secondBestValue);
 
               // Continuation history based pruning (~2 Elo)
