@@ -1178,7 +1178,10 @@ moves_loop: // When in check, search starts here
                      - 3848;
 
       if (abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY && ss->staticEval != VALUE_NONE)
-          ss->statScore += 10216 * abs(ttValue - ss->staticEval) / (abs(ttValue - ss->staticEval) + 2000);
+      {
+          int uncertainty = abs(ttValue - ss->staticEval) - 1000;
+          ss->statScore += 8216 * uncertainty / (abs(uncertainty) + 3108) + 2000;
+      }
 
       // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
       r -= ss->statScore / (10216 + 3855 * (depth > 5 && depth < 23));
