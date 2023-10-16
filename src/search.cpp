@@ -1178,7 +1178,7 @@ moves_loop: // When in check, search starts here
                      - 3848;
 
       if (abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY && ss->staticEval != VALUE_NONE)
-          ss->statScore += abs(ttValue - ss->staticEval) * depth / 8;
+          ss->statScore += abs(ttValue - ss->staticEval) * 32 / depth;
 
       // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
       r -= ss->statScore / (10216 + 3855 * (depth > 5 && depth < 23));
