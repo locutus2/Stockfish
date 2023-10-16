@@ -81,7 +81,7 @@ namespace {
 
   Depth reduction(bool i, Depth d, int mn, Value delta, Value rootDelta, int uncertainty) {
     int reductionScale = Reductions[d] * Reductions[mn];
-    return  (reductionScale + 1560 - int(delta) * 945 / int(rootDelta) + uncertainty / 5) / 1024
+    return  (reductionScale + 1560 - int(delta) * 945 / int(rootDelta) - uncertainty / 5) / 1024
           + (!i && reductionScale > 791) ;
   }
 
