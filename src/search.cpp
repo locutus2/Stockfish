@@ -1177,7 +1177,7 @@ moves_loop: // When in check, search starts here
                      + (*contHist[3])[movedPiece][to_sq(move)]
                      - 3848;
 
-      if (PvNode && abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY && ss->staticEval != VALUE_NONE)
+      if (abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY && ss->staticEval != VALUE_NONE)
           ss->statScore += abs(ttValue - ss->staticEval) * (16 + depth) / 16;
 
       // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
