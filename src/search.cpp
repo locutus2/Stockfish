@@ -894,9 +894,11 @@ namespace {
 
                 if (value >= probCutBeta)
                 {
+                    value -= probCutBeta - beta;
+
                     // Save ProbCut data into transposition table
                     tte->save(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER, depth - 3, move, ss->staticEval);
-                    return value - (probCutBeta - beta);
+                    return value;
                 }
             }
 
