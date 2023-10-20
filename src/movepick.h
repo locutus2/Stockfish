@@ -97,7 +97,7 @@ using ButterflyHistory = Stats<int16_t, 7183, 4, 5, COLOR_NB, int(SQUARE_NB) * i
 using CounterMoveHistory = Stats<Move, NOT_USED, NOT_USED, NOT_USED, PIECE_NB, SQUARE_NB>;
 
 /// CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
-using CapturePieceToHistory = Stats<int16_t, 10692, 3, 4, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
+using CapturePieceToHistory = Stats<int16_t, 10692, 5, 6, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
 
 /// PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
 using PieceToHistory = Stats<int16_t, 29952, 4, 5, PIECE_NB, SQUARE_NB>;
