@@ -50,6 +50,7 @@ public:
   void operator<<(int bonus) {
     assert(abs(bonus) <= D); // Ensure range is [-D, D]
     static_assert(D <= std::numeric_limits<T>::max(), "D overflows T");
+    static_assert(A <= B, "Scale has to be less or equal than 1.");
 
     entry += (bonus * D - entry * abs(bonus)) / (D * B / A);
 
