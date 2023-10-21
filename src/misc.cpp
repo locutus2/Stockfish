@@ -704,7 +704,8 @@ void bindThisThread(size_t idx) {
         GROUP_AFFINITY affinity;
         if (fun2(node, &affinity))                         // GetNumaNodeProcessorMaskEx
             fun3(GetCurrentThread(), &affinity, nullptr);  // SetThreadGroupAffinity
-    } else
+    }
+    else
     {
         // If a numa node has more than one processor group, we assume they are
         // sized equal and we spread threads evenly across the groups.

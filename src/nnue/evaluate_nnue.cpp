@@ -248,7 +248,8 @@ static void format_cp_compact(Value v, char* buffer) {
         cp %= 1000;
         buffer[3] = '0' + cp / 100;
         buffer[4] = ' ';
-    } else if (cp >= 1000)
+    }
+    else if (cp >= 1000)
     {
         buffer[1] = '0' + cp / 1000;
         cp %= 1000;
@@ -256,7 +257,8 @@ static void format_cp_compact(Value v, char* buffer) {
         cp %= 100;
         buffer[3] = '.';
         buffer[4] = '0' + cp / 10;
-    } else
+    }
+    else
     {
         buffer[1] = '0' + cp / 100;
         cp %= 100;

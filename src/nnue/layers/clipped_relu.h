@@ -83,7 +83,8 @@ class ClippedReLU {
                   &out[i], _mm256_permutevar8x32_epi32(
                              _mm256_max_epi8(_mm256_packs_epi16(words0, words1), Zero), Offsets));
             }
-        } else
+        }
+        else
         {
             constexpr IndexType NumChunks = InputDimensions / (SimdWidth / 2);
             const __m128i       Zero      = _mm_setzero_si128();

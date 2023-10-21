@@ -322,7 +322,8 @@ inline Square lsb(Bitboard b) {
     {
         _BitScanForward(&idx, int32_t(b));
         return Square(idx);
-    } else
+    }
+    else
     {
         _BitScanForward(&idx, int32_t(b >> 32));
         return Square(idx + 32);
@@ -337,7 +338,8 @@ inline Square msb(Bitboard b) {
     {
         _BitScanReverse(&idx, int32_t(b >> 32));
         return Square(idx + 32);
-    } else
+    }
+    else
     {
         _BitScanReverse(&idx, int32_t(b));
         return Square(idx);

@@ -210,7 +210,8 @@ void init_magics(PieceType pt, Bitboard table[], Magic magics[]) {
                 {
                     epoch[idx]     = cnt;
                     m.attacks[idx] = reference[i];
-                } else if (m.attacks[idx] != reference[i])
+                }
+                else if (m.attacks[idx] != reference[i])
                     break;
             }
         }

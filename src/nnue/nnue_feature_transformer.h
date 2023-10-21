@@ -414,7 +414,8 @@ class FeatureTransformer {
                 for (IndexType k = 0; k < HalfDimensions * sizeof(std::int16_t) / sizeof(vec_t);
                      ++k)
                     accOut[k] = vec_add_16(vec_sub_16(accIn[k], columnR0[k]), columnA[k]);
-            } else
+            }
+            else
             {
                 const IndexType offsetR1 = HalfDimensions * removed[0][1];
                 auto            columnR1 = reinterpret_cast<const vec_t*>(&weights[offsetR1]);
@@ -441,7 +442,8 @@ class FeatureTransformer {
                      ++k)
                     accPsqtOut[k] = vec_add_psqt_32(vec_sub_psqt_32(accPsqtIn[k], columnPsqtR0[k]),
                                                     columnPsqtA[k]);
-            } else
+            }
+            else
             {
                 const IndexType offsetPsqtR1 = PSQTBuckets * removed[0][1];
                 auto columnPsqtR1 = reinterpret_cast<const psqt_vec_t*>(&psqtWeights[offsetPsqtR1]);
@@ -452,7 +454,8 @@ class FeatureTransformer {
                       vec_sub_psqt_32(vec_add_psqt_32(accPsqtIn[k], columnPsqtA[k]),
                                       vec_add_psqt_32(columnPsqtR0[k], columnPsqtR1[k]));
             }
-        } else
+        }
+        else
         {
             for (IndexType j = 0; j < HalfDimensions / TileHeight; ++j)
             {
@@ -668,7 +671,8 @@ class FeatureTransformer {
             // Only update current position accumulator to minimize work.
             StateInfo* states_to_update[2] = {pos.state(), nullptr};
             update_accumulator_incremental<Perspective, 2>(pos, oldest_st, states_to_update);
-        } else
+        }
+        else
         {
             update_accumulator_refresh<Perspective>(pos);
         }
@@ -693,7 +697,8 @@ class FeatureTransformer {
                                               nullptr};
 
             update_accumulator_incremental<Perspective, 3>(pos, oldest_st, states_to_update);
-        } else
+        }
+        else
         {
             update_accumulator_refresh<Perspective>(pos);
         }

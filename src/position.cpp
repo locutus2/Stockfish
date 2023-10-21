@@ -591,7 +591,8 @@ bool Position::pseudo_legal(const Move m) const {
             && !((from + 2 * pawn_push(us) == to)            // Not a double push
                  && (relative_rank(us, from) == RANK_2) && empty(to) && empty(to - pawn_push(us))))
             return false;
-    } else if (!(attacks_bb(type_of(pc), from, pieces()) & to))
+    }
+    else if (!(attacks_bb(type_of(pc), from, pieces()) & to))
         return false;
 
     // Evasions generator already takes care to avoid some kind of illegal moves
@@ -739,7 +740,8 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
                 assert(piece_on(to) == NO_PIECE);
                 assert(piece_on(capsq) == make_piece(them, PAWN));
             }
-        } else
+        }
+        else
             st->nonPawnMaterial[them] -= PieceValue[captured];
 
         dp.dirty_num = 2;  // 1 piece moved, 1 piece captured
@@ -896,7 +898,8 @@ void Position::undo_move(Move m) {
     {
         Square rfrom, rto;
         do_castling<false>(us, from, to, rfrom, rto);
-    } else
+    }
+    else
     {
         move_piece(to, from);  // Put the piece back at the source square
 

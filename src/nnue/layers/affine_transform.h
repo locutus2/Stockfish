@@ -252,8 +252,8 @@ class AffineTransform {
     #undef vec_add_dpbusd_32
     #undef vec_add_dpbusd_32x2
     #undef vec_hadd
-
-        } else if constexpr (OutputDimensions == 1)
+        }
+        else if constexpr (OutputDimensions == 1)
         {
 
     // We cannot use AVX512 for the last layer because there's only 32 inputs and the buffer is not padded to 64 elements.

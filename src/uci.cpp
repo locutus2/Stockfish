@@ -65,7 +65,8 @@ void position(Position& pos, std::istringstream& is, StateListPtr& states) {
     {
         fen = StartFEN;
         is >> token;  // Consume the "moves" token, if any
-    } else if (token == "fen")
+    }
+    else if (token == "fen")
         while (is >> token && token != "moves")
             fen += token + " ";
     else
@@ -198,9 +199,11 @@ void bench(Position& pos, std::istream& args, StateListPtr& states) {
                 go(pos, is, states);
                 Threads.main()->wait_for_search_finished();
                 nodes += Threads.nodes_searched();
-            } else
+            }
+            else
                 trace_eval(pos);
-        } else if (token == "setoption")
+        }
+        else if (token == "setoption")
             setoption(is);
         else if (token == "position")
             position(pos, is, states);
@@ -321,8 +324,8 @@ void UCI::loop(int argc, char* argv[]) {
             if (is >> std::skipws >> f)
                 filename = f;
             Eval::NNUE::save_eval(filename);
-        } else if (token == "--help" || token == "help" || token == "--license"
-                   || token == "license")
+        }
+        else if (token == "--help" || token == "help" || token == "--license" || token == "license")
             sync_cout
               << "\nStockfish is a powerful chess engine for playing and analyzing."
                  "\nIt is released as free software licensed under the GNU GPLv3 License."
@@ -361,7 +364,8 @@ std::string UCI::value(Value v) {
     {
         const int ply = VALUE_MATE_IN_MAX_PLY - 1 - std::abs(v);  // recompute ss->ply
         ss << "cp " << (v > 0 ? 20000 - ply : -20000 + ply);
-    } else
+    }
+    else
         ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 
     return ss.str();

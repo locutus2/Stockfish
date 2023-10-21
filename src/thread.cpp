@@ -247,14 +247,14 @@ Thread* ThreadPool::get_best_thread() const {
             // Make sure we pick the shortest mate / TB conversion or stave off mate the longest
             if (th->rootMoves[0].score > bestThread->rootMoves[0].score)
                 bestThread = th;
-        } else if (th->rootMoves[0].score >= VALUE_TB_WIN_IN_MAX_PLY
-                   || (th->rootMoves[0].score > VALUE_TB_LOSS_IN_MAX_PLY
-                       && (votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]]
-                           || (votes[th->rootMoves[0].pv[0]]
-                                 == votes[bestThread->rootMoves[0].pv[0]]
-                               && thread_value(th) * int(th->rootMoves[0].pv.size() > 2)
-                                    > thread_value(bestThread)
-                                        * int(bestThread->rootMoves[0].pv.size() > 2)))))
+        }
+        else if (th->rootMoves[0].score >= VALUE_TB_WIN_IN_MAX_PLY
+                 || (th->rootMoves[0].score > VALUE_TB_LOSS_IN_MAX_PLY
+                     && (votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]]
+                         || (votes[th->rootMoves[0].pv[0]] == votes[bestThread->rootMoves[0].pv[0]]
+                             && thread_value(th) * int(th->rootMoves[0].pv.size() > 2)
+                                  > thread_value(bestThread)
+                                      * int(bestThread->rootMoves[0].pv.size() > 2)))))
             bestThread = th;
 
     return bestThread;

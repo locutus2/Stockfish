@@ -872,7 +872,8 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
         else
             idx = 6 * 63 * 62 + 4 * 28 * 62 + 4 * 7 * 28 + rank_of(squares[0]) * 7 * 6
                 + (rank_of(squares[1]) - adjust1) * 6 + (rank_of(squares[2]) - adjust2);
-    } else
+    }
+    else
         // We don't have at least 3 unique pieces, like in KRRvKBB, just map
         // the kings.
         idx = MapKK[MapA1D1D4[squares[0]]][squares[1]];
@@ -954,11 +955,13 @@ void set_groups(T& e, PairsData* d, int order[], File f) {
         {
             d->groupIdx[0] = idx;
             idx *= e.hasPawns ? LeadPawnsSize[d->groupLen[0]][f] : e.hasUniquePieces ? 31332 : 462;
-        } else if (k == order[1])  // Remaining pawns
+        }
+        else if (k == order[1])  // Remaining pawns
         {
             d->groupIdx[1] = idx;
             idx *= Binomial[d->groupLen[1]][48 - d->groupLen[0]];
-        } else  // Remaining pieces
+        }
+        else  // Remaining pieces
         {
             d->groupIdx[next] = idx;
             idx *= Binomial[d->groupLen[next]][freeSquares];
@@ -1085,7 +1088,8 @@ uint8_t* set_dtz_map(TBTable<DTZ>& e, uint8_t* data, File maxFile) {
                     e.get(0, f)->map_idx[i] = uint16_t((uint16_t*) data - (uint16_t*) e.map + 1);
                     data += 2 * number<uint16_t, LittleEndian>(data) + 2;
                 }
-            } else
+            }
+            else
             {
                 for (int i = 0; i < 4; ++i)
                 {
@@ -1582,13 +1586,15 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
             // In case of a zeroing move, dtz is one of -101/-1/0/1/101
             WDLScore wdl = -probe_wdl(pos, &result);
             dtz          = dtz_before_zeroing(wdl);
-        } else if (pos.is_draw(1))
+        }
+        else if (pos.is_draw(1))
         {
             // In case a root move leads to a draw by repetition or 50-move rule,
             // we set dtz to zero. Note: since we are only 1 ply from the root,
             // this must be a true 3-fold repetition inside the game history.
             dtz = 0;
-        } else
+        }
+        else
         {
             // Otherwise, take dtz for the new position and correct by 1 ply
             dtz = -probe_dtz(pos, &result);

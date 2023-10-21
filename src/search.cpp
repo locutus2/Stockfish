@@ -113,7 +113,8 @@ struct Skill {
         {
             double e = double(uci_elo - 1320) / (3190 - 1320);
             level = std::clamp((((37.2473 * e - 40.8525) * e + 22.2943) * e - 0.311438), 0.0, 19.0);
-        } else
+        }
+        else
             level = double(skill_level);
     }
     bool enabled() const { return level < 20.0; }
@@ -223,7 +224,8 @@ void MainThread::search() {
         rootMoves.emplace_back(MOVE_NONE);
         sync_cout << "info depth 0 score "
                   << UCI::value(rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW) << sync_endl;
-    } else
+    }
+    else
     {
         Threads.start_searching();  // start non-main threads
         Thread::search();           // main thread start searching
@@ -417,11 +419,13 @@ void Thread::search() {
                     failedHighCnt = 0;
                     if (mainThread)
                         mainThread->stopOnPonderhit = false;
-                } else if (bestValue >= beta)
+                }
+                else if (bestValue >= beta)
                 {
                     beta = std::min(bestValue + delta, VALUE_INFINITE);
                     ++failedHighCnt;
-                } else
+                }
+                else
                     break;
 
                 delta += delta / 3;
@@ -492,7 +496,8 @@ void Thread::search() {
                     mainThread->stopOnPonderhit = true;
                 else
                     Threads.stop = true;
-            } else if (!mainThread->ponder && Time.elapsed() > totalTime * 0.50)
+            }
+            else if (!mainThread->ponder && Time.elapsed() > totalTime * 0.50)
                 Threads.increaseDepth = false;
             else
                 Threads.increaseDepth = true;
@@ -591,7 +596,8 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
         beta  = std::min(mate_in(ss->ply + 1), beta);
         if (alpha >= beta)
             return alpha;
-    } else
+    }
+    else
         thisThread->rootDelta = beta - alpha;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
@@ -711,12 +717,14 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
         ss->staticEval = eval = VALUE_NONE;
         improving             = false;
         goto moves_loop;
-    } else if (excludedMove)
+    }
+    else if (excludedMove)
     {
         // Providing the hint that this node's accumulator will be used often brings significant Elo gain (~13 Elo)
         Eval::NNUE::hint_common_parent_position(pos);
         eval = ss->staticEval;
-    } else if (ss->ttHit)
+    }
+    else if (ss->ttHit)
     {
         // Never assume anything about values stored in TT
         ss->staticEval = eval = tte->eval();
@@ -728,7 +736,8 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
         // ttValue can be used as a better position evaluation (~7 Elo)
         if (ttValue != VALUE_NONE && (tte->bound() & (ttValue > eval ? BOUND_LOWER : BOUND_UPPER)))
             eval = ttValue;
-    } else
+    }
+    else
     {
         ss->staticEval = eval = evaluate(pos);
         // Save static evaluation into the transposition table
@@ -974,7 +983,8 @@ moves_loop:  // When in check, search starts here
                 // SEE based pruning for captures and checks (~11 Elo)
                 if (!pos.see_ge(move, Value(-185) * depth))
                     continue;
-            } else
+            }
+            else
             {
                 int history = (*contHist[0])[movedPiece][to_sq(move)]
                             + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1220,7 +1230,8 @@ moves_loop:  // When in check, search starts here
                 {
                     rm.scoreLowerbound = true;
                     rm.uciScore        = beta;
-                } else if (value <= alpha)
+                }
+                else if (value <= alpha)
                 {
                     rm.scoreUpperbound = true;
                     rm.uciScore        = alpha;
@@ -1238,7 +1249,8 @@ moves_loop:  // When in check, search starts here
                 // we must take care to only do this for the first PV line.
                 if (moveCount > 1 && !thisThread->pvIdx)
                     ++thisThread->bestMoveChanges;
-            } else
+            }
+            else
                 // All other moves but the PV, are set to the lowest value: this
                 // is not a problem when sorting because the sort is stable and the
                 // move position in the list is preserved - just the PV is pushed up.
@@ -1261,7 +1273,8 @@ moves_loop:  // When in check, search starts here
                     ss->cutoffCnt += 1 + !ttMove;
                     assert(value >= beta);  // Fail high
                     break;
-                } else
+                }
+                else
                 {
                     // Reduce other moves if we have found at least one score improvement (~2 Elo)
                     if (depth > 2 && depth < 12 && beta < 13828 && value > -11369)
@@ -1419,7 +1432,8 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
             if (ttValue != VALUE_NONE
                 && (tte->bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER)))
                 bestValue = ttValue;
-        } else
+        }
+        else
             // In case of null move search use previous static eval with a different sign
             ss->staticEval = bestValue =
               (ss - 1)->currentMove != MOVE_NULL ? evaluate(pos) : -(ss - 1)->staticEval;
@@ -1669,7 +1683,8 @@ void update_all_stats(const Position& pos,
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]),
                                           to_sq(quietsSearched[i]), -bestMoveBonus);
         }
-    } else
+    }
+    else
     {
         // Increase stats for the best move in case it was a capture move
         captured = type_of(pos.piece_on(to_sq(bestMove)));
@@ -1928,7 +1943,8 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
         // Probe during search only if DTZ is not available and we are winning
         if (dtz_available || rootMoves[0].tbScore <= VALUE_DRAW)
             Cardinality = 0;
-    } else
+    }
+    else
     {
         // Clean up if root_probe() and root_probe_wdl() have failed
         for (auto& m : rootMoves)
