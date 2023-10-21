@@ -47,7 +47,7 @@
 
 namespace Stockfish {
 
-int A[7] = { 0, 61, 67, 16, 62, 0, 31 };
+int A[7] = { 0, 61, 64, 5, 45, 0, 37 };
 
 Range centered_range(int v) { return Range(v - 64, v + 64); }
 
