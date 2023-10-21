@@ -32,10 +32,10 @@
 namespace Stockfish {
 class Position;
 
-/// StatsEntry stores the stat table value. It is usually a number but could
-/// be a move or even a nested history. We use a class instead of naked value
-/// to directly call history update operator<<() on the entry so to use stats
-/// tables at caller sites as simple multi-dim arrays.
+// StatsEntry stores the stat table value. It is usually a number but could
+// be a move or even a nested history. We use a class instead of a naked value
+// to directly call history update operator<<() on the entry so to use stats
+// tables at caller sites as simple multi-dim arrays.
 template<typename T, int D, int A, int B>
 class StatsEntry {
 
@@ -58,11 +58,11 @@ public:
   }
 };
 
-/// Stats is a generic N-dimensional array used to store various statistics.
-/// The first template parameter T is the base type of the array, the second
-/// template parameter D limits the range of updates in [-D, D] when we update
-/// values with the << operator, while the last parameters (Size and Sizes)
-/// encode the dimensions of the array.
+// Stats is a generic N-dimensional array used to store various statistics.
+// The first template parameter T is the base type of the array, and the second
+// template parameter D limits the range of updates in [-D, D] when we update
+// values with the << operator, while the last parameters (Size and Sizes)
+// encode the dimensions of the array.
 template <typename T, int D, int A, int B, int Size, int... Sizes>
 struct Stats : public std::array<Stats<T, D, A, B, Sizes...>, Size>
 {
@@ -86,27 +86,27 @@ struct Stats<T, D, A, B, Size> : public std::array<StatsEntry<T, D, A, B>, Size>
 enum StatsParams { NOT_USED = 0 };
 enum StatsType { NoCaptures, Captures };
 
-/// ButterflyHistory records how often quiet moves have been successful or
-/// unsuccessful during the current search, and is used for reduction and move
-/// ordering decisions. It uses 2 tables (one for each color) indexed by
-/// the move's from and to squares, see www.chessprogramming.org/Butterfly_Boards
-/// (~11 elo)
+// ButterflyHistory records how often quiet moves have been successful or
+// unsuccessful during the current search, and is used for reduction and move
+// ordering decisions. It uses 2 tables (one for each color) indexed by
+// the move's from and to squares, see www.chessprogramming.org/Butterfly_Boards
+// (~11 elo)
 using ButterflyHistory = Stats<int16_t, 7183, 4, 5, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
 
-/// CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
-/// move, see www.chessprogramming.org/Countermove_Heuristic
+// CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
+// move, see www.chessprogramming.org/Countermove_Heuristic
 using CounterMoveHistory = Stats<Move, NOT_USED, NOT_USED, NOT_USED, PIECE_NB, SQUARE_NB>;
 
-/// CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
+// CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
 using CapturePieceToHistory = Stats<int16_t, 10692, 4, 5, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
 
-/// PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
+// PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
 using PieceToHistory = Stats<int16_t, 29952, 6, 7, PIECE_NB, SQUARE_NB>;
 
-/// ContinuationHistory is the combined history of a given pair of moves, usually
-/// the current one given a previous one. The nested history table is based on
-/// PieceToHistory instead of ButterflyBoards.
-/// (~63 elo)
+// ContinuationHistory is the combined history of a given pair of moves, usually
+// the current one given a previous one. The nested history table is based on
+// PieceToHistory instead of ButterflyBoards.
+// (~63 elo)
 using ContinuationHistory = Stats<PieceToHistory, NOT_USED, NOT_USED, NOT_USED, PIECE_NB, SQUARE_NB>;
 
 
