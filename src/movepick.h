@@ -70,7 +70,7 @@ struct Stats : public std::array<Stats<T, D, A, B, Sizes...>, Size>
 
   void fill(const T& v) {
 
-    // For standard-layout 'this' points to first struct member
+    // For standard-layout 'this' points to the first struct member
     assert(std::is_standard_layout_v<stats>);
 
     using entry = StatsEntry<T, D, A, B>;
@@ -82,7 +82,7 @@ struct Stats : public std::array<Stats<T, D, A, B, Sizes...>, Size>
 template <typename T, int D, int A, int B, int Size>
 struct Stats<T, D, A, B, Size> : public std::array<StatsEntry<T, D, A, B>, Size> {};
 
-/// In stats table, D=0 means that the template parameter is not used
+// In stats table, D=0 means that the template parameter is not used
 enum StatsParams { NOT_USED = 0 };
 enum StatsType { NoCaptures, Captures };
 
@@ -110,12 +110,12 @@ using PieceToHistory = Stats<int16_t, 29952, 6, 7, PIECE_NB, SQUARE_NB>;
 using ContinuationHistory = Stats<PieceToHistory, NOT_USED, NOT_USED, NOT_USED, PIECE_NB, SQUARE_NB>;
 
 
-/// MovePicker class is used to pick one pseudo-legal move at a time from the
-/// current position. The most important method is next_move(), which returns a
-/// new pseudo-legal move each time it is called, until there are no moves left,
-/// when MOVE_NONE is returned. In order to improve the efficiency of the
-/// alpha-beta algorithm, MovePicker attempts to return the moves which are most
-/// likely to get a cut-off first.
+// MovePicker class is used to pick one pseudo-legal move at a time from the
+// current position. The most important method is next_move(), which returns a
+// new pseudo-legal move each time it is called, until there are no moves left,
+// when MOVE_NONE is returned. In order to improve the efficiency of the
+// alpha-beta algorithm, MovePicker attempts to return the moves which are most
+// likely to get a cut-off first.
 class MovePicker {
 
   enum PickType { Next, Best };
