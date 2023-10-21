@@ -152,6 +152,7 @@ neon = no
 dotprod = no
 arm_version = 0
 STRIP = strip
+CLANG-FORMAT = clang-format
 
 ### 2.2 Architecture specific
 
@@ -944,9 +945,8 @@ net: netvariables
 		fi; \
 	fi; \
 
-# format all $(HEADERS)
 format: .depend
-	clang-format -i $(SRCS) $(HEADERS) -style=file:../.clang-format
+	$(CLANG-FORMAT) -i $(SRCS) $(HEADERS) -style=file:../.clang-format
 
 # default target
 default:
