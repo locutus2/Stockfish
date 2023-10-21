@@ -946,8 +946,7 @@ net: netvariables
 
 # format all $(HEADERS)
 format: .depend
-	clang-format -i $(SRCS) -style=file
-	clang-format -i $(HEADERS) -style=file
+	clang-format -i $(SRCS) $(HEADERS) -style=file:../.clang-format
 
 # default target
 default:
