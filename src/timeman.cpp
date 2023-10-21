@@ -54,7 +54,8 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
     // to nodes, and use resulting values in time management formulas.
     // WARNING: to avoid time losses, the given npmsec (nodes per millisecond)
     // must be much lower than the real engine speed.
-    if (npmsec) {
+    if (npmsec)
+    {
         if (!availableNodes)                            // Only once at game start
             availableNodes = npmsec * limits.time[us];  // Time is in msec
 
@@ -81,7 +82,8 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
     // x basetime (+ z increment)
     // If there is a healthy increment, timeLeft can exceed actual available
     // game time for the current move, so also cap to 20% of available game time.
-    if (limits.movestogo == 0) {
+    if (limits.movestogo == 0)
+    {
         optScale = std::min(0.0120 + std::pow(ply + 3.0, 0.45) * 0.0039,
                             0.2 * limits.time[us] / double(timeLeft))
                  * optExtra;
@@ -89,7 +91,8 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
     }
 
     // x moves in y seconds (+ z increment)
-    else {
+    else
+    {
         optScale = std::min((0.88 + ply / 116.4) / mtg, 0.88 * limits.time[us] / double(timeLeft));
         maxScale = std::min(6.3, 1.5 + 0.11 * mtg);
     }

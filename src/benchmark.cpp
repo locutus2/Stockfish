@@ -122,11 +122,13 @@ std::vector<std::string> setup_bench(const Position& current, std::istream& is) 
     else if (fenFile == "current")
         fens.push_back(current.fen());
 
-    else {
+    else
+    {
         std::string   fen;
         std::ifstream file(fenFile);
 
-        if (!file.is_open()) {
+        if (!file.is_open())
+        {
             std::cerr << "Unable to open file " << fenFile << std::endl;
             exit(EXIT_FAILURE);
         }
@@ -145,7 +147,8 @@ std::vector<std::string> setup_bench(const Position& current, std::istream& is) 
     for (const std::string& fen : fens)
         if (fen.find("setoption") != std::string::npos)
             list.emplace_back(fen);
-        else {
+        else
+        {
             list.emplace_back("position fen " + fen);
             list.emplace_back(go);
         }

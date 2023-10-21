@@ -39,7 +39,8 @@ template<Color Perspective>
 void HalfKAv2_hm::append_active_indices(const Position& pos, IndexList& active) {
     Square   ksq = pos.square<KING>(Perspective);
     Bitboard bb  = pos.pieces();
-    while (bb) {
+    while (bb)
+    {
         Square s = pop_lsb(bb);
         active.push_back(make_index<Perspective>(s, pos.piece_on(s), ksq));
     }
@@ -55,7 +56,8 @@ void HalfKAv2_hm::append_changed_indices(Square            ksq,
                                          const DirtyPiece& dp,
                                          IndexList&        removed,
                                          IndexList&        added) {
-    for (int i = 0; i < dp.dirty_num; ++i) {
+    for (int i = 0; i < dp.dirty_num; ++i)
+    {
         if (dp.from[i] != SQ_NONE)
             removed.push_back(make_index<Perspective>(dp.from[i], dp.piece[i], ksq));
         if (dp.to[i] != SQ_NONE)

@@ -63,14 +63,16 @@ static void affine_transform_non_ssse3(std::int32_t*       output,
     const auto          inputVector = reinterpret_cast<const int8x8_t*>(input);
         #endif
 
-    for (IndexType i = 0; i < OutputDimensions; ++i) {
+    for (IndexType i = 0; i < OutputDimensions; ++i)
+    {
         const IndexType offset = i * PaddedInputDimensions;
 
         #if defined(USE_SSE2)
         __m128i    sumLo = _mm_cvtsi32_si128(biases[i]);
         __m128i    sumHi = Zeros;
         const auto row   = reinterpret_cast<const __m128i*>(&weights[offset]);
-        for (IndexType j = 0; j < NumChunks; ++j) {
+        for (IndexType j = 0; j < NumChunks; ++j)
+        {
             __m128i row_j           = _mm_load_si128(&row[j]);
             __m128i input_j         = _mm_load_si128(&inputVector[j]);
             __m128i extendedRowLo   = _mm_srai_epi16(_mm_unpacklo_epi8(row_j, row_j), 8);
@@ -92,7 +94,8 @@ static void affine_transform_non_ssse3(std::int32_t*       output,
         #elif defined(USE_NEON_DOTPROD)
         int32x4_t  sum = {biases[i]};
         const auto row = reinterpret_cast<const int8x16_t*>(&weights[offset]);
-        for (IndexType j = 0; j < NumChunks; ++j) {
+        for (IndexType j = 0; j < NumChunks; ++j)
+        {
             sum = vdotq_s32(sum, inputVector[j], row[j]);
         }
         output[i] = vaddvq_s32(sum);
@@ -100,7 +103,8 @@ static void affine_transform_non_ssse3(std::int32_t*       output,
         #elif defined(USE_NEON)
         int32x4_t  sum = {biases[i]};
         const auto row = reinterpret_cast<const int8x8_t*>(&weights[offset]);
-        for (IndexType j = 0; j < NumChunks; ++j) {
+        for (IndexType j = 0; j < NumChunks; ++j)
+        {
             int16x8_t product = vmull_s8(inputVector[j * 2], row[j * 2]);
             product           = vmlal_s8(product, inputVector[j * 2 + 1], row[j * 2 + 1]);
             sum               = vpadalq_s16(sum, product);
@@ -114,7 +118,8 @@ static void affine_transform_non_ssse3(std::int32_t*       output,
 
     // Traverse weights in transpose order to take advantage of input sparsity
     for (IndexType i = 0; i < InputDimensions; ++i)
-        if (input[i]) {
+        if (input[i])
+        {
             const std::int8_t* w  = &weights[i];
             const int          in = input[i];
             for (IndexType j = 0; j < OutputDimensions; ++j)
@@ -187,7 +192,8 @@ class AffineTransform {
 
 #if defined(USE_SSSE3)
 
-        if constexpr (OutputDimensions > 1) {
+        if constexpr (OutputDimensions > 1)
+        {
 
     #if defined(USE_AVX512)
             using vec_t = __m512i;
@@ -225,7 +231,8 @@ class AffineTransform {
             for (IndexType k = 0; k < NumRegs; ++k)
                 acc[k] = biasvec[k];
 
-            for (IndexType i = 0; i < NumChunks; i += 2) {
+            for (IndexType i = 0; i < NumChunks; i += 2)
+            {
                 const vec_t in0 = vec_set_32(input32[i + 0]);
                 const vec_t in1 = vec_set_32(input32[i + 1]);
                 const auto  col0 =
@@ -246,7 +253,8 @@ class AffineTransform {
     #undef vec_add_dpbusd_32x2
     #undef vec_hadd
 
-        } else if constexpr (OutputDimensions == 1) {
+        } else if constexpr (OutputDimensions == 1)
+        {
 
     // We cannot use AVX512 for the last layer because there's only 32 inputs and the buffer is not padded to 64 elements.
     #if defined(USE_AVX2)
@@ -275,7 +283,8 @@ class AffineTransform {
             vec_t               sum0      = vec_setzero();
             const auto          row0      = reinterpret_cast<const vec_t*>(&weights[0]);
 
-            for (int j = 0; j < int(NumChunks); ++j) {
+            for (int j = 0; j < int(NumChunks); ++j)
+            {
                 const vec_t in = inputVector[j];
                 vec_add_dpbusd_32(sum0, in, row0[j]);
             }

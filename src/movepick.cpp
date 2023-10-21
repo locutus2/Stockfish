@@ -56,7 +56,8 @@ enum Stages {
 void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 
     for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
-        if (p->value >= limit) {
+        if (p->value >= limit)
+        {
             ExtMove tmp = *p, *q;
             *p          = *++sortedEnd;
             for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
@@ -138,7 +139,8 @@ void MovePicker::score() {
 
     [[maybe_unused]] Bitboard threatenedByPawn, threatenedByMinor, threatenedByRook,
       threatenedPieces;
-    if constexpr (Type == QUIETS) {
+    if constexpr (Type == QUIETS)
+    {
         Color us = pos.side_to_move();
 
         threatenedByPawn = pos.attacks_by<PAWN>(~us);
@@ -159,7 +161,8 @@ void MovePicker::score() {
                + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))])
               / 16;
 
-        else if constexpr (Type == QUIETS) {
+        else if constexpr (Type == QUIETS)
+        {
             Piece     pc   = pos.moved_piece(m);
             PieceType pt   = type_of(pos.moved_piece(m));
             Square    from = from_sq(m);
@@ -211,7 +214,8 @@ void MovePicker::score() {
 template<MovePicker::PickType T, typename Pred>
 Move MovePicker::select(Pred filter) {
 
-    while (cur < endMoves) {
+    while (cur < endMoves)
+    {
         if constexpr (T == Best)
             std::swap(*cur, *std::max_element(cur, endMoves));
 
@@ -229,7 +233,8 @@ Move MovePicker::select(Pred filter) {
 Move MovePicker::next_move(bool skipQuiets) {
 
 top:
-    switch (stage) {
+    switch (stage)
+    {
 
     case MAIN_TT :
     case EVASION_TT :
@@ -278,7 +283,8 @@ top:
         [[fallthrough]];
 
     case QUIET_INIT :
-        if (!skipQuiets) {
+        if (!skipQuiets)
+        {
             cur      = endBadCaptures;
             endMoves = generate<QUIETS>(pos, cur);
 

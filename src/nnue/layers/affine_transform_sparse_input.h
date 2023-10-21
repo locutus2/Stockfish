@@ -41,7 +41,8 @@ namespace Stockfish::Eval::NNUE::Layers {
 alignas(CacheLineSize) static inline const
   std::array<std::array<std::uint16_t, 8>, 256> lookup_indices = []() {
       std::array<std::array<std::uint16_t, 8>, 256> v{};
-      for (unsigned i = 0; i < 256; ++i) {
+      for (unsigned i = 0; i < 256; ++i)
+      {
           std::uint64_t j = i, k = 0;
           while (j)
               v[i][k++] = pop_lsb(j);
@@ -98,14 +99,17 @@ void find_nnz(const std::int32_t* input, std::uint16_t* out, IndexType& count_ou
     IndexType      count       = 0;
     vec128_t       base        = vec128_zero;
     const vec128_t increment   = vec128_set_16(8);
-    for (IndexType i = 0; i < NumChunks; ++i) {
+    for (IndexType i = 0; i < NumChunks; ++i)
+    {
         // bitmask of nonzero values in this chunk
         unsigned nnz = 0;
-        for (IndexType j = 0; j < InputsPerChunk; ++j) {
+        for (IndexType j = 0; j < InputsPerChunk; ++j)
+        {
             const vec_t inputChunk = inputVector[i * InputsPerChunk + j];
             nnz |= unsigned(vec_nnz(inputChunk)) << (j * InputSimdWidth);
         }
-        for (IndexType j = 0; j < OutputsPerChunk; ++j) {
+        for (IndexType j = 0; j < OutputsPerChunk; ++j)
+        {
             const auto lookup = (nnz >> (j * 8)) & 0xFF;
             const auto offsets =
               vec128_load(reinterpret_cast<const vec128_t*>(&lookup_indices[lookup]));
@@ -239,7 +243,8 @@ class AffineTransformSparseInput {
         for (IndexType k = 0; k < NumRegs; ++k)
             acc[k] = biasvec[k];
 
-        for (IndexType j = 0; j < count; ++j) {
+        for (IndexType j = 0; j < count; ++j)
+        {
             const auto    i  = nnz[j];
             const invec_t in = vec_set_32(input32[i]);
             const auto    col =

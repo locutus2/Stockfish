@@ -42,7 +42,8 @@ string Tune::next(string& names, bool pop) {
 
     string name;
 
-    do {
+    do
+    {
         string token = names.substr(0, names.find(','));
 
         if (pop)

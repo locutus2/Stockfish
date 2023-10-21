@@ -218,7 +218,8 @@ static NnueEvalTrace trace_evaluate(const Position& pos) {
 
     NnueEvalTrace t{};
     t.correctBucket = (pos.count<ALL_PIECES>() - 1) / 4;
-    for (IndexType bucket = 0; bucket < LayerStacks; ++bucket) {
+    for (IndexType bucket = 0; bucket < LayerStacks; ++bucket)
+    {
         const auto materialist = featureTransformer->transform(pos, transformedFeatures, bucket);
         const auto positional  = network[bucket]->propagate(transformedFeatures);
 
@@ -239,21 +240,24 @@ static void format_cp_compact(Value v, char* buffer) {
     buffer[0] = (v < 0 ? '-' : v > 0 ? '+' : ' ');
 
     int cp = std::abs(UCI::to_cp(v));
-    if (cp >= 10000) {
+    if (cp >= 10000)
+    {
         buffer[1] = '0' + cp / 10000;
         cp %= 10000;
         buffer[2] = '0' + cp / 1000;
         cp %= 1000;
         buffer[3] = '0' + cp / 100;
         buffer[4] = ' ';
-    } else if (cp >= 1000) {
+    } else if (cp >= 1000)
+    {
         buffer[1] = '0' + cp / 1000;
         cp %= 1000;
         buffer[2] = '0' + cp / 100;
         cp %= 100;
         buffer[3] = '.';
         buffer[4] = '0' + cp / 10;
-    } else {
+    } else
+    {
         buffer[1] = '0' + cp / 100;
         cp %= 100;
         buffer[2] = '.';
@@ -308,12 +312,14 @@ std::string trace(Position& pos) {
     base       = pos.side_to_move() == WHITE ? base : -base;
 
     for (File f = FILE_A; f <= FILE_H; ++f)
-        for (Rank r = RANK_1; r <= RANK_8; ++r) {
+        for (Rank r = RANK_1; r <= RANK_8; ++r)
+        {
             Square sq = make_square(f, r);
             Piece  pc = pos.piece_on(sq);
             Value  v  = VALUE_NONE;
 
-            if (pc != NO_PIECE && type_of(pc) != KING) {
+            if (pc != NO_PIECE && type_of(pc) != KING)
+            {
                 auto st = pos.state();
 
                 pos.remove_piece(sq);
@@ -346,7 +352,8 @@ std::string trace(Position& pos) {
        << "|            |   (PSQT)   |  (Layers)  |            |\n"
        << "+------------+------------+------------+------------+\n";
 
-    for (std::size_t bucket = 0; bucket < LayerStacks; ++bucket) {
+    for (std::size_t bucket = 0; bucket < LayerStacks; ++bucket)
+    {
         ss << "|  " << bucket << "        ";
         ss << " |  ";
         format_cp_aligned_dot(t.psqt[bucket], ss);
@@ -394,8 +401,10 @@ bool save_eval(const std::optional<std::string>& filename) {
 
     if (filename.has_value())
         actualFilename = filename.value();
-    else {
-        if (currentEvalFileName != EvalFileDefaultName) {
+    else
+    {
+        if (currentEvalFileName != EvalFileDefaultName)
+        {
             msg =
               "Failed to export a net. A non-embedded net can only be saved if the filename is specified";
 

@@ -62,7 +62,8 @@ std::string Bitboards::pretty(Bitboard b) {
 
     std::string s = "+---+---+---+---+---+---+---+---+\n";
 
-    for (Rank r = RANK_8; r >= RANK_1; --r) {
+    for (Rank r = RANK_8; r >= RANK_1; --r)
+    {
         for (File f = FILE_A; f <= FILE_H; ++f)
             s += b & make_square(f, r) ? "| X " : "|   ";
 
@@ -89,7 +90,8 @@ void Bitboards::init() {
     init_magics(ROOK, RookTable, RookMagics);
     init_magics(BISHOP, BishopTable, BishopMagics);
 
-    for (Square s1 = SQ_A1; s1 <= SQ_H8; ++s1) {
+    for (Square s1 = SQ_A1; s1 <= SQ_H8; ++s1)
+    {
         PawnAttacks[WHITE][s1] = pawn_attacks_bb<WHITE>(square_bb(s1));
         PawnAttacks[BLACK][s1] = pawn_attacks_bb<BLACK>(square_bb(s1));
 
@@ -103,8 +105,10 @@ void Bitboards::init() {
         PseudoAttacks[QUEEN][s1] |= PseudoAttacks[ROOK][s1]  = attacks_bb<ROOK>(s1, 0);
 
         for (PieceType pt : {BISHOP, ROOK})
-            for (Square s2 = SQ_A1; s2 <= SQ_H8; ++s2) {
-                if (PseudoAttacks[pt][s1] & s2) {
+            for (Square s2 = SQ_A1; s2 <= SQ_H8; ++s2)
+            {
+                if (PseudoAttacks[pt][s1] & s2)
+                {
                     LineBB[s1][s2] = (attacks_bb(pt, s1, 0) & attacks_bb(pt, s2, 0)) | s1 | s2;
                     BetweenBB[s1][s2] =
                       (attacks_bb(pt, s1, square_bb(s2)) & attacks_bb(pt, s2, square_bb(s1)));
@@ -122,7 +126,8 @@ Bitboard sliding_attack(PieceType pt, Square sq, Bitboard occupied) {
     Direction RookDirections[4]   = {NORTH, SOUTH, EAST, WEST};
     Direction BishopDirections[4] = {NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST};
 
-    for (Direction d : (pt == ROOK ? RookDirections : BishopDirections)) {
+    for (Direction d : (pt == ROOK ? RookDirections : BishopDirections))
+    {
         Square s = sq;
         while (safe_destination(s, d) && !(occupied & s))
             attacks |= (s += d);
@@ -146,7 +151,8 @@ void init_magics(PieceType pt, Bitboard table[], Magic magics[]) {
     Bitboard occupancy[4096], reference[4096], edges, b;
     int      epoch[4096] = {}, cnt = 0, size = 0;
 
-    for (Square s = SQ_A1; s <= SQ_H8; ++s) {
+    for (Square s = SQ_A1; s <= SQ_H8; ++s)
+    {
         // Board edges are not considered in the relevant occupancies
         edges = ((Rank1BB | Rank8BB) & ~rank_bb(s)) | ((FileABB | FileHBB) & ~file_bb(s));
 
@@ -166,7 +172,8 @@ void init_magics(PieceType pt, Bitboard table[], Magic magics[]) {
         // Use Carry-Rippler trick to enumerate all subsets of masks[s] and
         // store the corresponding sliding attack bitboard in reference[].
         b = size = 0;
-        do {
+        do
+        {
             occupancy[size] = b;
             reference[size] = sliding_attack(pt, s, b);
 
@@ -184,7 +191,8 @@ void init_magics(PieceType pt, Bitboard table[], Magic magics[]) {
 
         // Find a magic for square 's' picking up an (almost) random number
         // until we find the one that passes the verification test.
-        for (int i = 0; i < size;) {
+        for (int i = 0; i < size;)
+        {
             for (m.magic = 0; popcount((m.magic * m.mask) >> 56) < 6;)
                 m.magic = rng.sparse_rand<Bitboard>();
 
@@ -194,10 +202,12 @@ void init_magics(PieceType pt, Bitboard table[], Magic magics[]) {
             // effect of verifying the magic. Keep track of the attempt count
             // and save it in epoch[], little speed-up trick to avoid resetting
             // m.attacks[] after every failed attempt.
-            for (++cnt, i = 0; i < size; ++i) {
+            for (++cnt, i = 0; i < size; ++i)
+            {
                 unsigned idx = m.index(occupancy[i]);
 
-                if (epoch[idx] < cnt) {
+                if (epoch[idx] < cnt)
+                {
                     epoch[idx]     = cnt;
                     m.attacks[idx] = reference[i];
                 } else if (m.attacks[idx] != reference[i])

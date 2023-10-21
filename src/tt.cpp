@@ -43,7 +43,8 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
         move16 = uint16_t(m);
 
     // Overwrite less valuable entries (cheapest checks first)
-    if (b == BOUND_EXACT || uint16_t(k) != key16 || d - DEPTH_OFFSET + 2 * pv > depth8 - 4) {
+    if (b == BOUND_EXACT || uint16_t(k) != key16 || d - DEPTH_OFFSET + 2 * pv > depth8 - 4)
+    {
         assert(d > DEPTH_OFFSET);
         assert(d < 256 + DEPTH_OFFSET);
 
@@ -69,7 +70,8 @@ void TranspositionTable::resize(size_t mbSize) {
     clusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
 
     table = static_cast<Cluster*>(aligned_large_pages_alloc(clusterCount * sizeof(Cluster)));
-    if (!table) {
+    if (!table)
+    {
         std::cerr << "Failed to allocate " << mbSize << "MB for transposition table." << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -85,7 +87,8 @@ void TranspositionTable::clear() {
 
     std::vector<std::thread> threads;
 
-    for (size_t idx = 0; idx < size_t(Options["Threads"]); ++idx) {
+    for (size_t idx = 0; idx < size_t(Options["Threads"]); ++idx)
+    {
         threads.emplace_back([this, idx]() {
             // Thread binding gives faster search on systems with a first-touch policy
             if (Options["Threads"] > 8)
@@ -119,7 +122,8 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
     const uint16_t key16 = uint16_t(key);  // Use the low 16 bits as key inside the cluster
 
     for (int i = 0; i < ClusterSize; ++i)
-        if (tte[i].key16 == key16 || !tte[i].depth8) {
+        if (tte[i].key16 == key16 || !tte[i].depth8)
+        {
             tte[i].genBound8 =
               uint8_t(generation8 | (tte[i].genBound8 & (GENERATION_DELTA - 1)));  // Refresh
 

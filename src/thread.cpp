@@ -113,7 +113,8 @@ void Thread::idle_loop() {
     if (Options["Threads"] > 8)
         WinProcGroup::bindThisThread(idx);
 
-    while (true) {
+    while (true)
+    {
         std::unique_lock<std::mutex> lk(mutex);
         searching = false;
         cv.notify_one();  // Wake up anyone waiting for search finished
@@ -209,7 +210,8 @@ void ThreadPool::start_thinking(Position&                 pos,
     // be deduced from a fen string, so set() clears them and they are set from
     // setupStates->back() later. The rootState is per thread, earlier states are shared
     // since they are read-only.
-    for (Thread* th : threads) {
+    for (Thread* th : threads)
+    {
         th->nodes = th->tbHits = th->nmpMinPly = th->bestMoveChanges = 0;
         th->rootDepth = th->completedDepth = 0;
         th->rootMoves                      = rootMoves;
@@ -240,7 +242,8 @@ Thread* ThreadPool::get_best_thread() const {
         votes[th->rootMoves[0].pv[0]] += thread_value(th);
 
     for (Thread* th : threads)
-        if (abs(bestThread->rootMoves[0].score) >= VALUE_TB_WIN_IN_MAX_PLY) {
+        if (abs(bestThread->rootMoves[0].score) >= VALUE_TB_WIN_IN_MAX_PLY)
+        {
             // Make sure we pick the shortest mate / TB conversion or stave off mate the longest
             if (th->rootMoves[0].score > bestThread->rootMoves[0].score)
                 bestThread = th;

@@ -233,7 +233,8 @@ inline Bitboard attacks_bb(Square s, Bitboard occupied) {
 
     assert((Pt != PAWN) && (is_ok(s)));
 
-    switch (Pt) {
+    switch (Pt)
+    {
     case BISHOP : return BishopMagics[s].attacks[BishopMagics[s].index(occupied)];
     case ROOK : return RookMagics[s].attacks[RookMagics[s].index(occupied)];
     case QUEEN : return attacks_bb<BISHOP>(s, occupied) | attacks_bb<ROOK>(s, occupied);
@@ -245,7 +246,8 @@ inline Bitboard attacks_bb(PieceType pt, Square s, Bitboard occupied) {
 
     assert((pt != PAWN) && (is_ok(s)));
 
-    switch (pt) {
+    switch (pt)
+    {
     case BISHOP : return attacks_bb<BISHOP>(s, occupied);
     case ROOK : return attacks_bb<ROOK>(s, occupied);
     case QUEEN : return attacks_bb<BISHOP>(s, occupied) | attacks_bb<ROOK>(s, occupied);
@@ -316,10 +318,12 @@ inline Square lsb(Bitboard b) {
     assert(b);
     unsigned long idx;
 
-    if (b & 0xffffffff) {
+    if (b & 0xffffffff)
+    {
         _BitScanForward(&idx, int32_t(b));
         return Square(idx);
-    } else {
+    } else
+    {
         _BitScanForward(&idx, int32_t(b >> 32));
         return Square(idx + 32);
     }
@@ -329,10 +333,12 @@ inline Square msb(Bitboard b) {
     assert(b);
     unsigned long idx;
 
-    if (b >> 32) {
+    if (b >> 32)
+    {
         _BitScanReverse(&idx, int32_t(b >> 32));
         return Square(idx + 32);
-    } else {
+    } else
+    {
         _BitScanReverse(&idx, int32_t(b));
         return Square(idx);
     }

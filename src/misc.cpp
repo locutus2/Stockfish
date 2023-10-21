@@ -122,16 +122,19 @@ class Logger {
 
         static Logger l;
 
-        if (l.file.is_open()) {
+        if (l.file.is_open())
+        {
             std::cout.rdbuf(l.out.buf);
             std::cin.rdbuf(l.in.buf);
             l.file.close();
         }
 
-        if (!fname.empty()) {
+        if (!fname.empty())
+        {
             l.file.open(fname, std::ifstream::out);
 
-            if (!l.file.is_open()) {
+            if (!l.file.is_open())
+            {
                 std::cerr << "Unable to open debug log file " << fname << std::endl;
                 exit(EXIT_FAILURE);
             }
@@ -159,7 +162,8 @@ std::string engine_info(bool to_uci) {
     std::stringstream ss;
     ss << "Stockfish " << version << std::setfill('0');
 
-    if constexpr (version == "dev") {
+    if constexpr (version == "dev")
+    {
         ss << "-";
 #ifdef GIT_DATE
         ss << stringify(GIT_DATE);
@@ -368,18 +372,21 @@ void dbg_print() {
                       << " Hit Rate (%) " << 100.0 * E(hit[i][1]) << std::endl;
 
     for (int i = 0; i < MaxDebugSlots; ++i)
-        if ((n = mean[i][0])) {
+        if ((n = mean[i][0]))
+        {
             std::cerr << "Mean #" << i << ": Total " << n << " Mean " << E(mean[i][1]) << std::endl;
         }
 
     for (int i = 0; i < MaxDebugSlots; ++i)
-        if ((n = stdev[i][0])) {
+        if ((n = stdev[i][0]))
+        {
             double r = sqrt(E(stdev[i][2]) - sqr(E(stdev[i][1])));
             std::cerr << "Stdev #" << i << ": Total " << n << " Stdev " << r << std::endl;
         }
 
     for (int i = 0; i < MaxDebugSlots; ++i)
-        if ((n = correl[i][0])) {
+        if ((n = correl[i][0]))
+        {
             double r = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
                      / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
                         * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
@@ -502,7 +509,8 @@ static void* aligned_large_pages_alloc_windows([[maybe_unused]] size_t allocSize
         return nullptr;
 
     if (fun7(  // LookupPrivilegeValue(nullptr, SE_LOCK_MEMORY_NAME, &luid)
-          nullptr, "SeLockMemoryPrivilege", &luid)) {
+          nullptr, "SeLockMemoryPrivilege", &luid))
+    {
         TOKEN_PRIVILEGES tp{};
         TOKEN_PRIVILEGES prevTp{};
         DWORD            prevTpLen = 0;
@@ -515,7 +523,8 @@ static void* aligned_large_pages_alloc_windows([[maybe_unused]] size_t allocSize
         // we still need to query GetLastError() to ensure that the privileges were actually obtained.
         if (fun8(  // AdjustTokenPrivileges()
               hProcessToken, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), &prevTp, &prevTpLen)
-            && GetLastError() == ERROR_SUCCESS) {
+            && GetLastError() == ERROR_SUCCESS)
+        {
             // Round up size to full pages and allocate
             allocSize = (allocSize + largePageSize - 1) & ~size_t(largePageSize - 1);
             mem       = VirtualAlloc(nullptr, allocSize, MEM_RESERVE | MEM_COMMIT | MEM_LARGE_PAGES,
@@ -574,7 +583,8 @@ void* aligned_large_pages_alloc(size_t allocSize) {
 
 void aligned_large_pages_free(void* mem) {
 
-    if (mem && !VirtualFree(mem, 0, MEM_RELEASE)) {
+    if (mem && !VirtualFree(mem, 0, MEM_RELEASE))
+    {
         DWORD err = GetLastError();
         std::cerr << "Failed to free large page memory. Error code: 0x" << std::hex << err
                   << std::dec << std::endl;
@@ -625,16 +635,19 @@ static int best_node(size_t idx) {
     ptr = buffer = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*) malloc(returnLength);
 
     // Second call to GetLogicalProcessorInformationEx(), now we expect to succeed
-    if (!fun1(RelationAll, buffer, &returnLength)) {
+    if (!fun1(RelationAll, buffer, &returnLength))
+    {
         free(buffer);
         return -1;
     }
 
-    while (byteOffset < returnLength) {
+    while (byteOffset < returnLength)
+    {
         if (ptr->Relationship == RelationNumaNode)
             nodes++;
 
-        else if (ptr->Relationship == RelationProcessorCore) {
+        else if (ptr->Relationship == RelationProcessorCore)
+        {
             cores++;
             threads += (ptr->Processor.Flags == LTP_PC_SMT) ? 2 : 1;
         }
@@ -686,11 +699,13 @@ void bindThisThread(size_t idx) {
     if (!fun2 || !fun3)
         return;
 
-    if (!fun4 || !fun5) {
+    if (!fun4 || !fun5)
+    {
         GROUP_AFFINITY affinity;
         if (fun2(node, &affinity))                         // GetNumaNodeProcessorMaskEx
             fun3(GetCurrentThread(), &affinity, nullptr);  // SetThreadGroupAffinity
-    } else {
+    } else
+    {
         // If a numa node has more than one processor group, we assume they are
         // sized equal and we spread threads evenly across the groups.
         USHORT elements, returnedElements;

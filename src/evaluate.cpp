@@ -79,14 +79,17 @@ void NNUE::init() {
 #endif
 
     for (const std::string& directory : dirs)
-        if (currentEvalFileName != eval_file) {
-            if (directory != "<internal>") {
+        if (currentEvalFileName != eval_file)
+        {
+            if (directory != "<internal>")
+            {
                 std::ifstream stream(directory + eval_file, std::ios::binary);
                 if (NNUE::load_eval(eval_file, stream))
                     currentEvalFileName = eval_file;
             }
 
-            if (directory == "<internal>" && eval_file == EvalFileDefaultName) {
+            if (directory == "<internal>" && eval_file == EvalFileDefaultName)
+            {
                 // C++ way to prepare a buffer for a memory stream
                 class MemoryBuffer: public std::basic_streambuf<char> {
                    public:
@@ -115,7 +118,8 @@ void NNUE::verify() {
     if (eval_file.empty())
         eval_file = EvalFileDefaultName;
 
-    if (currentEvalFileName != eval_file) {
+    if (currentEvalFileName != eval_file)
+    {
 
         std::string msg1 =
           "Network evaluation parameters compatible with the engine must be available.";
@@ -169,7 +173,8 @@ Value Eval::evaluate(const Position& pos) {
 
     if (lazy)
         v = Value(simpleEval);
-    else {
+    else
+    {
         int   nnueComplexity;
         Value nnue = NNUE::evaluate(pos, true, &nnueComplexity);
 

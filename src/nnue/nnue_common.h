@@ -94,7 +94,8 @@ inline IntType read_little_endian(std::istream& stream) {
 
     if (IsLittleEndian)
         stream.read(reinterpret_cast<char*>(&result), sizeof(IntType));
-    else {
+    else
+    {
         std::uint8_t                  u[sizeof(IntType)];
         std::make_unsigned_t<IntType> v = 0;
 
@@ -118,14 +119,17 @@ inline void write_little_endian(std::ostream& stream, IntType value) {
 
     if (IsLittleEndian)
         stream.write(reinterpret_cast<const char*>(&value), sizeof(IntType));
-    else {
+    else
+    {
         std::uint8_t                  u[sizeof(IntType)];
         std::make_unsigned_t<IntType> v = value;
 
         std::size_t i = 0;
         // if constexpr to silence the warning about shift by 8
-        if constexpr (sizeof(IntType) > 1) {
-            for (; i + 1 < sizeof(IntType); ++i) {
+        if constexpr (sizeof(IntType) > 1)
+        {
+            for (; i + 1 < sizeof(IntType); ++i)
+            {
                 u[i] = (std::uint8_t) v;
                 v >>= 8;
             }
@@ -180,11 +184,14 @@ inline void read_leb_128(std::istream& stream, IntType* out, std::size_t count) 
     auto bytes_left = read_little_endian<std::uint32_t>(stream);
 
     std::uint32_t buf_pos = BUF_SIZE;
-    for (std::size_t i = 0; i < count; ++i) {
+    for (std::size_t i = 0; i < count; ++i)
+    {
         IntType result = 0;
         size_t  shift  = 0;
-        do {
-            if (buf_pos == BUF_SIZE) {
+        do
+        {
+            if (buf_pos == BUF_SIZE)
+            {
                 stream.read(reinterpret_cast<char*>(buf), std::min(bytes_left, BUF_SIZE));
                 buf_pos = 0;
             }
@@ -194,7 +201,8 @@ inline void read_leb_128(std::istream& stream, IntType* out, std::size_t count) 
             result |= (byte & 0x7f) << shift;
             shift += 7;
 
-            if ((byte & 0x80) == 0) {
+            if ((byte & 0x80) == 0)
+            {
                 out[i] = (sizeof(IntType) * 8 <= shift || (byte & 0x40) == 0)
                          ? result
                          : result | ~((1 << shift) - 1);
@@ -220,10 +228,12 @@ inline void write_leb_128(std::ostream& stream, const IntType* values, std::size
     static_assert(std::is_signed_v<IntType>, "Not implemented for unsigned types");
 
     std::uint32_t byte_count = 0;
-    for (std::size_t i = 0; i < count; ++i) {
+    for (std::size_t i = 0; i < count; ++i)
+    {
         IntType      value = values[i];
         std::uint8_t byte;
-        do {
+        do
+        {
             byte = value & 0x7f;
             value >>= 7;
             ++byte_count;
@@ -237,7 +247,8 @@ inline void write_leb_128(std::ostream& stream, const IntType* values, std::size
     std::uint32_t       buf_pos = 0;
 
     auto flush = [&]() {
-        if (buf_pos > 0) {
+        if (buf_pos > 0)
+        {
             stream.write(reinterpret_cast<char*>(buf), buf_pos);
             buf_pos = 0;
         }
@@ -249,12 +260,15 @@ inline void write_leb_128(std::ostream& stream, const IntType* values, std::size
             flush();
     };
 
-    for (std::size_t i = 0; i < count; ++i) {
+    for (std::size_t i = 0; i < count; ++i)
+    {
         IntType value = values[i];
-        while (true) {
+        while (true)
+        {
             std::uint8_t byte = value & 0x7f;
             value >>= 7;
-            if ((byte & 0x40) == 0 ? value == 0 : value == -1) {
+            if ((byte & 0x40) == 0 ? value == 0 : value == -1)
+            {
                 write(byte);
                 break;
             }

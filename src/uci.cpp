@@ -61,7 +61,8 @@ void position(Position& pos, std::istringstream& is, StateListPtr& states) {
 
     is >> token;
 
-    if (token == "startpos") {
+    if (token == "startpos")
+    {
         fen = StartFEN;
         is >> token;  // Consume the "moves" token, if any
     } else if (token == "fen")
@@ -74,7 +75,8 @@ void position(Position& pos, std::istringstream& is, StateListPtr& states) {
     pos.set(fen, Options["UCI_Chess960"], &states->back(), Threads.main());
 
     // Parse the move list, if any
-    while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE) {
+    while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
+    {
         states->emplace_back();
         pos.do_move(m, states->back());
     }
@@ -182,14 +184,17 @@ void bench(Position& pos, std::istream& args, StateListPtr& states) {
 
     TimePoint elapsed = now();
 
-    for (const auto& cmd : list) {
+    for (const auto& cmd : list)
+    {
         std::istringstream is(cmd);
         is >> std::skipws >> token;
 
-        if (token == "go" || token == "eval") {
+        if (token == "go" || token == "eval")
+        {
             std::cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")"
                       << std::endl;
-            if (token == "go") {
+            if (token == "go")
+            {
                 go(pos, is, states);
                 Threads.main()->wait_for_search_finished();
                 nodes += Threads.nodes_searched();
@@ -199,7 +204,8 @@ void bench(Position& pos, std::istream& args, StateListPtr& states) {
             setoption(is);
         else if (token == "position")
             position(pos, is, states);
-        else if (token == "ucinewgame") {
+        else if (token == "ucinewgame")
+        {
             Search::clear();
             elapsed = now();
         }  // Search::clear() may take a while
@@ -260,7 +266,8 @@ void UCI::loop(int argc, char* argv[]) {
     for (int i = 1; i < argc; ++i)
         cmd += std::string(argv[i]) + " ";
 
-    do {
+    do
+    {
         if (argc == 1
             && !getline(std::cin, cmd))  // Wait for an input or an end-of-file (EOF) indication
             cmd = "quit";
@@ -307,7 +314,8 @@ void UCI::loop(int argc, char* argv[]) {
             trace_eval(pos);
         else if (token == "compiler")
             sync_cout << compiler_info() << sync_endl;
-        else if (token == "export_net") {
+        else if (token == "export_net")
+        {
             std::optional<std::string> filename;
             std::string                f;
             if (is >> std::skipws >> f)
@@ -349,7 +357,8 @@ std::string UCI::value(Value v) {
 
     if (abs(v) < VALUE_TB_WIN_IN_MAX_PLY)
         ss << "cp " << UCI::to_cp(v);
-    else if (abs(v) < VALUE_MATE_IN_MAX_PLY) {
+    else if (abs(v) < VALUE_MATE_IN_MAX_PLY)
+    {
         const int ply = VALUE_MATE_IN_MAX_PLY - 1 - std::abs(v);  // recompute ss->ply
         ss << "cp " << (v > 0 ? 20000 - ply : -20000 + ply);
     } else

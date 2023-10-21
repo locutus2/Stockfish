@@ -67,7 +67,8 @@ class SqrClippedReLU {
         static_assert(WeightScaleBits == 6);
         const auto in  = reinterpret_cast<const __m128i*>(input);
         const auto out = reinterpret_cast<__m128i*>(output);
-        for (IndexType i = 0; i < NumChunks; ++i) {
+        for (IndexType i = 0; i < NumChunks; ++i)
+        {
             __m128i words0 =
               _mm_packs_epi32(_mm_load_si128(&in[i * 4 + 0]), _mm_load_si128(&in[i * 4 + 1]));
             __m128i words1 =
@@ -87,7 +88,8 @@ class SqrClippedReLU {
         constexpr IndexType Start = 0;
 #endif
 
-        for (IndexType i = Start; i < InputDimensions; ++i) {
+        for (IndexType i = Start; i < InputDimensions; ++i)
+        {
             output[i] = static_cast<OutputType>(
               // Really should be /127 but we need to make it fast so we right shift
               // by an extra 7 bits instead. Needs to be accounted for in the trainer.

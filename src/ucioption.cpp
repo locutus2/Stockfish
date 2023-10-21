@@ -96,7 +96,8 @@ std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
 
     for (size_t idx = 0; idx < om.size(); ++idx)
         for (const auto& it : om)
-            if (it.second.idx == idx) {
+            if (it.second.idx == idx)
+            {
                 const Option& o = it.second;
                 os << "\noption name " << it.first << " type " << o.type;
 
@@ -195,7 +196,8 @@ Option& Option::operator=(const string& v) {
         || (type == "spin" && (stof(v) < min || stof(v) > max)))
         return *this;
 
-    if (type == "combo") {
+    if (type == "combo")
+    {
         OptionsMap         comboMap;  // To have case insensitive compare
         string             token;
         std::istringstream ss(defaultValue);
