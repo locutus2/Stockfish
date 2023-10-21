@@ -710,11 +710,11 @@ void bindThisThread(size_t idx) {
         // If a numa node has more than one processor group, we assume they are
         // sized equal and we spread threads evenly across the groups.
         USHORT elements, returnedElements;
-        elements                 = fun5();                      // GetMaximumProcessorGroupCount
+        elements                 = fun5();  // GetMaximumProcessorGroupCount
         GROUP_AFFINITY* affinity = (GROUP_AFFINITY*) malloc(elements * sizeof(GROUP_AFFINITY));
         if (fun4(node, affinity, elements, &returnedElements))  // GetNumaNodeProcessorMask2
             fun3(GetCurrentThread(), &affinity[idx % returnedElements],
-                 nullptr);                                      // SetThreadGroupAffinity
+                 nullptr);  // SetThreadGroupAffinity
         free(affinity);
     }
 }

@@ -296,7 +296,7 @@ inline Square msb(Bitboard b) {
 
 #elif defined(_MSC_VER)  // MSVC
 
-    #ifdef _WIN64        // MSVC, WIN64
+    #ifdef _WIN64  // MSVC, WIN64
 
 inline Square lsb(Bitboard b) {
     assert(b);
@@ -312,7 +312,7 @@ inline Square msb(Bitboard b) {
     return (Square) idx;
 }
 
-    #else                // MSVC, WIN32
+    #else  // MSVC, WIN32
 
 inline Square lsb(Bitboard b) {
     assert(b);

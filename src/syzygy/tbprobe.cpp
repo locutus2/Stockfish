@@ -66,7 +66,7 @@ namespace {
 
 constexpr int TBPIECES = 7;  // Max number of supported pieces
 constexpr int MAX_DTZ =
-  1 << 18;                   // Max DTZ supported, large enough to deal with the syzygy TB limit.
+  1 << 18;  // Max DTZ supported, large enough to deal with the syzygy TB limit.
 
 enum {
     BigEndian,
@@ -95,7 +95,7 @@ constexpr std::string_view PieceToChar = " PNBRQK  pnbrqk";
 int MapPawns[SQUARE_NB];
 int MapB1H1H7[SQUARE_NB];
 int MapA1D1D4[SQUARE_NB];
-int MapKK[10][SQUARE_NB];       // [MapA1D1D4][SQUARE_NB]
+int MapKK[10][SQUARE_NB];  // [MapA1D1D4][SQUARE_NB]
 
 int Binomial[6][SQUARE_NB];     // [k][n] k elements from a set of n elements
 int LeadPawnIdx[6][SQUARE_NB];  // [leadPawnsCnt][SQUARE_NB]
@@ -333,7 +333,7 @@ struct PairsData {
     size_t       sparseIndexSize;  // Size of SparseIndex[] table
     uint8_t*     data;             // Start of Huffman compressed data
     std::vector<uint64_t>
-      base64;         // base64[l - min_sym_len] is the 64bit-padded lowest symbol of length l
+      base64;  // base64[l - min_sym_len] is the 64bit-padded lowest symbol of length l
     std::vector<uint8_t>
              symlen;  // Number of values (-1) represented by a given Huffman symbol: 1..256
     Piece    pieces[TBPIECES];        // Position pieces: the order of pieces defines the groups
@@ -504,7 +504,7 @@ void TBTables::add(const std::vector<PieceType>& pieces) {
 
     TBFile file(code.insert(code.find('K', 1), "v") + ".rtbw");  // KRK -> KRvK
 
-    if (!file.is_open())                                         // Only WDL file is checked
+    if (!file.is_open())  // Only WDL file is checked
         return;
 
     file.close();
@@ -1084,7 +1084,7 @@ uint8_t* set_dtz_map(TBTable<DTZ>& e, uint8_t* data, File maxFile) {
             {
                 data += uintptr_t(data) & 1;  // Word alignment, we may have a mixed table
                 for (int i = 0; i < 4; ++i)
-                {                             // Sequence like 3,x,x,x,1,x,0,2,x,x
+                {  // Sequence like 3,x,x,x,1,x,0,2,x,x
                     e.get(0, f)->map_idx[i] = uint16_t((uint16_t*) data - (uint16_t*) e.map + 1);
                     data += 2 * number<uint16_t, LittleEndian>(data) + 2;
                 }

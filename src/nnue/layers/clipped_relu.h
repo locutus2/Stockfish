@@ -110,7 +110,7 @@ class ClippedReLU {
         constexpr IndexType NumChunks = InputDimensions / SimdWidth;
 
     #ifdef USE_SSE41
-        const __m128i       Zero      = _mm_setzero_si128();
+        const __m128i Zero = _mm_setzero_si128();
     #else
         const __m128i k0x80s = _mm_set1_epi8(-128);
     #endif

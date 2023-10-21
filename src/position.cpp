@@ -148,7 +148,7 @@ void Position::init() {
                     {
                         std::swap(cuckoo[i], key);
                         std::swap(cuckooMove[i], move);
-                        if (move == MOVE_NONE)                   // Arrived at empty slot?
+                        if (move == MOVE_NONE)  // Arrived at empty slot?
                             break;
                         i = (i == H1(key)) ? H2(key) : H1(key);  // Push victim to alternative slot
                     }
@@ -1236,7 +1236,7 @@ void Position::flip() {
     ss >> token;                        // Active color
     f += (token == "w" ? "B " : "W ");  // Will be lowercased later
 
-    ss >> token;                        // Castling availability
+    ss >> token;  // Castling availability
     f += token + " ";
 
     std::transform(f.begin(), f.end(), f.begin(),
