@@ -47,12 +47,12 @@ class StatsEntry {
     T*   operator->() { return &entry; }
     operator const T&() const { return entry; }
 
-  void operator<<(int bonus) {
-    assert(abs(bonus) <= D); // Ensure range is [-D, D]
-    static_assert(D <= std::numeric_limits<T>::max(), "D overflows T");
-    static_assert(A <= B, "Scale has to be less or equal than 1.");
+    void operator<<(int bonus) {
+        assert(abs(bonus) <= D);  // Ensure range is [-D, D]
+        static_assert(D <= std::numeric_limits<T>::max(), "D overflows T");
+        static_assert(A <= B, "Scale has to be less or equal than 1.");
 
-    entry += (bonus * D - entry * abs(bonus)) / (D * B / A);
+        entry += (bonus * D - entry * abs(bonus)) / (D * B / A);
 
         assert(abs(entry) <= D);
     }
@@ -63,24 +63,23 @@ class StatsEntry {
 // template parameter D limits the range of updates in [-D, D] when we update
 // values with the << operator, while the last parameters (Size and Sizes)
 // encode the dimensions of the array.
-template <typename T, int D, int A, int B, int Size, int... Sizes>
-struct Stats : public std::array<Stats<T, D, A, B, Sizes...>, Size>
-{
-  using stats = Stats<T, D, A, B, Size, Sizes...>;
+template<typename T, int D, int A, int B, int Size, int... Sizes>
+struct Stats: public std::array<Stats<T, D, A, B, Sizes...>, Size> {
+    using stats = Stats<T, D, A, B, Size, Sizes...>;
 
     void fill(const T& v) {
 
         // For standard-layout 'this' points to the first struct member
         assert(std::is_standard_layout_v<stats>);
 
-    using entry = StatsEntry<T, D, A, B>;
-    entry* p = reinterpret_cast<entry*>(this);
-    std::fill(p, p + sizeof(*this) / sizeof(entry), v);
-  }
+        using entry = StatsEntry<T, D, A, B>;
+        entry* p    = reinterpret_cast<entry*>(this);
+        std::fill(p, p + sizeof(*this) / sizeof(entry), v);
+    }
 };
 
-template <typename T, int D, int A, int B, int Size>
-struct Stats<T, D, A, B, Size> : public std::array<StatsEntry<T, D, A, B>, Size> {};
+template<typename T, int D, int A, int B, int Size>
+struct Stats<T, D, A, B, Size>: public std::array<StatsEntry<T, D, A, B>, Size> {};
 
 // In stats table, D=0 means that the template parameter is not used
 enum StatsParams {
@@ -103,16 +102,17 @@ using ButterflyHistory = Stats<int16_t, 7183, 4, 5, COLOR_NB, int(SQUARE_NB) * i
 using CounterMoveHistory = Stats<Move, NOT_USED, NOT_USED, NOT_USED, PIECE_NB, SQUARE_NB>;
 
 // CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
-using CapturePieceToHistory = Stats<int16_t, 10692, 3, 4, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
+using CapturePieceToHistory = Stats<int16_t, 10692, 7, 10, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
 
 // PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
-using PieceToHistory = Stats<int16_t, 29952, 5, 6, PIECE_NB, SQUARE_NB>;
+using PieceToHistory = Stats<int16_t, 29952, 4, 5, PIECE_NB, SQUARE_NB>;
 
 // ContinuationHistory is the combined history of a given pair of moves, usually
 // the current one given a previous one. The nested history table is based on
 // PieceToHistory instead of ButterflyBoards.
 // (~63 elo)
-using ContinuationHistory = Stats<PieceToHistory, NOT_USED, NOT_USED, NOT_USED, PIECE_NB, SQUARE_NB>;
+using ContinuationHistory =
+  Stats<PieceToHistory, NOT_USED, NOT_USED, NOT_USED, PIECE_NB, SQUARE_NB>;
 
 
 // MovePicker class is used to pick one pseudo-legal move at a time from the
