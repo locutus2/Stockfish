@@ -101,7 +101,7 @@ using ButterflyHistory = Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQU
 using CounterMoveHistory = Stats<Move, NOT_USED, PIECE_NB, SQUARE_NB>;
 
 // CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
-using CapturePieceToHistory = Stats<int16_t, 10692, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
+using CapturePieceToHistory = Stats<int16_t, 10692, 2, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
 
 // PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
 using PieceToHistory = Stats<int16_t, 29952, PIECE_NB, SQUARE_NB>;
@@ -136,7 +136,8 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                Move,
-               const Move*);
+               const Move*,
+               Square);
     MovePicker(const Position&,
                Move,
                Depth,
@@ -144,7 +145,7 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                Square);
-    MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
+    MovePicker(const Position&, Move, Value, const CapturePieceToHistory*, Square);
     Move next_move(bool skipQuiets = false);
 
    private:
@@ -163,6 +164,7 @@ class MovePicker {
     ExtMove                      refutations[3], *cur, *endMoves, *endBadCaptures;
     int                          stage;
     Square                       recaptureSquare;
+    Square                       prevSq;
     Value                        threshold;
     Depth                        depth;
     ExtMove                      moves[MAX_MOVES];

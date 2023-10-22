@@ -90,13 +90,15 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        Move                         cm,
-                       const Move*                  killers) :
+                       const Move*                  killers,
+                       Square                       ps) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
     continuationHistory(ch),
     ttMove(ttm),
     refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}},
+    prevSq(ps),
     depth(d) {
     assert(d > 0);
 
@@ -117,6 +119,7 @@ MovePicker::MovePicker(const Position&              p,
     continuationHistory(ch),
     ttMove(ttm),
     recaptureSquare(rs),
+    prevSq(rs),
     depth(d) {
     assert(d <= 0);
 
@@ -125,10 +128,12 @@ MovePicker::MovePicker(const Position&              p,
 
 // MovePicker constructor for ProbCut: we generate captures with SEE greater
 // than or equal to the given threshold.
-MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph) :
+MovePicker::MovePicker(
+  const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph, Square ps) :
     pos(p),
     captureHistory(cph),
     ttMove(ttm),
+    prevSq(ps),
     threshold(th) {
     assert(!pos.checkers());
 
@@ -163,10 +168,10 @@ void MovePicker::score() {
 
     for (auto& m : *this)
         if constexpr (Type == CAPTURES)
-            m.value =
-              (7 * int(PieceValue[pos.piece_on(to_sq(m))])
-               + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))])
-              / 16;
+            m.value = (7 * int(PieceValue[pos.piece_on(to_sq(m))])
+                       + (*captureHistory)[prevSq == to_sq(m)][pos.moved_piece(m)][to_sq(m)]
+                                          [type_of(pos.piece_on(to_sq(m)))])
+                    / 16;
 
         else if constexpr (Type == QUIETS)
         {
