@@ -113,7 +113,7 @@ using CapturePieceToHistory = Stats<int16_t, 10692, PIECE_NB, SQUARE_NB, PIECE_T
 using PieceToHistory = Stats<int16_t, 29952, PIECE_NB, SQUARE_NB>;
 
 // PawnStructureHistory is addressed by the pawn structure and a move's [piece][to]
-using PawnStructureHistory = Stats<int16_t, 14976, PAWN_STRUCTURE_SIZE, PIECE_NB, SQUARE_NB>;
+using PawnStructureHistory = Stats<int16_t, 7488, PAWN_STRUCTURE_SIZE, PIECE_NB, SQUARE_NB>;
 
 // ContinuationHistory is the combined history of a given pair of moves, usually
 // the current one given a previous one. The nested history table is based on
