@@ -336,7 +336,7 @@ void Position::set_check_info() const {
 // The function is only used when a new position is set up
 void Position::set_state() const {
 
-    st->key = st->materialKey  = 0;
+    st->key = st->materialKey = st->pawnKey = 0;
     st->nonPawnMaterial[WHITE] = st->nonPawnMaterial[BLACK] = VALUE_ZERO;
     st->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
 
@@ -350,6 +350,9 @@ void Position::set_state() const {
 
         if (type_of(pc) != KING && type_of(pc) != PAWN)
             st->nonPawnMaterial[color_of(pc)] += PieceValue[pc];
+
+        else if (type_of(pc) == PAWN)
+            st->pawnKey ^= Zobrist::psq[pc][s];
     }
 
     if (st->epSquare != SQ_NONE)
@@ -666,7 +669,8 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
     assert(&newSt != st);
 
     thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
-    Key k = st->key ^ Zobrist::side;
+    Key k  = st->key ^ Zobrist::side;
+    Key pk = st->pawnKey;
 
     // Copy some fields of the old state to our new StateInfo object except the
     // ones which are going to be recalculated from scratch anyway and then switch
@@ -728,6 +732,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
                 assert(piece_on(to) == NO_PIECE);
                 assert(piece_on(capsq) == make_piece(them, PAWN));
             }
+            pk ^= Zobrist::psq[captured][capsq];
         }
         else
             st->nonPawnMaterial[them] -= PieceValue[captured];
@@ -779,6 +784,8 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
     // If the moving piece is a pawn do some special extra work
     if (type_of(pc) == PAWN)
     {
+        pk ^= Zobrist::psq[pc][from] ^ Zobrist::psq[pc][to];
+
         // Set en passant square if the moved pawn can be captured
         if ((int(to) ^ int(from)) == 16
             && (pawn_attacks_bb(us, to - pawn_push(us)) & pieces(them, PAWN)))
@@ -806,6 +813,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
             // Update hash keys
             k ^= Zobrist::psq[pc][to] ^ Zobrist::psq[promotion][to];
+            pk ^= Zobrist::psq[pc][to];
             st->materialKey ^=
               Zobrist::psq[promotion][pieceCount[promotion] - 1] ^ Zobrist::psq[pc][pieceCount[pc]];
 
@@ -821,7 +829,8 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
     st->capturedPiece = captured;
 
     // Update the key with the final value
-    st->key = k;
+    st->key     = k;
+    st->pawnKey = pk;
 
     // Calculate checkers bitboard (if move gives check)
     st->checkersBB = givesCheck ? attackers_to(square<KING>(them)) & pieces(us) : 0;
