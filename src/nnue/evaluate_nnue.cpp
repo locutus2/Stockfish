@@ -175,9 +175,19 @@ Value evaluate(const Position& pos, bool adjusted, int* complexity) {
 
     ASSERT_ALIGNED(transformedFeatures, alignment);
 
-    const int  bucket     = (pos.count<ALL_PIECES>() - 1) / 4;
-    const auto psqt       = featureTransformer->transform(pos, transformedFeatures, bucket);
-    const auto positional = network[bucket]->propagate(transformedFeatures);
+    const int bucket = (pos.count<ALL_PIECES>() - 1) / 4;
+    const auto psqt = featureTransformer->transform(pos, transformedFeatures, bucket);
+    const auto [positional, error] = network[bucket]->propagate(transformedFeatures);
+    // error is squared in the non-quantized space
+    // it is not a difference in internal units but in the perf%
+    // it is quantized the same way the internal units head is, so it's a bit weird, but should be fine
+    //
+    // abs(perf%_expected - perf%_actual) | error^2
+    // non-quantized                      | quantized
+    // ~0.065                             | ~2.5*OutputScale    <-- eyeballed average value (40)
+    // 0.25                               | 37.5*OutputScale
+    // 0.5                                | 150*OutputScale
+    // 1.0                                | 600*OutputScale     <-- maximum error
 
     if (complexity)
         *complexity = abs(psqt - positional) / OutputScale;
@@ -221,7 +231,7 @@ static NnueEvalTrace trace_evaluate(const Position& pos) {
     for (IndexType bucket = 0; bucket < LayerStacks; ++bucket)
     {
         const auto materialist = featureTransformer->transform(pos, transformedFeatures, bucket);
-        const auto positional  = network[bucket]->propagate(transformedFeatures);
+        const auto [positional, error]  = network[bucket]->propagate(transformedFeatures);
 
         t.psqt[bucket]       = static_cast<Value>(materialist / OutputScale);
         t.positional[bucket] = static_cast<Value>(positional / OutputScale);
