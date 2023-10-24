@@ -94,6 +94,7 @@ struct Network {
 
             Buffer() { std::memset(this, 0, sizeof(*this)); }
         };
+constexpr IndexType TransformedFeatureDimensions = 2048;
 
 #if defined(__clang__) && (__APPLE__)
         // workaround for a bug reported with xcode 12
