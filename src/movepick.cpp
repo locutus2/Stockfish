@@ -111,11 +111,13 @@ MovePicker::MovePicker(const Position&              p,
                        Depth                        d,
                        const ButterflyHistory*      mh,
                        const CapturePieceToHistory* cph,
+                       const PawnStructureHistory*  psh,
                        const PieceToHistory**       ch,
                        Square                       rs) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
+    pawnStructureHistory(psh),
     continuationHistory(ch),
     ttMove(ttm),
     recaptureSquare(rs),
@@ -127,9 +129,14 @@ MovePicker::MovePicker(const Position&              p,
 
 // Constructor for ProbCut: we generate captures with SEE greater
 // than or equal to the given threshold.
-MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph) :
+MovePicker::MovePicker(const Position&              p,
+                       Move                         ttm,
+                       Value                        th,
+                       const CapturePieceToHistory* cph,
+                       const PawnStructureHistory*  psh) :
     pos(p),
     captureHistory(cph),
+    pawnStructureHistory(psh),
     ttMove(ttm),
     threshold(th) {
     assert(!pos.checkers());
@@ -168,7 +175,7 @@ void MovePicker::score() {
             m.value =
               (7 * int(PieceValue[pos.piece_on(to_sq(m))])
                + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))])
-              / 16;
+              + (*pawnStructureHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 16;
 
         else if constexpr (Type == QUIETS)
         {
@@ -184,7 +191,6 @@ void MovePicker::score() {
             m.value += (*continuationHistory[2])[pc][to] / 4;
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
-            m.value += (*pawnStructureHistory)[pawn_structure(pos)][pc][to];
 
             // bonus for checks
             m.value += bool(pos.check_squares(pt) & to) * 16384;
@@ -212,6 +218,7 @@ void MovePicker::score() {
         {
             if (pos.capture_stage(m))
                 m.value = PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m)))
+                        + (*pawnStructureHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]
                         + (1 << 28);
             else
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
