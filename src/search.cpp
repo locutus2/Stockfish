@@ -644,9 +644,6 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
             {
                 int penalty = -stat_bonus(depth);
                 thisThread->mainHistory[us][from_to(ttMove)] << penalty;
-                thisThread->pawnStructureHistory[pawn_structure(pos)][pos.moved_piece(ttMove)]
-                                                [to_sq(ttMove)][0]
-                  << penalty;
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -749,8 +746,6 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     {
         int bonus = std::clamp(-18 * int((ss - 1)->staticEval + ss->staticEval), -1812, 1812);
         thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << bonus;
-        thisThread->pawnStructureHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq][0]
-          << bonus;
     }
 
     // Set up the improving flag, which is true if current static evaluation is
@@ -1328,8 +1323,6 @@ moves_loop:  // When in check, search starts here
                                       stat_bonus(depth) * bonus);
         thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)]
           << stat_bonus(depth) * bonus / 2;
-        thisThread->pawnStructureHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq][0]
-          << stat_bonus(depth) * bonus / 2;
     }
 
     if (PvNode)
@@ -1685,9 +1678,6 @@ void update_all_stats(const Position& pos,
         for (int i = 0; i < quietCount; ++i)
         {
             thisThread->mainHistory[us][from_to(quietsSearched[i])] << -bestMoveBonus;
-            pawnStructureHistory[pawn_structure(pos)][pos.moved_piece(quietsSearched[i])]
-                                [to_sq(quietsSearched[i])][0]
-              << -bestMoveBonus;
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]),
                                           to_sq(quietsSearched[i]), -bestMoveBonus);
         }
@@ -1749,8 +1739,6 @@ void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus) {
     Color   us         = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
     thisThread->mainHistory[us][from_to(move)] << bonus;
-    thisThread->pawnStructureHistory[pawn_structure(pos)][pos.moved_piece(move)][to_sq(move)][0]
-      << bonus;
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     // Update countermove history
