@@ -645,7 +645,7 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
                 int penalty = -stat_bonus(depth);
                 thisThread->mainHistory[us][from_to(ttMove)] << penalty;
                 thisThread->pawnStructureHistory[pawn_structure(pos)][pos.moved_piece(ttMove)]
-                                                [to_sq(ttMove)]
+                                                [to_sq(ttMove)][0]
                   << penalty;
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
@@ -749,7 +749,7 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     {
         int bonus = std::clamp(-18 * int((ss - 1)->staticEval + ss->staticEval), -1812, 1812);
         thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << bonus;
-        thisThread->pawnStructureHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq]
+        thisThread->pawnStructureHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq][0]
           << bonus;
     }
 
@@ -853,7 +853,8 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     {
         assert(probCutBeta < VALUE_INFINITE);
 
-        MovePicker mp(pos, ttMove, probCutBeta - ss->staticEval, &captureHistory);
+        MovePicker mp(pos, ttMove, probCutBeta - ss->staticEval, &captureHistory,
+                      &thisThread->pawnStructureHistory);
 
         while ((move = mp.next_move()) != MOVE_NONE)
             if (move != excludedMove && pos.legal(move))
@@ -1327,6 +1328,8 @@ moves_loop:  // When in check, search starts here
                                       stat_bonus(depth) * bonus);
         thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)]
           << stat_bonus(depth) * bonus / 2;
+        thisThread->pawnStructureHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq][0]
+          << stat_bonus(depth) * bonus / 2;
     }
 
     if (PvNode)
@@ -1468,7 +1471,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
     // will be generated.
     Square     prevSq = is_ok((ss - 1)->currentMove) ? to_sq((ss - 1)->currentMove) : SQ_NONE;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, prevSq);
+                  &thisThread->pawnStructureHistory, contHist, prevSq);
 
     int quietCheckEvasions = 0;
 
@@ -1661,10 +1664,11 @@ void update_all_stats(const Position& pos,
                       int             captureCount,
                       Depth           depth) {
 
-    Color                  us             = pos.side_to_move();
-    Thread*                thisThread     = pos.this_thread();
-    CapturePieceToHistory& captureHistory = thisThread->captureHistory;
-    Piece                  moved_piece    = pos.moved_piece(bestMove);
+    Color                  us                   = pos.side_to_move();
+    Thread*                thisThread           = pos.this_thread();
+    CapturePieceToHistory& captureHistory       = thisThread->captureHistory;
+    PawnStructureHistory&  pawnStructureHistory = thisThread->pawnStructureHistory;
+    Piece                  moved_piece          = pos.moved_piece(bestMove);
     PieceType              captured;
 
     int quietMoveBonus = stat_bonus(depth + 1);
@@ -1681,8 +1685,8 @@ void update_all_stats(const Position& pos,
         for (int i = 0; i < quietCount; ++i)
         {
             thisThread->mainHistory[us][from_to(quietsSearched[i])] << -bestMoveBonus;
-            thisThread->pawnStructureHistory[pawn_structure(pos)][pos.moved_piece(
-              quietsSearched[i])][to_sq(quietsSearched[i])]
+            pawnStructureHistory[pawn_structure(pos)][pos.moved_piece(quietsSearched[i])]
+                                [to_sq(quietsSearched[i])][0]
               << -bestMoveBonus;
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]),
                                           to_sq(quietsSearched[i]), -bestMoveBonus);
@@ -1693,6 +1697,8 @@ void update_all_stats(const Position& pos,
         // Increase stats for the best move in case it was a capture move
         captured = type_of(pos.piece_on(to_sq(bestMove)));
         captureHistory[moved_piece][to_sq(bestMove)][captured] << quietMoveBonus;
+        pawnStructureHistory[pawn_structure(pos)][moved_piece][to_sq(bestMove)][captured]
+          << quietMoveBonus;
     }
 
     // Extra penalty for a quiet early move that was not a TT move or
@@ -1709,6 +1715,8 @@ void update_all_stats(const Position& pos,
         moved_piece = pos.moved_piece(capturesSearched[i]);
         captured    = type_of(pos.piece_on(to_sq(capturesSearched[i])));
         captureHistory[moved_piece][to_sq(capturesSearched[i])][captured] << -quietMoveBonus;
+        pawnStructureHistory[pawn_structure(pos)][moved_piece][to_sq(capturesSearched[i])][captured]
+          << -quietMoveBonus;
     }
 }
 
@@ -1741,7 +1749,7 @@ void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus) {
     Color   us         = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
     thisThread->mainHistory[us][from_to(move)] << bonus;
-    thisThread->pawnStructureHistory[pawn_structure(pos)][pos.moved_piece(move)][to_sq(move)]
+    thisThread->pawnStructureHistory[pawn_structure(pos)][pos.moved_piece(move)][to_sq(move)][0]
       << bonus;
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
