@@ -70,6 +70,7 @@ class Thread {
     CounterMoveHistory    counterMoves;
     ButterflyHistory      mainHistory;
     CapturePieceToHistory captureHistory;
+    PawnStructureHistory  pawnStructureHistory;
     ContinuationHistory   continuationHistory[2][2];
 };
 
