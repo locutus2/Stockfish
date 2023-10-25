@@ -1687,7 +1687,7 @@ void update_all_stats(const Position& pos,
         // Increase stats for the best move in case it was a capture move
         captured = type_of(pos.piece_on(to_sq(bestMove)));
         captureHistory[prevSq == to_sq(bestMove)][moved_piece][to_sq(bestMove)][captured]
-          << quietMoveBonus;
+          << quietMoveBonus * (1 + (prevSq == to_sq(bestMove)));
     }
 
     // Extra penalty for a quiet early move that was not a TT move or
@@ -1705,7 +1705,7 @@ void update_all_stats(const Position& pos,
         captured    = type_of(pos.piece_on(to_sq(capturesSearched[i])));
         captureHistory[prevSq == to_sq(capturesSearched[i])][moved_piece]
                       [to_sq(capturesSearched[i])][captured]
-          << -quietMoveBonus;
+          << -quietMoveBonus * (1 + (prevSq == to_sq(capturesSearched[i])));
     }
 }
 
