@@ -75,7 +75,7 @@ enum NodeType {
     Root
 };
 
-  const int CMHBonusFactor[7] = { 0, 61, 64, 5, 45, 0, 37 };
+const int CMHBonusFactor[7] = {0, 61, 57, 8, 45, 0, 24};
 
 // Futility margin
 Value futility_margin(Depth d, bool noTtCutNode, bool improving) {
@@ -1715,8 +1715,8 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
         // Only update the first 2 continuation histories if we are in check
         if (ss->inCheck && i > 2)
             break;
-        if (is_ok((ss-i)->currentMove))
-            (*(ss-i)->continuationHistory)[pc][to] << (bonus * CMHBonusFactor[i] / 64);
+        if (is_ok((ss - i)->currentMove))
+            (*(ss - i)->continuationHistory)[pc][to] << (bonus * CMHBonusFactor[i] / 64);
     }
 }
 
