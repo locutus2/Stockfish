@@ -1139,6 +1139,7 @@ moves_loop:  // When in check, search starts here
             r--;
 
         ss->statScore = 2 * thisThread->mainHistory[us][from_to(move)]
+                      + thisThread->pawnStructureHistory[pawn_structure(pos)][movedPiece][to_sq(move)]
                       + (*contHist[0])[movedPiece][to_sq(move)]
                       + (*contHist[1])[movedPiece][to_sq(move)]
                       + (*contHist[3])[movedPiece][to_sq(move)] - 3848;
