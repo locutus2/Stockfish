@@ -155,7 +155,7 @@ void hint_common_parent_position(const Position& pos) {
 }
 
 // Evaluation function. Perform differential calculation.
-Value evaluate(const Position& pos, bool adjusted, int* complexity) {
+std::pair<Value, std::int32_t> evaluate(const Position& pos, bool adjusted, int* complexity) {
 
     // We manually align the arrays on the stack because with gcc < 9.3
     // overaligning stack variables with alignas() doesn't work correctly.
@@ -175,9 +175,10 @@ Value evaluate(const Position& pos, bool adjusted, int* complexity) {
 
     ASSERT_ALIGNED(transformedFeatures, alignment);
 
-    const int bucket = (pos.count<ALL_PIECES>() - 1) / 4;
-    const auto psqt = featureTransformer->transform(pos, transformedFeatures, bucket);
+    const int  bucket = (pos.count<ALL_PIECES>() - 1) / 4;
+    const auto psqt   = featureTransformer->transform(pos, transformedFeatures, bucket);
     const auto [positional, error] = network[bucket]->propagate(transformedFeatures);
+
     // error is squared in the non-quantized space
     // it is not a difference in internal units but in the perf%
     // it is quantized the same way the internal units head is, so it's a bit weird, but should be fine
@@ -194,10 +195,11 @@ Value evaluate(const Position& pos, bool adjusted, int* complexity) {
 
     // Give more value to positional evaluation when adjusted flag is set
     if (adjusted)
-        return static_cast<Value>(((1024 - delta) * psqt + (1024 + delta) * positional)
-                                  / (1024 * OutputScale));
+        return {static_cast<Value>(((1024 - delta) * psqt + (1024 + delta) * positional)
+                                   / (1024 * OutputScale)),
+                error};
     else
-        return static_cast<Value>((psqt + positional) / OutputScale);
+        return {static_cast<Value>((psqt + positional) / OutputScale), error};
 }
 
 struct NnueEvalTrace {
@@ -231,7 +233,7 @@ static NnueEvalTrace trace_evaluate(const Position& pos) {
     for (IndexType bucket = 0; bucket < LayerStacks; ++bucket)
     {
         const auto materialist = featureTransformer->transform(pos, transformedFeatures, bucket);
-        const auto [positional, error]  = network[bucket]->propagate(transformedFeatures);
+        const auto [positional, error] = network[bucket]->propagate(transformedFeatures);
 
         t.psqt[bucket]       = static_cast<Value>(materialist / OutputScale);
         t.positional[bucket] = static_cast<Value>(positional / OutputScale);
@@ -320,8 +322,8 @@ std::string trace(Position& pos) {
 
     // We estimate the value of each piece by doing a differential evaluation from
     // the current base eval, simulating the removal of the piece from its square.
-    Value base = evaluate(pos);
-    base       = pos.side_to_move() == WHITE ? base : -base;
+    auto [base, _] = evaluate(pos);
+    base           = pos.side_to_move() == WHITE ? base : -base;
 
     for (File f = FILE_A; f <= FILE_H; ++f)
         for (Rank r = RANK_1; r <= RANK_8; ++r)
@@ -338,9 +340,9 @@ std::string trace(Position& pos) {
                 st->accumulator.computed[WHITE] = false;
                 st->accumulator.computed[BLACK] = false;
 
-                Value eval = evaluate(pos);
-                eval       = pos.side_to_move() == WHITE ? eval : -eval;
-                v          = base - eval;
+                auto [eval, __] = evaluate(pos);
+                eval            = pos.side_to_move() == WHITE ? eval : -eval;
+                v               = base - eval;
 
                 pos.put_piece(pc, sq);
                 st->accumulator.computed[WHITE] = false;

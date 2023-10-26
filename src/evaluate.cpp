@@ -155,11 +155,13 @@ Value Eval::simple_eval(const Position& pos, Color c) {
 
 // Evaluate is the evaluator for the outer world. It returns a static evaluation
 // of the position from the point of view of the side to move.
-Value Eval::evaluate(const Position& pos) {
+std::pair<Value, std::int32_t> Eval::evaluate(const Position& pos) {
+    //std::pair<Value, std::int32_t> Eval::evaluate(const Position& pos, int* uncertainty) {
 
     assert(!pos.checkers());
 
     Value v;
+    int   error      = 0;
     Color stm        = pos.side_to_move();
     int   shuffling  = pos.rule50_count();
     int   simpleEval = simple_eval(pos, stm) + (int(pos.key() & 7) - 3);
@@ -167,14 +169,14 @@ Value Eval::evaluate(const Position& pos) {
     bool lazy = abs(simpleEval) >= RookValue + KnightValue + 16 * shuffling * shuffling
                                      + abs(pos.this_thread()->bestValue)
                                      + abs(pos.this_thread()->rootSimpleEval);
-
     if (lazy)
         v = Value(simpleEval);
     else
     {
-        int   nnueComplexity;
-        Value nnue = NNUE::evaluate(pos, true, &nnueComplexity);
+        int nnueComplexity;
+        auto [nnue, err] = NNUE::evaluate(pos, true, &nnueComplexity);
 
+        error          = err;
         Value optimism = pos.this_thread()->optimism[stm];
 
         // Blend optimism and eval with nnue complexity and material imbalance
@@ -191,7 +193,7 @@ Value Eval::evaluate(const Position& pos) {
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
-    return v;
+    return {v, error};
 }
 
 // Like evaluate(), but instead of returning a value, it returns
@@ -215,12 +217,11 @@ std::string Eval::trace(Position& pos) {
 
     ss << std::showpoint << std::showpos << std::fixed << std::setprecision(2) << std::setw(15);
 
-    Value v;
-    v = NNUE::evaluate(pos, false);
-    v = pos.side_to_move() == WHITE ? v : -v;
+    auto [v, error] = NNUE::evaluate(pos, false);
+    v               = pos.side_to_move() == WHITE ? v : -v;
     ss << "NNUE evaluation        " << 0.01 * UCI::to_cp(v) << " (white side)\n";
 
-    v = evaluate(pos);
+    v = evaluateWithoutError(pos);
     v = pos.side_to_move() == WHITE ? v : -v;
     ss << "Final evaluation       " << 0.01 * UCI::to_cp(v) << " (white side)";
     ss << " [with scaled NNUE, ...]";

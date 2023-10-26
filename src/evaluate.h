@@ -31,15 +31,21 @@ namespace Eval {
 
 std::string trace(Position& pos);
 
-Value simple_eval(const Position& pos, Color c);
-Value evaluate(const Position& pos);
+Value                          simple_eval(const Position& pos, Color c);
+std::pair<Value, std::int32_t> evaluate(const Position& pos);
 
 extern std::string currentEvalFileName;
 
-  // The default net name MUST follow the format nn-[SHA256 first 12 digits].nnue
-  // for the build process (profile-build and fishtest) to work. Do not change the
-  // name of the macro, as it is used in the Makefile.
-  #define EvalFileDefaultName   "nn-a2292c9186e7.nnue"
+inline Value evaluateWithoutError(const Position& pos) {
+    auto [v, _] = evaluate(pos);
+    return v;
+}
+
+
+// The default net name MUST follow the format nn-[SHA256 first 12 digits].nnue
+// for the build process (profile-build and fishtest) to work. Do not change the
+// name of the macro, as it is used in the Makefile.
+#define EvalFileDefaultName "nn-a2292c9186e7.nnue"
 
 namespace NNUE {
 

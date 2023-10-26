@@ -64,6 +64,7 @@ namespace TB = Tablebases;
 
 using std::string;
 using Eval::evaluate;
+using Eval::evaluateWithoutError;
 using namespace Search;
 
 namespace {
@@ -578,7 +579,7 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
         // Step 2. Check for aborted search and immediate draw
         if (Threads.stop.load(std::memory_order_relaxed) || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
-            return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos)
+            return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluateWithoutError(pos)
                                                         : value_draw(pos.this_thread());
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
@@ -710,6 +711,7 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     {
         // Skip early pruning when in check
         ss->staticEval = eval = VALUE_NONE;
+        ss->staticEvalError   = 0;
         improving             = false;
         goto moves_loop;
     }
@@ -724,7 +726,11 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
         // Never assume anything about values stored in TT
         ss->staticEval = eval = tte->eval();
         if (eval == VALUE_NONE)
-            ss->staticEval = eval = evaluate(pos);
+        {
+            auto [v, error] = evaluate(pos);
+            ss->staticEval = eval = v;
+            ss->staticEvalError   = error;
+        }
         else if (PvNode)
             Eval::NNUE::hint_common_parent_position(pos);
 
@@ -734,7 +740,9 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     }
     else
     {
-        ss->staticEval = eval = evaluate(pos);
+        auto [v, error] = evaluate(pos);
+        ss->staticEval = eval = v;
+        ss->staticEvalError   = error;
         // Save static evaluation into the transposition table
         tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
@@ -1390,7 +1398,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
     // Step 2. Check for an immediate draw or maximum ply reached
     if (pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : VALUE_DRAW;
+        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluateWithoutError(pos) : VALUE_DRAW;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
@@ -1421,17 +1429,29 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
         {
             // Never assume anything about values stored in TT
             if ((ss->staticEval = bestValue = tte->eval()) == VALUE_NONE)
-                ss->staticEval = bestValue = evaluate(pos);
+            {
+                auto [v, error] = evaluate(pos);
+                ss->staticEval = bestValue = v;
+                ss->staticEvalError        = error;
+            }
 
             // ttValue can be used as a better position evaluation (~13 Elo)
             if (ttValue != VALUE_NONE
                 && (tte->bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER)))
                 bestValue = ttValue;
         }
+        else if ((ss - 1)->currentMove != MOVE_NULL)
+        {
+            auto [v, error] = evaluate(pos);
+            ss->staticEval = bestValue = v;
+            ss->staticEvalError        = error;
+        }
         else
+        {
             // In case of null move search use previous static eval with a different sign
-            ss->staticEval = bestValue =
-              (ss - 1)->currentMove != MOVE_NULL ? evaluate(pos) : -(ss - 1)->staticEval;
+            ss->staticEval = bestValue = -(ss - 1)->staticEval;
+            ss->staticEvalError        = (ss - 1)->staticEvalError;
+        }
 
         // Stand pat. Return immediately if static value is at least beta
         if (bestValue >= beta)
