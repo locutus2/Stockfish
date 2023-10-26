@@ -35,9 +35,10 @@ namespace Stockfish {
 constexpr int PAWN_STRUCTURE_SIZE = 512;
 
 inline int pawn_structure(const Position& pos) {
+    return pos.pawn_key() & (PAWN_STRUCTURE_SIZE - 1);
     // use four lowest key bits for encoding count residual class (mod 4) separate for white and black pawns
-    return (pos.pawn_key() & (PAWN_STRUCTURE_SIZE - 16)) ^ (pos.count<PAWN>(WHITE) & 3)
-         ^ ((pos.count<PAWN>(BLACK) & 3) << 2);
+    //return (pos.pawn_key() & (PAWN_STRUCTURE_SIZE - 16)) ^ (pos.count<PAWN>(WHITE) & 3)
+    //     ^ ((pos.count<PAWN>(BLACK) & 3) << 2);
     //return (pos.pawn_key() & (PAWN_STRUCTURE_SIZE - 4)) ^ (pos.count<PAWN>(WHITE) & 1)
     //     ^ ((pos.count<PAWN>(BLACK) & 1)
     //        << 1);  // use two lowest key bits for encoding separate count oddness for white and black pawns
