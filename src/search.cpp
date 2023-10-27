@@ -744,11 +744,8 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     // Use static evaluation difference to improve quiet move ordering (~4 Elo)
     if (is_ok((ss - 1)->currentMove) && !(ss - 1)->inCheck && !priorCapture)
     {
-        int bonus =
-          std::clamp(-18 * int((ss - 1)->staticEval + ss->staticEval), -1812, 1812)
-          * (14366
-             - std::max(int(thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)]), 0))
-          / 14366;
+        int bonus = std::clamp(-18 * int((ss - 1)->staticEval + ss->staticEval), -1812, 1812)
+                  * (7183 - thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)]) / 14366;
         thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << bonus;
     }
 
