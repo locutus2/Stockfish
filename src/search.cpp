@@ -746,9 +746,9 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     {
         int bonus =
           std::clamp(-18 * int((ss - 1)->staticEval + ss->staticEval), -1812, 1812)
-          * (7183
-             - std::max(int(thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)]), 5000))
-          / 2183;
+          * (14366
+             - std::max(int(thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)]), 0))
+          / 14366;
         thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << bonus;
     }
 
