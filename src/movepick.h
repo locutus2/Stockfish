@@ -35,9 +35,12 @@ namespace Stockfish {
 constexpr int PAWN_HISTORY_SIZE = 512;
 
 inline int pawn_structure(const Position& pos) {
+    // Use lowest key bit for encoding pawn count oddness
+    return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 2)) ^ (pos.count<PAWN>() & 1);
     // Use 4 lowest key bits for encoding pawn count modulus 4 separate for white and black pawns
-    return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 16)) ^ (pos.count<PAWN>(WHITE) & 3)
-         ^ ((pos.count<PAWN>(BLACK) & 3) << 2);
+    //return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 16)) ^ (pos.count<PAWN>(WHITE) & 3)
+    //     ^ ((pos.count<PAWN>(BLACK) & 3) << 2);
+    //return pos.pawn_key() & (PAWN_STRUCTURE_SIZE - 1);
 }
 
 // StatsEntry stores the stat table value. It is usually a number but could
