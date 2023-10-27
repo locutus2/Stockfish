@@ -34,7 +34,11 @@ namespace Stockfish {
 
 constexpr int PAWN_HISTORY_SIZE = 512;
 
-inline int pawn_structure(const Position& pos) { return pos.pawn_key() & (PAWN_HISTORY_SIZE - 1); }
+inline int pawn_structure(const Position& pos) {
+    // Use 4 lowest key bits for encoding pawn count modulus 4 separate for white and black pawns
+    return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 16)) ^ (pos.count<PAWN>(WHITE) & 3)
+         ^ ((pos.count<PAWN>(BLACK) & 3) << 2);
+}
 
 // StatsEntry stores the stat table value. It is usually a number but could
 // be a move or even a nested history. We use a class instead of a naked value
