@@ -1338,7 +1338,7 @@ moves_loop:  // When in check, search starts here
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && type_of((ss - 1)->currentMove) != PROMOTION)
             thisThread->pawnHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq]
-              << stat_bonus(depth) * bonus / 2;
+              << stat_bonus(depth) * bonus;
     }
 
     if (PvNode)
