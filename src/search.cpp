@@ -711,7 +711,7 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     {
         // Skip early pruning when in check
         ss->staticEval = eval = VALUE_NONE;
-        ss->staticEvalError   = 0;
+        ss->staticEvalError   = VALUE_NONE;
         improving             = false;
         goto moves_loop;
     }
@@ -731,8 +731,13 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
             ss->staticEval = eval = v;
             ss->staticEvalError   = error;
         }
-        else if (PvNode)
-            Eval::NNUE::hint_common_parent_position(pos);
+        else 
+        {
+            ss->staticEvalError = VALUE_NONE;
+
+            if (PvNode)
+                Eval::NNUE::hint_common_parent_position(pos);
+        }
 
         // ttValue can be used as a better position evaluation (~7 Elo)
         if (ttValue != VALUE_NONE && (tte->bound() & (ttValue > eval ? BOUND_LOWER : BOUND_UPPER)))
@@ -1422,7 +1427,10 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
     // Step 4. Static evaluation of the position
     if (ss->inCheck)
+    {
         bestValue = futilityBase = -VALUE_INFINITE;
+        ss->staticEvalError        = VALUE_NONE;
+    }
     else
     {
         if (ss->ttHit)
@@ -1434,6 +1442,8 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
                 ss->staticEval = bestValue = v;
                 ss->staticEvalError        = error;
             }
+            else
+                ss->staticEvalError        = VALUE_NONE;
 
             // ttValue can be used as a better position evaluation (~13 Elo)
             if (ttValue != VALUE_NONE
