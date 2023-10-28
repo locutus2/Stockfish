@@ -38,7 +38,8 @@ namespace Stockfish::Eval::NNUE {
 using FeatureSet = Features::HalfKAv2_hm;
 
 // Number of input feature dimensions after conversion
-constexpr IndexType TransformedFeatureDimensions = 2560;
+//constexpr IndexType TransformedFeatureDimensions = 2560;
+constexpr IndexType TransformedFeatureDimensions = 2048;
 constexpr IndexType PSQTBuckets                  = 8;
 constexpr IndexType LayerStacks                  = 8;
 
@@ -94,7 +95,6 @@ struct Network {
 
             Buffer() { std::memset(this, 0, sizeof(*this)); }
         };
-constexpr IndexType TransformedFeatureDimensions = 2048;
 
 #if defined(__clang__) && (__APPLE__)
         // workaround for a bug reported with xcode 12
