@@ -731,7 +731,7 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
             ss->staticEval = eval = v;
             ss->staticEvalError   = error;
         }
-        else 
+        else
         {
             ss->staticEvalError = VALUE_NONE;
 
@@ -1145,6 +1145,9 @@ moves_loop:  // When in check, search starts here
                       + (*contHist[1])[movedPiece][to_sq(move)]
                       + (*contHist[3])[movedPiece][to_sq(move)] - 3848;
 
+        if (ss->staticEval != VALUE_NONE && ss->staticEvalError != VALUE_NONE)
+            ss->statScore += 4 * abs(ss->staticEvalError);
+
         // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
         r -= ss->statScore / (10216 + 3855 * (depth > 5 && depth < 23));
 
@@ -1429,7 +1432,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
     if (ss->inCheck)
     {
         bestValue = futilityBase = -VALUE_INFINITE;
-        ss->staticEvalError        = VALUE_NONE;
+        ss->staticEvalError      = VALUE_NONE;
     }
     else
     {
@@ -1443,7 +1446,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
                 ss->staticEvalError        = error;
             }
             else
-                ss->staticEvalError        = VALUE_NONE;
+                ss->staticEvalError = VALUE_NONE;
 
             // ttValue can be used as a better position evaluation (~13 Elo)
             if (ttValue != VALUE_NONE
