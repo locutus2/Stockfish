@@ -32,7 +32,7 @@
 
 namespace Stockfish {
 
-constexpr int PAWN_HISTORY_SIZE = 4096;  // has to be a power of 2
+constexpr int PAWN_HISTORY_SIZE = 8192;  // has to be a power of 2
 
 static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
               "PAWN_HISTORY_SIZE has to be a power of 2");
