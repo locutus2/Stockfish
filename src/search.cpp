@@ -541,7 +541,9 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     assert(0 < depth && depth < MAX_PLY);
     assert(!(PvNode && cutNode));
 
-    Move      pv[MAX_PLY + 1], capturesSearched[32], quietsSearched[32];
+    Move      pv[MAX_PLY + 1], badMovesSearched[64];
+    Move*     quietsSearched   = std::begin(badMovesSearched);
+    Move*     capturesSearched = std::end(badMovesSearched);
     StateInfo st;
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
@@ -1303,10 +1305,15 @@ moves_loop:  // When in check, search starts here
 
         // If the move is worse than some previously searched move,
         // remember it, to update its stats later.
-        if (move != bestMove && moveCount <= 32)
+        if (move != bestMove && quietsSearched < capturesSearched)
         {
+            assert(quietCount + captureCount < 64);
+
             if (capture)
-                capturesSearched[captureCount++] = move;
+            {
+                *--capturesSearched = move;
+                captureCount++;
+            }
 
             else
                 quietsSearched[quietCount++] = move;
