@@ -1305,10 +1305,8 @@ moves_loop:  // When in check, search starts here
 
         // If the move is worse than some previously searched move,
         // remember it, to update its stats later.
-        if (move != bestMove && quietsSearched < capturesSearched)
+        if (move != bestMove && quietCount + captureCount < 64)
         {
-            assert(quietCount + captureCount < 64);
-
             if (capture)
             {
                 *--capturesSearched = move;
