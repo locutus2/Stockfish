@@ -84,10 +84,10 @@ Value futility_margin(Depth d, bool noTtCutNode, bool improving) {
 // Reductions lookup table initialized at startup
 int Reductions[MAX_MOVES];  // [depth or moveNumber]
 
-Depth reduction(bool i, Depth d, int mn, Value delta, Value rootDelta) {
+Depth reduction(bool i, Depth d, int mn, Value delta, Value rootDelta, int evalError = VALUE_NONE) {
     int reductionScale = Reductions[d] * Reductions[mn];
     return (reductionScale + 1560 - int(delta) * 945 / int(rootDelta)) / 1024
-         + (!i && reductionScale > 791);
+         + (!i && reductionScale > 791) + (evalError != VALUE_NONE && evalError < 20);
 }
 
 constexpr int futility_move_count(bool improving, Depth depth) {
@@ -964,7 +964,8 @@ moves_loop:  // When in check, search starts here
 
         Value delta = beta - alpha;
 
-        Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
+        Depth r =
+          reduction(improving, depth, moveCount, delta, thisThread->rootDelta, ss->staticEvalError);
 
         // Step 14. Pruning at shallow depth (~120 Elo).
         // Depth conditions are important for mate finding.
@@ -1139,9 +1140,6 @@ moves_loop:  // When in check, search starts here
         // Decrease reduction for first generated move (ttMove)
         else if (move == ttMove)
             r--;
-
-        if (ss->staticEvalError != VALUE_NONE && ss->staticEvalError < 20)
-            r++;
 
         ss->statScore = 2 * thisThread->mainHistory[us][from_to(move)]
                       + (*contHist[0])[movedPiece][to_sq(move)]
