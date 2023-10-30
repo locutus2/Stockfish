@@ -1303,13 +1303,23 @@ moves_loop:  // When in check, search starts here
 
         // If the move is worse than some previously searched move,
         // remember it, to update its stats later.
-        if (move != bestMove && moveCount <= 32)
+        if (move != bestMove)
         {
-            if (capture)
+            if (capture && captureCount < 32)
+            {
                 capturesSearched[captureCount++] = move;
 
-            else
+                if (!bestMove && captureCount < 32)
+                    capturesSearched[captureCount++] = move;
+            }
+
+            else if (!capture && quietCount < 32)
+            {
                 quietsSearched[quietCount++] = move;
+
+                if (!bestMove && quietCount < 32)
+                    quietsSearched[quietCount++] = move;
+            }
         }
     }
 
