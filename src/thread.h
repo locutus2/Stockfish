@@ -69,7 +69,7 @@ class Thread {
     CapturePieceToHistory captureHistory;
     ContinuationHistory   continuationHistory[2][2];
     PawnHistory           pawnHistory;
-    MaterialHistory       materialHistory;
+    PositionHistory       positionHistory;
 };
 
 

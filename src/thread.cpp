@@ -69,7 +69,7 @@ void Thread::clear() {
     mainHistory.fill(0);
     captureHistory.fill(0);
     pawnHistory.fill(0);
-    materialHistory.fill(0);
+    positionHistory.fill(0);
 
     for (bool inCheck : {false, true})
         for (StatsType c : {NoCaptures, Captures})
