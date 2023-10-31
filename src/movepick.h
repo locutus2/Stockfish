@@ -40,10 +40,10 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
 inline int pawn_structure(const Position& pos) { return pos.pawn_key() & (PAWN_HISTORY_SIZE - 1); }
 
 inline int king_index(const Position& pos) {
-    // Use 4 bits for file and rank of both kings (for each use only the middle bit).
+    // Use 4 bits for file and rank of both kings (for each use only the most significant bit).
     int index =
-      (int(pos.square<KING>(WHITE)) & 0x12) ^ ((int(pos.square<KING>(BLACK)) & 0x12) >> 1);
-    return (index & 3) ^ ((index & 0x18) >> 1);
+      (int(pos.square<KING>(WHITE)) & 0x24) ^ ((int(pos.square<KING>(BLACK)) & 0x24) >> 1);
+    return ((index & 6) >> 1) ^ ((index & 0x30) >> 2);
 }
 
 // StatsEntry stores the stat table value. It is usually a number but could
