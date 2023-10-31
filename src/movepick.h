@@ -32,12 +32,16 @@
 
 namespace Stockfish {
 
-constexpr int PAWN_HISTORY_SIZE = 8192;  // has to be a power of 2
+constexpr int PAWN_HISTORY_SIZE = 512;  // has to be a power of 2
 
 static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
               "PAWN_HISTORY_SIZE has to be a power of 2");
 
 inline int pawn_structure(const Position& pos) {
+    // Use 4 lowest bits for file and rank of both kings (each mod 2)
+    return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 16)) ^ (int(pos.square<KING>(WHITE)) & 1)
+         ^ (int(pos.square<KING>(WHITE)) & 8) ^ ((int(pos.square<KING>(BLACK)) & 1) << 1)
+         ^ ((int(pos.square<KING>(BLACK)) & 8) >> 1);
     // Use two lowest key bit for encoding pawn count modulus 4
     //return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 4)) ^ (pos.count<PAWN>() & 3);
     // Use two lowest key bits for encoding separate pawn count oddness for white and black pawns
@@ -46,8 +50,8 @@ inline int pawn_structure(const Position& pos) {
     // Use lowest key bit for encoding pawn count oddness
     //return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 2)) ^ (pos.count<PAWN>() & 1);
     // Use 4 lowest key bits for encoding pawn count modulus 4 separate for white and black pawns
-    return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 16)) ^ (pos.count<PAWN>(WHITE) & 3)
-         ^ ((pos.count<PAWN>(BLACK) & 3) << 2);
+    //return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 16)) ^ (pos.count<PAWN>(WHITE) & 3)
+    //     ^ ((pos.count<PAWN>(BLACK) & 3) << 2);
     //return pos.pawn_key() & (PAWN_STRUCTURE_SIZE - 1);
 }
 
