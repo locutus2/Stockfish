@@ -42,7 +42,7 @@ inline int pawn_structure(const Position& pos) { return pos.pawn_key() & (PAWN_H
 constexpr int MATERIAL_HISTORY_SIZE = 512;  // has to be a power of 2
 
 static_assert((MATERIAL_HISTORY_SIZE & (MATERIAL_HISTORY_SIZE - 1)) == 0,
-              "PAWN_HISTORY_SIZE has to be a power of 2");
+              "MATERIAL_HISTORY_SIZE has to be a power of 2");
 
 inline int material(const Position& pos) {
     return pos.material_key() & (MATERIAL_HISTORY_SIZE - 1);
