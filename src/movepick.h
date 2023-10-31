@@ -39,14 +39,7 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
 
 inline int pawn_structure(const Position& pos) { return pos.pawn_key() & (PAWN_HISTORY_SIZE - 1); }
 
-constexpr int MATERIAL_HISTORY_SIZE = 512;  // has to be a power of 2
-
-static_assert((MATERIAL_HISTORY_SIZE & (MATERIAL_HISTORY_SIZE - 1)) == 0,
-              "MATERIAL_HISTORY_SIZE has to be a power of 2");
-
-inline int material(const Position& pos) {
-    return pos.material_key() & (MATERIAL_HISTORY_SIZE - 1);
-}
+inline int king_index(const Position& pos) { return pos.square<KING>(pos.side_to_move()); }
 
 // StatsEntry stores the stat table value. It is usually a number but could
 // be a move or even a nested history. We use a class instead of a naked value
@@ -131,8 +124,8 @@ using ContinuationHistory = Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB>
 // PawnHistory is addressed by the pawn structure and a move's [piece][to]
 using PawnHistory = Stats<int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
 
-// MaterialHistory is addressed by the material and a move's [piece][to]
-using MaterialHistory = Stats<int16_t, 8192, MATERIAL_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
+// KingHistory is addressed by the king square of the moving side and a move's [piece][to]
+using KingHistory = Stats<int16_t, 8192, SQUARE_NB, PIECE_NB, SQUARE_NB>;
 
 // MovePicker class is used to pick one pseudo-legal move at a time from the
 // current position. The most important method is next_move(), which returns a
@@ -157,7 +150,7 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const PawnHistory&,
-               const MaterialHistory&,
+               const KingHistory&,
                Move,
                const Move*);
     MovePicker(const Position&,
@@ -167,14 +160,14 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const PawnHistory&,
-               const MaterialHistory&,
+               const KingHistory&,
                Square);
     MovePicker(const Position&,
                Move,
                Value,
                const CapturePieceToHistory*,
                const PawnHistory&,
-               const MaterialHistory&);
+               const KingHistory&);
     Move next_move(bool skipQuiets = false);
 
    private:
@@ -190,7 +183,7 @@ class MovePicker {
     const CapturePieceToHistory* captureHistory;
     const PieceToHistory**       continuationHistory;
     const PawnHistory&           pawnHistory;
-    const MaterialHistory&       materialHistory;
+    const KingHistory&           kingHistory;
     Move                         ttMove;
     ExtMove                      refutations[3], *cur, *endMoves, *endBadCaptures;
     int                          stage;

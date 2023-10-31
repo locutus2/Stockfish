@@ -862,7 +862,7 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
         assert(probCutBeta < VALUE_INFINITE);
 
         MovePicker mp(pos, ttMove, probCutBeta - ss->staticEval, &captureHistory,
-                      thisThread->pawnHistory, thisThread->materialHistory);
+                      thisThread->pawnHistory, thisThread->kingHistory);
 
         while ((move = mp.next_move()) != MOVE_NONE)
             if (move != excludedMove && pos.legal(move))
@@ -918,7 +918,7 @@ moves_loop:  // When in check, search starts here
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
-                  thisThread->pawnHistory, thisThread->materialHistory, countermove, ss->killers);
+                  thisThread->pawnHistory, thisThread->kingHistory, countermove, ss->killers);
 
     value            = bestValue;
     moveCountPruning = singularQuietLMR = false;
@@ -1004,7 +1004,7 @@ moves_loop:  // When in check, search starts here
                             + (*contHist[1])[movedPiece][to_sq(move)]
                             + (*contHist[3])[movedPiece][to_sq(move)]
                             + thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)]
-                            + thisThread->materialHistory[material(pos)][movedPiece][to_sq(move)];
+                            + thisThread->kingHistory[king_index(pos)][movedPiece][to_sq(move)];
 
                 // Continuation history based pruning (~2 Elo)
                 if (lmrDepth < 6 && history < -3645 * depth)
@@ -1479,7 +1479,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
     // will be generated.
     Square     prevSq = is_ok((ss - 1)->currentMove) ? to_sq((ss - 1)->currentMove) : SQ_NONE;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, thisThread->pawnHistory, thisThread->materialHistory, prevSq);
+                  contHist, thisThread->pawnHistory, thisThread->kingHistory, prevSq);
 
     int quietCheckEvasions = 0;
 
@@ -1689,7 +1689,7 @@ void update_all_stats(const Position& pos,
         update_quiet_stats(pos, ss, bestMove, bestMoveBonus);
         thisThread->pawnHistory[pawn_structure(pos)][moved_piece][to_sq(bestMove)]
           << quietMoveBonus;
-        thisThread->materialHistory[material(pos)][moved_piece][to_sq(bestMove)] << quietMoveBonus;
+        thisThread->kingHistory[king_index(pos)][moved_piece][to_sq(bestMove)] << quietMoveBonus;
 
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
@@ -1697,8 +1697,8 @@ void update_all_stats(const Position& pos,
             thisThread->pawnHistory[pawn_structure(pos)][pos.moved_piece(quietsSearched[i])]
                                    [to_sq(quietsSearched[i])]
               << -bestMoveBonus;
-            thisThread->materialHistory[material(pos)][pos.moved_piece(quietsSearched[i])]
-                                       [to_sq(quietsSearched[i])]
+            thisThread->kingHistory[king_index(pos)][pos.moved_piece(quietsSearched[i])]
+                                   [to_sq(quietsSearched[i])]
               << -bestMoveBonus;
             thisThread->mainHistory[us][from_to(quietsSearched[i])] << -bestMoveBonus;
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]),
