@@ -39,7 +39,7 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
 
 inline int pawn_structure(const Position& pos) { return pos.pawn_key() & (PAWN_HISTORY_SIZE - 1); }
 
-inline int king_index(const Position& pos) { return pos.square<KING>(pos.side_to_move()); }
+inline int king_index(const Position& pos) { return pos.square<KING>(~pos.side_to_move()); }
 
 // StatsEntry stores the stat table value. It is usually a number but could
 // be a move or even a nested history. We use a class instead of a naked value
