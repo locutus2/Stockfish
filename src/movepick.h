@@ -39,6 +39,13 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
 
 inline int pawn_structure(const Position& pos) { return pos.pawn_key() & (PAWN_HISTORY_SIZE - 1); }
 
+inline int king_index(const Position& pos) {
+    // Use 4 bits for file and rank of both kings (for each use only the middle bit).
+    int index =
+      (int(pos.square<KING>(WHITE)) & 0x12) ^ ((int(pos.square<KING>(BLACK)) & 0x12) >> 1);
+    return (index & 3) ^ ((index & 0x18) >> 1);
+}
+
 // StatsEntry stores the stat table value. It is usually a number but could
 // be a move or even a nested history. We use a class instead of a naked value
 // to directly call history update operator<<() on the entry so to use stats
@@ -98,10 +105,10 @@ enum StatsType {
 
 // ButterflyHistory records how often quiet moves have been successful or
 // unsuccessful during the current search, and is used for reduction and move
-// ordering decisions. It uses 2 tables (one for each color) indexed by
-// the move's from and to squares, see www.chessprogramming.org/Butterfly_Boards
+// ordering decisions. It uses 16 * 2 tables (some index derived from king positions x color)
+// indexed by the move's from and to squares, see www.chessprogramming.org/Butterfly_Boards
 // (~11 elo)
-using ButterflyHistory = Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
+using ButterflyHistory = Stats<int16_t, 7183, 16, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
 
 // CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
 // move, see www.chessprogramming.org/Countermove_Heuristic

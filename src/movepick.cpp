@@ -182,7 +182,7 @@ void MovePicker::score() {
             Square    to   = to_sq(m);
 
             // histories
-            m.value = 2 * (*mainHistory)[pos.side_to_move()][from_to(m)];
+            m.value = 2 * (*mainHistory)[king_index(pos)][pos.side_to_move()][from_to(m)];
             m.value += 2 * (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to] / 4;
@@ -219,7 +219,7 @@ void MovePicker::score() {
                 m.value = PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m)))
                         + (1 << 28);
             else
-                m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
+                m.value = (*mainHistory)[king_index(pos)][pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                         + pawnHistory[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
         }
