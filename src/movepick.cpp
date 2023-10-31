@@ -90,6 +90,7 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const PawnHistory&           ph,
+                       const MaterialHistory&       mah,
                        Move                         cm,
                        const Move*                  killers) :
     pos(p),
@@ -97,6 +98,7 @@ MovePicker::MovePicker(const Position&              p,
     captureHistory(cph),
     continuationHistory(ch),
     pawnHistory(ph),
+    materialHistory(mah),
     ttMove(ttm),
     refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}},
     depth(d) {
@@ -113,12 +115,14 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const PawnHistory&           ph,
+                       const MaterialHistory&       mah,
                        Square                       rs) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
     continuationHistory(ch),
     pawnHistory(ph),
+    materialHistory(mah),
     ttMove(ttm),
     recaptureSquare(rs),
     depth(d) {
@@ -129,11 +133,16 @@ MovePicker::MovePicker(const Position&              p,
 
 // Constructor for ProbCut: we generate captures with SEE greater
 // than or equal to the given threshold.
-MovePicker::MovePicker(
-  const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph, const PawnHistory& ph) :
+MovePicker::MovePicker(const Position&              p,
+                       Move                         ttm,
+                       Value                        th,
+                       const CapturePieceToHistory* cph,
+                       const PawnHistory&           ph,
+                       const MaterialHistory&       mah) :
     pos(p),
     captureHistory(cph),
     pawnHistory(ph),
+    materialHistory(mah),
     ttMove(ttm),
     threshold(th) {
     assert(!pos.checkers());
@@ -188,6 +197,7 @@ void MovePicker::score() {
             m.value += (*continuationHistory[2])[pc][to] / 4;
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
+            m.value += materialHistory[material(pos)][pc][to];
 
             // bonus for checks
             m.value += bool(pos.check_squares(pt) & to) * 16384;
@@ -221,7 +231,8 @@ void MovePicker::score() {
             else
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                        + pawnHistory[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+                        + pawnHistory[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]
+                        + materialHistory[material(pos)][pos.moved_piece(m)][to_sq(m)];
         }
 }
 
