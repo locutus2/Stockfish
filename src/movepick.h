@@ -38,10 +38,12 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
               "PAWN_HISTORY_SIZE has to be a power of 2");
 
 inline int pawn_structure(const Position& pos) {
-    // Use 4 lowest bits for file and rank of both kings (each mod 2)
-    return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 16)) ^ (int(pos.square<KING>(WHITE)) & 1)
-         ^ (int(pos.square<KING>(WHITE)) & 8) ^ ((int(pos.square<KING>(BLACK)) & 1) << 1)
-         ^ ((int(pos.square<KING>(BLACK)) & 8) >> 1);
+    // Use 4 of the 5 lowest bits for file and rank of both kings (each mod 2). Bit 3 is kept for pawn key.
+    return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 28)) ^ (int(pos.square<KING>(WHITE)) & 9)
+         ^ ((int(pos.square<KING>(BLACK)) & 9) << 1);
+    //return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 16)) ^ (int(pos.square<KING>(WHITE)) & 1)
+    //     ^ (int(pos.square<KING>(WHITE)) & 8) ^ ((int(pos.square<KING>(BLACK)) & 1) << 1)
+    //     ^ ((int(pos.square<KING>(BLACK)) & 8) >> 1);
     // Use two lowest key bit for encoding pawn count modulus 4
     //return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 4)) ^ (pos.count<PAWN>() & 3);
     // Use two lowest key bits for encoding separate pawn count oddness for white and black pawns
