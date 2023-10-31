@@ -38,9 +38,10 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
               "PAWN_HISTORY_SIZE has to be a power of 2");
 
 inline int pawn_structure(const Position& pos) {
-    // Use 4 of the 5 lowest bits for file and rank of both kings (each mod 2). Bit 3 is kept for pawn key.
-    return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 28)) ^ (int(pos.square<KING>(WHITE)) & 9)
-         ^ ((int(pos.square<KING>(BLACK)) & 9) << 1);
+    // Use 4 of the 6 lowest bits for file and rank of both kings (each only most significant bit). Bit 1 and 4 are kept for pawn key.
+    // This groups each king in one of the four sectors of the board.
+    return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 55)) ^ (int(pos.square<KING>(WHITE)) & 0x24)
+         ^ ((int(pos.square<KING>(BLACK)) & 0x24) >> 1);
     //return (pos.pawn_key() & (PAWN_HISTORY_SIZE - 16)) ^ (int(pos.square<KING>(WHITE)) & 1)
     //     ^ (int(pos.square<KING>(WHITE)) & 8) ^ ((int(pos.square<KING>(BLACK)) & 1) << 1)
     //     ^ ((int(pos.square<KING>(BLACK)) & 8) >> 1);
