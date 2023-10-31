@@ -40,8 +40,10 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
 inline int pawn_structure(const Position& pos) { return pos.pawn_key() & (PAWN_HISTORY_SIZE - 1); }
 
 inline int king_index(const Position& pos) {
-    return (int(pos.square<KING>(WHITE)) & 3) ^ ((int(pos.square<KING>(WHITE)) & 0x18) << 1)
-         ^ ((int(pos.square<KING>(BLACK)) & 3) << 2) ^ ((int(pos.square<KING>(BLACK)) & 0x18) << 3);
+    // Use 4 bits for file and rank of both kings (for each use only the middle bit).
+    int index =
+      (int(pos.square<KING>(WHITE)) & 0x12) ^ ((int(pos.square<KING>(BLACK)) & 0x12) >> 1);
+    return (index & 3) ^ ((index & 0x18) >> 1);
 }
 
 // StatsEntry stores the stat table value. It is usually a number but could
@@ -127,8 +129,8 @@ using ContinuationHistory = Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB>
 // PawnHistory is addressed by the pawn structure and a move's [piece][to]
 using PawnHistory = Stats<int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
 
-// KingHistory is addressed by the file and rank of both kings (each mod 4) and a move's [piece][to]
-using KingHistory = Stats<int16_t, 8192, 256, PIECE_NB, SQUARE_NB>;
+// KingHistory is addressed by the file and rank of both kings (for each use only middle bit) and a move's [piece][to]
+using KingHistory = Stats<int16_t, 8192, 16, PIECE_NB, SQUARE_NB>;
 
 // MovePicker class is used to pick one pseudo-legal move at a time from the
 // current position. The most important method is next_move(), which returns a
