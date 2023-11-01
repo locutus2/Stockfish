@@ -107,7 +107,7 @@ using ButterflyHistory = Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQU
 // move, see www.chessprogramming.org/Countermove_Heuristic
 using CounterMoveHistory = Stats<Move, NOT_USED, PIECE_NB, SQUARE_NB>;
 
-// CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
+// CapturePieceToHistory is addressed by pawn structure and a move's [piece][to][captured piece type]
 using CapturePieceToHistory =
   Stats<int16_t, 10692, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
 
@@ -120,7 +120,7 @@ using PieceToHistory = Stats<int16_t, 29952, PIECE_NB, SQUARE_NB>;
 // (~63 elo)
 using ContinuationHistory = Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB>;
 
-// PawnStructureHistory is addressed by the pawn structure and a move's [piece][to]
+// PawnHistory is addressed by the pawn structure and a move's [piece][to]
 using PawnHistory = Stats<int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
 
 // MovePicker class is used to pick one pseudo-legal move at a time from the
