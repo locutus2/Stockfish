@@ -39,6 +39,15 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
 
 inline int pawn_structure(const Position& pos) { return pos.pawn_key() & (PAWN_HISTORY_SIZE - 1); }
 
+constexpr int MATERIAL_INDEX_SIZE = 512;  // has to be a power of 2
+
+static_assert((MATERIAL_INDEX_SIZE & (MATERIAL_INDEX_SIZE - 1)) == 0,
+              "MATERIAL_INDEX_SIZE has to be a power of 2");
+
+inline int material_index(const Position& pos) {
+    return pos.material_key() & (MATERIAL_INDEX_SIZE - 1);
+}
+
 // StatsEntry stores the stat table value. It is usually a number but could
 // be a move or even a nested history. We use a class instead of a naked value
 // to directly call history update operator<<() on the entry so to use stats
@@ -107,9 +116,9 @@ using ButterflyHistory = Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQU
 // move, see www.chessprogramming.org/Countermove_Heuristic
 using CounterMoveHistory = Stats<Move, NOT_USED, PIECE_NB, SQUARE_NB>;
 
-// CapturePieceToHistory is addressed by pawn structure and a move's [piece][to][captured piece type]
+// CapturePieceToHistory is addressed by material distribution and a move's [piece][to][captured piece type]
 using CapturePieceToHistory =
-  Stats<int16_t, 10692, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
+  Stats<int16_t, 10692, MATERIAL_INDEX_SIZE, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
 
 // PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
 using PieceToHistory = Stats<int16_t, 29952, PIECE_NB, SQUARE_NB>;
