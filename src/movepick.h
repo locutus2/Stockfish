@@ -39,7 +39,7 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
 
 inline int pawn_structure(const Position& pos) { return pos.pawn_key() & (PAWN_HISTORY_SIZE - 1); }
 
-constexpr int MATERIAL_INDEX_SIZE = 512;  // has to be a power of 2
+constexpr int MATERIAL_INDEX_SIZE = 128;  // has to be a power of 2
 
 static_assert((MATERIAL_INDEX_SIZE & (MATERIAL_INDEX_SIZE - 1)) == 0,
               "MATERIAL_INDEX_SIZE has to be a power of 2");
