@@ -1111,7 +1111,8 @@ moves_loop:  // When in check, search starts here
         // Step 16. Make the move
         pos.do_move(move, st, givesCheck);
 
-        bool CC = !capture;
+        //bool CC = !capture;
+        //bool CC = !capture && !ss->inCheck;
         //int V = thisThread->pieceFromHistory[movedPiece][from_sq(move)];
         //int V = std::min(thisThread->pieceToHistory[movedPiece][to_sq(move)]
         //        ,thisThread->pieceFromHistory[movedPiece][from_sq(move)]);
@@ -1136,6 +1137,7 @@ moves_loop:  // When in check, search starts here
         //int D = 29952; int V = (*contHist)[2][movedPiece][to_sq(move)];
         //int D = 29952; int V = (*contHist)[3][movedPiece][to_sq(move)];
         //int D = 29952; int V = (*contHist)[5][movedPiece][to_sq(move)];
+        /*
         int D = 2*7183+8192+(29952*21 + 3) /4; int V = 2*thisThread->mainHistory[us][from_to(move)]
                                                    + 2*(*contHist)[0][movedPiece][to_sq(move)]
                                                    + (*contHist)[1][movedPiece][to_sq(move)]
@@ -1143,6 +1145,21 @@ moves_loop:  // When in check, search starts here
                                                    + (*contHist)[3][movedPiece][to_sq(move)]
                                                    + (*contHist)[5][movedPiece][to_sq(move)]
                                                    + thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)];
+                                                   */
+
+        bool CC = !capture && !ss->inCheck;
+        //int D = 7*2538/2+10692; int V = 7 * (int(PieceValue[pos.piece_on(to_sq(move))]) - 2538/2)
+        //                             + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
+        //int D = 10692; int V = captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
+        //int D = 2538/2+10692; int V = (int(PieceValue[pos.piece_on(to_sq(move))]) - 2538/2)
+        //                             + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
+        //int D = 7*2538/2+10692; int V = 7 * (int(PieceValue[pos.piece_on(to_sq(move))])*int(PieceValue[pos.piece_on(to_sq(move))])/QueenValue - 2538/2)
+        //                             + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
+        //int D = 7*2538/2+10692; int V = 7 * (int(PieceValue[pos.piece_on(to_sq(move))])*(QueenValue-int(PieceValue[pos.piece_on(to_sq(move))]))/QueenValue - 2538/2)
+        //                             + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
+        int D = 7*2538/2+10692+7183; int V = 7 * (int(PieceValue[pos.piece_on(to_sq(move))]) - 2538/2)
+                                            + thisThread->mainHistory[us][from_to(move)]
+                                            + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
         if (ss->ttPv && !likelyFailLow)
