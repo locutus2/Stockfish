@@ -1129,8 +1129,20 @@ moves_loop:  // When in check, search starts here
         //                          + thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)];
         //int D = 2*7183+8192; int V = 2*thisThread->mainHistory[us][from_to(move)]
         //                          + thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)];
-        int D = 7183+2*8192; int V = thisThread->mainHistory[us][from_to(move)]
-                                  + 2*thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)];
+        //int D = 7183+2*8192; int V = thisThread->mainHistory[us][from_to(move)]
+        //                          + 2*thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)];
+        //int D = 29952; int V = (*contHist)[0][movedPiece][to_sq(move)];
+        //int D = 29952; int V = (*contHist)[1][movedPiece][to_sq(move)];
+        //int D = 29952; int V = (*contHist)[2][movedPiece][to_sq(move)];
+        //int D = 29952; int V = (*contHist)[3][movedPiece][to_sq(move)];
+        //int D = 29952; int V = (*contHist)[5][movedPiece][to_sq(move)];
+        int D = 2*7183+8192+(29952*21 + 3) /4; int V = 2*thisThread->mainHistory[us][from_to(move)]
+                                                   + 2*(*contHist)[0][movedPiece][to_sq(move)]
+                                                   + (*contHist)[1][movedPiece][to_sq(move)]
+                                                   + (*contHist)[2][movedPiece][to_sq(move)]/4
+                                                   + (*contHist)[3][movedPiece][to_sq(move)]
+                                                   + (*contHist)[5][movedPiece][to_sq(move)]
+                                                   + thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)];
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
         if (ss->ttPv && !likelyFailLow)
