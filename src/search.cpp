@@ -1122,7 +1122,15 @@ moves_loop:  // When in check, search starts here
         //        + thisThread->pieceToHistory[movedPiece][to_sq(move)]
         //        + thisThread->pieceFromHistory[movedPiece][from_sq(move)])/3;
         //int V = std::min((int)thisThread->mainHistory[us][from_to(move)] , (int)thisThread->pieceToHistory[movedPiece][to_sq(move)]);
-        int D = 7183; int V = thisThread->mainHistory[us][from_to(move)];
+        
+        //int D = 7183; int V = thisThread->mainHistory[us][from_to(move)];
+        //int D = 8192; int V = thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)];
+        //int D = 7183+8192; int V = thisThread->mainHistory[us][from_to(move)]
+        //                          + thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)];
+        //int D = 2*7183+8192; int V = 2*thisThread->mainHistory[us][from_to(move)]
+        //                          + thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)];
+        int D = 7183+2*8192; int V = thisThread->mainHistory[us][from_to(move)]
+                                  + 2*thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)];
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
         if (ss->ttPv && !likelyFailLow)
