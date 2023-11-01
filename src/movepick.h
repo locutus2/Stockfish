@@ -155,7 +155,12 @@ class MovePicker {
                const PieceToHistory**,
                const PawnHistory&,
                Square);
-    MovePicker(const Position&, Move, Value, const CapturePieceToHistory*, const PawnHistory&);
+    MovePicker(const Position&,
+               Move,
+               Value,
+               const ButterflyHistory*,
+               const CapturePieceToHistory*,
+               const PawnHistory&);
     Move next_move(bool skipQuiets = false);
 
    private:
