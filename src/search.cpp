@@ -1111,6 +1111,19 @@ moves_loop:  // When in check, search starts here
         // Step 16. Make the move
         pos.do_move(move, st, givesCheck);
 
+        bool CC = !capture;
+        //int V = thisThread->pieceFromHistory[movedPiece][from_sq(move)];
+        //int V = std::min(thisThread->pieceToHistory[movedPiece][to_sq(move)]
+        //        ,thisThread->pieceFromHistory[movedPiece][from_sq(move)]);
+        //int V = thisThread->mainHistory[us][from_to(move)];
+        //int V = (thisThread->mainHistory[us][from_to(move)] + thisThread->pieceToHistory[movedPiece][to_sq(move)])/2;
+        //int V = (thisThread->mainHistory[us][from_to(move)] + thisThread->pieceFromHistory[movedPiece][from_sq(move)])/2;
+        //int V = (thisThread->mainHistory[us][from_to(move)]
+        //        + thisThread->pieceToHistory[movedPiece][to_sq(move)]
+        //        + thisThread->pieceFromHistory[movedPiece][from_sq(move)])/3;
+        //int V = std::min((int)thisThread->mainHistory[us][from_to(move)] , (int)thisThread->pieceToHistory[movedPiece][to_sq(move)]);
+        int D = 7183; int V = thisThread->mainHistory[us][from_to(move)];
+
         // Decrease reduction if position is or has been on the PV (~4 Elo)
         if (ss->ttPv && !likelyFailLow)
             r -= cutNode && tte->depth() >= depth ? 3 : 2;
@@ -1270,6 +1283,14 @@ moves_loop:  // When in check, search starts here
                 // is not a problem when sorting because the sort is stable and the
                 // move position in the list is preserved - just the PV is pushed up.
                 rm.score = -VALUE_INFINITE;
+        }
+
+        if (CC)
+        {
+            bool T = value > alpha;
+            const int M = 100;
+            int index = (V+D)*M/(2*D);
+            dbg_hit_on(T, index);
         }
 
         if (value > bestValue)
@@ -1688,11 +1709,21 @@ void update_all_stats(const Position& pos,
         update_quiet_stats(pos, ss, bestMove, bestMoveBonus);
         thisThread->pawnHistory[pawn_structure(pos)][moved_piece][to_sq(bestMove)]
           << quietMoveBonus;
+        thisThread->pieceFromHistory[moved_piece][from_sq(bestMove)]
+          << quietMoveBonus;
+        thisThread->pieceToHistory[moved_piece][to_sq(bestMove)]
+          << quietMoveBonus;
 
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
             thisThread->pawnHistory[pawn_structure(pos)][pos.moved_piece(quietsSearched[i])]
+                                   [to_sq(quietsSearched[i])]
+              << -bestMoveBonus;
+            thisThread->pieceFromHistory[pos.moved_piece(quietsSearched[i])]
+                                   [from_sq(quietsSearched[i])]
+              << -bestMoveBonus;
+            thisThread->pieceToHistory[pos.moved_piece(quietsSearched[i])]
                                    [to_sq(quietsSearched[i])]
               << -bestMoveBonus;
             thisThread->mainHistory[us][from_to(quietsSearched[i])] << -bestMoveBonus;
