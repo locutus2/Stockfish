@@ -1147,8 +1147,8 @@ moves_loop:  // When in check, search starts here
         else if (move == ttMove)
             r--;
 
-        if (abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY && ss->staticEval != VALUE_NONE
-            && abs(ttValue - ss->staticEval) < 40)
+        if (depth >= 9 && abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY && ss->staticEval != VALUE_NONE
+            && abs(ttValue - ss->staticEval) < 20)
             r++;
 
         ss->statScore = 2 * thisThread->mainHistory[us][from_to(move)]
