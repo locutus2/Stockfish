@@ -1147,7 +1147,7 @@ moves_loop:  // When in check, search starts here
         else if (move == ttMove)
             r--;
 
-        if (depth >= 12 && abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY && ss->staticEval != VALUE_NONE
+        if (abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY && ss->staticEval < -2000
             && abs(ttValue - ss->staticEval) < 20)
             r++;
 
