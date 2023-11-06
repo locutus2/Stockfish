@@ -228,7 +228,7 @@ void MovePicker::score() {
 // Returns the next move satisfying a predicate function.
 // It never returns the TT move.
 template<MovePicker::PickType T, typename Pred>
-Move MovePicker::select(Pred filter) {
+ExtMove MovePicker::select(Pred filter) {
 
     while (cur < endMoves)
     {
@@ -246,7 +246,7 @@ Move MovePicker::select(Pred filter) {
 // Most important method of the MovePicker class. It
 // returns a new pseudo-legal move every time it is called until there are no more
 // moves left, picking the move with the highest score from a list of generated moves.
-Move MovePicker::next_move(bool skipQuiets) {
+ExtMove MovePicker::next_move(bool skipQuiets) {
 
 top:
     switch (stage)
