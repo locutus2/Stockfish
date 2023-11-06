@@ -183,6 +183,7 @@ void MovePicker::score() {
 
             // histories
             m.value = 2 * (*mainHistory)[pos.side_to_move()][from_to(m)];
+            m.value += pawnHistory[pawn_structure(pos)][pc][to];
             m.value += 2 * (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to] / 4;
@@ -209,8 +210,6 @@ void MovePicker::score() {
                           : pt != PAWN ? bool(to & threatenedByPawn) * 15000
                                        : 0)
                        : 0;
-
-            m.value += pawnHistory[pawn_structure(pos)][pc][to];
         }
 
         else  // Type == EVASIONS
