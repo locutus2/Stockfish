@@ -159,6 +159,7 @@ class MovePicker {
                Square);
     MovePicker(const Position&, Move, Value, const CapturePieceToHistory*, const PawnHistory&);
     ExtMove next_move(bool skipQuiets = false);
+    bool isQuiet() const;
 
    private:
     template<PickType T, typename Pred>

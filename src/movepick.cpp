@@ -243,6 +243,8 @@ ExtMove MovePicker::select(Pred filter) {
     return MOVE_NONE;
 }
 
+bool MovePicker::isQuiet() const  { return stage == QUIET; }
+
 // Most important method of the MovePicker class. It
 // returns a new pseudo-legal move every time it is called until there are no more
 // moves left, picking the move with the highest score from a list of generated moves.
