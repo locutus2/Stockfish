@@ -212,8 +212,8 @@ void MovePicker::score() {
                        : 0;
 
             //int V = (*mainHistory)[pos.side_to_move()][from_to(m)];
-            //int V = pawnHistory[pawn_structure(pos)][pc][to];
-            int V = -(*continuationHistory[0])[pc][to]/4;
+            int V = pawnHistory[pawn_structure(pos)][pc][to];
+            //int V = -(*continuationHistory[0])[pc][to]/4;
             m.value += V;
             dbg_mean_of(V,0);
             dbg_mean_of(V,depth);
@@ -313,7 +313,8 @@ top:
             endMoves = generate<QUIETS>(pos, cur);
 
             score<QUIETS>();
-            partial_insertion_sort(cur, endMoves, -3000 * depth);
+            //partial_insertion_sort(cur, endMoves, -3000 * depth);
+            partial_insertion_sort(cur, endMoves, -1960 - 3130 * depth);
         }
 
         ++stage;
