@@ -1178,7 +1178,7 @@ moves_loop:  // When in check, search starts here
         //                                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
 
         bool CC   = mp.isQuiet();
-        int  Dmin = -2 * 7183 - 8192 - (29952 * (21+4) + 3) / 4, Dmax = -Dmin + 16384 + 50000;
+        int  Dmin = -2 * 7183 - 8192 - (29952 * (21+1) + 3) / 4, Dmax = -Dmin + 16384 + 50000;
         int  V = extmove.value;
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
