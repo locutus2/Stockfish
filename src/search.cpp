@@ -914,7 +914,7 @@ moves_loop:  // When in check, search starts here
     Move countermove =
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
 
-    const bool PC = !PvNode && !cutNode;
+    const bool PC = true;//!PvNode&&!cutNode;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
                   thisThread->pawnHistory, countermove, ss->killers, PC);
 
@@ -1179,7 +1179,7 @@ moves_loop:  // When in check, search starts here
         //                                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
 
         bool CC   = mp.isQuiet() && PC;
-        int  Dmin = -2 * 7183 - (1+1) * 8192 - (29952 * 21 + 3) / 4, Dmax = -Dmin + 16384 + 50000;
+        int  Dmin = -2 * 7183 - (1+1+1) * 8192 - (29952 * 21 + 3) / 4, Dmax = -Dmin + 16384 + 50000;
         int  V = extmove.value;
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
