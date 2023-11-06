@@ -148,7 +148,8 @@ class MovePicker {
                const PieceToHistory**,
                const PawnHistory&,
                Move,
-               const Move*);
+               const Move*,
+               bool);
     MovePicker(const Position&,
                Move,
                Depth,
@@ -181,6 +182,7 @@ class MovePicker {
     Value                        threshold;
     Depth                        depth;
     ExtMove                      moves[MAX_MOVES];
+    bool C;
 };
 
 }  // namespace Stockfish

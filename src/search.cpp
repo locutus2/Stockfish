@@ -914,8 +914,9 @@ moves_loop:  // When in check, search starts here
     Move countermove =
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
 
+    const bool PC = !PvNode && !cutNode;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
-                  thisThread->pawnHistory, countermove, ss->killers);
+                  thisThread->pawnHistory, countermove, ss->killers, PC);
 
     value            = bestValue;
     moveCountPruning = singularQuietLMR = false;
@@ -1177,7 +1178,7 @@ moves_loop:  // When in check, search starts here
         //                                    + thisThread->mainHistory[us][from_to(move)] / 2
         //                                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
 
-        bool CC   = mp.isQuiet();
+        bool CC   = mp.isQuiet() && PC;
         int  Dmin = -2 * 7183 - (1+1) * 8192 - (29952 * 21 + 3) / 4, Dmax = -Dmin + 16384 + 50000;
         int  V = extmove.value;
 
