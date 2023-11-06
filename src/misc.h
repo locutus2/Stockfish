@@ -47,11 +47,12 @@ void* aligned_large_pages_alloc(size_t size);
 // nop if mem == nullptr
 void aligned_large_pages_free(void* mem);
 
-void dbg_hit_on(bool cond, int slot = 0);
-void dbg_mean_of(int64_t value, int slot = 0);
-void dbg_stdev_of(int64_t value, int slot = 0);
-void dbg_correl_of(int64_t value1, int64_t value2, int slot = 0);
-void dbg_print();
+void   dbg_hit_on(bool cond, int slot = 0);
+void   dbg_mean_of(int64_t value, int slot = 0);
+void   dbg_stdev_of(int64_t value, int slot = 0);
+void   dbg_correl_of(int64_t value1, int64_t value2, int slot = 0);
+void   dbg_print();
+double dbg_print_auc(int start, int end);
 
 using TimePoint = std::chrono::milliseconds::rep;  // A value in milliseconds
 static_assert(sizeof(TimePoint) == sizeof(int64_t), "TimePoint should be 64 bits");

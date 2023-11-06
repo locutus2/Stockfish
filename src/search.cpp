@@ -1131,7 +1131,7 @@ moves_loop:  // When in check, search starts here
         //        + thisThread->pieceToHistory[movedPiece][to_sq(move)]
         //        + thisThread->pieceFromHistory[movedPiece][from_sq(move)])/3;
         //int V = std::min((int)thisThread->mainHistory[us][from_to(move)] , (int)thisThread->pieceToHistory[movedPiece][to_sq(move)]);
-        
+
         //int D = 7183; int V = thisThread->mainHistory[us][from_to(move)];
         //int D = 8192; int V = thisThread->pawnHistory[pawn_structure(pos)][movedPiece][to_sq(move)];
         //int D = 7183+8192; int V = thisThread->mainHistory[us][from_to(move)]
@@ -1177,8 +1177,9 @@ moves_loop:  // When in check, search starts here
         //                                    + thisThread->mainHistory[us][from_to(move)] / 2
         //                                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
 
-        bool CC = mp.isQuiet();
-        int Dmin = -2*7183-8192-(29952*21 + 3) /4, Dmax = -Dmin + 16384 + 50000; int V = extmove.value;
+        bool CC   = mp.isQuiet();
+        int  Dmin = -2 * 7183 - 8192 - (29952 * 21 + 3) / 4, Dmax = -Dmin + 16384 + 50000;
+        int  V = extmove.value;
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
         if (ss->ttPv && !likelyFailLow)
@@ -1344,9 +1345,9 @@ moves_loop:  // When in check, search starts here
 
         if (CC)
         {
-            bool T = value > alpha;
-            const int M = 100;
-            int index = (V-Dmin)*M/(Dmax-Dmin);
+            bool      T     = value > alpha;
+            const int M     = 1000;
+            int       index = (V - Dmin) * M / (Dmax - Dmin);
             dbg_hit_on(T, index);
         }
 
@@ -1765,10 +1766,8 @@ void update_all_stats(const Position& pos,
         update_quiet_stats(pos, ss, bestMove, bestMoveBonus);
         thisThread->pawnHistory[pawn_structure(pos)][moved_piece][to_sq(bestMove)]
           << quietMoveBonus;
-        thisThread->pieceFromHistory[moved_piece][from_sq(bestMove)]
-          << quietMoveBonus;
-        thisThread->pieceToHistory[moved_piece][to_sq(bestMove)]
-          << quietMoveBonus;
+        thisThread->pieceFromHistory[moved_piece][from_sq(bestMove)] << quietMoveBonus;
+        thisThread->pieceToHistory[moved_piece][to_sq(bestMove)] << quietMoveBonus;
 
         int moveMalus = bestValue > beta + 168 ? quietMoveMalus      // larger malus
                                                : stat_malus(depth);  // smaller malus
@@ -1779,11 +1778,10 @@ void update_all_stats(const Position& pos,
             thisThread->pawnHistory[pawn_structure(pos)][pos.moved_piece(quietsSearched[i])]
                                    [to_sq(quietsSearched[i])]
               << -moveMalus;
-            thisThread->pieceFromHistory[pos.moved_piece(quietsSearched[i])]
-                                   [from_sq(quietsSearched[i])]
+            thisThread
+                ->pieceFromHistory[pos.moved_piece(quietsSearched[i])][from_sq(quietsSearched[i])]
               << -moveMalus;
-            thisThread->pieceToHistory[pos.moved_piece(quietsSearched[i])]
-                                   [to_sq(quietsSearched[i])]
+            thisThread->pieceToHistory[pos.moved_piece(quietsSearched[i])][to_sq(quietsSearched[i])]
               << -moveMalus;
             thisThread->mainHistory[us][from_to(quietsSearched[i])] << -moveMalus;
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]),

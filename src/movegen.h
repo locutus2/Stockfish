@@ -41,7 +41,9 @@ struct ExtMove {
     Move move;
     int  value;
 
-    ExtMove(Move m = MOVE_NONE, int v = 0) :move(m), value(v) {}
+    ExtMove(Move m = MOVE_NONE, int v = 0) :
+        move(m),
+        value(v) {}
     operator Move() const { return move; }
     operator bool() const { return move != MOVE_NONE; }
     void operator=(Move m) { move = m; }

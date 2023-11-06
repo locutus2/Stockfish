@@ -216,6 +216,7 @@ void bench(Position& pos, std::istream& args, StateListPtr& states) {
     elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
 
     dbg_print();
+    dbg_print_auc(0, 999);
 
     std::cerr << "\n==========================="
               << "\nTotal time (ms) : " << elapsed << "\nNodes searched  : " << nodes
