@@ -183,7 +183,7 @@ void MovePicker::score() {
 
             // histories
             m.value = 2 * (*mainHistory)[pos.side_to_move()][from_to(m)];
-            m.value += 2 * pawnHistory[pawn_structure(pos)][pc][to];
+            m.value += 4 * pawnHistory[pawn_structure(pos)][pc][to];
             m.value += 2 * (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to] / 4;
@@ -304,7 +304,7 @@ top:
             endMoves = generate<QUIETS>(pos, cur);
 
             score<QUIETS>();
-            partial_insertion_sort(cur, endMoves, -1960 - 3130 * depth);
+            partial_insertion_sort(cur, endMoves, -5881 - 3390 * depth);
         }
 
         ++stage;
