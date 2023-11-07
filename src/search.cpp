@@ -917,7 +917,7 @@ moves_loop:  // When in check, search starts here
     //const bool PC = true;//!PvNode&&!cutNode;
     //const bool PC = !PvNode&&!cutNode;
     //const bool PC = cutNode;
-    const bool PC = PvNode;
+    const bool PC = true;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
                   thisThread->pawnHistory, countermove, ss->killers, PC);
 
@@ -1182,7 +1182,7 @@ moves_loop:  // When in check, search starts here
         //                                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
 
         bool CC   = mp.isQuiet() && PC;
-        int  Dmin = -2 * 7183 - (1+1) * 8192 - (29952 * 21 + 3) / 4 - 50000, Dmax = -Dmin + 16384;
+        int  Dmin = -(2+1) * 7183 - 2 * 8192 - (29952 * 21 + 3) / 4 - 50000, Dmax = -Dmin + 16384;
         int  V = extmove.value;
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
