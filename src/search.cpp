@@ -914,7 +914,10 @@ moves_loop:  // When in check, search starts here
     Move countermove =
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
 
-    const bool PC = true;//!PvNode&&!cutNode;
+    //const bool PC = true;//!PvNode&&!cutNode;
+    //const bool PC = !PvNode&&!cutNode;
+    //const bool PC = cutNode;
+    const bool PC = PvNode;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
                   thisThread->pawnHistory, countermove, ss->killers, PC);
 
