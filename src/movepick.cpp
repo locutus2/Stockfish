@@ -193,7 +193,7 @@ void MovePicker::score() {
             m.value += (*continuationHistory[2])[pc][to] / 4;
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
-
+            int v = m.value;
             // bonus for checks
             m.value += bool(pos.check_squares(pt) & to) * 16384;
 
@@ -218,10 +218,11 @@ void MovePicker::score() {
             if(C)
             {
                 //int V = -(*continuationHistory[0])[pc][to]/4;
-                //int V = 0;
-                int V = (*mainHistory)[pos.side_to_move()][from_to(m)];
+                int V = 0;
+                //int V = (*mainHistory)[pos.side_to_move()][from_to(m)];
                 //int V = pawnHistory[pawn_structure(pos)][pc][to];
                 m.value += V;
+                V = m.value - v;
                 dbg_mean_of(V,0);
                 dbg_mean_of(V,depth);
             }
