@@ -180,32 +180,32 @@ void MovePicker::score() {
             Square    to   = to_sq(m);
 
             // histories
-            m.value = 3 * (*mainHistory)[pos.side_to_move()][from_to(m)];
+            m.value = 4 * (*mainHistory)[pos.side_to_move()][from_to(m)];
             m.value += 2 * (*pawnHistory)[pawn_structure(pos)][pc][to];
             m.value += 2 * (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to] / 4;
-            m.value += (*continuationHistory[3])[pc][to];
+            m.value += (*continuationHistory[3])[pc][to] / 2;
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += bool(pos.check_squares(pt) & to) * 16384;
+            m.value += bool(pos.check_squares(pt) & to) * 24704;
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 50000
-                                                  : pt == ROOK && !(to & threatenedByMinor) ? 25000
-                                                  : !(to & threatenedByPawn)                ? 15000
+                                                  : pt == ROOK && !(to & threatenedByMinor) ? 20584
+                                                  : !(to & threatenedByPawn)                ? 18584
                                                                                             : 0)
                                                : 0;
 
             // malus for putting piece en prise
             m.value -= !(threatenedPieces & from)
                        ? (pt == QUEEN ? bool(to & threatenedByRook) * 50000
-                                          + bool(to & threatenedByMinor) * 10000
-                                          + bool(to & threatenedByPawn) * 20000
+                                          + bool(to & threatenedByMinor) * 10640
+                                          + bool(to & threatenedByPawn) * 20512
                           : pt == ROOK ? bool(to & threatenedByMinor) * 25000
                                            + bool(to & threatenedByPawn) * 10000
-                          : pt != PAWN ? bool(to & threatenedByPawn) * 15000
+                          : pt != PAWN ? bool(to & threatenedByPawn) * 19544
                                        : 0)
                        : 0;
         }
@@ -302,7 +302,7 @@ top:
             endMoves = generate<QUIETS>(pos, cur);
 
             score<QUIETS>();
-            partial_insertion_sort(cur, endMoves, -7238 - 3184 * depth);
+            partial_insertion_sort(cur, endMoves, -14731 - 3272 * depth);
         }
 
         ++stage;
