@@ -115,7 +115,8 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const PawnHistory&           ph,
-                       Square                       rs) :
+                       Square                       rs,
+                       bool cond) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
@@ -124,7 +125,7 @@ MovePicker::MovePicker(const Position&              p,
     ttMove(ttm),
     recaptureSquare(rs),
     depth(d),
-    C(false){
+    C(cond){
     assert(d <= 0);
 
     stage = (pos.checkers() ? EVASION_TT : QSEARCH_TT) + !(ttm && pos.pseudo_legal(ttm));
@@ -186,14 +187,14 @@ void MovePicker::score() {
             Square    to   = to_sq(m);
 
             // histories
-            m.value = 3 * (*mainHistory)[pos.side_to_move()][from_to(m)];
+            m.value = 2 * (*mainHistory)[pos.side_to_move()][from_to(m)];
             m.value += 2 * pawnHistory[pawn_structure(pos)][pc][to];
             m.value += 2 * (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to] / 4;
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
-            int v = m.value;
+            //int v = m.value;
             // bonus for checks
             m.value += bool(pos.check_squares(pt) & to) * 16384;
 
