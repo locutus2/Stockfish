@@ -215,6 +215,7 @@ void MovePicker::score() {
                                        : 0)
                        : 0;
 
+            /*
             if(C)
             {
                 //int V = -(*continuationHistory[0])[pc][to]/4;
@@ -222,10 +223,11 @@ void MovePicker::score() {
                 //int V = (*mainHistory)[pos.side_to_move()][from_to(m)];
                 //int V = pawnHistory[pawn_structure(pos)][pc][to];
                 m.value += V;
-                V = m.value - v;
+                //V = m.value - v;
                 dbg_mean_of(V,0);
                 dbg_mean_of(V,depth);
             }
+            */
         }
 
         else  // Type == EVASIONS
@@ -234,9 +236,21 @@ void MovePicker::score() {
                 m.value = PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m)))
                         + (1 << 28);
             else
+            {
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                         + pawnHistory[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+                if(C)
+                {
+                    //int V = -(*continuationHistory[0])[pc][to]/4;
+                    int V = 0;
+                    //int V = (*mainHistory)[pos.side_to_move()][from_to(m)];
+                    //int V = pawnHistory[pawn_structure(pos)][pc][to];
+                    m.value += V;
+                    dbg_mean_of(V,0);
+                    dbg_mean_of(V,depth);
+                }
+            }
         }
 }
 

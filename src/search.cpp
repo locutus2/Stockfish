@@ -1181,8 +1181,15 @@ moves_loop:  // When in check, search starts here
         //                                    + thisThread->mainHistory[us][from_to(move)] / 2
         //                                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
 
+        /*
+         * // quiet moves
         bool CC   = mp.isQuiet() && PC;
         int  Dmin = -2 * 7183 - 2 * 8192 - (29952 * 21 + 3) / 4 - 50000, Dmax = -Dmin + 16384;
+        int  V = extmove.value;
+        */
+        // quiet evasion moves
+        bool CC   = ss->inCheck && !capture && PC;
+        int  Dmin = - 7183 -  8192 - 29952, Dmax = -Dmin;
         int  V = extmove.value;
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
