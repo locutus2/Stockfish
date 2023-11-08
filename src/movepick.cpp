@@ -89,7 +89,7 @@ MovePicker::MovePicker(const Position&              p,
                        const ButterflyHistory*      mh,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
-                       const PawnHistory&           ph,
+                       const PawnHistory*           ph,
                        Move                         cm,
                        const Move*                  killers,
                        bool cond) :
@@ -114,8 +114,8 @@ MovePicker::MovePicker(const Position&              p,
                        const ButterflyHistory*      mh,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
-                       const PawnHistory&           ph,
-                       Square                       rs,
+                       const PawnHistory*           ph,
+                       Square                       rs
                        bool cond) :
     pos(p),
     mainHistory(mh),
@@ -133,11 +133,9 @@ MovePicker::MovePicker(const Position&              p,
 
 // Constructor for ProbCut: we generate captures with SEE greater
 // than or equal to the given threshold.
-MovePicker::MovePicker(
-  const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph, const PawnHistory& ph) :
+MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph) :
     pos(p),
     captureHistory(cph),
-    pawnHistory(ph),
     ttMove(ttm),
     threshold(th),
     C(false){
@@ -188,7 +186,7 @@ void MovePicker::score() {
 
             // histories
             m.value = 2 * (*mainHistory)[pos.side_to_move()][from_to(m)];
-            m.value += 2 * pawnHistory[pawn_structure(pos)][pc][to];
+            m.value += 2 * (*pawnHistory)[pawn_structure(pos)][pc][to];
             m.value += 2 * (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to] / 4;
@@ -240,7 +238,7 @@ void MovePicker::score() {
             {
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                        + pawnHistory[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+                        + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
                 if(C)
                 {
                     //int V = (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
