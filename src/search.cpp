@@ -918,7 +918,7 @@ moves_loop:  // When in check, search starts here
     //const bool PC = cutNode;
     const bool PC = true;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
-                  thisThread->pawnHistory, countermove, ss->killers, PC);
+                  &thisThread->pawnHistory, countermove, ss->killers, PC);
 
     value            = bestValue;
     moveCountPruning = singularQuietLMR = false;
@@ -1566,7 +1566,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
     bool PC = true;
     Square     prevSq = is_ok((ss - 1)->currentMove) ? to_sq((ss - 1)->currentMove) : SQ_NONE;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, thisThread->pawnHistory, prevSq, PC);
+                  contHist, &thisThread->pawnHistory, prevSq, PC);
 
     int quietCheckEvasions = 0;
 

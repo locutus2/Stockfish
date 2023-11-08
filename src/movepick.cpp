@@ -115,7 +115,7 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
-                       Square                       rs
+                       Square                       rs,
                        bool cond) :
     pos(p),
     mainHistory(mh),
