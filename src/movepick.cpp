@@ -243,7 +243,7 @@ void MovePicker::score() {
                 {
                     int V = 0;
                     //int V = (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
-                    V += 15*(*mainHistory)[pos.side_to_move()][from_to(m)];
+                    V += 2*(*mainHistory)[pos.side_to_move()][from_to(m)];
                     //int V = pawnHistory[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
                     m.value += V;
                     //dbg_mean_of(V,0);
