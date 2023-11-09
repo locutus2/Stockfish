@@ -744,12 +744,20 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     }
 
     // Use static evaluation difference to improve quiet move ordering (~4 Elo)
-    if (is_ok((ss - 1)->currentMove) && !(ss - 1)->inCheck && !priorCapture)
+    if (is_ok((ss - 1)->currentMove) && !(ss - 1)->inCheck)
     {
         int bonus = std::clamp(-18 * int((ss - 1)->staticEval + ss->staticEval), -1812, 1812);
-        thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << bonus;
-        if (type_of(pos.piece_on(prevSq)) != PAWN && type_of((ss - 1)->currentMove) != PROMOTION)
-            thisThread->pawnHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq] << bonus / 4;
+        if (priorCapture)
+            thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(pos.captured_piece())]
+              << bonus;
+        else
+        {
+            thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << bonus;
+            if (type_of(pos.piece_on(prevSq)) != PAWN
+                && type_of((ss - 1)->currentMove) != PROMOTION)
+                thisThread->pawnHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq]
+                  << bonus / 4;
+        }
     }
 
     // Set up the improving flag, which is true if current static evaluation is
