@@ -93,7 +93,7 @@ MovePicker::MovePicker(const Position&              p,
                        const PawnHistory*           ph,
                        Move                         cm,
                        const Move*                  killers,
-                       bool cond) :
+                       bool                         cond) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
@@ -101,8 +101,8 @@ MovePicker::MovePicker(const Position&              p,
     pawnHistory(ph),
     ttMove(ttm),
     refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}},
-    depth(d), 
-    C(cond){
+    depth(d),
+    C(cond) {
     assert(d > 0);
 
     stage = (pos.checkers() ? EVASION_TT : MAIN_TT) + !(ttm && pos.pseudo_legal(ttm));
@@ -117,7 +117,7 @@ MovePicker::MovePicker(const Position&              p,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
                        Square                       rs,
-                       bool cond) :
+                       bool                         cond) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
@@ -126,7 +126,7 @@ MovePicker::MovePicker(const Position&              p,
     ttMove(ttm),
     recaptureSquare(rs),
     depth(d),
-    C(cond){
+    C(cond) {
     assert(d <= 0);
 
     stage = (pos.checkers() ? EVASION_TT : QSEARCH_TT) + !(ttm && pos.pseudo_legal(ttm));
@@ -139,7 +139,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
     captureHistory(cph),
     ttMove(ttm),
     threshold(th),
-    C(false){
+    C(false) {
     assert(!pos.checkers());
 
     stage = PROBCUT_TT
@@ -240,7 +240,7 @@ void MovePicker::score() {
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                         + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
-                if(C)
+                if (C)
                 {
                     int V = 0;
                     //V += (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];

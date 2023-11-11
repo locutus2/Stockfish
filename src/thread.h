@@ -66,7 +66,7 @@ class Thread {
     Value                 rootSimpleEval;
     CounterMoveHistory    counterMoves;
     ButterflyHistory      mainHistory;
-    InCheckHistory      inCheckHistory;
+    InCheckHistory        inCheckHistory;
     CapturePieceToHistory captureHistory;
     ContinuationHistory   continuationHistory[2][2];
     PawnHistory           pawnHistory;

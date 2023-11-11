@@ -413,8 +413,8 @@ double dbg_print_auc(int start, int end) {
 
     if (n_pos + n_neg > 0)
     {
-        std::cerr << "AUC #" << start << "-" << end << ": Total " << n_pos + n_neg
-                  << " AUC " << 100 * auc << "%" << std::endl;
+        std::cerr << "AUC #" << start << "-" << end << ": Total " << n_pos + n_neg << " AUC "
+                  << 100 * auc << "%" << std::endl;
         return 100 * auc;
     }
     return -1;

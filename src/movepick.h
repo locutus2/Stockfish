@@ -185,7 +185,7 @@ class MovePicker {
     Value                        threshold;
     Depth                        depth;
     ExtMove                      moves[MAX_MOVES];
-    bool C = false;
+    bool                         C = false;
 };
 
 }  // namespace Stockfish
