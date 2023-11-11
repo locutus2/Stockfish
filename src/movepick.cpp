@@ -223,7 +223,7 @@ void MovePicker::score() {
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                         + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]
-                        + (*inCheckHistory)[pos.side_to_move()][from_to(m)];
+                        - (*inCheckHistory)[pos.side_to_move()][from_to(m)];
         }
 }
 
