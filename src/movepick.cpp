@@ -25,6 +25,7 @@
 
 #include "bitboard.h"
 #include "position.h"
+#include "thread.h"
 
 namespace Stockfish {
 
@@ -242,9 +243,11 @@ void MovePicker::score() {
                 if(C)
                 {
                     int V = 0;
-                    //int V = (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
-                    //V += 3*(*mainHistory)[pos.side_to_move()][from_to(m)];
-                    //int V = pawnHistory[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+                    //V += (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
+                    //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
+                    //V += 3*(*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+                    V += (*mainHistory)[pos.side_to_move()][from_to(m)];
+                    V += pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)];
                     m.value += V;
                     //dbg_mean_of(V,0);
                     //dbg_mean_of(V,depth);
