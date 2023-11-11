@@ -42,8 +42,8 @@ enum {
 };
 
 constexpr int HISTORY_DIVISOR[N_HISTORY] = { 7183, 8192, 7183, 29952, 29952 };
-constexpr int HISTORY_SCALE[N_HISTORY]   = {    1,    1,    1,     1,     2 };
-constexpr int HISTORY_WEIGHT[N_HISTORY]  = {    0,    0,    0,     0,     1 };
+constexpr int HISTORY_SCALE[N_HISTORY]   = {    1,    1,    1,     1,     1 };
+constexpr int HISTORY_WEIGHT[N_HISTORY]  = {    0,    0,    0,     0,     0 };
 
 constexpr int Dmax =  HISTORY_DIVISOR[HISTORY_MAIN] * (HISTORY_SCALE[HISTORY_MAIN] + HISTORY_WEIGHT[HISTORY_MAIN]) / HISTORY_SCALE[HISTORY_MAIN]
                     + HISTORY_DIVISOR[HISTORY_PAWN] * (HISTORY_SCALE[HISTORY_PAWN] + HISTORY_WEIGHT[HISTORY_PAWN]) / HISTORY_SCALE[HISTORY_PAWN]
@@ -185,6 +185,7 @@ class MovePicker {
     MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
     ExtMove next_move(bool skipQuiets = false);
     bool    isQuiet() const;
+    bool    isEvasion() const;
 
    private:
     template<PickType T, typename Pred>

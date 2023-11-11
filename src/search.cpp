@@ -1190,7 +1190,7 @@ moves_loop:  // When in check, search starts here
         int  V = extmove.value;
         */
         // quiet evasion moves
-        bool CC   = ss->inCheck && !capture && PC;
+        bool CC   = mp.isEvasion() && !capture && PC;
         //int  Dmin = -7183 - 8192 - 29952, Dmax = -Dmin;
         int  V = extmove.value;
 

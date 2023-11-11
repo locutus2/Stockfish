@@ -280,6 +280,7 @@ ExtMove MovePicker::select(Pred filter) {
 }
 
 bool MovePicker::isQuiet() const { return stage == QUIET; }
+bool MovePicker::isEvasion() const { return stage == EVASION; }
 
 // Most important method of the MovePicker class. It
 // returns a new pseudo-legal move every time it is called until there are no more
