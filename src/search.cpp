@@ -1191,7 +1191,7 @@ moves_loop:  // When in check, search starts here
         */
         // quiet evasion moves
         bool CC   = ss->inCheck && !capture && PC;
-        int  Dmin = -7183 * 2 - 8192 - 29952, Dmax = -Dmin;
+        //int  Dmin = -7183 - 8192 - 29952, Dmax = -Dmin;
         int  V = extmove.value;
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
@@ -1359,8 +1359,8 @@ moves_loop:  // When in check, search starts here
         if (CC)
         {
             bool      T     = value > alpha;
-            const int M     = 1000;
-            int       index = (V - Dmin) * M / (Dmax - Dmin);
+            const int BUCKETS     = 1000;
+            int       index = std::clamp((V - Dmin) * BUCKETS / (Dmax - Dmin), 0, BUCKETS-1);
             dbg_hit_on(T, index);
         }
 
@@ -1929,7 +1929,7 @@ void MainThread::check_time() {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        dbg_print();
+        //dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI

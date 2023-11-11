@@ -245,9 +245,13 @@ void MovePicker::score() {
                     int V = 0;
                     //V += (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
                     //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
-                    //V += 3*(*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+                    //V += (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
                     //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
-                    V += pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)];
+                    //V += -pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)];
+                    V += HISTORY_WEIGHT[HISTORY_MAIN] * (*mainHistory)[pos.side_to_move()][from_to(m)] / HISTORY_SCALE[HISTORY_MAIN];
+                    V += HISTORY_WEIGHT[HISTORY_PAWN] * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / HISTORY_SCALE[HISTORY_PAWN];
+                    V += HISTORY_WEIGHT[HISTORY_INCHECK] * pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / HISTORY_SCALE[HISTORY_INCHECK];
+                    V += HISTORY_WEIGHT[HISTORY_CMH0] * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / HISTORY_SCALE[HISTORY_CMH0];
                     m.value += V;
                     //dbg_mean_of(V,0);
                     //dbg_mean_of(V,depth);
