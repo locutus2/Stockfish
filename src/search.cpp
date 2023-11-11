@@ -1189,7 +1189,7 @@ moves_loop:  // When in check, search starts here
         */
         // quiet evasion moves
         bool CC   = ss->inCheck && !capture && PC;
-        int  Dmin = - 7183*3 - 8192 - 29952, Dmax = -Dmin;
+        int  Dmin = - 7183*2 - 8192 - 29952, Dmax = -Dmin;
         int  V = extmove.value;
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
