@@ -1427,7 +1427,7 @@ moves_loop:  // When in check, search starts here
                                       stat_bonus(depth) * bonus);
         thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)]
           << stat_bonus(depth) * bonus / 2;
-        if(ss->inCheck) thisThread->inCheckHistory[~us][from_to((ss - 1)->currentMove)]
+        if((ss-1)->inCheck) thisThread->inCheckHistory[~us][from_to((ss - 1)->currentMove)]
           << stat_bonus(depth) * bonus / 2;
     }
 
