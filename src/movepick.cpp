@@ -266,8 +266,13 @@ void MovePicker::score() {
                     V += HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
                        * ((*mainHistory)[pos.side_to_move()][from_to(m)]
                           * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]
-                          / HISTORY_DIVISOR[HISTORY_PAWN])
+                          / 8192)
                        / HISTORY_SCALE[HISTORY_MAIN_PAWN];
+                    V += HISTORY_WEIGHT[HISTORY_MAIN_PAWN_SHIFT]
+                       * ((*mainHistory)[pos.side_to_move()][from_to(m)]
+                          * (8192+(*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                          / (2*8192))
+                       / HISTORY_SCALE[HISTORY_MAIN_PAWN_SHIFT];
                     m.value += V;
                     //dbg_mean_of(V,0);
                     //dbg_mean_of(V,depth);
