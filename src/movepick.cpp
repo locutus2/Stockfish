@@ -90,6 +90,7 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
+                       const InCheckHistory*        ich,
                        Move                         cm,
                        const Move*                  killers) :
     pos(p),
@@ -97,6 +98,7 @@ MovePicker::MovePicker(const Position&              p,
     captureHistory(cph),
     continuationHistory(ch),
     pawnHistory(ph),
+    inCheckHistory(ich),
     ttMove(ttm),
     refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}},
     depth(d) {
@@ -113,12 +115,14 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
+                       const InCheckHistory*        ich,
                        Square                       rs) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
     continuationHistory(ch),
     pawnHistory(ph),
+    inCheckHistory(ich),
     ttMove(ttm),
     recaptureSquare(rs),
     depth(d) {
@@ -218,7 +222,8 @@ void MovePicker::score() {
             else
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                        + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+                        + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]
+                        + (*inCheckHistory)[pos.moved_piece(m)][to_sq(m)];
         }
 }
 

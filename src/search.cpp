@@ -647,6 +647,9 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
                 int penalty = -stat_malus(depth);
                 thisThread->mainHistory[us][from_to(ttMove)] << penalty;
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
+
+                if (ss->inCheck)
+                    thisThread->inCheckHistory[us][from_to(ttMove)] << penalty;
             }
         }
 
@@ -914,7 +917,7 @@ moves_loop:  // When in check, search starts here
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
-                  &thisThread->pawnHistory, countermove, ss->killers);
+                  &thisThread->pawnHistory, &thisThread->inCheckHistory, countermove, ss->killers);
 
     value            = bestValue;
     moveCountPruning = singularQuietLMR = false;
@@ -1344,6 +1347,10 @@ moves_loop:  // When in check, search starts here
                                       stat_bonus(depth) * bonus);
         thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)]
           << stat_bonus(depth) * bonus / 2;
+
+        if ((ss - 1)->inCheck)
+            thisThread->inCheckHistory[~us][from_to((ss - 1)->currentMove)]
+              << stat_bonus(depth) * bonus / 2;
     }
 
     if (PvNode)
@@ -1483,7 +1490,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
     // will be generated.
     Square     prevSq = is_ok((ss - 1)->currentMove) ? to_sq((ss - 1)->currentMove) : SQ_NONE;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, &thisThread->pawnHistory, prevSq);
+                  contHist, &thisThread->pawnHistory, &thisThread->inCheckHistory, prevSq);
 
     int quietCheckEvasions = 0;
 
@@ -1707,6 +1714,9 @@ void update_all_stats(const Position& pos,
             thisThread->mainHistory[us][from_to(quietsSearched[i])] << -moveMalus;
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]),
                                           to_sq(quietsSearched[i]), -moveMalus);
+
+            if (ss->inCheck)
+                thisThread->inCheckHistory[us][from_to(quietsSearched[i])] << -moveMalus;
         }
     }
     else
@@ -1763,6 +1773,9 @@ void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus) {
     Thread* thisThread = pos.this_thread();
     thisThread->mainHistory[us][from_to(move)] << bonus;
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
+
+    if (ss->inCheck)
+        thisThread->inCheckHistory[us][from_to(move)] << bonus;
 
     // Update countermove history
     if (is_ok((ss - 1)->currentMove))
