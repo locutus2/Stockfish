@@ -1190,9 +1190,9 @@ moves_loop:  // When in check, search starts here
         int  V = extmove.value;
         */
         // quiet evasion moves
-        bool CC   = mp.isEvasion() && !capture && PC;
+        bool CC = mp.isEvasion() && !capture && PC;
         //int  Dmin = -7183 - 8192 - 29952, Dmax = -Dmin;
-        int  V = extmove.value;
+        int V = extmove.value;
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
         if (ss->ttPv && !likelyFailLow)
@@ -1358,9 +1358,9 @@ moves_loop:  // When in check, search starts here
 
         if (CC)
         {
-            bool      T     = value > alpha;
-            const int BUCKETS     = 1000;
-            int       index = std::clamp((V - Dmin) * BUCKETS / (Dmax - Dmin), 0, BUCKETS-1);
+            bool      T       = value > alpha;
+            const int BUCKETS = 1000;
+            int       index   = std::clamp((V - Dmin) * BUCKETS / (Dmax - Dmin), 0, BUCKETS - 1);
             dbg_hit_on(T, index);
         }
 

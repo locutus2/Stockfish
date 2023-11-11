@@ -248,11 +248,26 @@ void MovePicker::score() {
                     //V += (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
                     //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
                     //V += -pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)];
-                    V += HISTORY_WEIGHT[HISTORY_MAIN] * (*mainHistory)[pos.side_to_move()][from_to(m)] / HISTORY_SCALE[HISTORY_MAIN];
-                    V += HISTORY_WEIGHT[HISTORY_PAWN] * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / HISTORY_SCALE[HISTORY_PAWN];
-                    V += HISTORY_WEIGHT[HISTORY_INCHECK] * pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / HISTORY_SCALE[HISTORY_INCHECK];
-                    V += HISTORY_WEIGHT[HISTORY_CMH0] * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / HISTORY_SCALE[HISTORY_CMH0];
-                    V += HISTORY_WEIGHT[HISTORY_CMH1] * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / HISTORY_SCALE[HISTORY_CMH1];
+                    V += HISTORY_WEIGHT[HISTORY_MAIN]
+                       * (*mainHistory)[pos.side_to_move()][from_to(m)]
+                       / HISTORY_SCALE[HISTORY_MAIN];
+                    V += HISTORY_WEIGHT[HISTORY_PAWN]
+                       * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]
+                       / HISTORY_SCALE[HISTORY_PAWN];
+                    V += HISTORY_WEIGHT[HISTORY_INCHECK]
+                       * pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)]
+                       / HISTORY_SCALE[HISTORY_INCHECK];
+                    V += HISTORY_WEIGHT[HISTORY_CMH0]
+                       * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
+                       / HISTORY_SCALE[HISTORY_CMH0];
+                    V += HISTORY_WEIGHT[HISTORY_CMH1]
+                       * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
+                       / HISTORY_SCALE[HISTORY_CMH1];
+                    V += HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
+                       * ((*mainHistory)[pos.side_to_move()][from_to(m)]
+                          * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]
+                          / HISTORY_DIVISOR[HISTORY_PAWN])
+                       / HISTORY_SCALE[HISTORY_MAIN_PAWN];
                     m.value += V;
                     //dbg_mean_of(V,0);
                     //dbg_mean_of(V,depth);
