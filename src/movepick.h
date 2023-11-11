@@ -45,8 +45,8 @@ enum {
 };
 
 constexpr int HISTORY_DIVISOR[N_HISTORY] = {7183, 8192, 7183, 29952, 29952, 7183, 7183, 7183};
-constexpr int HISTORY_SCALE[N_HISTORY]   = {1, 1, 1, 1, 1, 1, 1, 4};
-constexpr int HISTORY_WEIGHT[N_HISTORY]  = {0, 0, 0, 0, 0, 0, 1, 1};
+constexpr int HISTORY_SCALE[N_HISTORY]   = {1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT[N_HISTORY]  = {0, 0, 0, 0, 0, 0, 0, 0};
 
 constexpr int Dmax =
   HISTORY_DIVISOR[HISTORY_MAIN] * (HISTORY_SCALE[HISTORY_MAIN] + HISTORY_WEIGHT[HISTORY_MAIN])
