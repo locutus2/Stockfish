@@ -40,9 +40,10 @@ void init_stats(bool onlyD) {
 
     if (!onlyD)
     {
-        HISTORY_DIVISOR = {7183, 8192, 7183, 29952, 29952, 14976, 14976, 7183, 7183, 7183};
-        HISTORY_SCALE   = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-        HISTORY_WEIGHT  = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        HISTORY_DIVISOR = {7183,  8192,  7183,  29952, 29952, 29952,
+                           29952, 14976, 14976, 7183,  7183,  7183};
+        HISTORY_SCALE   = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+        HISTORY_WEIGHT  = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     }
 
     Dmax =
@@ -55,6 +56,8 @@ void init_stats(bool onlyD) {
       + HISTORY_DIVISOR[HISTORY_CMH0] * (HISTORY_SCALE[HISTORY_CMH0] + HISTORY_WEIGHT[HISTORY_CMH0])
           / HISTORY_SCALE[HISTORY_CMH0]
       + HISTORY_DIVISOR[HISTORY_CMH1] * HISTORY_WEIGHT[HISTORY_CMH1] / HISTORY_SCALE[HISTORY_CMH1]
+      + HISTORY_DIVISOR[HISTORY_CMH2] * HISTORY_WEIGHT[HISTORY_CMH2] / HISTORY_SCALE[HISTORY_CMH2]
+      + HISTORY_DIVISOR[HISTORY_CMH3] * HISTORY_WEIGHT[HISTORY_CMH3] / HISTORY_SCALE[HISTORY_CMH3]
       + HISTORY_DIVISOR[HISTORY_CMH0_POS] * HISTORY_WEIGHT[HISTORY_CMH0_POS]
           / HISTORY_SCALE[HISTORY_CMH0_POS]
       + HISTORY_DIVISOR[HISTORY_CMH0_NEG] * HISTORY_WEIGHT[HISTORY_CMH0_NEG]
@@ -294,6 +297,8 @@ void MovePicker::score() {
                       pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
                       (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
                       (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
+                      (*continuationHistory[2])[pos.moved_piece(m)][to_sq(m)],
+                      (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)],
                       std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0)
                         - 14976,
                       std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0)

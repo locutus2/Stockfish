@@ -207,7 +207,8 @@ void stat(Position& pos, std::istream& args, StateListPtr& states, std::ostream&
 
     constexpr std::tuple<int, const char*> loop_param[] = {
       {HISTORY_MAIN, "main"}, {HISTORY_PAWN, "pawn"}, {HISTORY_INCHECK, "incheck"},
-      {HISTORY_CMH0, "cmh0"}, {HISTORY_CMH1, "cmh1"},
+      {HISTORY_CMH0, "cmh0"}, {HISTORY_CMH1, "cmh1"}, {HISTORY_CMH2, "cmh2"},
+      {HISTORY_CMH3, "cmh3"},
       //{HISTORY_CMH0_POS, "cmh0_pos"},
       //{HISTORY_CMH0_NEG, "cmh0_neg"},
     };
