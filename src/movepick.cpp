@@ -40,10 +40,10 @@ void init_stats(bool onlyD) {
 
     if (!onlyD)
     {
-        for(int i = 0; i < N_HISTORY; ++i)
+        for (int i = 0; i < N_HISTORY; ++i)
         {
-            HISTORY_SCALE[i]   = HISTORY_SCALE_START[i];
-            HISTORY_WEIGHT[i]  = HISTORY_WEIGHT_START[i];
+            HISTORY_SCALE[i]  = HISTORY_SCALE_START[i];
+            HISTORY_WEIGHT[i] = HISTORY_WEIGHT_START[i];
         }
     }
 

@@ -46,7 +46,8 @@ extern std::vector<int> HISTORY_WEIGHT;
 extern int Dmax;
 extern int Dmin;
 
-constexpr int HISTORY_DIVISOR[N_HISTORY]      = {7183,  8192,  7183,  29952, 29952, 29952, 29952, 14976, 14976, 7183,  7183,  7183};
+constexpr int HISTORY_DIVISOR[N_HISTORY]      = {7183,  8192,  7183,  29952, 29952, 29952,
+                                                 29952, 14976, 14976, 7183,  7183,  7183};
 constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -58,24 +59,21 @@ constexpr bool STATS_EVASION_MAIN = true;
 constexpr bool STATS_EVASION_QS   = false;
 constexpr bool USE_DEPTH_WEIGHT   = true;
 
-/*
+//---------------
 // stats command
+
+constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
+  {-2, 1, "-2"},  {-1, 1, "-1"}, {-1, 2, "-0.5"}, {-1, 4, "-0.25"}, {0, 1, "0"},
+  {1, 4, "0.25"}, {1, 2, "0.5"}, {1, 1, "1"},     {2, 1, "2"},
+};
+
 constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
- //{HISTORY_MAIN, "main"}, {HISTORY_PAWN, "pawn"}, {HISTORY_INCHECK, "incheck"},
- //{HISTORY_CMH0, "cmh0"}, {HISTORY_CMH1, "cmh1"},
- {HISTORY_CMH2, "cmh2"},
- {HISTORY_CMH3, "cmh3"},
- //{HISTORY_CMH0_POS, "cmh0_pos"},
- //{HISTORY_CMH0_NEG, "cmh0_neg"},
+  {HISTORY_MAIN, "main"}, {HISTORY_PAWN, "pawn"}, {HISTORY_INCHECK, "incheck"},
+  {HISTORY_CMH0, "cmh0"}, {HISTORY_CMH1, "cmh1"}, {HISTORY_CMH2, "cmh2"},
+  {HISTORY_CMH3, "cmh3"},
+  //{HISTORY_CMH0_POS, "cmh0_pos"},
+  //{HISTORY_CMH0_NEG, "cmh0_neg"},
 };
-
-//constexpr int  N            = sizeof(STATS_PARAMS) / sizeof(std::tuple<int, const char*>);
-
-std::vector<std::tuple<int, int, const char*>> STATS_STEPS = {
-    {-2, 1, "-2"},  {-1, 1, "-1"}, {-1, 2, "-0.5"}, {-1, 4, "-0.25"}, {0, 1, "0"},
-    {1, 4, "0.25"}, {1, 2, "0.5"}, {1, 1, "1"},     {2, 1, "2"},
-};
-*/
 
 }
 #endif

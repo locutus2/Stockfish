@@ -206,22 +206,6 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
 
     constexpr char SEP = ';';
 
-    constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
-      //{HISTORY_MAIN, "main"}, {HISTORY_PAWN, "pawn"}, {HISTORY_INCHECK, "incheck"},
-      //{HISTORY_CMH0, "cmh0"}, {HISTORY_CMH1, "cmh1"}, 
-      {HISTORY_CMH2, "cmh2"},
-      {HISTORY_CMH3, "cmh3"},
-      //{HISTORY_CMH0_POS, "cmh0_pos"},
-      //{HISTORY_CMH0_NEG, "cmh0_neg"},
-    };
-
-    //constexpr int  N            = sizeof(STATS_PARAMS) / sizeof(std::tuple<int, const char*>);
-
-    std::vector<std::tuple<int, int, const char*>> STATS_STEPS = {
-      {-2, 1, "-2"},  {-1, 1, "-1"}, {-1, 2, "-0.5"}, {-1, 4, "-0.25"}, {0, 1, "0"},
-      {1, 4, "0.25"}, {1, 2, "0.5"}, {1, 1, "1"},     {2, 1, "2"},
-    };
-
     auto tr = [](const std::string& str) -> std::string {
         std::string s(str);
         std::replace(s.begin(), s.end(), '.', ',');
@@ -256,7 +240,7 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
                 dbg_clear();
                 executeBench(list, pos, states);
 
-                AUC = dbg_print_auc(0, HISTORY_BUCKETS-1, false);
+                AUC = dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
             }
             out << SEP << tr(std::to_string(AUC)) << '%' << std::flush;
         }
