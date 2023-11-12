@@ -47,6 +47,9 @@
 
 namespace Stockfish {
 
+constexpr bool STATS_EVASION_MAIN = true;
+constexpr bool STATS_EVASION_QS   = false;
+
 namespace Search {
 
 LimitsType Limits;
@@ -919,7 +922,7 @@ moves_loop:  // When in check, search starts here
     //const bool PC = true;//!PvNode&&!cutNode;
     //const bool PC = !PvNode&&!cutNode;
     //const bool PC = cutNode;
-    const bool PC = true;
+    const bool PC = STATS_EVASION_MAIN;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
                   &thisThread->pawnHistory, countermove, ss->killers, PC);
 
@@ -1570,7 +1573,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions, and other checks (only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
-    bool       PC     = true;
+    const bool PC     = STATS_EVASION_QS;
     Square     prevSq = is_ok((ss - 1)->currentMove) ? to_sq((ss - 1)->currentMove) : SQ_NONE;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
                   contHist, &thisThread->pawnHistory, prevSq, PC);
