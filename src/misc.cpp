@@ -328,34 +328,34 @@ DebugInfo<6> correl[MaxDebugSlots];
 
 }  // namespace
 
-void dbg_hit_on(bool cond, int slot) {
+void dbg_hit_on(bool cond, int slot, int weight) {
 
-    ++hit[slot][0];
+    hit[slot][0] += weight;
     if (cond)
-        ++hit[slot][1];
+        hit[slot][1] += weight;
 }
 
-void dbg_mean_of(int64_t value, int slot) {
+void dbg_mean_of(int64_t value, int slot, int weight) {
 
-    ++mean[slot][0];
-    mean[slot][1] += value;
+    mean[slot][0] += weight;
+    mean[slot][1] += weight * value;
 }
 
-void dbg_stdev_of(int64_t value, int slot) {
+void dbg_stdev_of(int64_t value, int slot, int weight) {
 
-    ++stdev[slot][0];
-    stdev[slot][1] += value;
-    stdev[slot][2] += value * value;
+    stdev[slot][0] += weight;
+    stdev[slot][1] += weight * value;
+    stdev[slot][2] += weight * value * value;
 }
 
-void dbg_correl_of(int64_t value1, int64_t value2, int slot) {
+void dbg_correl_of(int64_t value1, int64_t value2, int slot, int weight) {
 
-    ++correl[slot][0];
-    correl[slot][1] += value1;
-    correl[slot][2] += value1 * value1;
-    correl[slot][3] += value2;
-    correl[slot][4] += value2 * value2;
-    correl[slot][5] += value1 * value2;
+    correl[slot][0] += weight;
+    correl[slot][1] += weight * value1;
+    correl[slot][2] += weight * value1 * value1;
+    correl[slot][3] += weight * value2;
+    correl[slot][4] += weight * value2 * value2;
+    correl[slot][5] += weight * value1 * value2;
 }
 
 void dbg_print() {

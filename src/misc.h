@@ -47,10 +47,10 @@ void* aligned_large_pages_alloc(size_t size);
 // nop if mem == nullptr
 void aligned_large_pages_free(void* mem);
 
-void   dbg_hit_on(bool cond, int slot = 0);
-void   dbg_mean_of(int64_t value, int slot = 0);
-void   dbg_stdev_of(int64_t value, int slot = 0);
-void   dbg_correl_of(int64_t value1, int64_t value2, int slot = 0);
+void   dbg_hit_on(bool cond, int slot = 0, int weight = 1);
+void   dbg_mean_of(int64_t value, int slot = 0, int weight = 1);
+void   dbg_stdev_of(int64_t value, int slot = 0, int weight = 1);
+void   dbg_correl_of(int64_t value1, int64_t value2, int slot = 0, int weight = 1);
 void   dbg_print();
 double dbg_print_auc(int start, int end, bool display = true);
 void   dbg_clear();

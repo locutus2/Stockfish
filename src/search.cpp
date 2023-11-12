@@ -49,6 +49,7 @@ namespace Stockfish {
 
 constexpr bool STATS_EVASION_MAIN = true;
 constexpr bool STATS_EVASION_QS   = false;
+constexpr bool USE_DEPTH_WEIGHT   = true;
 
 namespace Search {
 
@@ -1363,8 +1364,9 @@ moves_loop:  // When in check, search starts here
         {
             bool      T       = value > alpha;
             const int BUCKETS = 1000;
+            int       weight  = USE_DEPTH_WEIGHT ? depth : 1;
             int       index   = std::clamp((V - Dmin) * BUCKETS / (Dmax - Dmin), 0, BUCKETS - 1);
-            dbg_hit_on(T, index);
+            dbg_hit_on(T, index, weight);
         }
 
         if (value > bestValue)
