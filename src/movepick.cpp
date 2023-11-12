@@ -144,9 +144,12 @@ MovePicker::MovePicker(const Position&              p,
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
-    refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}},
-    depth(d),
-    C(cond) {
+    refutations{
+      {killers[0], 0},
+      {killers[1], 0},
+      {cm,         0}
+},
+    depth(d), C(cond) {
     assert(d > 0);
 
     stage = (pos.checkers() ? EVASION_TT : MAIN_TT) + !(ttm && pos.pseudo_legal(ttm));
