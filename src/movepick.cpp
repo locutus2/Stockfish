@@ -294,8 +294,10 @@ void MovePicker::score() {
                       pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
                       (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
                       (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
-                      std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) - 14976,
-                      std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) + 14976,
+                      std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0)
+                        - 14976,
+                      std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0)
+                        + 14976,
                       (*mainHistory)[pos.side_to_move()][from_to(m)]
                         * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192,
                       (*mainHistory)[pos.side_to_move()][from_to(m)]

@@ -203,14 +203,16 @@ void executeBench(const std::vector<std::string>& list, Position& pos, StateList
 void stat(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
     std::vector<std::string> list = setup_bench(pos, args);
 
-    constexpr char SEP          = ';';
-    constexpr int  N            = 5;
-    const char*    loop_head[N] = {
-      "main", "pawn", "incheck", "cmh0", "cmh1",
+    constexpr char SEP = ';';
+
+    constexpr std::tuple<int, const char*> loop_param[] = {
+      {HISTORY_MAIN, "main"}, {HISTORY_PAWN, "pawn"}, {HISTORY_INCHECK, "incheck"},
+      {HISTORY_CMH0, "cmh0"}, {HISTORY_CMH1, "cmh1"},
+      //{HISTORY_CMH0_POS, "cmh0_pos"},
+      //{HISTORY_CMH0_NEG, "cmh0_neg"},
     };
 
-    constexpr int loop_param[N] = {HISTORY_MAIN, HISTORY_PAWN, HISTORY_INCHECK, HISTORY_CMH0,
-                                   HISTORY_CMH1};
+    //constexpr int  N            = sizeof(loop_param) / sizeof(std::tuple<int, const char*>);
 
     std::vector<std::tuple<int, int, const char*>> loop_step = {
       {-2, 1, "-2"},  {-1, 1, "-1"}, {-1, 2, "-0.5"}, {-1, 4, "-0.25"}, {0, 1, "0"},
@@ -224,9 +226,9 @@ void stat(Position& pos, std::istream& args, StateListPtr& states, std::ostream&
     };
 
     out << "weight";
-    for (const auto& head : loop_head)
+    for (const auto& head : loop_param)
     {
-        out << SEP << head;
+        out << SEP << std::get<1>(head);
     }
     out << std::endl << std::flush;
 
@@ -235,7 +237,7 @@ void stat(Position& pos, std::istream& args, StateListPtr& states, std::ostream&
         out << tr(std::string(std::get<2>(step))) << std::flush;
         double AUC = -1;
 
-        for (int p : loop_param)
+        for (const auto& p : loop_param)
         {
             if (AUC < 0 || std::get<0>(step) != 0)
             {
@@ -244,8 +246,8 @@ void stat(Position& pos, std::istream& args, StateListPtr& states, std::ostream&
                     HISTORY_WEIGHT[i] = 0;
                     HISTORY_SCALE[i]  = 1;
                 }
-                HISTORY_WEIGHT[p] = std::get<0>(step);
-                HISTORY_SCALE[p]  = std::get<1>(step);
+                HISTORY_WEIGHT[std::get<0>(p)] = std::get<0>(step);
+                HISTORY_SCALE[std::get<0>(p)]  = std::get<1>(step);
 
                 init_stats(true);
                 dbg_clear();
