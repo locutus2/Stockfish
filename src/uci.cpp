@@ -223,7 +223,7 @@ void stat(Position& pos, std::istream & args, StateListPtr& states, std::ostream
         return s;
         };
 
-        out << "AUC";
+        out << "weight";
         for (const auto& head : loop_head)
         {
             out << SEP << head;
