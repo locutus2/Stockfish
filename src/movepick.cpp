@@ -40,9 +40,9 @@ void init_stats(bool onlyD) {
 
     if (!onlyD)
     {
-        HISTORY_DIVISOR = {7183, 8192, 7183, 29952, 29952, 7183, 7183, 7183};
-        HISTORY_SCALE   = {1, 1, 1, 1, 1, 1, 1, 1};
-        HISTORY_WEIGHT  = {0, 0, 0, 0, 0, 0, 0, 0};
+        HISTORY_DIVISOR = {7183, 8192, 7183, 29952, 29952, 14976, 14976, 7183, 7183, 7183};
+        HISTORY_SCALE   = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+        HISTORY_WEIGHT  = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     }
 
     Dmax =
@@ -55,6 +55,10 @@ void init_stats(bool onlyD) {
       + HISTORY_DIVISOR[HISTORY_CMH0] * (HISTORY_SCALE[HISTORY_CMH0] + HISTORY_WEIGHT[HISTORY_CMH0])
           / HISTORY_SCALE[HISTORY_CMH0]
       + HISTORY_DIVISOR[HISTORY_CMH1] * HISTORY_WEIGHT[HISTORY_CMH1] / HISTORY_SCALE[HISTORY_CMH1]
+      + HISTORY_DIVISOR[HISTORY_CMH0_POS] * HISTORY_WEIGHT[HISTORY_CMH0_POS]
+          / HISTORY_SCALE[HISTORY_CMH0_POS]
+      + HISTORY_DIVISOR[HISTORY_CMH0_NEG] * HISTORY_WEIGHT[HISTORY_CMH0_NEG]
+          / HISTORY_SCALE[HISTORY_CMH0_NEG]
       + HISTORY_DIVISOR[HISTORY_MAIN_PAWN] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
           / HISTORY_SCALE[HISTORY_MAIN_PAWN]
       + HISTORY_DIVISOR[HISTORY_MAIN_PAWN_SHIFT] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN_SHIFT]
@@ -284,6 +288,30 @@ void MovePicker::score() {
                     //V += (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
                     //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
                     //V += -pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)];
+                    int values[N_HISTORY] = {
+                      (*mainHistory)[pos.side_to_move()][from_to(m)],
+                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)],
+                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
+                      (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
+                      (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
+                      std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) - 14976,
+                      std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) + 14976,
+                      (*mainHistory)[pos.side_to_move()][from_to(m)]
+                        * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192,
+                      (*mainHistory)[pos.side_to_move()][from_to(m)]
+                        * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                        / (2 * 8192),
+                      (7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
+                          * (8192
+                             + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                          / (2 * 8192)
+                        - 7183,
+                    };
+
+                    for (int i = 0; i < N_HISTORY; ++i)
+                        V += HISTORY_WEIGHT[i] * values[i] / HISTORY_SCALE[i];
+
+                    /*
                     V += HISTORY_WEIGHT[HISTORY_MAIN]
                        * (*mainHistory)[pos.side_to_move()][from_to(m)]
                        / HISTORY_SCALE[HISTORY_MAIN];
@@ -299,6 +327,9 @@ void MovePicker::score() {
                     V += HISTORY_WEIGHT[HISTORY_CMH1]
                        * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                        / HISTORY_SCALE[HISTORY_CMH1];
+                    V += HISTORY_WEIGHT[HISTORY_CMH0_POS]
+                       * (std::max((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)], 0) - 14976)
+                       / HISTORY_SCALE[HISTORY_CMH0_POS];
                     V +=
                       HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
                       * ((*mainHistory)[pos.side_to_move()][from_to(m)]
@@ -317,6 +348,7 @@ void MovePicker::score() {
                             / (2 * 8192)
                           - 7183)
                        / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
+                       */
                     m.value += V;
                     dbg_correl_of(
                       (*mainHistory)[pos.side_to_move()][from_to(m)] / 32,
