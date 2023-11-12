@@ -36,10 +36,14 @@ std::vector<int> HISTORY_WEIGHT;
 
 int Dmax, Dmin;
 
-void init_stats() {
-    HISTORY_DIVISOR = {7183, 8192, 7183, 29952, 29952, 7183, 7183, 7183};
-    HISTORY_SCALE   = {1, 1, 1, 1, 1, 1, 1, 1};
-    HISTORY_WEIGHT  = {0, 0, 0, 0, 0, 0, 0, 0};
+void init_stats(bool onlyD) {
+
+    if(!onlyD)
+    {
+        HISTORY_DIVISOR = {7183, 8192, 7183, 29952, 29952, 7183, 7183, 7183};
+        HISTORY_SCALE   = {1, 1, 1, 1, 1, 1, 1, 1};
+        HISTORY_WEIGHT  = {0, 0, 0, 0, 0, 0, 0, 0};
+    }
 
     Dmax =
       HISTORY_DIVISOR[HISTORY_MAIN] * (HISTORY_SCALE[HISTORY_MAIN] + HISTORY_WEIGHT[HISTORY_MAIN])

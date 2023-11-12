@@ -51,7 +51,7 @@ extern std::vector<int> HISTORY_WEIGHT;
 extern int Dmax;
 extern int Dmin;
 
-void init_stats();
+void init_stats(bool onlyD = false);
 
 constexpr int PAWN_HISTORY_SIZE = 512;  // has to be a power of 2
 

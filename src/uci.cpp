@@ -244,6 +244,7 @@ void stat(Position& pos, std::istream & args, StateListPtr& states, std::ostream
                 HISTORY_WEIGHT[p] = std::get<0>(step);
                 HISTORY_SCALE[p] = std::get<1>(step);
 
+                init_stats(true);
                 dbg_clear();
                 executeBench(list, pos, states);
 
