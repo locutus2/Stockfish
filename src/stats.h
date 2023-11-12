@@ -53,14 +53,19 @@ constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 void init_stats(bool onlyD = false);
 
+
+//---------------
+// search + measurement
+
 constexpr int HISTORY_BUCKETS = 1000;
 
 constexpr bool STATS_EVASION_MAIN = true;
 constexpr bool STATS_EVASION_QS   = false;
 constexpr bool USE_DEPTH_WEIGHT   = true;
 
+
 //---------------
-// stats command
+// uci stats command
 
 constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
   {-2, 1, "-2"},  {-1, 1, "-1"}, {-1, 2, "-0.5"}, {-1, 4, "-0.25"}, {0, 1, "0"},
