@@ -24,6 +24,7 @@
 #include "misc.h"
 #include "position.h"
 #include "search.h"
+#include "stats.h"
 #include "thread.h"
 #include "tune.h"
 #include "types.h"

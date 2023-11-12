@@ -39,6 +39,7 @@
 #include "nnue/evaluate_nnue.h"
 #include "nnue/nnue_common.h"
 #include "position.h"
+#include "stats.h"
 #include "syzygy/tbprobe.h"
 #include "thread.h"
 #include "timeman.h"
@@ -46,10 +47,6 @@
 #include "uci.h"
 
 namespace Stockfish {
-
-constexpr bool STATS_EVASION_MAIN = true;
-constexpr bool STATS_EVASION_QS   = false;
-constexpr bool USE_DEPTH_WEIGHT   = true;
 
 namespace Search {
 
@@ -1363,9 +1360,8 @@ moves_loop:  // When in check, search starts here
         if (CC)
         {
             bool      T       = value > alpha;
-            const int BUCKETS = 1000;
             int       weight  = USE_DEPTH_WEIGHT ? depth * (1 + STATS_EVASION_QS) : 1;
-            int       index   = std::clamp((V - Dmin) * BUCKETS / (Dmax - Dmin), 0, BUCKETS - 1);
+            int       index   = std::clamp((V - Dmin) * HISTORY_BUCKETS / (Dmax - Dmin), 0, HISTORY_BUCKETS - 1);
             dbg_hit_on(T, index, weight);
         }
 
@@ -1675,8 +1671,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
         if (CC)
         {
             bool      T       = value > alpha;
-            const int BUCKETS = 1000;
-            int       index   = std::clamp((V - Dmin) * BUCKETS / (Dmax - Dmin), 0, BUCKETS - 1);
+            int       index   = std::clamp((V - Dmin) * HISTORY_BUCKETS / (Dmax - Dmin), 0, HISTORY_BUCKETS - 1);
             dbg_hit_on(T, index);
         }
 

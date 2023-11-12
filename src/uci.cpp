@@ -40,6 +40,7 @@
 #include "nnue/evaluate_nnue.h"
 #include "position.h"
 #include "search.h"
+#include "stats.h"
 #include "thread.h"
 
 namespace Stockfish {
@@ -200,22 +201,23 @@ void executeBench(const std::vector<std::string>& list, Position& pos, StateList
     }
 }
 
-void stat(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
+void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
     std::vector<std::string> list = setup_bench(pos, args);
 
     constexpr char SEP = ';';
 
-    constexpr std::tuple<int, const char*> loop_param[] = {
-      {HISTORY_MAIN, "main"}, {HISTORY_PAWN, "pawn"}, {HISTORY_INCHECK, "incheck"},
-      {HISTORY_CMH0, "cmh0"}, {HISTORY_CMH1, "cmh1"}, {HISTORY_CMH2, "cmh2"},
+    constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
+      //{HISTORY_MAIN, "main"}, {HISTORY_PAWN, "pawn"}, {HISTORY_INCHECK, "incheck"},
+      //{HISTORY_CMH0, "cmh0"}, {HISTORY_CMH1, "cmh1"}, 
+      {HISTORY_CMH2, "cmh2"},
       {HISTORY_CMH3, "cmh3"},
       //{HISTORY_CMH0_POS, "cmh0_pos"},
       //{HISTORY_CMH0_NEG, "cmh0_neg"},
     };
 
-    //constexpr int  N            = sizeof(loop_param) / sizeof(std::tuple<int, const char*>);
+    //constexpr int  N            = sizeof(STATS_PARAMS) / sizeof(std::tuple<int, const char*>);
 
-    std::vector<std::tuple<int, int, const char*>> loop_step = {
+    std::vector<std::tuple<int, int, const char*>> STATS_STEPS = {
       {-2, 1, "-2"},  {-1, 1, "-1"}, {-1, 2, "-0.5"}, {-1, 4, "-0.25"}, {0, 1, "0"},
       {1, 4, "0.25"}, {1, 2, "0.5"}, {1, 1, "1"},     {2, 1, "2"},
     };
@@ -227,18 +229,18 @@ void stat(Position& pos, std::istream& args, StateListPtr& states, std::ostream&
     };
 
     out << "weight";
-    for (const auto& head : loop_param)
+    for (const auto& head : STATS_PARAMS)
     {
         out << SEP << std::get<1>(head);
     }
     out << std::endl << std::flush;
 
-    for (const auto& step : loop_step)
+    for (const auto& step : STATS_STEPS)
     {
         out << tr(std::string(std::get<2>(step))) << std::flush;
         double AUC = -1;
 
-        for (const auto& p : loop_param)
+        for (const auto& p : STATS_PARAMS)
         {
             if (AUC < 0 || std::get<0>(step) != 0)
             {
@@ -254,7 +256,7 @@ void stat(Position& pos, std::istream& args, StateListPtr& states, std::ostream&
                 dbg_clear();
                 executeBench(list, pos, states);
 
-                AUC = dbg_print_auc(0, 999, false);
+                AUC = dbg_print_auc(0, HISTORY_BUCKETS-1, false);
             }
             out << SEP << tr(std::to_string(AUC)) << '%' << std::flush;
         }
@@ -404,8 +406,8 @@ void UCI::loop(int argc, char* argv[]) {
             pos.flip();
         else if (token == "bench")
             bench(pos, is, states);
-        else if (token == "stat")
-            stat(pos, is, states);
+        else if (token == "stats")
+            stats(pos, is, states);
         else if (token == "d")
             sync_cout << pos << sync_endl;
         else if (token == "eval")

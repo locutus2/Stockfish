@@ -32,31 +32,6 @@
 
 namespace Stockfish {
 
-enum HistoryType : int {
-    HISTORY_MAIN,
-    HISTORY_PAWN,
-    HISTORY_INCHECK,
-    HISTORY_CMH0,
-    HISTORY_CMH1,
-    HISTORY_CMH2,
-    HISTORY_CMH3,
-    HISTORY_CMH0_POS,
-    HISTORY_CMH0_NEG,
-    HISTORY_MAIN_PAWN,
-    HISTORY_MAIN_PAWN_SHIFT,
-    HISTORY_MAIN_SHIFT_PAWN_SHIFT,
-    N_HISTORY
-};
-
-extern std::vector<int> HISTORY_DIVISOR;
-extern std::vector<int> HISTORY_SCALE;
-extern std::vector<int> HISTORY_WEIGHT;
-
-extern int Dmax;
-extern int Dmin;
-
-void init_stats(bool onlyD = false);
-
 constexpr int PAWN_HISTORY_SIZE = 512;  // has to be a power of 2
 
 static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,

@@ -26,13 +26,13 @@
 
 #include "bitboard.h"
 #include "position.h"
+#include "stats.h"
 #include "thread.h"
 
 namespace Stockfish {
 
-std::vector<int> HISTORY_DIVISOR;
-std::vector<int> HISTORY_SCALE;
-std::vector<int> HISTORY_WEIGHT;
+std::vector<int> HISTORY_SCALE(N_HISTORY);
+std::vector<int> HISTORY_WEIGHT(N_HISTORY);
 
 int Dmax, Dmin;
 
@@ -40,10 +40,11 @@ void init_stats(bool onlyD) {
 
     if (!onlyD)
     {
-        HISTORY_DIVISOR = {7183,  8192,  7183,  29952, 29952, 29952,
-                           29952, 14976, 14976, 7183,  7183,  7183};
-        HISTORY_SCALE   = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-        HISTORY_WEIGHT  = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        for(int i = 0; i < N_HISTORY; ++i)
+        {
+            HISTORY_SCALE[i]   = HISTORY_SCALE_START[i];
+            HISTORY_WEIGHT[i]  = HISTORY_WEIGHT_START[i];
+        }
     }
 
     Dmax =

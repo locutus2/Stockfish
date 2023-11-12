@@ -17,6 +17,7 @@
 */
 
 #include "misc.h"
+#include "stats.h"
 
 #ifdef _WIN32
     #if _WIN32_WINNT < 0x0601
@@ -310,7 +311,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 1000;
+constexpr int MaxDebugSlots = HISTORY_BUCKETS;
 
 namespace {
 
