@@ -172,170 +172,173 @@ void executeBench(const std::vector<std::string>& list, Position& pos, StateList
 
 void executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states) {
 
-        std::string token;
+    std::string token;
 
-        for (const auto& cmd : list)
+    for (const auto& cmd : list)
+    {
+        std::istringstream is(cmd);
+        is >> std::skipws >> token;
+
+        if (token == "go" || token == "eval")
         {
-            std::istringstream is(cmd);
-            is >> std::skipws >> token;
-
-            if (token == "go" || token == "eval")
+            if (token == "go")
             {
-                if (token == "go")
-                {
-                    go(pos, is, states);
-                    Threads.main()->wait_for_search_finished();
-                }
-                else
-                    trace_eval(pos);
+                go(pos, is, states);
+                Threads.main()->wait_for_search_finished();
             }
-            else if (token == "setoption")
-                setoption(is);
-            else if (token == "position")
-                position(pos, is, states);
-            else if (token == "ucinewgame")
-            {
-                Search::clear();
-            }  // Search::clear() may take a while
+            else
+                trace_eval(pos);
         }
+        else if (token == "setoption")
+            setoption(is);
+        else if (token == "position")
+            position(pos, is, states);
+        else if (token == "ucinewgame")
+        {
+            Search::clear();
+        }  // Search::clear() may take a while
+    }
 }
 
-void stat(Position& pos, std::istream & args, StateListPtr& states, std::ostream& out = std::cerr) {
-        std::vector<std::string> list = setup_bench(pos, args);
+void stat(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
+    std::vector<std::string> list = setup_bench(pos, args);
 
-        constexpr char        SEP          = ';';
-        constexpr int         N            = 5;
-        const char* loop_head[N] = {
-          "main", "pawn", "incheck", "cmh0", "cmh1",
-        };
+    constexpr char SEP          = ';';
+    constexpr int  N            = 5;
+    const char*    loop_head[N] = {
+      "main", "pawn", "incheck", "cmh0", "cmh1",
+    };
 
-        constexpr int loop_param[N] =
-          { HISTORY_MAIN, HISTORY_PAWN, HISTORY_INCHECK, HISTORY_CMH0, HISTORY_CMH1 };
+    constexpr int loop_param[N] = {HISTORY_MAIN, HISTORY_PAWN, HISTORY_INCHECK, HISTORY_CMH0,
+                                   HISTORY_CMH1};
 
-        std::vector<std::tuple<int, int, const char*>> loop_step = {
-          {-2, 1, "-2"},  {-1, 1, "-1"}, {-1, 2, "-0.5"}, {-1, 4, "-0.25"}, {0, 1, "0"},
-          {1, 4, "0.25"}, {1, 2, "0.5"}, {1, 1, "1"},     {2, 1, "2"},
-        };
+    std::vector<std::tuple<int, int, const char*>> loop_step = {
+      {-2, 1, "-2"},  {-1, 1, "-1"}, {-1, 2, "-0.5"}, {-1, 4, "-0.25"}, {0, 1, "0"},
+      {1, 4, "0.25"}, {1, 2, "0.5"}, {1, 1, "1"},     {2, 1, "2"},
+    };
 
-        auto tr = [](const std::string& str) -> std::string {
-            std::string s(str);
+    auto tr = [](const std::string& str) -> std::string {
+        std::string s(str);
         std::replace(s.begin(), s.end(), '.', ',');
         return s;
-        };
+    };
 
-        out << "weight";
-        for (const auto& head : loop_head)
+    out << "weight";
+    for (const auto& head : loop_head)
+    {
+        out << SEP << head;
+    }
+    out << std::endl << std::flush;
+
+    for (const auto& step : loop_step)
+    {
+        out << tr(std::string(std::get<2>(step))) << std::flush;
+        double AUC = -1;
+
+        for (int p : loop_param)
         {
-            out << SEP << head;
-        }
-        out << std::endl << std::flush;
-
-        for (const auto& step : loop_step)
-        {
-            out << tr(std::string(std::get<2>(step))) << std::flush;
-
-            for (int p : loop_param)
+            if (AUC < 0 || std::get<0>(step) != 0)
             {
                 for (int i = 0; i < N_HISTORY; ++i)
                 {
                     HISTORY_WEIGHT[i] = 0;
-                    HISTORY_SCALE[i] = 1;
+                    HISTORY_SCALE[i]  = 1;
                 }
                 HISTORY_WEIGHT[p] = std::get<0>(step);
-                HISTORY_SCALE[p] = std::get<1>(step);
+                HISTORY_SCALE[p]  = std::get<1>(step);
 
                 init_stats(true);
                 dbg_clear();
                 executeBench(list, pos, states);
 
-                double AUC = dbg_print_auc(0, 999, false);
-                out << SEP << tr(std::to_string(AUC)) << '%' << std::flush;
+                AUC = dbg_print_auc(0, 999, false);
             }
-            out << std::endl << std::flush;
+            out << SEP << tr(std::to_string(AUC)) << '%' << std::flush;
         }
+        out << std::endl << std::flush;
     }
+}
 
-    // Called when the engine receives the "bench" command.
-    // First, a list of UCI commands is set up according to the bench
-    // parameters, then it is run one by one, printing a summary at the end.
+// Called when the engine receives the "bench" command.
+// First, a list of UCI commands is set up according to the bench
+// parameters, then it is run one by one, printing a summary at the end.
 
-    void bench(Position & pos, std::istream & args, StateListPtr & states) {
+void bench(Position& pos, std::istream& args, StateListPtr& states) {
 
-        std::string token;
-        uint64_t    num, nodes = 0, cnt = 1;
+    std::string token;
+    uint64_t    num, nodes = 0, cnt = 1;
 
-        std::vector<std::string> list = setup_bench(pos, args);
+    std::vector<std::string> list = setup_bench(pos, args);
 
-        num = count_if(list.begin(), list.end(), [](const std::string& s) {
-            return s.find("go ") == 0 || s.find("eval") == 0;
-        });
+    num = count_if(list.begin(), list.end(),
+                   [](const std::string& s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
-        TimePoint elapsed = now();
+    TimePoint elapsed = now();
 
-        for (const auto& cmd : list)
+    for (const auto& cmd : list)
+    {
+        std::istringstream is(cmd);
+        is >> std::skipws >> token;
+
+        if (token == "go" || token == "eval")
         {
-            std::istringstream is(cmd);
-            is >> std::skipws >> token;
-
-            if (token == "go" || token == "eval")
+            std::cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")"
+                      << std::endl;
+            if (token == "go")
             {
-                std::cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")"
-                          << std::endl;
-                if (token == "go")
-                {
-                    go(pos, is, states);
-                    Threads.main()->wait_for_search_finished();
-                    nodes += Threads.nodes_searched();
-                }
-                else
-                    trace_eval(pos);
+                go(pos, is, states);
+                Threads.main()->wait_for_search_finished();
+                nodes += Threads.nodes_searched();
             }
-            else if (token == "setoption")
-                setoption(is);
-            else if (token == "position")
-                position(pos, is, states);
-            else if (token == "ucinewgame")
-            {
-                Search::clear();
-                elapsed = now();
-            }  // Search::clear() may take a while
+            else
+                trace_eval(pos);
         }
-
-        elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
-
-        dbg_print();
-        dbg_print_auc(0, 999);
-
-        std::cerr << "\n==========================="
-                  << "\nTotal time (ms) : " << elapsed << "\nNodes searched  : " << nodes
-                  << "\nNodes/second    : " << 1000 * nodes / elapsed << std::endl;
+        else if (token == "setoption")
+            setoption(is);
+        else if (token == "position")
+            position(pos, is, states);
+        else if (token == "ucinewgame")
+        {
+            Search::clear();
+            elapsed = now();
+        }  // Search::clear() may take a while
     }
 
-    // The win rate model returns the probability of winning (in per mille units) given an
-    // eval and a game ply. It fits the LTC fishtest statistics rather accurately.
-    int win_rate_model(Value v, int ply) {
+    elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
 
-        // The model only captures up to 240 plies, so limit the input and then rescale
-        double m = std::min(240, ply) / 64.0;
+    dbg_print();
+    dbg_print_auc(0, 999);
 
-        // The coefficients of a third-order polynomial fit is based on the fishtest data
-        // for two parameters that need to transform eval to the argument of a logistic
-        // function.
-        constexpr double as[] = {0.38036525, -2.82015070, 23.17882135, 307.36768407};
-        constexpr double bs[] = {-2.29434733, 13.27689788, -14.26828904, 63.45318330};
+    std::cerr << "\n==========================="
+              << "\nTotal time (ms) : " << elapsed << "\nNodes searched  : " << nodes
+              << "\nNodes/second    : " << 1000 * nodes / elapsed << std::endl;
+}
 
-        // Enforce that NormalizeToPawnValue corresponds to a 50% win rate at ply 64
-        static_assert(UCI::NormalizeToPawnValue == int(as[0] + as[1] + as[2] + as[3]));
+// The win rate model returns the probability of winning (in per mille units) given an
+// eval and a game ply. It fits the LTC fishtest statistics rather accurately.
+int win_rate_model(Value v, int ply) {
 
-        double a = (((as[0] * m + as[1]) * m + as[2]) * m) + as[3];
-        double b = (((bs[0] * m + bs[1]) * m + bs[2]) * m) + bs[3];
+    // The model only captures up to 240 plies, so limit the input and then rescale
+    double m = std::min(240, ply) / 64.0;
 
-        // Transform the eval to centipawns with limited range
-        double x = std::clamp(double(v), -4000.0, 4000.0);
+    // The coefficients of a third-order polynomial fit is based on the fishtest data
+    // for two parameters that need to transform eval to the argument of a logistic
+    // function.
+    constexpr double as[] = {0.38036525, -2.82015070, 23.17882135, 307.36768407};
+    constexpr double bs[] = {-2.29434733, 13.27689788, -14.26828904, 63.45318330};
 
-        // Return the win rate in per mille units, rounded to the nearest integer
-        return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
-    }
+    // Enforce that NormalizeToPawnValue corresponds to a 50% win rate at ply 64
+    static_assert(UCI::NormalizeToPawnValue == int(as[0] + as[1] + as[2] + as[3]));
+
+    double a = (((as[0] * m + as[1]) * m + as[2]) * m) + as[3];
+    double b = (((bs[0] * m + bs[1]) * m + bs[2]) * m) + bs[3];
+
+    // Transform the eval to centipawns with limited range
+    double x = std::clamp(double(v), -4000.0, 4000.0);
+
+    // Return the win rate in per mille units, rounded to the nearest integer
+    return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
+}
 
 }  // namespace
 
