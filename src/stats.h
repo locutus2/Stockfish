@@ -77,4 +77,5 @@ std::vector<std::tuple<int, int, const char*>> STATS_STEPS = {
 };
 */
 
+}
 #endif
