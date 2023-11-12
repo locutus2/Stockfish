@@ -310,7 +310,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32000;
+constexpr int MaxDebugSlots = 1000;
 
 namespace {
 
@@ -392,7 +392,7 @@ void dbg_print() {
         }
 }
 
-double dbg_print_auc(int start, int end) {
+double dbg_print_auc(int start, int end, bool display) {
     int n_pos = 0, n_neg = 0;
     for (int i = start; i < end; ++i)
         if (hit[i][0])
@@ -413,11 +413,24 @@ double dbg_print_auc(int start, int end) {
 
     if (n_pos + n_neg > 0)
     {
-        std::cerr << "AUC #" << start << "-" << end << ": Total " << n_pos + n_neg << " AUC "
-                  << 100 * auc << "%" << std::endl;
+        if (display)
+            std::cerr << "AUC #" << start << "-" << end << ": Total " << n_pos + n_neg << " AUC "
+                      << 100 * auc << "%" << std::endl;
         return 100 * auc;
     }
-    return -1;
+    return 0;
+}
+
+void dbg_clear() {
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+    {
+        hit[i][0] = hit[i][1] = 0;
+        mean[i][0] = mean[i][1] = 0;
+        stdev[i][0] = stdev[i][1] = stdev[i][2] = 0;
+        correl[i][0] = correl[i][1] = correl[i][2] = 0,
+        correl[i][3] = correl[i][4] = correl[i][5] = 0;
+    }
 }
 
 // Used to serialize access to std::cout to avoid multiple threads writing at

@@ -22,12 +22,44 @@
 #include <cassert>
 #include <iterator>
 #include <utility>
+#include <vector>
 
 #include "bitboard.h"
 #include "position.h"
 #include "thread.h"
 
 namespace Stockfish {
+
+std::vector<int> HISTORY_DIVISOR;
+std::vector<int> HISTORY_SCALE;
+std::vector<int> HISTORY_WEIGHT;
+
+int Dmax, Dmin;
+
+void init_stats() {
+    HISTORY_DIVISOR = {7183, 8192, 7183, 29952, 29952, 7183, 7183, 7183};
+    HISTORY_SCALE   = {1, 1, 1, 1, 1, 1, 1, 1};
+    HISTORY_WEIGHT  = {0, 0, 0, 0, 0, 0, 0, 0};
+
+    Dmax =
+      HISTORY_DIVISOR[HISTORY_MAIN] * (HISTORY_SCALE[HISTORY_MAIN] + HISTORY_WEIGHT[HISTORY_MAIN])
+        / HISTORY_SCALE[HISTORY_MAIN]
+      + HISTORY_DIVISOR[HISTORY_PAWN] * (HISTORY_SCALE[HISTORY_PAWN] + HISTORY_WEIGHT[HISTORY_PAWN])
+          / HISTORY_SCALE[HISTORY_PAWN]
+      + HISTORY_DIVISOR[HISTORY_INCHECK] * HISTORY_WEIGHT[HISTORY_INCHECK]
+          / HISTORY_SCALE[HISTORY_INCHECK]
+      + HISTORY_DIVISOR[HISTORY_CMH0] * (HISTORY_SCALE[HISTORY_CMH0] + HISTORY_WEIGHT[HISTORY_CMH0])
+          / HISTORY_SCALE[HISTORY_CMH0]
+      + HISTORY_DIVISOR[HISTORY_CMH1] * HISTORY_WEIGHT[HISTORY_CMH1] / HISTORY_SCALE[HISTORY_CMH1]
+      + HISTORY_DIVISOR[HISTORY_MAIN_PAWN] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
+          / HISTORY_SCALE[HISTORY_MAIN_PAWN]
+      + HISTORY_DIVISOR[HISTORY_MAIN_PAWN_SHIFT] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN_SHIFT]
+          / HISTORY_SCALE[HISTORY_MAIN_PAWN_SHIFT]
+      + HISTORY_DIVISOR[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
+          * HISTORY_WEIGHT[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
+          / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
+    Dmin = -Dmax;
+}
 
 namespace {
 
@@ -263,47 +295,72 @@ void MovePicker::score() {
                     V += HISTORY_WEIGHT[HISTORY_CMH1]
                        * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                        / HISTORY_SCALE[HISTORY_CMH1];
-                    V += HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
-                       * ((*mainHistory)[pos.side_to_move()][from_to(m)]
-                          * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]
-                          / 8192)
-                       / HISTORY_SCALE[HISTORY_MAIN_PAWN];
+                    V +=
+                      HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
+                      * ((*mainHistory)[pos.side_to_move()][from_to(m)]
+                         * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192)
+                      / HISTORY_SCALE[HISTORY_MAIN_PAWN];
                     V += HISTORY_WEIGHT[HISTORY_MAIN_PAWN_SHIFT]
                        * ((*mainHistory)[pos.side_to_move()][from_to(m)]
-                          * (8192+(*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                          / (2*8192))
+                          * (8192
+                             + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                          / (2 * 8192))
                        / HISTORY_SCALE[HISTORY_MAIN_PAWN_SHIFT];
                     V += HISTORY_WEIGHT[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
-                       * (  (7183+(*mainHistory)[pos.side_to_move()][from_to(m)])
-                          * (8192+(*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                          / (2*8192) - 7183)
+                       * ((7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
+                            * (8192
+                               + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                            / (2 * 8192)
+                          - 7183)
                        / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
                     m.value += V;
-                    dbg_correl_of((*mainHistory)[pos.side_to_move()][from_to(m)]/32, (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]/32, 1);
-                    dbg_correl_of((*mainHistory)[pos.side_to_move()][from_to(m)]/32, pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)]/32, 2);
-                    dbg_correl_of((*mainHistory)[pos.side_to_move()][from_to(m)]/32, (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]/128, 3);
-                    dbg_correl_of((*mainHistory)[pos.side_to_move()][from_to(m)]/32, (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]/128, 4);
+                    dbg_correl_of(
+                      (*mainHistory)[pos.side_to_move()][from_to(m)] / 32,
+                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32, 1);
+                    dbg_correl_of(
+                      (*mainHistory)[pos.side_to_move()][from_to(m)] / 32,
+                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32, 2);
+                    dbg_correl_of((*mainHistory)[pos.side_to_move()][from_to(m)] / 32,
+                                  (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128, 3);
+                    dbg_correl_of((*mainHistory)[pos.side_to_move()][from_to(m)] / 32,
+                                  (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128, 4);
 
-                    dbg_correl_of((*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]/32, pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)]/32, 12);
-                    dbg_correl_of((*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]/32, (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]/128, 13);
-                    dbg_correl_of((*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]/32, (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]/128, 14);
+                    dbg_correl_of(
+                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32,
+                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32, 12);
+                    dbg_correl_of(
+                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32,
+                      (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128, 13);
+                    dbg_correl_of(
+                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32,
+                      (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128, 14);
 
-                    dbg_correl_of(pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)]/32, (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]/128, 23);
-                    dbg_correl_of(pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)]/32, (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]/128, 24);
+                    dbg_correl_of(
+                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32,
+                      (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128, 23);
+                    dbg_correl_of(
+                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32,
+                      (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128, 24);
 
-                    dbg_correl_of((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]/128,(*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]/128, 34);
+                    dbg_correl_of((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128,
+                                  (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128,
+                                  34);
 
-                    dbg_mean_of((*mainHistory)[pos.side_to_move()][from_to(m)]/32, 0);
-                    dbg_mean_of((*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]/32, 1);
-                    dbg_mean_of(pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)]/32, 2);
-                    dbg_mean_of((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]/128, 3);
-                    dbg_mean_of((*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]/128, 4);
+                    dbg_mean_of((*mainHistory)[pos.side_to_move()][from_to(m)] / 32, 0);
+                    dbg_mean_of(
+                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32, 1);
+                    dbg_mean_of(
+                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32, 2);
+                    dbg_mean_of((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128, 3);
+                    dbg_mean_of((*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128, 4);
 
-                    dbg_stdev_of((*mainHistory)[pos.side_to_move()][from_to(m)]/32, 0);
-                    dbg_stdev_of((*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]/32, 1);
-                    dbg_stdev_of(pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)]/32, 2);
-                    dbg_stdev_of((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]/128, 3);
-                    dbg_stdev_of((*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]/128, 4);
+                    dbg_stdev_of((*mainHistory)[pos.side_to_move()][from_to(m)] / 32, 0);
+                    dbg_stdev_of(
+                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32, 1);
+                    dbg_stdev_of(
+                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32, 2);
+                    dbg_stdev_of((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128, 3);
+                    dbg_stdev_of((*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128, 4);
                     //dbg_mean_of(V,0);
                     //dbg_mean_of(V,depth);
                 }

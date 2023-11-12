@@ -1570,7 +1570,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions, and other checks (only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
-    bool       PC     = false;
+    bool       PC     = true;
     Square     prevSq = is_ok((ss - 1)->currentMove) ? to_sq((ss - 1)->currentMove) : SQ_NONE;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
                   contHist, &thisThread->pawnHistory, prevSq, PC);
@@ -1579,8 +1579,10 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move()) != MOVE_NONE)
+    ExtMove extmove;
+    while ((extmove = mp.next_move()) != MOVE_NONE)
     {
+        move = extmove.move;
         assert(is_ok(move));
 
         // Check for legality
@@ -1660,6 +1662,17 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
         pos.do_move(move, st, givesCheck);
         value = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha, depth - 1);
         pos.undo_move(move);
+
+        bool CC = mp.isEvasion() && !capture && PC;
+        int  V  = extmove.value;
+
+        if (CC)
+        {
+            bool      T       = value > alpha;
+            const int BUCKETS = 1000;
+            int       index   = std::clamp((V - Dmin) * BUCKETS / (Dmax - Dmin), 0, BUCKETS - 1);
+            dbg_hit_on(T, index);
+        }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 

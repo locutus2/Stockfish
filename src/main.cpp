@@ -40,6 +40,7 @@ int main(int argc, char* argv[]) {
     Tune::init();
     Bitboards::init();
     Position::init();
+    init_stats();
     Threads.set(size_t(Options["Threads"]));
     Search::clear();  // After threads are up
     Eval::NNUE::init();
