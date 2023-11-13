@@ -146,7 +146,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 template<GenType Type>
 void MovePicker::score() {
 
-    static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
+    static_assert(Type == CAPTURES || Type == REFUTATIONS || Type == QUIETS || Type == EVASIONS,
+                  "Wrong type");
 
     [[maybe_unused]] Bitboard threatenedByPawn, threatenedByMinor, threatenedByRook,
       threatenedPieces;
@@ -171,6 +172,10 @@ void MovePicker::score() {
               (7 * int(PieceValue[pos.piece_on(to_sq(m))])
                + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))])
               / 16;
+
+        else if constexpr (Type == REFUTATIONS)
+            m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
+                    + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
 
         else if constexpr (Type == QUIETS)
         {
@@ -284,8 +289,7 @@ top:
             || refutations[1].move == refutations[2].move)
             --endMoves;
 
-        for (auto& m : *this)
-            m.value = (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+        score<REFUTATIONS>();
 
         ++stage;
         [[fallthrough]];

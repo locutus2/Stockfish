@@ -30,6 +30,7 @@ class Position;
 
 enum GenType {
     CAPTURES,
+    REFUTATIONS,
     QUIETS,
     QUIET_CHECKS,
     EVASIONS,
