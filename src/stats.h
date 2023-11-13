@@ -32,6 +32,8 @@ enum HistoryType : int {
     HISTORY_CMH1,
     HISTORY_CMH2,
     HISTORY_CMH3,
+    HISTORY_CMH4,
+    HISTORY_CMH5,
     HISTORY_CMH0_POS,
     HISTORY_CMH0_NEG,
     HISTORY_MAIN_PAWN,
@@ -47,10 +49,11 @@ extern std::vector<int> HISTORY_WEIGHT;
 extern int Dmax;
 extern int Dmin;
 
-constexpr int HISTORY_DIVISOR[N_HISTORY]      = {7183,  8192,  7183, 29952, 29952, 29952, 29952,
-                                                 14976, 14976, 7183, 7183,  7183,  1};
-constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+constexpr int HISTORY_DIVISOR[N_HISTORY] = {7183,  8192,  7183,  29952, 29952, 29952, 29952, 29952,
+                                            29952, 14976, 14976, 7183,  7183,  7183,  4096};
+constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0};
 
 void init_stats(bool onlyD = false);
 
@@ -82,16 +85,20 @@ constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
 };
 
 constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
-  {HISTORY_MAIN,      "main"   },
-  {HISTORY_PAWN,      "pawn"   },
-  {HISTORY_INCHECK,   "incheck"},
-  {HISTORY_CMH0,      "cmh0"   },
-  {HISTORY_CMH1,      "cmh1"   },
-  {HISTORY_CMH2,      "cmh2"   },
-  {HISTORY_CMH3,      "cmh3"   },
+    /*
+  {HISTORY_MAIN,    "main"   },
+  {HISTORY_PAWN,    "pawn"   },
+  {HISTORY_INCHECK, "incheck"},
+  {HISTORY_CMH0,    "cmh0"   },
+  {HISTORY_CMH1,    "cmh1"   },
+  {HISTORY_CMH2,    "cmh2"   },
+  {HISTORY_CMH3,    "cmh3"   },
+  {HISTORY_CMH4,    "cmh4"   },
+  {HISTORY_CMH5,    "cmh5"   },
+  */
  //{HISTORY_CMH0_POS, "cmh0_pos"},
   //{HISTORY_CMH0_NEG, "cmh0_neg"},
-  //{HISTORY_REF_ORDER, "k1cmk2" },
+  {HISTORY_REF_ORDER, "k1k2cm" },
 };
 
 }
