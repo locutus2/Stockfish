@@ -193,9 +193,9 @@ MovePicker::MovePicker(const Position&              p,
     pawnHistory(ph),
     ttMove(ttm),
     refutations{
-      {killers[0], 0},
+      {killers[0], 1},
       {killers[1], 0},
-      {cm,         0}
+      {cm,        -1}
 },
     depth(d), C(cond) {
     assert(d > 0);
