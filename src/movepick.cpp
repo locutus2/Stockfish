@@ -284,11 +284,14 @@ top:
             || refutations[1].move == refutations[2].move)
             --endMoves;
 
+        for (auto& m : *this)
+            m.value = (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+
         ++stage;
         [[fallthrough]];
 
     case REFUTATION :
-        if (select<Next>([&]() {
+        if (select<Best>([&]() {
                 return *cur != MOVE_NONE && !pos.capture_stage(*cur) && pos.pseudo_legal(*cur);
             }))
             return *(cur - 1);
