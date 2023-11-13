@@ -91,7 +91,7 @@ constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
   {HISTORY_CMH3,      "cmh3"   },
  //{HISTORY_CMH0_POS, "cmh0_pos"},
   //{HISTORY_CMH0_NEG, "cmh0_neg"},
-  {HISTORY_REF_ORDER, "k1cmk2" },
+  //{HISTORY_REF_ORDER, "k1cmk2" },
 };
 
 }
