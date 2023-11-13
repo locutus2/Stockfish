@@ -920,7 +920,7 @@ moves_loop:  // When in check, search starts here
     //const bool PC = true;//!PvNode&&!cutNode;
     //const bool PC = !PvNode&&!cutNode;
     //const bool PC = cutNode;
-    const bool PC = STATS_EVASION_MAIN;
+    const bool PC = STATS_EVASION_MAIN || STATS_REFUTATION;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
                   &thisThread->pawnHistory, countermove, ss->killers, PC);
 
@@ -1190,9 +1190,12 @@ moves_loop:  // When in check, search starts here
         int  Dmin = -2 * 7183 - 2 * 8192 - (29952 * 21 + 3) / 4 - 50000, Dmax = -Dmin + 16384;
         int  V = extmove.value;
         */
-        // quiet evasion moves
-        bool CC = mp.isEvasion() && !capture && PC;
         //int  Dmin = -7183 - 8192 - 29952, Dmax = -Dmin;
+        // quiet evasion moves
+        bool CC = PC;
+        if(STATS_EVASION_MAIN) CC = CC && mp.isEvasion() && !capture;
+        else if(STATS_REFUTATION) CC = CC && mp.isRefutation();
+        else CC = false;
         int V = extmove.value;
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)

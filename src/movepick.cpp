@@ -47,6 +47,8 @@ void init_stats(bool onlyD) {
         }
     }
 
+    if (STATS_EVASION_MAIN || STATS_EVASION_QS)
+    {
     Dmax =
       HISTORY_DIVISOR[HISTORY_MAIN] * (HISTORY_SCALE[HISTORY_MAIN] + HISTORY_WEIGHT[HISTORY_MAIN])
         / HISTORY_SCALE[HISTORY_MAIN]
@@ -70,6 +72,11 @@ void init_stats(bool onlyD) {
       + HISTORY_DIVISOR[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
           * HISTORY_WEIGHT[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
           / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
+    }
+    else if (STATS_REFUTATION)
+    {
+        Dmax = 2;
+    }
     Dmin = -Dmax;
 }
 
@@ -145,9 +152,9 @@ MovePicker::MovePicker(const Position&              p,
     pawnHistory(ph),
     ttMove(ttm),
     refutations{
-      {killers[0], 0},
+      {killers[0], 2},
       {killers[1], 0},
-      {cm,         0}
+      {cm,        -2}
 },
     depth(d), C(cond) {
     assert(d > 0);
@@ -287,7 +294,7 @@ void MovePicker::score() {
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                         + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
-                if (C)
+                if (C && (STATS_EVASION_MAIN || STATS_EVASION_QS))
                 {
                     int V = 0;
                     //V += (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
@@ -435,6 +442,7 @@ ExtMove MovePicker::select(Pred filter) {
 
 bool MovePicker::isQuiet() const { return stage == QUIET; }
 bool MovePicker::isEvasion() const { return stage == EVASION; }
+bool MovePicker::isRefutation() const { return stage == REFUTATION; }
 
 // Most important method of the MovePicker class. It
 // returns a new pseudo-legal move every time it is called until there are no more
@@ -479,6 +487,9 @@ top:
         if (refutations[0].move == refutations[2].move
             || refutations[1].move == refutations[2].move)
             --endMoves;
+
+
+        partial_insertion_sort(cur, endMoves, std::numeric_limits<int>::min());
 
         ++stage;
         [[fallthrough]];

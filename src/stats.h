@@ -37,6 +37,7 @@ enum HistoryType : int {
     HISTORY_MAIN_PAWN,
     HISTORY_MAIN_PAWN_SHIFT,
     HISTORY_MAIN_SHIFT_PAWN_SHIFT,
+    HISTORY_REF_ORDER,
     N_HISTORY
 };
 
@@ -47,9 +48,9 @@ extern int Dmax;
 extern int Dmin;
 
 constexpr int HISTORY_DIVISOR[N_HISTORY]      = {7183,  8192,  7183,  29952, 29952, 29952,
-                                                 29952, 14976, 14976, 7183,  7183,  7183};
-constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                                                 29952, 14976, 14976, 7183,  7183,  7183, 2};
+constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 void init_stats(bool onlyD = false);
 
@@ -59,7 +60,8 @@ void init_stats(bool onlyD = false);
 
 constexpr int HISTORY_BUCKETS = 1000;
 
-constexpr bool STATS_EVASION_MAIN = true;
+constexpr bool STATS_REFUTATION   = true;
+constexpr bool STATS_EVASION_MAIN = false;
 constexpr bool STATS_EVASION_QS   = false;
 constexpr bool USE_DEPTH_WEIGHT   = true;
 
@@ -80,15 +82,16 @@ constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
 };
 
 constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
-  {HISTORY_MAIN,    "main"   },
-  {HISTORY_PAWN,    "pawn"   },
-  {HISTORY_INCHECK, "incheck"},
-  {HISTORY_CMH0,    "cmh0"   },
-  {HISTORY_CMH1,    "cmh1"   },
-  {HISTORY_CMH2,    "cmh2"   },
-  {HISTORY_CMH3,    "cmh3"   },
+  //{HISTORY_MAIN,    "main"   },
+  //{HISTORY_PAWN,    "pawn"   },
+  //{HISTORY_INCHECK, "incheck"},
+  //{HISTORY_CMH0,    "cmh0"   },
+  //{HISTORY_CMH1,    "cmh1"   },
+  //{HISTORY_CMH2,    "cmh2"   },
+  //{HISTORY_CMH3,    "cmh3"   },
  //{HISTORY_CMH0_POS, "cmh0_pos"},
   //{HISTORY_CMH0_NEG, "cmh0_neg"},
+  {HISTORY_REF_ORDER,    "k1k2cm"   },
 };
 
 }

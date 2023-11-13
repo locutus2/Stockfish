@@ -165,6 +165,7 @@ class MovePicker {
     ExtMove next_move(bool skipQuiets = false);
     bool    isQuiet() const;
     bool    isEvasion() const;
+    bool    isRefutation() const;
 
    private:
     template<PickType T, typename Pred>
