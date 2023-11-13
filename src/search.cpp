@@ -1193,9 +1193,12 @@ moves_loop:  // When in check, search starts here
         //int  Dmin = -7183 - 8192 - 29952, Dmax = -Dmin;
         // quiet evasion moves
         bool CC = PC;
-        if(STATS_EVASION_MAIN) CC = CC && mp.isEvasion() && !capture;
-        else if(STATS_REFUTATION) CC = CC && mp.isRefutation();
-        else CC = false;
+        if (STATS_EVASION_MAIN)
+            CC = CC && mp.isEvasion() && !capture;
+        else if (STATS_REFUTATION)
+            CC = CC && mp.isRefutation();
+        else
+            CC = false;
         int V = extmove.value;
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)

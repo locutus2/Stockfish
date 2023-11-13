@@ -49,33 +49,65 @@ void init_stats(bool onlyD) {
 
     if (STATS_EVASION_MAIN || STATS_EVASION_QS)
     {
-    Dmax =
-      HISTORY_DIVISOR[HISTORY_MAIN] * (HISTORY_SCALE[HISTORY_MAIN] + HISTORY_WEIGHT[HISTORY_MAIN])
-        / HISTORY_SCALE[HISTORY_MAIN]
-      + HISTORY_DIVISOR[HISTORY_PAWN] * (HISTORY_SCALE[HISTORY_PAWN] + HISTORY_WEIGHT[HISTORY_PAWN])
-          / HISTORY_SCALE[HISTORY_PAWN]
-      + HISTORY_DIVISOR[HISTORY_INCHECK] * HISTORY_WEIGHT[HISTORY_INCHECK]
-          / HISTORY_SCALE[HISTORY_INCHECK]
-      + HISTORY_DIVISOR[HISTORY_CMH0] * (HISTORY_SCALE[HISTORY_CMH0] + HISTORY_WEIGHT[HISTORY_CMH0])
-          / HISTORY_SCALE[HISTORY_CMH0]
-      + HISTORY_DIVISOR[HISTORY_CMH1] * HISTORY_WEIGHT[HISTORY_CMH1] / HISTORY_SCALE[HISTORY_CMH1]
-      + HISTORY_DIVISOR[HISTORY_CMH2] * HISTORY_WEIGHT[HISTORY_CMH2] / HISTORY_SCALE[HISTORY_CMH2]
-      + HISTORY_DIVISOR[HISTORY_CMH3] * HISTORY_WEIGHT[HISTORY_CMH3] / HISTORY_SCALE[HISTORY_CMH3]
-      + HISTORY_DIVISOR[HISTORY_CMH0_POS] * HISTORY_WEIGHT[HISTORY_CMH0_POS]
-          / HISTORY_SCALE[HISTORY_CMH0_POS]
-      + HISTORY_DIVISOR[HISTORY_CMH0_NEG] * HISTORY_WEIGHT[HISTORY_CMH0_NEG]
-          / HISTORY_SCALE[HISTORY_CMH0_NEG]
-      + HISTORY_DIVISOR[HISTORY_MAIN_PAWN] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
-          / HISTORY_SCALE[HISTORY_MAIN_PAWN]
-      + HISTORY_DIVISOR[HISTORY_MAIN_PAWN_SHIFT] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN_SHIFT]
-          / HISTORY_SCALE[HISTORY_MAIN_PAWN_SHIFT]
-      + HISTORY_DIVISOR[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
-          * HISTORY_WEIGHT[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
-          / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
+        Dmax = HISTORY_DIVISOR[HISTORY_MAIN]
+               * (HISTORY_SCALE[HISTORY_MAIN] + HISTORY_WEIGHT[HISTORY_MAIN])
+               / HISTORY_SCALE[HISTORY_MAIN]
+             + HISTORY_DIVISOR[HISTORY_PAWN]
+                 * (HISTORY_SCALE[HISTORY_PAWN] + HISTORY_WEIGHT[HISTORY_PAWN])
+                 / HISTORY_SCALE[HISTORY_PAWN]
+             + HISTORY_DIVISOR[HISTORY_INCHECK] * HISTORY_WEIGHT[HISTORY_INCHECK]
+                 / HISTORY_SCALE[HISTORY_INCHECK]
+             + HISTORY_DIVISOR[HISTORY_CMH0]
+                 * (HISTORY_SCALE[HISTORY_CMH0] + HISTORY_WEIGHT[HISTORY_CMH0])
+                 / HISTORY_SCALE[HISTORY_CMH0]
+             + HISTORY_DIVISOR[HISTORY_CMH1] * HISTORY_WEIGHT[HISTORY_CMH1]
+                 / HISTORY_SCALE[HISTORY_CMH1]
+             + HISTORY_DIVISOR[HISTORY_CMH2] * HISTORY_WEIGHT[HISTORY_CMH2]
+                 / HISTORY_SCALE[HISTORY_CMH2]
+             + HISTORY_DIVISOR[HISTORY_CMH3] * HISTORY_WEIGHT[HISTORY_CMH3]
+                 / HISTORY_SCALE[HISTORY_CMH3]
+             + HISTORY_DIVISOR[HISTORY_CMH0_POS] * HISTORY_WEIGHT[HISTORY_CMH0_POS]
+                 / HISTORY_SCALE[HISTORY_CMH0_POS]
+             + HISTORY_DIVISOR[HISTORY_CMH0_NEG] * HISTORY_WEIGHT[HISTORY_CMH0_NEG]
+                 / HISTORY_SCALE[HISTORY_CMH0_NEG]
+             + HISTORY_DIVISOR[HISTORY_MAIN_PAWN] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
+                 / HISTORY_SCALE[HISTORY_MAIN_PAWN]
+             + HISTORY_DIVISOR[HISTORY_MAIN_PAWN_SHIFT] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN_SHIFT]
+                 / HISTORY_SCALE[HISTORY_MAIN_PAWN_SHIFT]
+             + HISTORY_DIVISOR[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
+                 * HISTORY_WEIGHT[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
+                 / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
     }
     else if (STATS_REFUTATION)
     {
-        Dmax = 2;
+        Dmax = HISTORY_DIVISOR[HISTORY_REF_ORDER]
+               * (HISTORY_SCALE[HISTORY_REF_ORDER] + HISTORY_WEIGHT[HISTORY_REF_ORDER])
+               / HISTORY_SCALE[HISTORY_REF_ORDER]
+             + HISTORY_DIVISOR[HISTORY_MAIN] * HISTORY_WEIGHT[HISTORY_MAIN]
+                 / HISTORY_SCALE[HISTORY_MAIN]
+             + HISTORY_DIVISOR[HISTORY_PAWN] * HISTORY_WEIGHT[HISTORY_PAWN]
+                 / HISTORY_SCALE[HISTORY_PAWN]
+             + HISTORY_DIVISOR[HISTORY_INCHECK] * HISTORY_WEIGHT[HISTORY_INCHECK]
+                 / HISTORY_SCALE[HISTORY_INCHECK]
+             + HISTORY_DIVISOR[HISTORY_CMH0] * HISTORY_WEIGHT[HISTORY_CMH0]
+                 / HISTORY_SCALE[HISTORY_CMH0]
+             + HISTORY_DIVISOR[HISTORY_CMH1] * HISTORY_WEIGHT[HISTORY_CMH1]
+                 / HISTORY_SCALE[HISTORY_CMH1]
+             + HISTORY_DIVISOR[HISTORY_CMH2] * HISTORY_WEIGHT[HISTORY_CMH2]
+                 / HISTORY_SCALE[HISTORY_CMH2]
+             + HISTORY_DIVISOR[HISTORY_CMH3] * HISTORY_WEIGHT[HISTORY_CMH3]
+                 / HISTORY_SCALE[HISTORY_CMH3]
+             + HISTORY_DIVISOR[HISTORY_CMH0_POS] * HISTORY_WEIGHT[HISTORY_CMH0_POS]
+                 / HISTORY_SCALE[HISTORY_CMH0_POS]
+             + HISTORY_DIVISOR[HISTORY_CMH0_NEG] * HISTORY_WEIGHT[HISTORY_CMH0_NEG]
+                 / HISTORY_SCALE[HISTORY_CMH0_NEG]
+             + HISTORY_DIVISOR[HISTORY_MAIN_PAWN] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
+                 / HISTORY_SCALE[HISTORY_MAIN_PAWN]
+             + HISTORY_DIVISOR[HISTORY_MAIN_PAWN_SHIFT] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN_SHIFT]
+                 / HISTORY_SCALE[HISTORY_MAIN_PAWN_SHIFT]
+             + HISTORY_DIVISOR[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
+                 * HISTORY_WEIGHT[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
+                 / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
     }
     Dmin = -Dmax;
 }
@@ -152,9 +184,9 @@ MovePicker::MovePicker(const Position&              p,
     pawnHistory(ph),
     ttMove(ttm),
     refutations{
-      {killers[0], 2},
+      {killers[0], 0},
       {killers[1], 0},
-      {cm,        -2}
+      {cm,         0}
 },
     depth(d), C(cond) {
     assert(d > 0);
@@ -324,6 +356,7 @@ void MovePicker::score() {
                              + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
                           / (2 * 8192)
                         - 7183,
+                      0,
                     };
 
                     for (int i = 0; i < N_HISTORY; ++i)
@@ -483,11 +516,46 @@ top:
         cur      = std::begin(refutations);
         endMoves = std::end(refutations);
 
+        if (C && STATS_REFUTATION)
+        {
+            int k          = 0;
+            int position[] = {1, -1, 0};
+            for (auto& m : *this)
+            {
+                int V                 = 0;
+                int values[N_HISTORY] = {
+                  (*mainHistory)[pos.side_to_move()][from_to(m)],
+                  (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)],
+                  pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
+                  (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[2])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)],
+                  std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) - 14976,
+                  std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) + 14976,
+                  (*mainHistory)[pos.side_to_move()][from_to(m)]
+                    * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192,
+                  (*mainHistory)[pos.side_to_move()][from_to(m)]
+                    * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                    / (2 * 8192),
+                  (7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
+                      * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                      / (2 * 8192)
+                    - 7183,
+                  position[k],
+                };
+
+                for (int i = 0; i < N_HISTORY; ++i)
+                    V += HISTORY_WEIGHT[i] * values[i] / HISTORY_SCALE[i];
+                m.value += V;
+                k++;
+            }
+        }
+
         // If the countermove is the same as a killer, skip it
         if (refutations[0].move == refutations[2].move
             || refutations[1].move == refutations[2].move)
             --endMoves;
-
 
         partial_insertion_sort(cur, endMoves, std::numeric_limits<int>::min());
 
