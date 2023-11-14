@@ -98,7 +98,7 @@ MovePicker::MovePicker(const Position&              p,
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
-    refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}},
+    refutations{{killers[0], 1}, {killers[1], 0}, {cm, 2}},
     depth(d) {
     assert(d > 0);
 
@@ -288,7 +288,7 @@ top:
         [[fallthrough]];
 
     case REFUTATION :
-        if (select<Next>([&]() {
+        if (select<Best>([&]() {
                 return *cur != MOVE_NONE && !pos.capture_stage(*cur) && pos.pseudo_legal(*cur);
             }))
             return *(cur - 1);
