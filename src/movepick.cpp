@@ -86,7 +86,7 @@ void init_stats(bool onlyD) {
     {
         Dmax = 0;
         for (int i = 0; i < N_HISTORY; ++i)
-            Dmax = HISTORY_DIVISOR[i] * HISTORY_WEIGHT[i] / HISTORY_SCALE[i];
+            Dmax += HISTORY_DIVISOR[i] * HISTORY_WEIGHT[i] / HISTORY_SCALE[i];
 
         /*
         Dmax = HISTORY_DIVISOR[HISTORY_REF_ORDER]
