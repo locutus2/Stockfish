@@ -143,15 +143,16 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 // Assigns a numerical value to each move in a list, used
 // for sorting. Captures are ordered by Most Valuable Victim (MVV), preferring
 // captures with a good history. Quiets moves are ordered using the history tables.
-template<GenType Type>
+template<ScoreType Type>
 void MovePicker::score() {
 
-    static_assert(Type == CAPTURES || Type == REFUTATIONS || Type == QUIETS || Type == EVASIONS,
+    static_assert(Type == SCORE_CAPTURES || Type == SCORE_REFUTATIONS || Type == SCORE_QUIETS
+                    || Type == SCORE_EVASIONS,
                   "Wrong type");
 
     [[maybe_unused]] Bitboard threatenedByPawn, threatenedByMinor, threatenedByRook,
       threatenedPieces;
-    if constexpr (Type == QUIETS)
+    if constexpr (Type == SCORE_QUIETS)
     {
         Color us = pos.side_to_move();
 
@@ -167,16 +168,16 @@ void MovePicker::score() {
     }
 
     for (auto& m : *this)
-        if constexpr (Type == CAPTURES)
+        if constexpr (Type == SCORE_CAPTURES)
             m.value =
               (7 * int(PieceValue[pos.piece_on(to_sq(m))])
                + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))])
               / 16;
 
-        else if constexpr (Type == REFUTATIONS)
+        else if constexpr (Type == SCORE_REFUTATIONS)
             m.value = (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)];
 
-        else if constexpr (Type == QUIETS)
+        else if constexpr (Type == SCORE_QUIETS)
         {
             Piece     pc   = pos.moved_piece(m);
             PieceType pt   = type_of(pos.moved_piece(m));
@@ -214,7 +215,7 @@ void MovePicker::score() {
                        : 0;
         }
 
-        else  // Type == EVASIONS
+        else  // Type == SCORE_EVASIONS
         {
             if (pos.capture_stage(m))
                 m.value = PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m)))
@@ -266,7 +267,7 @@ top:
         cur = endBadCaptures = moves;
         endMoves             = generate<CAPTURES>(pos, cur);
 
-        score<CAPTURES>();
+        score<SCORE_CAPTURES>();
         partial_insertion_sort(cur, endMoves, std::numeric_limits<int>::min());
         ++stage;
         goto top;
@@ -288,7 +289,7 @@ top:
             || refutations[1].move == refutations[2].move)
             --endMoves;
 
-        score<REFUTATIONS>();
+        score<SCORE_REFUTATIONS>();
 
         ++stage;
         [[fallthrough]];
@@ -307,7 +308,7 @@ top:
             cur      = endBadCaptures;
             endMoves = generate<QUIETS>(pos, cur);
 
-            score<QUIETS>();
+            score<SCORE_QUIETS>();
             partial_insertion_sort(cur, endMoves, -1960 - 3130 * depth);
         }
 
@@ -335,7 +336,7 @@ top:
         cur      = moves;
         endMoves = generate<EVASIONS>(pos, cur);
 
-        score<EVASIONS>();
+        score<SCORE_EVASIONS>();
         ++stage;
         [[fallthrough]];
 

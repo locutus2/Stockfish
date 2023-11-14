@@ -122,6 +122,13 @@ using ContinuationHistory = Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB>
 // PawnHistory is addressed by the pawn structure and a move's [piece][to]
 using PawnHistory = Stats<int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
 
+enum ScoreType {
+    SCORE_CAPTURES,
+    SCORE_REFUTATIONS,
+    SCORE_QUIETS,
+    SCORE_EVASIONS
+};
+
 // MovePicker class is used to pick one pseudo-legal move at a time from the
 // current position. The most important method is next_move(), which returns a
 // new pseudo-legal move each time it is called, until there are no moves left,
@@ -161,7 +168,7 @@ class MovePicker {
    private:
     template<PickType T, typename Pred>
     Move select(Pred);
-    template<GenType>
+    template<ScoreType>
     void     score();
     ExtMove* begin() { return cur; }
     ExtMove* end() { return endMoves; }
