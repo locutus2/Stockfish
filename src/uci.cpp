@@ -230,11 +230,11 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
             {
                 for (int i = 0; i < N_HISTORY; ++i)
                 {
-                    HISTORY_WEIGHT[i] = 0;
-                    HISTORY_SCALE[i]  = 1;
+                    HISTORY_WEIGHT[i] = HISTORY_WEIGHT_START[i];
+                    HISTORY_SCALE[i]  = HISTORY_SCALE_START[i];
                 }
-                HISTORY_WEIGHT[std::get<0>(p)] = std::get<0>(step);
-                HISTORY_SCALE[std::get<0>(p)]  = std::get<1>(step);
+                HISTORY_WEIGHT[std::get<0>(p)] += std::get<0>(step);
+                HISTORY_SCALE[std::get<0>(p)] += std::get<1>(step);
 
                 init_stats(true);
                 dbg_clear();

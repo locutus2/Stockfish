@@ -84,6 +84,11 @@ void init_stats(bool onlyD) {
     }
     else if (STATS_REFUTATION)
     {
+        Dmax = 0;
+        for (int i = 0; i < N_HISTORY; ++i)
+            Dmax = HISTORY_DIVISOR[i] * HISTORY_WEIGHT[i] / HISTORY_SCALE[i];
+
+        /*
         Dmax = HISTORY_DIVISOR[HISTORY_REF_ORDER]
                * HISTORY_WEIGHT[HISTORY_REF_ORDER]
                / HISTORY_SCALE[HISTORY_REF_ORDER]
@@ -116,6 +121,7 @@ void init_stats(bool onlyD) {
              + HISTORY_DIVISOR[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
                  * HISTORY_WEIGHT[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
                  / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
+                 */
     }
     Dmax = std::max(Dmax, 1);
     Dmin = -Dmax;
@@ -193,9 +199,9 @@ MovePicker::MovePicker(const Position&              p,
     pawnHistory(ph),
     ttMove(ttm),
     refutations{
-      {killers[0], 1},
-      {killers[1], 0},
-      {cm,        -1}
+      {killers[0], 1 },
+      {killers[1], 0 },
+      {cm,         -1}
 },
     depth(d), C(cond) {
     assert(d > 0);
