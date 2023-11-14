@@ -51,9 +51,14 @@ extern int Dmin;
 
 constexpr int HISTORY_DIVISOR[N_HISTORY] = {7183,  8192,  7183,  29952, 29952, 29952, 29952, 29952,
                                             29952, 14976, 14976, 7183,  7183,  7183,  4096};
-constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+//constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+//constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0};
 //constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0};
 
 void init_stats(bool onlyD = false);
@@ -74,10 +79,10 @@ constexpr bool USE_DEPTH_WEIGHT   = true;
 // uci stats command
 
 constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
-  {-2, 1, "-2"   },
-  {-1, 1, "-1"   },
-  {-1, 2, "-0.5" },
-  {-1, 4, "-0.25"},
+  //{-2, 1, "-2"   },
+  //{-1, 1, "-1"   },
+  //{-1, 2, "-0.5" },
+  //{-1, 4, "-0.25"},
   {0,  1, "0"    },
   {1,  4, "0.25" },
   {1,  2, "0.5"  },
