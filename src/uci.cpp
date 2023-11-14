@@ -233,8 +233,13 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
                     HISTORY_WEIGHT[i] = HISTORY_WEIGHT_START[i];
                     HISTORY_SCALE[i]  = HISTORY_SCALE_START[i];
                 }
-                HISTORY_WEIGHT[std::get<0>(p)] += std::get<0>(step);
-                HISTORY_SCALE[std::get<0>(p)] += std::get<1>(step);
+                //HISTORY_WEIGHT[std::get<0>(p)] = HISTORY_WEIGHT_START[i] * std::get<1>(step) / HISTORY_SCALE_START[i] + std::get<0>(step);
+                //HISTORY_SCALE[std::get<0>(p)] = std::get<1>(step);
+                int P = std::get<0>(p);
+                int S = std::get<1>(step);
+                int W = std::get<0>(step);
+                HISTORY_WEIGHT[P] = HISTORY_WEIGHT[P] * S + W * HISTORY_SCALE_START[P];
+                HISTORY_SCALE[P] *= S;
 
                 init_stats(true);
                 dbg_clear();
