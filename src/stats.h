@@ -69,8 +69,8 @@ void init_stats(bool onlyD = false);
 
 constexpr int HISTORY_BUCKETS = 10000;
 
-constexpr bool STATS_REFUTATION   = true;
-constexpr bool STATS_QUIETS       = false;
+constexpr bool STATS_REFUTATION   = false;
+constexpr bool STATS_QUIETS       = true;
 constexpr bool STATS_EVASION_MAIN = false;
 constexpr bool STATS_EVASION_QS   = false;
 constexpr bool USE_DEPTH_WEIGHT   = true;
@@ -80,10 +80,10 @@ constexpr bool USE_DEPTH_WEIGHT   = true;
 // uci stats command
 
 constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
-  //{-2, 1, "-2"   },
-  //{-1, 1, "-1"   },
-  //{-1, 2, "-0.5" },
-  //{-1, 4, "-0.25"},
+  {-2, 1, "-2"   },
+  {-1, 1, "-1"   },
+  {-1, 2, "-0.5" },
+  {-1, 4, "-0.25"},
   {0, 1, "0"   },
   {1, 4, "0.25"},
   {1, 2, "0.5" },
@@ -103,7 +103,7 @@ constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
   {HISTORY_CMH5,      "cmh5"   },
  //{HISTORY_CMH0_POS, "cmh0_pos"},
   //{HISTORY_CMH0_NEG, "cmh0_neg"},
-  {HISTORY_REF_ORDER, "k1k2cm" },
+  //{HISTORY_REF_ORDER, "k1k2cm" },
 };
 
 }

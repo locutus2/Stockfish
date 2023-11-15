@@ -48,7 +48,7 @@ void init_stats(bool onlyD) {
     }
 
     Dmax = 0;
-    if (STATS_EVASION_MAIN || STATS_EVASION_QS)
+    if (STATS_QUIETS)
     {
         Dmax = 2 * HISTORY_DIVISOR[HISTORY_MAIN] + 2 * HISTORY_DIVISOR[HISTORY_PAWN]
              + 2 * HISTORY_DIVISOR[HISTORY_CMH0] + HISTORY_DIVISOR[HISTORY_CMH1]
@@ -91,7 +91,7 @@ void init_stats(bool onlyD) {
                  / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
                  */
     }
-    else if (STATS_QUIETS)
+    else if (STATS_EVASION_MAIN || STATS_EVASION_QS)
     {
         Dmax = HISTORY_DIVISOR[HISTORY_MAIN] + HISTORY_DIVISOR[HISTORY_PAWN]
              + HISTORY_DIVISOR[HISTORY_CMH0];
