@@ -402,9 +402,9 @@ double dbg_print_auc(int start, int end, bool display) {
             n_neg += hit[i][0] - hit[i][1];
         }
 
-    double auc     = 0;
-    int    sum_neg = 0;
-    int64_t nAuc = 0;
+    double  auc     = 0;
+    int     sum_neg = 0;
+    int64_t nAuc    = 0;
     if (n_pos + n_neg > 0)
     {
         for (int i = start; i < end; ++i)
@@ -412,11 +412,12 @@ double dbg_print_auc(int start, int end, bool display) {
             {
                 //double p = hit[i][1] * (sum_neg + (hit[i][0] - hit[i][1]) / 2.0) / n_neg / n_pos;
                 //double p = hit[i][1] * (sum_neg + (hit[i][0] - hit[i][1]) / 2);
-                nAuc += hit[i][1] * (sum_neg + (hit[i][0] - hit[i][1]) / 2);
+                //nAuc += hit[i][1] * (sum_neg + (hit[i][0] - hit[i][1]) / 2);
+                nAuc += hit[i][1] * (2 * sum_neg + hit[i][0] - hit[i][1]);
                 sum_neg += hit[i][0] - hit[i][1];
             }
 
-        auc = double(nAuc) / n_neg / n_pos;
+        auc = double(nAuc) / 2 / n_neg / n_pos;
         if (display)
             std::cerr << "AUC #" << start << "-" << end << ": Total " << n_pos + n_neg << " AUC "
                       << 100 * auc << "%" << std::endl;

@@ -917,7 +917,7 @@ moves_loop:  // When in check, search starts here
     //const bool PC = true;//!PvNode&&!cutNode;
     //const bool PC = !PvNode&&!cutNode;
     //const bool PC = cutNode;
-    const bool PC = true;//STATS_QUIETS || STATS_EVASION_MAIN || STATS_REFUTATION;
+    const bool PC = true;  //STATS_QUIETS || STATS_EVASION_MAIN || STATS_REFUTATION;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
                   &thisThread->pawnHistory, countermove, ss->killers, PC);
 
@@ -1366,8 +1366,8 @@ moves_loop:  // When in check, search starts here
         {
             bool T      = value > alpha;
             int  weight = USE_DEPTH_WEIGHT ? depth * (1 + STATS_EVASION_QS) : 1;
-            int  index =
-              std::clamp((V - Dmin) * HISTORY_BUCKETS / (Dmax - Dmin), 0, HISTORY_BUCKETS - 1);
+            int  index  = std::clamp(int(int64_t(V - Dmin) * HISTORY_BUCKETS / (Dmax - Dmin)), 0,
+                                     HISTORY_BUCKETS - 1);
             dbg_hit_on(T, index, weight);
         }
 
@@ -1677,13 +1677,13 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
         else
             CC = false;
 
-        int  V  = extmove.value;
+        int V = extmove.value;
 
         if (CC)
         {
-            bool T = value > alpha;
-            int  index =
-              std::clamp((V - Dmin) * HISTORY_BUCKETS / (Dmax - Dmin), 0, HISTORY_BUCKETS - 1);
+            bool T     = value > alpha;
+            int  index = std::clamp(int(int64_t(V - Dmin) * HISTORY_BUCKETS / (Dmax - Dmin)), 0,
+                                    HISTORY_BUCKETS - 1);
             dbg_hit_on(T, index);
         }
 
