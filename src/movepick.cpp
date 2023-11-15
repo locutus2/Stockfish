@@ -98,7 +98,7 @@ MovePicker::MovePicker(const Position&              p,
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
-    refutations{{killers[0], 1}, {killers[1], 0}, {cm, 2}},
+    refutations{{cm, 0}, {killers[0], 0}, {killers[1], 0}},
     depth(d) {
     assert(d > 0);
 
@@ -280,15 +280,15 @@ top:
         endMoves = std::end(refutations);
 
         // If the countermove is the same as a killer, skip it
-        if (refutations[0].move == refutations[2].move
-            || refutations[1].move == refutations[2].move)
-            --endMoves;
+        if (refutations[0].move == refutations[1].move
+            || refutations[0].move == refutations[2].move)
+            ++cur;
 
         ++stage;
         [[fallthrough]];
 
     case REFUTATION :
-        if (select<Best>([&]() {
+        if (select<Next>([&]() {
                 return *cur != MOVE_NONE && !pos.capture_stage(*cur) && pos.pseudo_legal(*cur);
             }))
             return *(cur - 1);
