@@ -51,6 +51,23 @@ extern int Dmin;
 
 constexpr int HISTORY_DIVISOR[N_HISTORY] = {7183,  8192,  7183,  29952, 29952, 29952, 29952, 29952,
                                             29952, 14976, 14976, 7183,  7183,  7183,  4096};
+
+constexpr int HISTORY_SCALE_QUIET_MASTER[N_HISTORY] = {1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_QUIET_MASTER[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0,
+                                                        1, 0, 0, 0, 0, 0, 0};
+
+constexpr int HISTORY_SCALE_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1,
+                                                          1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_EVASION_MASTER[N_HISTORY] = {1, 1, 0, 1, 0, 0, 0, 0,
+                                                          0, 0, 0, 0, 0, 0, 0};
+
+constexpr int HISTORY_SCALE_REFUTATION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1,
+                                                             1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_REFUTATION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0,
+                                                             0, 0, 0, 0, 0, 0, 0};
+
+//constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -69,8 +86,8 @@ void init_stats(bool onlyD = false);
 
 constexpr int HISTORY_BUCKETS = 10000;
 
-constexpr bool STATS_REFUTATION   = true;
-constexpr bool STATS_QUIETS       = false;
+constexpr bool STATS_REFUTATION   = false;
+constexpr bool STATS_QUIETS       = true;
 constexpr bool STATS_EVASION_MAIN = false;
 constexpr bool STATS_EVASION_QS   = false;
 constexpr bool USE_DEPTH_WEIGHT   = true;

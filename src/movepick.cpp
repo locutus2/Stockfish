@@ -48,63 +48,38 @@ void init_stats(bool onlyD) {
     }
 
     Dmax = 0;
+    Dmin = 0;
     if (STATS_QUIETS)
     {
-        Dmax = 2 * HISTORY_DIVISOR[HISTORY_MAIN] + 2 * HISTORY_DIVISOR[HISTORY_PAWN]
-             + 2 * HISTORY_DIVISOR[HISTORY_CMH0] + HISTORY_DIVISOR[HISTORY_CMH1]
-             + HISTORY_DIVISOR[HISTORY_CMH2] / 4 + HISTORY_DIVISOR[HISTORY_CMH3]
-             + HISTORY_DIVISOR[HISTORY_CMH5] + 50000;
+        for (int i = 0; i < N_HISTORY; ++i)
+            Dmax += HISTORY_DIVISOR[i]
+                  * std::abs(HISTORY_WEIGHT_QUIET_MASTER[i] * HISTORY_SCALE[i]
+                             + HISTORY_WEIGHT[i] * HISTORY_SCALE_QUIET_MASTER[i])
+                  / (HISTORY_SCALE_QUIET_MASTER[i] * HISTORY_SCALE[i]);
+        Dmax += 50000;
         Dmin = -Dmax;
         Dmax += 16384;
-        /*
-        Dmax = HISTORY_DIVISOR[HISTORY_MAIN]
-               * (HISTORY_SCALE[HISTORY_MAIN] + HISTORY_WEIGHT[HISTORY_MAIN])
-               / HISTORY_SCALE[HISTORY_MAIN]
-             + HISTORY_DIVISOR[HISTORY_PAWN]
-                 * (HISTORY_SCALE[HISTORY_PAWN] + HISTORY_WEIGHT[HISTORY_PAWN])
-                 / HISTORY_SCALE[HISTORY_PAWN]
-             + HISTORY_DIVISOR[HISTORY_INCHECK] * HISTORY_WEIGHT[HISTORY_INCHECK]
-                 / HISTORY_SCALE[HISTORY_INCHECK]
-             + HISTORY_DIVISOR[HISTORY_CMH0]
-                 * (HISTORY_SCALE[HISTORY_CMH0] + HISTORY_WEIGHT[HISTORY_CMH0])
-                 / HISTORY_SCALE[HISTORY_CMH0]
-             + HISTORY_DIVISOR[HISTORY_CMH1] * HISTORY_WEIGHT[HISTORY_CMH1]
-                 / HISTORY_SCALE[HISTORY_CMH1]
-             + HISTORY_DIVISOR[HISTORY_CMH2] * HISTORY_WEIGHT[HISTORY_CMH2]
-                 / HISTORY_SCALE[HISTORY_CMH2]
-             + HISTORY_DIVISOR[HISTORY_CMH3] * HISTORY_WEIGHT[HISTORY_CMH3]
-                 / HISTORY_SCALE[HISTORY_CMH3]
-             + HISTORY_DIVISOR[HISTORY_CMH4] * HISTORY_WEIGHT[HISTORY_CMH4]
-                 / HISTORY_SCALE[HISTORY_CMH4]
-             + HISTORY_DIVISOR[HISTORY_CMH5] * HISTORY_WEIGHT[HISTORY_CMH5]
-                 / HISTORY_SCALE[HISTORY_CMH5]
-             + HISTORY_DIVISOR[HISTORY_CMH0_POS] * HISTORY_WEIGHT[HISTORY_CMH0_POS]
-                 / HISTORY_SCALE[HISTORY_CMH0_POS]
-             + HISTORY_DIVISOR[HISTORY_CMH0_NEG] * HISTORY_WEIGHT[HISTORY_CMH0_NEG]
-                 / HISTORY_SCALE[HISTORY_CMH0_NEG]
-             + HISTORY_DIVISOR[HISTORY_MAIN_PAWN] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
-                 / HISTORY_SCALE[HISTORY_MAIN_PAWN]
-             + HISTORY_DIVISOR[HISTORY_MAIN_PAWN_SHIFT] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN_SHIFT]
-                 / HISTORY_SCALE[HISTORY_MAIN_PAWN_SHIFT]
-             + HISTORY_DIVISOR[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
-                 * HISTORY_WEIGHT[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
-                 / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
-                 */
     }
     else if (STATS_EVASION_MAIN || STATS_EVASION_QS)
     {
-        Dmax = HISTORY_DIVISOR[HISTORY_MAIN] + HISTORY_DIVISOR[HISTORY_PAWN]
-             + HISTORY_DIVISOR[HISTORY_CMH0];
+        for (int i = 0; i < N_HISTORY; ++i)
+            Dmax += HISTORY_DIVISOR[i]
+                  * std::abs(HISTORY_WEIGHT_EVASION_MASTER[i] * HISTORY_SCALE[i]
+                             + HISTORY_WEIGHT[i] * HISTORY_SCALE_EVASION_MASTER[i])
+                  / (HISTORY_SCALE_EVASION_MASTER[i] * HISTORY_SCALE[i]);
         Dmin = -Dmax;
     }
     else if (STATS_REFUTATION)
     {
-        Dmax = 1;
+        for (int i = 0; i < N_HISTORY; ++i)
+            Dmax += HISTORY_DIVISOR[i]
+                  * std::abs(HISTORY_WEIGHT_REFUTATION_MASTER[i] * HISTORY_SCALE[i]
+                             + HISTORY_WEIGHT[i] * HISTORY_SCALE_REFUTATION_MASTER[i])
+                  / (HISTORY_SCALE_REFUTATION_MASTER[i] * HISTORY_SCALE[i]);
+        Dmax = std::max(Dmax, 1);
         Dmin = -Dmax;
     }
 
-    for (int i = 0; i < N_HISTORY; ++i)
-        Dmax += HISTORY_DIVISOR[i] * HISTORY_WEIGHT[i] / HISTORY_SCALE[i];
 
     Dmax = std::max(Dmax, 1);
 }
