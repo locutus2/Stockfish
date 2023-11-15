@@ -232,14 +232,16 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 // Assigns a numerical value to each move in a list, used
 // for sorting. Captures are ordered by Most Valuable Victim (MVV), preferring
 // captures with a good history. Quiets moves are ordered using the history tables.
-template<GenType Type>
+template<ScoreType Type>
 void MovePicker::score() {
 
-    static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
+    static_assert(Type == SCORE_CAPTURES || Type == SCORE_REFUTATIONS || Type == SCORE_QUIETS
+                    || Type == SCORE_EVASIONS,
+                  "Wrong type");
 
     [[maybe_unused]] Bitboard threatenedByPawn, threatenedByMinor, threatenedByRook,
       threatenedPieces;
-    if constexpr (Type == QUIETS)
+    if constexpr (Type == SCORE_QUIETS)
     {
         Color us = pos.side_to_move();
 
@@ -254,14 +256,53 @@ void MovePicker::score() {
                          | (pos.pieces(us, KNIGHT, BISHOP) & threatenedByPawn);
     }
 
+    int k          = 0;
+    int position[] = {4096, 0, -4096};
+
     for (auto& m : *this)
-        if constexpr (Type == CAPTURES)
+        if constexpr (Type == SCORE_CAPTURES)
             m.value =
               (7 * int(PieceValue[pos.piece_on(to_sq(m))])
                + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))])
               / 16;
 
-        else if constexpr (Type == QUIETS)
+        else if constexpr (Type == SCORE_REFUTATIONS)
+        {
+            if (C && STATS_REFUTATION)
+            {
+                int V                 = 0;
+                int values[N_HISTORY] = {
+                  (*mainHistory)[pos.side_to_move()][from_to(m)],
+                  (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)],
+                  pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
+                  (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[2])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[4])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)],
+                  std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) - 14976,
+                  std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) + 14976,
+                  (*mainHistory)[pos.side_to_move()][from_to(m)]
+                    * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192,
+                  (*mainHistory)[pos.side_to_move()][from_to(m)]
+                    * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                    / (2 * 8192),
+                  (7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
+                      * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                      / (2 * 8192)
+                    - 7183,
+                  position[k],
+                };
+
+                for (int i = 0; i < N_HISTORY; ++i)
+                    V += HISTORY_WEIGHT[i] * values[i] / HISTORY_SCALE[i];
+                m.value += V;
+                k++;
+            }
+        }
+
+        else if constexpr (Type == SCORE_QUIETS)
         {
             Piece     pc   = pos.moved_piece(m);
             PieceType pt   = type_of(pos.moved_piece(m));
@@ -351,7 +392,7 @@ void MovePicker::score() {
             */
         }
 
-        else  // Type == EVASIONS
+        else  // Type == SCORE_EVASIONS
         {
             if (pos.capture_stage(m))
                 m.value = PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m)))
@@ -540,7 +581,7 @@ top:
         cur = endBadCaptures = moves;
         endMoves             = generate<CAPTURES>(pos, cur);
 
-        score<CAPTURES>();
+        score<SCORE_CAPTURES>();
         partial_insertion_sort(cur, endMoves, std::numeric_limits<int>::min());
         ++stage;
         goto top;
@@ -557,56 +598,18 @@ top:
         cur      = std::begin(refutations);
         endMoves = std::end(refutations);
 
-        if (C && STATS_REFUTATION)
-        {
-            int k          = 0;
-            int position[] = {4096, 0, -4096};
-            for (auto& m : *this)
-            {
-                int V                 = 0;
-                int values[N_HISTORY] = {
-                  (*mainHistory)[pos.side_to_move()][from_to(m)],
-                  (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)],
-                  pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
-                  (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[2])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[4])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)],
-                  std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) - 14976,
-                  std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) + 14976,
-                  (*mainHistory)[pos.side_to_move()][from_to(m)]
-                    * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192,
-                  (*mainHistory)[pos.side_to_move()][from_to(m)]
-                    * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                    / (2 * 8192),
-                  (7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
-                      * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                      / (2 * 8192)
-                    - 7183,
-                  position[k],
-                };
-
-                for (int i = 0; i < N_HISTORY; ++i)
-                    V += HISTORY_WEIGHT[i] * values[i] / HISTORY_SCALE[i];
-                m.value += V;
-                k++;
-            }
-        }
-
         // If the countermove is the same as a killer, skip it
         if (refutations[0].move == refutations[2].move
             || refutations[1].move == refutations[2].move)
             --endMoves;
 
-        partial_insertion_sort(cur, endMoves, std::numeric_limits<int>::min());
+        score<SCORE_REFUTATIONS>();
 
         ++stage;
         [[fallthrough]];
 
     case REFUTATION :
-        if (select<Next>([&]() {
+        if (select<Best>([&]() {
                 return *cur != MOVE_NONE && !pos.capture_stage(*cur) && pos.pseudo_legal(*cur);
             }))
             return *(cur - 1);
@@ -619,7 +622,7 @@ top:
             cur      = endBadCaptures;
             endMoves = generate<QUIETS>(pos, cur);
 
-            score<QUIETS>();
+            score<SCORE_QUIETS>();
             partial_insertion_sort(cur, endMoves, -1960 - 3130 * depth);
         }
 
@@ -647,7 +650,7 @@ top:
         cur      = moves;
         endMoves = generate<EVASIONS>(pos, cur);
 
-        score<EVASIONS>();
+        score<SCORE_EVASIONS>();
         ++stage;
         [[fallthrough]];
 
