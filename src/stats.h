@@ -67,10 +67,10 @@ void init_stats(bool onlyD = false);
 //---------------
 // search + measurement
 
-constexpr int HISTORY_BUCKETS = 100000;
+constexpr int HISTORY_BUCKETS = 10000;
 
-constexpr bool STATS_REFUTATION   = false;
-constexpr bool STATS_QUIETS       = true;
+constexpr bool STATS_REFUTATION   = true;
+constexpr bool STATS_QUIETS       = false;
 constexpr bool STATS_EVASION_MAIN = false;
 constexpr bool STATS_EVASION_QS   = false;
 constexpr bool USE_DEPTH_WEIGHT   = true;
