@@ -231,10 +231,11 @@ void MovePicker::score() {
                          | (pos.pieces(us, KNIGHT, BISHOP) & threatenedByPawn);
     }
 
-    int k          = 0;
-    int position[] = {4096, 0, -4096};
+    int           k          = 0;
+    constexpr int position[] = {4096, 0, -4096};
 
     for (auto& m : *this)
+    {
         if constexpr (Type == SCORE_CAPTURES)
             m.value =
               (7 * int(PieceValue[pos.piece_on(to_sq(m))])
@@ -242,40 +243,7 @@ void MovePicker::score() {
               / 16;
 
         else if constexpr (Type == SCORE_REFUTATIONS)
-        {
-            if (C && STATS_REFUTATION)
-            {
-                int V                 = 0;
-                int values[N_HISTORY] = {
-                  (*mainHistory)[pos.side_to_move()][from_to(m)],
-                  (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)],
-                  pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
-                  (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[2])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[4])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)],
-                  std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) - 14976,
-                  std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) + 14976,
-                  (*mainHistory)[pos.side_to_move()][from_to(m)]
-                    * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192,
-                  (*mainHistory)[pos.side_to_move()][from_to(m)]
-                    * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                    / (2 * 8192),
-                  (7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
-                      * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                      / (2 * 8192)
-                    - 7183,
-                  position[k],
-                };
-
-                for (int i = 0; i < N_HISTORY; ++i)
-                    V += HISTORY_WEIGHT[i] * values[i] / HISTORY_SCALE[i];
-                m.value += V;
-                k++;
-            }
-        }
+        {}
 
         else if constexpr (Type == SCORE_QUIETS)
         {
@@ -313,58 +281,6 @@ void MovePicker::score() {
                           : pt != PAWN ? bool(to & threatenedByPawn) * 15000
                                        : 0)
                        : 0;
-
-            if (C && STATS_QUIETS)
-            {
-                //V += (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
-                //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
-                //V += (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
-                //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
-                //V += -pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)];
-                int values[N_HISTORY] = {
-                  (*mainHistory)[pos.side_to_move()][from_to(m)],
-                  (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)],
-                  pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
-                  (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[2])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[4])[pos.moved_piece(m)][to_sq(m)],
-                  (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)],
-                  std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) - 14976,
-                  std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) + 14976,
-                  (*mainHistory)[pos.side_to_move()][from_to(m)]
-                    * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192,
-                  (*mainHistory)[pos.side_to_move()][from_to(m)]
-                    * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                    / (2 * 8192),
-                  (7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
-                      * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                      / (2 * 8192)
-                    - 7183,
-                  0,
-                };
-
-                int V = 0;
-                for (int i = 0; i < N_HISTORY; ++i)
-                    V += HISTORY_WEIGHT[i] * values[i] / HISTORY_SCALE[i];
-
-                m.value += V;
-            }
-
-            /*
-            if(C)
-            {
-                //int V = -(*continuationHistory[0])[pc][to]/4;
-                int V = 0;
-                //int V = (*mainHistory)[pos.side_to_move()][from_to(m)];
-                //int V = pawnHistory[pawn_structure(pos)][pc][to];
-                m.value += V;
-                //V = m.value - v;
-                dbg_mean_of(V,0);
-                dbg_mean_of(V,depth);
-            }
-            */
         }
 
         else  // Type == SCORE_EVASIONS
@@ -377,139 +293,47 @@ void MovePicker::score() {
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                         + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
-
-                if (C && ((STATS_EVASION_MAIN && depth > 0) || (STATS_EVASION_QS && depth <= 0)))
-                {
-                    int V = 0;
-                    //V += (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
-                    //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
-                    //V += (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
-                    //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
-                    //V += -pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)];
-                    int values[N_HISTORY] = {
-                      (*mainHistory)[pos.side_to_move()][from_to(m)],
-                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)],
-                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
-                      (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
-                      (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
-                      (*continuationHistory[2])[pos.moved_piece(m)][to_sq(m)],
-                      (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)],
-                      (*continuationHistory[4])[pos.moved_piece(m)][to_sq(m)],
-                      (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)],
-                      std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0)
-                        - 14976,
-                      std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0)
-                        + 14976,
-                      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                        * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192,
-                      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                        * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                        / (2 * 8192),
-                      (7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
-                          * (8192
-                             + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                          / (2 * 8192)
-                        - 7183,
-                      0,
-                    };
-
-                    for (int i = 0; i < N_HISTORY; ++i)
-                        V += HISTORY_WEIGHT[i] * values[i] / HISTORY_SCALE[i];
-
-                    m.value += V;
-
-                    /*
-                    V += HISTORY_WEIGHT[HISTORY_MAIN]
-                       * (*mainHistory)[pos.side_to_move()][from_to(m)]
-                       / HISTORY_SCALE[HISTORY_MAIN];
-                    V += HISTORY_WEIGHT[HISTORY_PAWN]
-                       * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)]
-                       / HISTORY_SCALE[HISTORY_PAWN];
-                    V += HISTORY_WEIGHT[HISTORY_INCHECK]
-                       * pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)]
-                       / HISTORY_SCALE[HISTORY_INCHECK];
-                    V += HISTORY_WEIGHT[HISTORY_CMH0]
-                       * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                       / HISTORY_SCALE[HISTORY_CMH0];
-                    V += HISTORY_WEIGHT[HISTORY_CMH1]
-                       * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                       / HISTORY_SCALE[HISTORY_CMH1];
-                    V += HISTORY_WEIGHT[HISTORY_CMH0_POS]
-                       * (std::max((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)], 0) - 14976)
-                       / HISTORY_SCALE[HISTORY_CMH0_POS];
-                    V +=
-                      HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
-                      * ((*mainHistory)[pos.side_to_move()][from_to(m)]
-                         * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192)
-                      / HISTORY_SCALE[HISTORY_MAIN_PAWN];
-                    V += HISTORY_WEIGHT[HISTORY_MAIN_PAWN_SHIFT]
-                       * ((*mainHistory)[pos.side_to_move()][from_to(m)]
-                          * (8192
-                             + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                          / (2 * 8192))
-                       / HISTORY_SCALE[HISTORY_MAIN_PAWN_SHIFT];
-                    V += HISTORY_WEIGHT[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
-                       * ((7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
-                            * (8192
-                               + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                            / (2 * 8192)
-                          - 7183)
-                       / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
-                       */
-                    /*
-                    dbg_correl_of(
-                      (*mainHistory)[pos.side_to_move()][from_to(m)] / 32,
-                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32, 1);
-                    dbg_correl_of(
-                      (*mainHistory)[pos.side_to_move()][from_to(m)] / 32,
-                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32, 2);
-                    dbg_correl_of((*mainHistory)[pos.side_to_move()][from_to(m)] / 32,
-                                  (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128, 3);
-                    dbg_correl_of((*mainHistory)[pos.side_to_move()][from_to(m)] / 32,
-                                  (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128, 4);
-
-                    dbg_correl_of(
-                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32,
-                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32, 12);
-                    dbg_correl_of(
-                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32,
-                      (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128, 13);
-                    dbg_correl_of(
-                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32,
-                      (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128, 14);
-
-                    dbg_correl_of(
-                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32,
-                      (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128, 23);
-                    dbg_correl_of(
-                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32,
-                      (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128, 24);
-
-                    dbg_correl_of((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128,
-                                  (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128,
-                                  34);
-
-                    dbg_mean_of((*mainHistory)[pos.side_to_move()][from_to(m)] / 32, 0);
-                    dbg_mean_of(
-                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32, 1);
-                    dbg_mean_of(
-                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32, 2);
-                    dbg_mean_of((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128, 3);
-                    dbg_mean_of((*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128, 4);
-
-                    dbg_stdev_of((*mainHistory)[pos.side_to_move()][from_to(m)] / 32, 0);
-                    dbg_stdev_of(
-                      (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32, 1);
-                    dbg_stdev_of(
-                      pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32, 2);
-                    dbg_stdev_of((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128, 3);
-                    dbg_stdev_of((*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128, 4);
-                    */
-                    //dbg_mean_of(V,0);
-                    //dbg_mean_of(V,depth);
-                }
             }
         }
+
+        if (C
+            && (STATS_QUIETS || STATS_REFUTATION || (STATS_EVASION_MAIN && depth > 0)
+                || (STATS_EVASION_QS && depth <= 0)))
+        {
+            int V                 = 0;
+            int values[N_HISTORY] = {
+              (*mainHistory)[pos.side_to_move()][from_to(m)],
+              (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)],
+              pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
+              (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
+              (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
+              (*continuationHistory[2])[pos.moved_piece(m)][to_sq(m)],
+              (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)],
+              (*continuationHistory[4])[pos.moved_piece(m)][to_sq(m)],
+              (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)],
+              std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) - 14976,
+              std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) + 14976,
+              (*mainHistory)[pos.side_to_move()][from_to(m)]
+                * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192,
+              (*mainHistory)[pos.side_to_move()][from_to(m)]
+                * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                / (2 * 8192),
+              (7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
+                  * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                  / (2 * 8192)
+                - 7183,
+              (STATS_REFUTATION ? position[k] : 0),
+            };
+
+            for (int i = 0; i < N_HISTORY; ++i)
+                V += HISTORY_WEIGHT[i] * values[i] / HISTORY_SCALE[i];
+
+            m.value += V;
+            k++;
+            //dbg_mean_of(V,0);
+            //dbg_mean_of(V,depth);
+        }
+    }
 }
 
 // Returns the next move satisfying a predicate function.
