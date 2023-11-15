@@ -300,7 +300,6 @@ void MovePicker::score() {
 
             if (C && STATS_QUIETS)
             {
-                int V = 0;
                 //V += (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
                 //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
                 //V += (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
@@ -330,8 +329,11 @@ void MovePicker::score() {
                   0,
                 };
 
+                int V = 0;
                 for (int i = 0; i < N_HISTORY; ++i)
                     V += HISTORY_WEIGHT[i] * values[i] / HISTORY_SCALE[i];
+
+                m.value += V;
             }
 
             /*
@@ -359,6 +361,7 @@ void MovePicker::score() {
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                         + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+
                 if (C && ((STATS_EVASION_MAIN && depth > 0) || (STATS_EVASION_QS && depth <= 0)))
                 {
                     int V = 0;
@@ -396,6 +399,8 @@ void MovePicker::score() {
 
                     for (int i = 0; i < N_HISTORY; ++i)
                         V += HISTORY_WEIGHT[i] * values[i] / HISTORY_SCALE[i];
+
+                    m.value += V;
 
                     /*
                     V += HISTORY_WEIGHT[HISTORY_MAIN]
@@ -435,7 +440,7 @@ void MovePicker::score() {
                           - 7183)
                        / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
                        */
-                    m.value += V;
+                    /*
                     dbg_correl_of(
                       (*mainHistory)[pos.side_to_move()][from_to(m)] / 32,
                       (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 32, 1);
@@ -483,6 +488,7 @@ void MovePicker::score() {
                       pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)] / 32, 2);
                     dbg_stdev_of((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 128, 3);
                     dbg_stdev_of((*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 128, 4);
+                    */
                     //dbg_mean_of(V,0);
                     //dbg_mean_of(V,depth);
                 }
