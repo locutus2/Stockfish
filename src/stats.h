@@ -68,8 +68,8 @@ constexpr int HISTORY_WEIGHT_REFUTATION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0
 
 //constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 //constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1,  1, 1, 1, 1, 1,  2, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0};
 
 //constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 //constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -85,12 +85,12 @@ void init_stats(bool onlyD = false);
 // search + measurement
 
 constexpr int HISTORY_BUCKETS = 10000;
+constexpr bool USE_DEPTH_WEIGHT   = true;
 
 constexpr bool STATS_REFUTATION   = false;
 constexpr bool STATS_QUIETS       = true;
 constexpr bool STATS_EVASION_MAIN = false;
 constexpr bool STATS_EVASION_QS   = false;
-constexpr bool USE_DEPTH_WEIGHT   = true;
 
 static_assert(!(STATS_REFUTATION && (STATS_QUIETS || STATS_EVASION_MAIN || STATS_EVASION_QS)));
 static_assert(!(STATS_QUIETS && (STATS_REFUTATION || STATS_EVASION_MAIN || STATS_EVASION_QS)));
@@ -101,7 +101,7 @@ static_assert(!(STATS_EVASION_QS && (STATS_REFUTATION || STATS_QUIETS)));
 // uci stats command
 
 constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
-  {-2, 1, "-2"   },
+  //{-2, 1, "-2"   },
   {-1, 1, "-1"   },
   {-1, 2, "-0.5" },
   {-1, 4, "-0.25"},
