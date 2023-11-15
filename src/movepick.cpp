@@ -82,6 +82,7 @@ void init_stats(bool onlyD) {
 
 
     Dmax = std::max(Dmax, 1);
+    //std::cerr << "[" << Dmax << "]" << std::flush;
 }
 
 namespace {
