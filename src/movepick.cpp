@@ -298,8 +298,10 @@ void MovePicker::score() {
         }
 
         if (C
-            && (STATS_QUIETS || STATS_REFUTATION || (STATS_EVASION_MAIN && depth > 0)
-                || (STATS_EVASION_QS && depth <= 0)))
+            && ((STATS_QUIETS && Type == SCORE_QUIETS)
+                || (STATS_REFUTATION && Type == SCORE_REFUTATION) 
+                || (STATS_EVASION_MAIN && Type == SCORE_EVASION && depth > 0)
+                || (STATS_EVASION_QS && Type == SCORE_EVASION && depth <= 0)))
         {
             int V                 = 0;
             int values[N_HISTORY] = {
@@ -331,8 +333,8 @@ void MovePicker::score() {
 
             m.value += V;
             k++;
-            //dbg_mean_of(V,0);
-            //dbg_mean_of(V,depth);
+            dbg_mean_of(V,0);
+            dbg_mean_of(V,depth);
         }
     }
 }
