@@ -66,11 +66,11 @@ constexpr int HISTORY_SCALE_REFUTATION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1
 constexpr int HISTORY_WEIGHT_REFUTATION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0,
                                                              0, 0, 0, 0, 0, 0, 0};
 
-//constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1,  1,  2, 1,  2, 1,  2, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+//constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1,  1,  2, 1,  2, 1,  2, 1, 1, 1, 1, 1, 1};
 //constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0};
-constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {1, 0, 0, -1, -1, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0};
+//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {1, 0, 0, -1, -1, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0};
 
 //constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 //constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -116,7 +116,7 @@ constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
 constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
   {HISTORY_MAIN,    "main"   },
   {HISTORY_PAWN,    "pawn"   },
-  {HISTORY_INCHECK, "incheck"},
+  //{HISTORY_INCHECK, "incheck"},
   {HISTORY_CMH0,    "cmh0"   },
   {HISTORY_CMH1,    "cmh1"   },
   {HISTORY_CMH2,    "cmh2"   },
