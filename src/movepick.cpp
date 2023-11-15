@@ -47,8 +47,16 @@ void init_stats(bool onlyD) {
         }
     }
 
+    Dmax = 0;
     if (STATS_EVASION_MAIN || STATS_EVASION_QS)
     {
+        Dmax = 2 * HISTORY_DIVISOR[HISTORY_MAIN] + 2 * HISTORY_DIVISOR[HISTORY_PAWN]
+             + 2 * HISTORY_DIVISOR[HISTORY_CMH0] + HISTORY_DIVISOR[HISTORY_CMH1]
+             + HISTORY_DIVISOR[HISTORY_CMH2] / 4 + HISTORY_DIVISOR[HISTORY_CMH3]
+             + HISTORY_DIVISOR[HISTORY_CMH5] + 50000;
+        Dmin = -Dmax;
+        Dmax += 16384;
+        /*
         Dmax = HISTORY_DIVISOR[HISTORY_MAIN]
                * (HISTORY_SCALE[HISTORY_MAIN] + HISTORY_WEIGHT[HISTORY_MAIN])
                / HISTORY_SCALE[HISTORY_MAIN]
@@ -81,50 +89,24 @@ void init_stats(bool onlyD) {
              + HISTORY_DIVISOR[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
                  * HISTORY_WEIGHT[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
                  / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
+                 */
+    }
+    else if (STATS_QUIETS)
+    {
+        Dmax = HISTORY_DIVISOR[HISTORY_MAIN] + HISTORY_DIVISOR[HISTORY_PAWN]
+             + HISTORY_DIVISOR[HISTORY_CMH0];
+        Dmin = -Dmax;
     }
     else if (STATS_REFUTATION)
     {
-        Dmax = 0;
-        for (int i = 0; i < N_HISTORY; ++i)
-            Dmax += HISTORY_DIVISOR[i] * HISTORY_WEIGHT[i] / HISTORY_SCALE[i];
-
-        /*
-        Dmax = HISTORY_DIVISOR[HISTORY_REF_ORDER]
-               * HISTORY_WEIGHT[HISTORY_REF_ORDER]
-               / HISTORY_SCALE[HISTORY_REF_ORDER]
-             + HISTORY_DIVISOR[HISTORY_MAIN] * HISTORY_WEIGHT[HISTORY_MAIN]
-                 / HISTORY_SCALE[HISTORY_MAIN]
-             + HISTORY_DIVISOR[HISTORY_PAWN] * HISTORY_WEIGHT[HISTORY_PAWN]
-                 / HISTORY_SCALE[HISTORY_PAWN]
-             + HISTORY_DIVISOR[HISTORY_INCHECK] * HISTORY_WEIGHT[HISTORY_INCHECK]
-                 / HISTORY_SCALE[HISTORY_INCHECK]
-             + HISTORY_DIVISOR[HISTORY_CMH0] * HISTORY_WEIGHT[HISTORY_CMH0]
-                 / HISTORY_SCALE[HISTORY_CMH0]
-             + HISTORY_DIVISOR[HISTORY_CMH1] * HISTORY_WEIGHT[HISTORY_CMH1]
-                 / HISTORY_SCALE[HISTORY_CMH1]
-             + HISTORY_DIVISOR[HISTORY_CMH2] * HISTORY_WEIGHT[HISTORY_CMH2]
-                 / HISTORY_SCALE[HISTORY_CMH2]
-             + HISTORY_DIVISOR[HISTORY_CMH3] * HISTORY_WEIGHT[HISTORY_CMH3]
-                 / HISTORY_SCALE[HISTORY_CMH3]
-             + HISTORY_DIVISOR[HISTORY_CMH4] * HISTORY_WEIGHT[HISTORY_CMH4]
-                 / HISTORY_SCALE[HISTORY_CMH4]
-             + HISTORY_DIVISOR[HISTORY_CMH5] * HISTORY_WEIGHT[HISTORY_CMH5]
-                 / HISTORY_SCALE[HISTORY_CMH5]
-             + HISTORY_DIVISOR[HISTORY_CMH0_POS] * HISTORY_WEIGHT[HISTORY_CMH0_POS]
-                 / HISTORY_SCALE[HISTORY_CMH0_POS]
-             + HISTORY_DIVISOR[HISTORY_CMH0_NEG] * HISTORY_WEIGHT[HISTORY_CMH0_NEG]
-                 / HISTORY_SCALE[HISTORY_CMH0_NEG]
-             + HISTORY_DIVISOR[HISTORY_MAIN_PAWN] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN]
-                 / HISTORY_SCALE[HISTORY_MAIN_PAWN]
-             + HISTORY_DIVISOR[HISTORY_MAIN_PAWN_SHIFT] * HISTORY_WEIGHT[HISTORY_MAIN_PAWN_SHIFT]
-                 / HISTORY_SCALE[HISTORY_MAIN_PAWN_SHIFT]
-             + HISTORY_DIVISOR[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
-                 * HISTORY_WEIGHT[HISTORY_MAIN_SHIFT_PAWN_SHIFT]
-                 / HISTORY_SCALE[HISTORY_MAIN_SHIFT_PAWN_SHIFT];
-                 */
+        Dmax = 1;
+        Dmin = -Dmax;
     }
+
+    for (int i = 0; i < N_HISTORY; ++i)
+        Dmax += HISTORY_DIVISOR[i] * HISTORY_WEIGHT[i] / HISTORY_SCALE[i];
+
     Dmax = std::max(Dmax, 1);
-    Dmin = -Dmax;
 }
 
 namespace {
@@ -316,6 +298,42 @@ void MovePicker::score() {
                                        : 0)
                        : 0;
 
+            if (C && STATS_QUIETS)
+            {
+                int V = 0;
+                //V += (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];
+                //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
+                //V += (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+                //V += (*mainHistory)[pos.side_to_move()][from_to(m)];
+                //V += -pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)];
+                int values[N_HISTORY] = {
+                  (*mainHistory)[pos.side_to_move()][from_to(m)],
+                  (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)],
+                  pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
+                  (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[2])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[4])[pos.moved_piece(m)][to_sq(m)],
+                  (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)],
+                  std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) - 14976,
+                  std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) + 14976,
+                  (*mainHistory)[pos.side_to_move()][from_to(m)]
+                    * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192,
+                  (*mainHistory)[pos.side_to_move()][from_to(m)]
+                    * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                    / (2 * 8192),
+                  (7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
+                      * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
+                      / (2 * 8192)
+                    - 7183,
+                  0,
+                };
+
+                for (int i = 0; i < N_HISTORY; ++i)
+                    V += HISTORY_WEIGHT[i] * values[i] / HISTORY_SCALE[i];
+            }
+
             /*
             if(C)
             {
@@ -341,7 +359,7 @@ void MovePicker::score() {
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                         + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
-                if (C && (STATS_EVASION_MAIN || STATS_EVASION_QS))
+                if (C && ((STATS_EVASION_MAIN && depth > 0) || (STATS_EVASION_QS && depth <= 0)))
                 {
                     int V = 0;
                     //V += (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)];

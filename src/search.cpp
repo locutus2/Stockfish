@@ -917,7 +917,7 @@ moves_loop:  // When in check, search starts here
     //const bool PC = true;//!PvNode&&!cutNode;
     //const bool PC = !PvNode&&!cutNode;
     //const bool PC = cutNode;
-    const bool PC = STATS_EVASION_MAIN || STATS_REFUTATION;
+    const bool PC = STATS_QUIETS || STATS_EVASION_MAIN || STATS_REFUTATION;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
                   &thisThread->pawnHistory, countermove, ss->killers, PC);
 
@@ -1194,6 +1194,8 @@ moves_loop:  // When in check, search starts here
             CC = CC && mp.isEvasion() && !capture;
         else if (STATS_REFUTATION)
             CC = CC && mp.isRefutation();
+        else if (STATS_QUIETS)
+            CC = CC && mp.isQuiet();
         else
             CC = false;
         int V = extmove.value;
