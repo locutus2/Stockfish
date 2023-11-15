@@ -110,7 +110,7 @@ constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
   {1,  4, "0.25" },
   {1,  2, "0.5"  },
   {1,  1, "1"    },
-  {2,  1, "2"    },
+  //{2,  1, "2"    },
 };
 
 constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
