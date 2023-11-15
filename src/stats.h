@@ -69,12 +69,16 @@ void init_stats(bool onlyD = false);
 
 constexpr int HISTORY_BUCKETS = 10000;
 
-constexpr bool STATS_REFUTATION   = false;
-constexpr bool STATS_QUIETS       = true;
+constexpr bool STATS_REFUTATION   = true;
+constexpr bool STATS_QUIETS       = false;
 constexpr bool STATS_EVASION_MAIN = false;
 constexpr bool STATS_EVASION_QS   = false;
 constexpr bool USE_DEPTH_WEIGHT   = true;
 
+static_assert(!(STATS_REFUTATION && (STATS_QUIETS || STATS_EVASION_MAIN || STATS_EVASION_QS)));
+static_assert(!(STATS_QUIETS && (STATS_REFUTATION || STATS_EVASION_MAIN || STATS_EVASION_QS)));
+static_assert(!(STATS_EVASION_MAIN && (STATS_REFUTATION || STATS_QUIETS)));
+static_assert(!(STATS_EVASION_QS && (STATS_REFUTATION || STATS_QUIETS)));
 
 //---------------
 // uci stats command
