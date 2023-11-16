@@ -233,7 +233,8 @@ void MovePicker::score() {
     }
 
     int           k          = 0;
-    constexpr int position[] = {4096, 0, -4096};
+    //constexpr int position[] = {4096, 0, -4096};
+    constexpr int position[] = {1-7183/8, -7183/8, 7183/8};
 
     for (auto& m : *this)
     {
