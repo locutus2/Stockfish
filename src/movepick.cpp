@@ -175,8 +175,8 @@ void MovePicker::score() {
               / 16;
 
         else if constexpr (Type == SCORE_REFUTATIONS)
-            m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
-                    + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+            m.value = 2 * (*mainHistory)[pos.side_to_move()][from_to(m)]
+                    + (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)];
 
         else if constexpr (Type == SCORE_QUIETS)
         {
