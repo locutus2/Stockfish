@@ -60,14 +60,25 @@ void init_stats(bool onlyD) {
         Dmin = -Dmax;
         Dmax += 16384;
     }
-    else if (STATS_EVASION_MAIN || STATS_EVASION_QS)
+    else if (STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS)
     {
         for (int i = 0; i < N_HISTORY; ++i)
             Dmax += HISTORY_DIVISOR[i]
-                  * std::abs(HISTORY_WEIGHT_EVASION_MASTER[i] * HISTORY_SCALE[i]
-                             + HISTORY_WEIGHT[i] * HISTORY_SCALE_EVASION_MASTER[i])
-                  / (HISTORY_SCALE_EVASION_MASTER[i] * HISTORY_SCALE[i]);
+                  * std::abs(HISTORY_WEIGHT_QUIET_EVASION_MASTER[i] * HISTORY_SCALE[i]
+                             + HISTORY_WEIGHT[i] * HISTORY_SCALE_QUIET_EVASION_MASTER[i])
+                  / (HISTORY_SCALE_QUIET_EVASION_MASTER[i] * HISTORY_SCALE[i]);
         Dmin = -Dmax;
+    }
+    else if (STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)
+    {
+        for (int i = 0; i < N_HISTORY; ++i)
+            Dmax += HISTORY_DIVISOR[i]
+                  * std::abs(HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]
+                             + HISTORY_WEIGHT[i] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i])
+                  / (HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]);
+        Dmin = -Dmax;
+        Dmax += QueenValue;
+        Dmin -= int(KING);
     }
     else if (STATS_REFUTATION)
     {
@@ -301,8 +312,10 @@ void MovePicker::score() {
         if (C
             && ((STATS_QUIETS && Type == SCORE_QUIETS)
                 || (STATS_REFUTATION && Type == SCORE_REFUTATIONS) 
-                || (STATS_EVASION_MAIN && Type == SCORE_EVASIONS && depth > 0)
-                || (STATS_EVASION_QS && Type == SCORE_EVASIONS && depth <= 0)))
+                || (STATS_QUIET_EVASION_MAIN && Type == SCORE_EVASIONS && depth > 0)
+                || (STATS_QUIET_EVASION_QS && Type == SCORE_EVASIONS && depth <= 0)
+                || (STATS_CAPTURE_EVASION_MAIN && Type == SCORE_EVASIONS && depth > 0)
+                || (STATS_CAPTURE_EVASION_QS && Type == SCORE_EVASIONS && depth <= 0)))
         {
             int V                 = 0;
             int values[N_HISTORY] = {

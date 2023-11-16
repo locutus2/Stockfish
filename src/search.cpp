@@ -1196,8 +1196,10 @@ moves_loop:  // When in check, search starts here
         //int  Dmin = -7183 - 8192 - 29952, Dmax = -Dmin;
         // quiet evasion moves
         bool CC = PC;
-        if (STATS_EVASION_MAIN)
+        if (STATS_QUIET_EVASION_MAIN)
             CC = CC && mp.isEvasion() && !capture;
+        else if (STATS_CAPTURE_EVASION_MAIN)
+            CC = CC && mp.isEvasion() && capture;
         else if (STATS_REFUTATION)
             CC = CC && mp.isRefutation();
         else if (STATS_QUIETS)
@@ -1373,7 +1375,7 @@ moves_loop:  // When in check, search starts here
         if (CC)
         {
             bool T      = value > alpha;
-            int  weight = USE_DEPTH_WEIGHT ? depth * (1 + STATS_EVASION_QS) : 1;
+            int  weight = USE_DEPTH_WEIGHT ? depth * (1 + (STATS_QUIET_EVASION_QS || STATS_CAPTURE_EVASION_MAIN)) : 1;
             int  index  = std::clamp(int(int64_t(V - Dmin) * HISTORY_BUCKETS / (Dmax - Dmin)), 0,
                                      HISTORY_BUCKETS - 1);
             dbg_hit_on(T, index, weight);
@@ -1680,8 +1682,10 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
         pos.undo_move(move);
 
         bool CC = PC;
-        if (STATS_EVASION_QS)
+        if (STATS_QUIET_EVASION_QS)
             CC = CC && mp.isEvasion() && !capture;
+        else if (STATS_CAPTURE_EVASION_QS)
+            CC = CC && mp.isEvasion() && capture;
         else
             CC = false;
 

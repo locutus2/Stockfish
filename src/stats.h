@@ -56,9 +56,14 @@ constexpr int HISTORY_SCALE_QUIET_MASTER[N_HISTORY] = {1, 1, 1, 1, 1, 4, 1, 1, 1
 constexpr int HISTORY_WEIGHT_QUIET_MASTER[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0,
                                                         1, 0, 0, 0, 0, 0, 0};
 
-constexpr int HISTORY_SCALE_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1,
+constexpr int HISTORY_SCALE_QUIET_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1,
                                                           1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_EVASION_MASTER[N_HISTORY] = {1, 1, 0, 1, 0, 0, 0, 0,
+constexpr int HISTORY_WEIGHT_QUIET_EVASION_MASTER[N_HISTORY] = {1, 1, 0, 1, 0, 0, 0, 0,
+                                                          0, 0, 0, 0, 0, 0, 0};
+
+constexpr int HISTORY_SCALE_CAPTURE_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1,
+                                                          1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0,
                                                           0, 0, 0, 0, 0, 0, 0};
 
 constexpr int HISTORY_SCALE_REFUTATION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1,
@@ -91,14 +96,18 @@ constexpr int  HISTORY_BUCKETS  = 10000;
 constexpr bool USE_DEPTH_WEIGHT = true;
 
 constexpr bool STATS_REFUTATION   = false;
-constexpr bool STATS_QUIETS       = true;
-constexpr bool STATS_EVASION_MAIN = false;
-constexpr bool STATS_EVASION_QS   = false;
+constexpr bool STATS_QUIETS       = false;
+constexpr bool STATS_QUIET_EVASION_MAIN = false;
+constexpr bool STATS_QUIET_EVASION_QS   = false;
+constexpr bool STATS_CAPTURE_EVASION_MAIN = true;
+constexpr bool STATS_CAPTURE_EVASION_QS   = false;
 
-static_assert(!(STATS_REFUTATION && (STATS_QUIETS || STATS_EVASION_MAIN || STATS_EVASION_QS)));
-static_assert(!(STATS_QUIETS && (STATS_REFUTATION || STATS_EVASION_MAIN || STATS_EVASION_QS)));
-static_assert(!(STATS_EVASION_MAIN && (STATS_REFUTATION || STATS_QUIETS)));
-static_assert(!(STATS_EVASION_QS && (STATS_REFUTATION || STATS_QUIETS)));
+static_assert(!(STATS_REFUTATION && (STATS_QUIETS || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
+static_assert(!(STATS_QUIETS && (STATS_REFUTATION || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
+static_assert(!(STATS_QUIET_EVASION_MAIN && (STATS_REFUTATION || STATS_QUIETS || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
+static_assert(!(STATS_QUIET_EVASION_QS && (STATS_REFUTATION || STATS_QUIETS || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
+static_assert(!(STATS_CAPTURE_EVASION_MAIN && (STATS_REFUTATION || STATS_QUIETS || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS)));
+static_assert(!(STATS_CAPTURE_EVASION_QS && (STATS_REFUTATION || STATS_QUIETS || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS)));
 
 //---------------
 // uci stats command
