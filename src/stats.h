@@ -96,10 +96,10 @@ constexpr int  HISTORY_BUCKETS  = 10000;
 constexpr bool USE_DEPTH_WEIGHT = true;
 
 constexpr bool STATS_REFUTATION   = false;
-constexpr bool STATS_QUIETS       = false;
+constexpr bool STATS_QUIETS       = true;
 constexpr bool STATS_QUIET_EVASION_MAIN = false;
 constexpr bool STATS_QUIET_EVASION_QS   = false;
-constexpr bool STATS_CAPTURE_EVASION_MAIN = true;
+constexpr bool STATS_CAPTURE_EVASION_MAIN = false;
 constexpr bool STATS_CAPTURE_EVASION_QS   = false;
 
 static_assert(!(STATS_REFUTATION && (STATS_QUIETS || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
