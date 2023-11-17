@@ -151,7 +151,7 @@ void  update_all_stats(const Position& pos,
                        Move*           capturesSearched,
                        int             captureCount,
                        Depth           depth,
-                       int moveCount);
+                       int             moveCount);
 
 // Utility to verify move generation. All the leaf nodes up
 // to the given depth are generated and counted, and the sum is returned.
@@ -648,7 +648,8 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
             {
                 int penalty = -stat_malus(depth);
                 thisThread->mainHistory[us][from_to(ttMove)] << penalty;
-                update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty, 1);
+                update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty,
+                                              1);
 
                 if (ss->inCheck)
                     thisThread->inCheckHistory[us][from_to(ttMove)] << penalty;
@@ -1376,9 +1377,13 @@ moves_loop:  // When in check, search starts here
         if (CC)
         {
             bool T      = value > alpha;
-            int  weight = USE_DEPTH_WEIGHT ? depth * (1 + (STATS_QUIET_EVASION_QS || STATS_CAPTURE_EVASION_MAIN)) : 1;
-            int  index  = std::clamp(int(int64_t(V - Dmin) * HISTORY_BUCKETS / (Dmax - Dmin)), 0,
-                                     HISTORY_BUCKETS - 1);
+            int  weight = USE_DEPTH_WEIGHT
+                          ? depth
+                             * (1
+                                + ((STATS_QUIET_EVASION_MAIN && STATS_QUIET_EVASION_QS)
+                                   || (STATS_CAPTURE_EVASION_MAIN && STATS_CAPTURE_EVASION_QS)))
+                          : 1;
+            int  index  = getBucket(V);
             dbg_hit_on(T, index, weight);
         }
 
@@ -1695,8 +1700,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
         if (CC)
         {
             bool T     = value > alpha;
-            int  index = std::clamp(int(int64_t(V - Dmin) * HISTORY_BUCKETS / (Dmax - Dmin)), 0,
-                                    HISTORY_BUCKETS - 1);
+            int  index = getBucket(V);
             dbg_hit_on(T, index);
         }
 
@@ -1804,7 +1808,7 @@ void update_all_stats(const Position& pos,
                       Move*           capturesSearched,
                       int             captureCount,
                       Depth           depth,
-                      int moveCount) {
+                      int             moveCount) {
 
     Color                  us             = pos.side_to_move();
     Thread*                thisThread     = pos.this_thread();
@@ -1862,7 +1866,8 @@ void update_all_stats(const Position& pos,
         && ((ss - 1)->moveCount == 1 + (ss - 1)->ttHit
             || ((ss - 1)->currentMove == (ss - 1)->killers[0]))
         && !pos.captured_piece())
-        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, -quietMoveMalus, moveCount);
+        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, -quietMoveMalus,
+                                      moveCount);
 
     // Decrease stats for all non-best capture moves
     for (int i = 0; i < captureCount; ++i)
@@ -1877,6 +1882,12 @@ void update_all_stats(const Position& pos,
 // Updates histories of the move pairs formed
 // by moves at ply -1, -2, -3, -4, and -6 with current move.
 void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus, int moveCount) {
+
+    //if (bonus > 0)
+    //    bonus = bonus * 2;//std::min(1 + moveCount, 4) / 2;
+    //dbg_mean_of(bonus, 0);
+    //dbg_mean_of(std::max(bonus,0), 1);
+    //dbg_mean_of(std::min(bonus,0), 2);
 
     for (int i : {1, 2, 3, 4, 6})
     {

@@ -93,7 +93,8 @@ void init_stats(bool onlyD) {
 
 
     Dmax = std::max(Dmax, 1);
-    //std::cerr << "[" << Dmax << "]" << std::flush;
+    std::cerr << "[" << Dmin << "|" << Dmax << "]" << std::flush << std::endl;
+    //std::exit(1);
 }
 
 namespace {
@@ -243,9 +244,9 @@ void MovePicker::score() {
                          | (pos.pieces(us, KNIGHT, BISHOP) & threatenedByPawn);
     }
 
-    int           k          = 0;
+    int k = 0;
     //constexpr int position[] = {4096, 0, -4096};
-    constexpr int position[] = {1-7183/8, -7183/8, 7183/8};
+    constexpr int position[] = {1 - 7183 / 8, -7183 / 8, 7183 / 8};
 
     for (auto& m : *this)
     {
@@ -311,7 +312,7 @@ void MovePicker::score() {
 
         if (C
             && ((STATS_QUIETS && Type == SCORE_QUIETS)
-                || (STATS_REFUTATION && Type == SCORE_REFUTATIONS) 
+                || (STATS_REFUTATION && Type == SCORE_REFUTATIONS)
                 || (STATS_QUIET_EVASION_MAIN && Type == SCORE_EVASIONS && depth > 0)
                 || (STATS_QUIET_EVASION_QS && Type == SCORE_EVASIONS && depth <= 0)
                 || (STATS_CAPTURE_EVASION_MAIN && Type == SCORE_EVASIONS && depth > 0)
@@ -347,8 +348,8 @@ void MovePicker::score() {
 
             m.value += V;
             k++;
-            dbg_mean_of(V,0);
-            dbg_mean_of(V,depth);
+            //dbg_mean_of(V,0);
+            //dbg_mean_of(V,depth);
         }
     }
 }

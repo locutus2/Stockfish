@@ -19,6 +19,7 @@
 #ifndef STATS_H_INCLUDED
 #define STATS_H_INCLUDED
 
+#include <algorithm>
 #include <tuple>
 #include <vector>
 
@@ -34,6 +35,7 @@ enum HistoryType : int {
     HISTORY_CMH3,
     HISTORY_CMH4,
     HISTORY_CMH5,
+    HISTORY_CAPTURE,
     HISTORY_CMH0_POS,
     HISTORY_CMH0_NEG,
     HISTORY_MAIN_PAWN,
@@ -49,42 +51,32 @@ extern std::vector<int> HISTORY_WEIGHT;
 extern int Dmax;
 extern int Dmin;
 
-constexpr int HISTORY_DIVISOR[N_HISTORY] = {7183,  8192,  7183,  29952, 29952, 29952, 29952, 29952,
-                                            29952, 14976, 14976, 7183,  7183,  7183,  7183/8};
+constexpr int HISTORY_DIVISOR[N_HISTORY] = {7183,  8192,  7183,  29952,   29952, 29952,
+                                            29952, 29952, 29952, 10692,   14976, 14976,
+                                            7183,  7183,  7183,  7183 / 8};
 
-constexpr int HISTORY_SCALE_QUIET_MASTER[N_HISTORY] = {1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_SCALE_QUIET_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 4, 1, 1,
+                                                        1, 1, 1, 1, 1, 1, 1, 1};
 constexpr int HISTORY_WEIGHT_QUIET_MASTER[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0,
-                                                        1, 0, 0, 0, 0, 0, 0};
+                                                        1, 0, 0, 0, 0, 0, 0, 0};
 
 constexpr int HISTORY_SCALE_QUIET_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1,
-                                                          1, 1, 1, 1, 1, 1, 1};
+                                                                1, 1, 1, 1, 1, 1, 1, 1};
 constexpr int HISTORY_WEIGHT_QUIET_EVASION_MASTER[N_HISTORY] = {1, 1, 0, 1, 0, 0, 0, 0,
-                                                          0, 0, 0, 0, 0, 0, 0};
+                                                                0, 0, 0, 0, 0, 0, 0, 0};
 
 constexpr int HISTORY_SCALE_CAPTURE_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1,
-                                                          1, 1, 1, 1, 1, 1, 1};
+                                                                  1, 1, 1, 1, 1, 1, 1, 1};
 constexpr int HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0,
-                                                          0, 0, 0, 0, 0, 0, 0};
+                                                                  0, 0, 0, 0, 0, 0, 0, 0};
 
 constexpr int HISTORY_SCALE_REFUTATION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1,
-                                                             1, 1, 1, 1, 1, 1, 1};
+                                                             1, 1, 1, 1, 1, 1, 1, 1};
 constexpr int HISTORY_WEIGHT_REFUTATION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0,
-                                                             0, 0, 0, 0, 0, 0, 0};
+                                                             0, 0, 0, 0, 0, 0, 0, 0};
 
-//constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1,  1,  2, 1,  2, 1,  2, 1, 1, 1, 1, 1, 1};
-//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0};
-//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {1, 0, 0, -1, -1, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0};
-
-//constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-//constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0};
-//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0};
+constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 void init_stats(bool onlyD = false);
 
@@ -95,19 +87,31 @@ void init_stats(bool onlyD = false);
 constexpr int  HISTORY_BUCKETS  = 10000;
 constexpr bool USE_DEPTH_WEIGHT = true;
 
-constexpr bool STATS_REFUTATION   = false;
-constexpr bool STATS_QUIETS       = true;
-constexpr bool STATS_QUIET_EVASION_MAIN = false;
-constexpr bool STATS_QUIET_EVASION_QS   = false;
-constexpr bool STATS_CAPTURE_EVASION_MAIN = false;
+constexpr bool STATS_REFUTATION           = false;
+constexpr bool STATS_QUIETS               = false;
+constexpr bool STATS_QUIET_EVASION_MAIN   = false;
+constexpr bool STATS_QUIET_EVASION_QS     = false;
+constexpr bool STATS_CAPTURE_EVASION_MAIN = true;
 constexpr bool STATS_CAPTURE_EVASION_QS   = false;
 
-static_assert(!(STATS_REFUTATION && (STATS_QUIETS || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
-static_assert(!(STATS_QUIETS && (STATS_REFUTATION || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
-static_assert(!(STATS_QUIET_EVASION_MAIN && (STATS_REFUTATION || STATS_QUIETS || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
-static_assert(!(STATS_QUIET_EVASION_QS && (STATS_REFUTATION || STATS_QUIETS || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
-static_assert(!(STATS_CAPTURE_EVASION_MAIN && (STATS_REFUTATION || STATS_QUIETS || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS)));
-static_assert(!(STATS_CAPTURE_EVASION_QS && (STATS_REFUTATION || STATS_QUIETS || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS)));
+static_assert(!(STATS_REFUTATION
+                && (STATS_QUIETS || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS
+                    || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
+static_assert(!(STATS_QUIETS
+                && (STATS_REFUTATION || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS
+                    || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
+static_assert(!(STATS_QUIET_EVASION_MAIN
+                && (STATS_REFUTATION || STATS_QUIETS || STATS_CAPTURE_EVASION_MAIN
+                    || STATS_CAPTURE_EVASION_QS)));
+static_assert(!(STATS_QUIET_EVASION_QS
+                && (STATS_REFUTATION || STATS_QUIETS || STATS_CAPTURE_EVASION_MAIN
+                    || STATS_CAPTURE_EVASION_QS)));
+static_assert(!(STATS_CAPTURE_EVASION_MAIN
+                && (STATS_REFUTATION || STATS_QUIETS || STATS_QUIET_EVASION_MAIN
+                    || STATS_QUIET_EVASION_QS)));
+static_assert(!(STATS_CAPTURE_EVASION_QS
+                && (STATS_REFUTATION || STATS_QUIETS || STATS_QUIET_EVASION_MAIN
+                    || STATS_QUIET_EVASION_QS)));
 
 //---------------
 // uci stats command
@@ -117,12 +121,12 @@ constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
   //{-1, 1, "-1"   },
   //{-1, 2, "-0.5" },
   //{-1, 4, "-0.25"},
-  {0,  1, "0"    },
-  {1,  4, "0.25" },
-  {1,  2, "0.5"  },
-  {1,  1, "1"    },
-  {3,  2, "1.5"    },
-  {2,  1, "2"    },
+  {0, 1, "0"   },
+  {1, 4, "0.25"},
+  {1, 2, "0.5" },
+  {1, 1, "1"   },
+  {3, 2, "1.5" },
+  {2, 1, "2"   },
 };
 
 constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
@@ -135,10 +139,15 @@ constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
   //{HISTORY_CMH3,    "cmh3"   },
   //{HISTORY_CMH4,    "cmh4"   },
   //{HISTORY_CMH5,    "cmh5"   },
- //{HISTORY_CMH0_POS, "cmh0_pos"},
+  //{HISTORY_CMH0_POS, "cmh0_pos"},
   //{HISTORY_CMH0_NEG, "cmh0_neg"},
-  {HISTORY_REF_ORDER, "k1k2cm" },
+  {HISTORY_REF_ORDER, "k1k2cm"},
 };
+
+inline int getBucket(int V) {
+    return std::clamp(int(int64_t(V - Dmin) * HISTORY_BUCKETS / (Dmax - Dmin)), 0,
+                      HISTORY_BUCKETS - 1);
+}
 
 }
 #endif
