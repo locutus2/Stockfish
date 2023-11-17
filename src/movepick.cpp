@@ -77,8 +77,10 @@ void init_stats(bool onlyD) {
                              + HISTORY_WEIGHT[i] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i])
                   / (HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]);
         Dmin = -Dmax;
-        Dmax += QueenValue;
-        Dmin -= int(KING);
+        //Dmax += QueenValue;
+        //Dmin -= int(KING);
+        Dmax += (1 << 28);
+        Dmin += (1 << 28);
     }
     else if (STATS_REFUTATION)
     {
@@ -300,7 +302,7 @@ void MovePicker::score() {
         else  // Type == SCORE_EVASIONS
         {
             if (pos.capture_stage(m))
-                m.value = PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m)))
+                m.value = //PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m)))
                         + (1 << 28);
             else
             {
@@ -329,6 +331,7 @@ void MovePicker::score() {
               (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)],
               (*continuationHistory[4])[pos.moved_piece(m)][to_sq(m)],
               (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)],
+              (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))],
               std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) - 14976,
               std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) + 14976,
               (*mainHistory)[pos.side_to_move()][from_to(m)]
