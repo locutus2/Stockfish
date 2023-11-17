@@ -77,8 +77,8 @@ void init_stats(bool onlyD) {
                              + HISTORY_WEIGHT[i] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i])
                   / (HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]);
         Dmin = -Dmax;
-        //Dmax += QueenValue;
-        //Dmin -= int(KING);
+        Dmax += QueenValue;
+        Dmin -= int(KING);
         Dmax += (1 << 28);
         Dmin += (1 << 28);
     }
@@ -302,7 +302,7 @@ void MovePicker::score() {
         else  // Type == SCORE_EVASIONS
         {
             if (pos.capture_stage(m))
-                m.value = //PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m)))
+                m.value = PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m)))
                         + (1 << 28);
             else
             {
