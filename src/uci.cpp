@@ -201,6 +201,25 @@ void executeBench(const std::vector<std::string>& list, Position& pos, StateList
     }
 }
 
+int ggt(int a, int b);
+
+int ggt(int a, int b) {
+    int h;
+    if (a == 0)
+        return abs(b);
+    if (b == 0)
+        return abs(a);
+
+    do
+    {
+        h = a % b;
+        a = b;
+        b = h;
+    } while (b != 0);
+
+    return abs(a);
+}
+
 void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
     std::vector<std::string> list = setup_bench(pos, args);
 
@@ -214,8 +233,8 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
 
     // init
     double bestAUC = -1, baseAUC = -2;
-    int BEST_HISTORY_WEIGHT[N_HISTORY][2];
-    int BASE_HISTORY_WEIGHT[N_HISTORY][2];
+    int    BEST_HISTORY_WEIGHT[N_HISTORY][2];
+    int    BASE_HISTORY_WEIGHT[N_HISTORY][2];
 
     for (int i = 0; i < N_HISTORY; ++i)
     {
@@ -265,6 +284,13 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
                     HISTORY_WEIGHT[P][0] = HISTORY_WEIGHT[P][0] * S + W * HISTORY_START[P][1];
                     HISTORY_WEIGHT[P][1] *= S;
 
+                    int t = ggt(HISTORY_WEIGHT[P][0], HISTORY_WEIGHT[P][1]);
+                    if (t > 1)
+                    {
+                        HISTORY_WEIGHT[P][0] /= t;
+                        HISTORY_WEIGHT[P][1] /= t;
+                    }
+
                     init_stats(true);
                     dbg_clear();
                     executeBench(list, pos, states);
@@ -289,7 +315,8 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
 
         // print iteration best
         out << "=> BEST AUC=" << bestAUC << " Terms:";
-        for (int i = 0; i < N_HISTORY; ++i) {
+        for (int i = 0; i < N_HISTORY; ++i)
+        {
             if (BEST_HISTORY_WEIGHT[i][0] != 0)
             {
                 out << " " << BEST_HISTORY_WEIGHT[i][0] << "/" << BEST_HISTORY_WEIGHT[i][1] << "*"
@@ -297,7 +324,7 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
             }
         }
         out << std::endl << std::flush;
-        out << "--------------------------------------" << std::endl << std::flush; 
+        out << "--------------------------------------" << std::endl << std::flush;
     }
     out << "=> FINISHED: found no better solution" << std::endl << std::flush;
 }
