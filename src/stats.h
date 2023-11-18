@@ -54,9 +54,27 @@ extern std::vector<int> HISTORY_WEIGHT;
 extern int Dmax;
 extern int Dmin;
 
-constexpr int HISTORY_DIVISOR[N_HISTORY] = {7183,  8192,     7183,      29952, 29952, 29952, 29952,
-                                            29952, 29952,    10692,     14976, 14976, 7183,  7183,
-                                            7183,  7183 / 8, 16384 / 2, 25000, 25000};
+constexpr int HISTORY_RANGE[N_HISTORY][2] = {
+  {-7183,  7183    },
+  {-8192,  8192    },
+  {-7183,  7183    },
+  {-29952, 29952   },
+  {-29952, 29952   },
+  {-29952, 29952   },
+  {-29952, 29952   },
+  {-29952, 29952   },
+  {-29952, 29952   },
+  {-10692, 10692   },
+  {0,      29952   },
+  {-29952, 0       },
+  {-7183,  7183    },
+  {-7183,  7183    },
+  {0,      2 * 7183},
+  {-4096,  4096    },
+  {0,      16384   },
+  {0,      50000   },
+  {0,      50000   }
+};
 
 constexpr int HISTORY_SCALE_QUIET_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 4, 1, 1, 1, 1,
                                                         1, 1, 1, 1, 1, 1, 1, 1, 1};
@@ -83,11 +101,11 @@ constexpr int HISTORY_SCALE_CAPTURE_MAIN_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1,
 constexpr int HISTORY_WEIGHT_CAPTURE_MAIN_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                                                                0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-
+//###############################################################################
 constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                 1, 1, 1, 1, 1, 1, 1, 1, 1};
+                                                 1, 1, 1, 1, 1, 1, 1, 1, 2};
 constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                 0, 0, 0, 0, 0, 0, 0, 0, -1};
+                                                 0, 0, 0, 0, 0, 0, 0, 0, -3};
 
 void init_stats(bool onlyD = false);
 
