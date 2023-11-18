@@ -41,8 +41,8 @@ int Dmax, Dmin;
 //constexpr int EvCapOffset = -16778;
 //constexpr int EvCapWeight = 12;
 
-//constexpr int EvCapOffset = QueenValue;
-constexpr int EvCapOffset = (1 << 28);
+constexpr int EvCapOffset = QueenValue;
+//constexpr int EvCapOffset = (1 << 28);
 constexpr int EvCapWeight = 1;
 
 void init_stats(bool onlyD) {
@@ -153,9 +153,9 @@ void init_stats(bool onlyD) {
     {
         for (int i = 0; i < N_HISTORY; ++i)
         {
-            int S = HISTORY_SCALE_CAPTURE_MAIN_MASTER[i] * HISTORY_SCALE[i];
-            int W = HISTORY_WEIGHT_CAPTURE_MAIN_MASTER[i] * HISTORY_SCALE[i]
-                  + HISTORY_WEIGHT[i] * HISTORY_SCALE_CAPTURE_MAIN_MASTER[i];
+            int S = HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i];
+            int W = HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]
+                  + HISTORY_WEIGHT[i] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i];
             Dmax += HISTORY_RANGE[i][W > 0] * W / S;
             Dmin += HISTORY_RANGE[i][W <= 0] * W / S;
         }
