@@ -103,9 +103,9 @@ constexpr int HISTORY_WEIGHT_CAPTURE_MAIN_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0,
 
 //###############################################################################
 constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                 1, 1, 1, 1, 1, 1, 1, 1, 2};
+                                                 1, 1, 1, 1, 1, 1, 1, 1, 1};
 constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                 0, 0, 0, 0, 0, 0, 0, 0, -3};
+                                                 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 void init_stats(bool onlyD = false);
 
