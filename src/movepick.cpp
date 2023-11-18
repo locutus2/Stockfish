@@ -49,7 +49,7 @@ void calculateMinMax(StageType stage, int& Dmin, int& Dmax);
 void calculateMinMax(StageType stage, int& Min, int& Max) {
     for (int i = 0; i < N_HISTORY; ++i)
     {
-        int S = HISTORY_WEIGHT_MASTER[stage][i][0] * HISTORY_WEIGHT[i][1];
+        int S = HISTORY_WEIGHT_MASTER[stage][i][1] * HISTORY_WEIGHT[i][1];
         int W = HISTORY_WEIGHT_MASTER[stage][i][0] * HISTORY_WEIGHT[i][1]
               + HISTORY_WEIGHT[i][0] * HISTORY_WEIGHT_MASTER[stage][i][1];
         Max += HISTORY_RANGE[i][W > 0] * W / S;

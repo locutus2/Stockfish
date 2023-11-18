@@ -197,32 +197,6 @@ constexpr int HISTORY_WEIGHT_MASTER[N_STAGES][N_HISTORY][2] = {
   },
 };
 
-/*
-constexpr int HISTORY_SCALE_QUIET_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 4, 1, 1, 1, 1,
-                                                        1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_QUIET_MASTER[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0, 1, 0,
-                                                        0, 0, 0, 0, 0, 0, 1, 1, -1};
-
-constexpr int HISTORY_SCALE_QUIET_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                                1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_QUIET_EVASION_MASTER[N_HISTORY] = {1, 1, 0, 1, 0, 0, 0, 0, 0, 0,
-                                                                0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-constexpr int HISTORY_SCALE_CAPTURE_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                                  1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                  0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-constexpr int HISTORY_SCALE_REFUTATION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                             1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_REFUTATION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                             0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-constexpr int HISTORY_SCALE_CAPTURE_MAIN_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 16,
-                                                               1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_CAPTURE_MAIN_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
- */
-
 //###############################################################################
 constexpr int HISTORY_START[N_HISTORY][2] = {
   {0, 1}, // HISTORY_MAIN
