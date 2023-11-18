@@ -53,6 +53,28 @@ extern int HISTORY_WEIGHT[N_HISTORY][2];
 extern int Dmax;
 extern int Dmin;
 
+constexpr const char* HISTORY_NAME[N_HISTORY] = {
+  "main",
+  "pawn",
+  "incheck",
+  "cmh0",
+  "cmh1",
+  "cmh2",
+  "cmh3",
+  "cmh4",
+  "cmh5",
+  "capture",
+  "cmh0pos",
+  "cmh0neg",
+  "main_pawn",
+  "main_pawn_shift",
+  "main_shift_pawn_shift",
+  "ref_order",
+  "givesCheck",
+  "escape",
+  "enprise",
+};
+
 constexpr int HISTORY_RANGE[N_HISTORY][2] = {
   {-7183,  7183    },
   {-8192,  8192    },
@@ -277,11 +299,13 @@ constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
   // quiets
   //{-2, 1, "-2"   },
   {-1, 1, "-1"   },
+  {-3, 4, "-0.75"},
   {-1, 2, "-0.5" },
   {-1, 4, "-0.25"},
   {0,  1, "0"    },
   {1,  4, "0.25" },
   {1,  2, "0.5"  },
+  {3,  4, "0.75" },
   {1,  1, "1"    },
  //{2, 1, "2"   },
   /*
@@ -295,16 +319,22 @@ constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
   {1,  16, "1/16" },
   {2,  16, "1/8"  },
   */
+  //{3, 2, "1,5"   },
+  //{2, 1, "2"   },
 };
 
 constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
+  /*
+  {HISTORY_MAIN,        "main"      },
+  {HISTORY_GIVES_CHECK, "givesCheck"},
+  {HISTORY_ESCAPE,      "escape"    },
+  */
   //{HISTORY_CAPTURE, "capture"},
   {HISTORY_MAIN,        "main"      },
   {HISTORY_PAWN,        "pawn"      },
  //{HISTORY_INCHECK, "incheck"},
   {HISTORY_CMH0,        "cmh0"      },
   {HISTORY_CMH1,        "cmh1"      },
-  {HISTORY_CMH2,        "cmh2"      },
   {HISTORY_CMH3,        "cmh3"      },
   {HISTORY_CMH4,        "cmh4"      },
   {HISTORY_CMH5,        "cmh5"      },

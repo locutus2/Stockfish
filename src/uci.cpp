@@ -201,6 +201,107 @@ void executeBench(const std::vector<std::string>& list, Position& pos, StateList
     }
 }
 
+void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
+    std::vector<std::string> list = setup_bench(pos, args);
+
+    constexpr char SEP = ';';
+
+    auto tr = [](const std::string& str) -> std::string {
+        std::string s(str);
+        std::replace(s.begin(), s.end(), '.', ',');
+        return s;
+    };
+
+    // init
+    double bestAUC = -1, baseAUC = -2;
+    int BEST_HISTORY_WEIGHT[N_HISTORY][2];
+    int BASE_HISTORY_WEIGHT[N_HISTORY][2];
+
+    for (int i = 0; i < N_HISTORY; ++i)
+    {
+        BEST_HISTORY_WEIGHT[i][0] = HISTORY_START[i][0];
+        BEST_HISTORY_WEIGHT[i][1] = HISTORY_START[i][1];
+    }
+
+
+    // iterations
+    for (int it = 1; bestAUC > baseAUC; ++it)
+    {
+        out << "Iteration: " << it << std::endl << std::flush;
+
+        // use last best solution as base
+        baseAUC = bestAUC;
+        for (int i = 0; i < N_HISTORY; ++i)
+        {
+            BASE_HISTORY_WEIGHT[i][0] = BEST_HISTORY_WEIGHT[i][0];
+            BASE_HISTORY_WEIGHT[i][1] = BEST_HISTORY_WEIGHT[i][1];
+        }
+
+        out << "weight";
+        for (const auto& head : STATS_PARAMS)
+        {
+            out << SEP << std::get<1>(head);
+        }
+        out << std::endl << std::flush;
+
+        // search all combinations of steps and histories
+        for (const auto& step : STATS_STEPS)
+        {
+            out << tr(std::string(std::get<2>(step))) << std::flush;
+            double AUC = -1;
+
+            for (const auto& p : STATS_PARAMS)
+            {
+                if (AUC < 0 || std::get<0>(step) != 0)
+                {
+                    for (int i = 0; i < N_HISTORY; ++i)
+                    {
+                        HISTORY_WEIGHT[i][0] = BASE_HISTORY_WEIGHT[i][0];
+                        HISTORY_WEIGHT[i][1] = BASE_HISTORY_WEIGHT[i][1];
+                    }
+                    int P                = std::get<0>(p);
+                    int S                = std::get<1>(step);
+                    int W                = std::get<0>(step);
+                    HISTORY_WEIGHT[P][0] = HISTORY_WEIGHT[P][0] * S + W * HISTORY_START[P][1];
+                    HISTORY_WEIGHT[P][1] *= S;
+
+                    init_stats(true);
+                    dbg_clear();
+                    executeBench(list, pos, states);
+
+                    AUC = dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
+
+                    if (AUC > bestAUC)
+                    {
+                        // found new best
+                        bestAUC = AUC;
+                        for (int i = 0; i < N_HISTORY; ++i)
+                        {
+                            BEST_HISTORY_WEIGHT[i][0] = HISTORY_WEIGHT[i][0];
+                            BEST_HISTORY_WEIGHT[i][1] = HISTORY_WEIGHT[i][1];
+                        }
+                    }
+                }
+                out << SEP << tr(std::to_string(AUC)) << '%' << std::flush;
+            }
+            out << std::endl << std::flush;
+        }
+
+        // print iteration best
+        out << "=> BEST AUC=" << bestAUC << " Terms:";
+        for (int i = 0; i < N_HISTORY; ++i) {
+            if (BEST_HISTORY_WEIGHT[i][0] != 0)
+            {
+                out << " " << BEST_HISTORY_WEIGHT[i][0] << "/" << BEST_HISTORY_WEIGHT[i][1] << "*"
+                    << HISTORY_NAME[i];
+            }
+        }
+        out << std::endl << std::flush;
+        out << "--------------------------------------" << std::endl << std::flush; 
+    }
+    out << "=> FINISHED: found no better solution" << std::endl << std::flush;
+}
+
 void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
     std::vector<std::string> list = setup_bench(pos, args);
 
@@ -395,6 +496,8 @@ void UCI::loop(int argc, char* argv[]) {
             bench(pos, is, states);
         else if (token == "stats")
             stats(pos, is, states);
+        else if (token == "learn")
+            learn(pos, is, states);
         else if (token == "d")
             sync_cout << pos << sync_endl;
         else if (token == "eval")
