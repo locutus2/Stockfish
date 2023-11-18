@@ -48,8 +48,7 @@ enum HistoryType : int {
     N_HISTORY
 };
 
-extern std::vector<int> HISTORY_SCALE;
-extern std::vector<int> HISTORY_WEIGHT;
+extern int HISTORY_WEIGHT[N_HISTORY][2];
 
 extern int Dmax;
 extern int Dmin;
