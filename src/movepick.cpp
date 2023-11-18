@@ -65,8 +65,9 @@ void init_stats(bool onlyD) {
                   * std::abs(HISTORY_WEIGHT_QUIET_MASTER[i] * HISTORY_SCALE[i]
                              + HISTORY_WEIGHT[i] * HISTORY_SCALE_QUIET_MASTER[i])
                   / (HISTORY_SCALE_QUIET_MASTER[i] * HISTORY_SCALE[i]);
-        Dmax += 50000;
         Dmin = -Dmax;
+        Dmax += HISTORY_DIVISOR[HISTORY_ESCAPE];
+        Dmin += HISTORY_DIVISOR[HISTORY_EN_PRISE];
         Dmax += HISTORY_DIVISOR[HISTORY_GIVES_CHECK];
         Dmin += HISTORY_DIVISOR[HISTORY_GIVES_CHECK];
     }
@@ -374,31 +375,51 @@ void MovePicker::score() {
                 || (STATS_CAPTURE_EVASION_QS && Type == SCORE_EVASIONS && depth <= 0)
                 || (STATS_CAPTURE_MAIN && Type == SCORE_CAPTURES && depth > 0)))
         {
+            Piece     pc   = pos.moved_piece(m);
+            PieceType pt   = type_of(pos.moved_piece(m));
+            Square    from = from_sq(m);
+            Square    to   = to_sq(m);
+
             int V                 = 0;
             int values[N_HISTORY] = {
               (*mainHistory)[pos.side_to_move()][from_to(m)],
-              (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)],
+              (*pawnHistory)[pawn_structure(pos)][pc][to],
               pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
-              (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)],
-              (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)],
-              (*continuationHistory[2])[pos.moved_piece(m)][to_sq(m)],
-              (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)],
-              (*continuationHistory[4])[pos.moved_piece(m)][to_sq(m)],
-              (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)],
-              (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))],
-              std::max(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) - 14976,
-              std::min(int((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]), 0) + 14976,
+              (*continuationHistory[0])[pc][to],
+              (*continuationHistory[1])[pc][to],
+              (*continuationHistory[2])[pc][to],
+              (*continuationHistory[3])[pc][to],
+              (*continuationHistory[4])[pc][to],
+              (*continuationHistory[5])[pc][to],
+              (*captureHistory)[pc][to][type_of(pos.piece_on(to_sq(m)))],
+              std::max(int((*continuationHistory[0])[pc][to]), 0) - 14976,
+              std::min(int((*continuationHistory[0])[pc][to]), 0) + 14976,
               (*mainHistory)[pos.side_to_move()][from_to(m)]
-                * (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)] / 8192,
+                * (*pawnHistory)[pawn_structure(pos)][pc][to] / 8192,
               (*mainHistory)[pos.side_to_move()][from_to(m)]
-                * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                / (2 * 8192),
+                * (8192 + (*pawnHistory)[pawn_structure(pos)][pc][to]) / (2 * 8192),
               (7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
-                  * (8192 + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)])
-                  / (2 * 8192)
+                  * (8192 + (*pawnHistory)[pawn_structure(pos)][pc][to]) / (2 * 8192)
                 - 7183,
               (STATS_REFUTATION ? position[k] : 0),
-              (bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384 - 8291),
+              (bool(pos.check_squares(pt) & to) * 16384 - 8291),
+              (STATS_QUIETS && threatenedPieces & from
+                 ? (pt == QUEEN && !(to & threatenedByRook)   ? 50000
+                    : pt == ROOK && !(to & threatenedByMinor) ? 25000
+                    : !(to & threatenedByPawn)                ? 15000
+                                                              : 0)
+                 : 0)
+                - 25000,
+              (STATS_QUIETS && !(threatenedPieces & from)
+                 ? (pt == QUEEN
+                      ? bool(to & threatenedByRook) * 50000 + bool(to & threatenedByMinor) * 10000
+                          + bool(to & threatenedByPawn) * 20000
+                    : pt == ROOK
+                      ? bool(to & threatenedByMinor) * 25000 + bool(to & threatenedByPawn) * 10000
+                    : pt != PAWN ? bool(to & threatenedByPawn) * 15000
+                                 : 0)
+                 : 0)
+                - 25000,
             };
 
             for (int i = 0; i < N_HISTORY; ++i)

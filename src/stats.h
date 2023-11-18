@@ -43,6 +43,8 @@ enum HistoryType : int {
     HISTORY_MAIN_SHIFT_PAWN_SHIFT,
     HISTORY_REF_ORDER,
     HISTORY_GIVES_CHECK,
+    HISTORY_ESCAPE,
+    HISTORY_EN_PRISE,
     N_HISTORY
 };
 
@@ -52,38 +54,40 @@ extern std::vector<int> HISTORY_WEIGHT;
 extern int Dmax;
 extern int Dmin;
 
-constexpr int HISTORY_DIVISOR[N_HISTORY] = {7183,  8192,  7183,  29952,    29952,    29952,
-                                            29952, 29952, 29952, 10692,    14976,    14976,
-                                            7183,  7183,  7183,  7183 / 8, 16384 / 2};
+constexpr int HISTORY_DIVISOR[N_HISTORY] = {7183,  8192,     7183,      29952, 29952, 29952, 29952,
+                                            29952, 29952,    10692,     14976, 14976, 7183,  7183,
+                                            7183,  7183 / 8, 16384 / 2, 25000, 25000};
 
-constexpr int HISTORY_SCALE_QUIET_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 4, 1, 1, 1,
-                                                        1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_QUIET_MASTER[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0, 1,
-                                                        0, 0, 0, 0, 0, 0, 0, 1};
+constexpr int HISTORY_SCALE_QUIET_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 4, 1, 1, 1, 1,
+                                                        1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_QUIET_MASTER[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0, 1, 0,
+                                                        0, 0, 0, 0, 0, 0, 1, 1, -1};
 
-constexpr int HISTORY_SCALE_QUIET_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                                1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_QUIET_EVASION_MASTER[N_HISTORY] = {1, 1, 0, 1, 0, 0, 0, 0, 0,
-                                                                0, 0, 0, 0, 0, 0, 0, 0};
+constexpr int HISTORY_SCALE_QUIET_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                                                1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_QUIET_EVASION_MASTER[N_HISTORY] = {1, 1, 0, 1, 0, 0, 0, 0, 0, 0,
+                                                                0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-constexpr int HISTORY_SCALE_CAPTURE_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                                  1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                  0, 0, 0, 0, 0, 0, 0, 0};
+constexpr int HISTORY_SCALE_CAPTURE_EVASION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                                                  1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                  0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-constexpr int HISTORY_SCALE_REFUTATION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                             1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_REFUTATION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                             0, 0, 0, 0, 0, 0, 0, 0};
+constexpr int HISTORY_SCALE_REFUTATION_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                                             1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_REFUTATION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                             0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-constexpr int HISTORY_SCALE_CAPTURE_MAIN_MASTER[N_HISTORY]  = {1,  1, 1, 1, 1, 1, 1, 1, 1,
-                                                               16, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_CAPTURE_MAIN_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                               1, 0, 0, 0, 0, 0, 0, 0};
+constexpr int HISTORY_SCALE_CAPTURE_MAIN_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 16,
+                                                               1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_CAPTURE_MAIN_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+                                                               0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
-constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                                 1, 1, 1, 1, 1, 1, 1, 1, 1};
+constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 void init_stats(bool onlyD = false);
 
@@ -172,7 +176,9 @@ constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
   //{HISTORY_CMH3, "cmh3"},
   //{HISTORY_CMH4, "cmh4"},
   //{HISTORY_CMH5, "cmh5"},
-  {HISTORY_GIVES_CHECK, "givesCheck"},
+  //{HISTORY_GIVES_CHECK, "givesCheck"},
+  {HISTORY_ESCAPE,   "escape" },
+  {HISTORY_EN_PRISE, "enprise"},
  //{HISTORY_CMH0_POS, "cmh0_pos"},
   //{HISTORY_CMH0_NEG, "cmh0_neg"},
   //{HISTORY_REF_ORDER, "k1k2cm"},
