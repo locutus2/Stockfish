@@ -87,7 +87,7 @@ constexpr int HISTORY_WEIGHT_CAPTURE_MAIN_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0,
 constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                                                  1, 1, 1, 1, 1, 1, 1, 1, 1};
 constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                                                 0, 0, 0, 0, 0, 0, 0, 0, -1};
 
 void init_stats(bool onlyD = false);
 
@@ -99,6 +99,7 @@ constexpr int  HISTORY_BUCKETS     = 10000;
 constexpr bool USE_DEPTH_WEIGHT    = true;
 constexpr bool USE_ONLY_RANK       = true;
 constexpr bool USE_FULL_QUIET_SORT = false;
+constexpr bool MEASURE_BIAS        = true;
 
 constexpr bool STATS_REFUTATION           = false;
 constexpr bool STATS_QUIETS               = true;
