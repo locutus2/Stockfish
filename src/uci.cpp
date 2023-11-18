@@ -242,6 +242,16 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         BEST_HISTORY_WEIGHT[i][1] = HISTORY_START[i][1];
     }
 
+    out << "=> START solution: ";
+    for (int i = 0; i < N_HISTORY; ++i)
+    {
+        if (BEST_HISTORY_WEIGHT[i][0] != 0)
+        {
+            out << " " << BEST_HISTORY_WEIGHT[i][0] << "/" << BEST_HISTORY_WEIGHT[i][1] << "*"
+                << HISTORY_NAME[i];
+        }
+    }
+    out << std::endl << std::flush;
 
     // iterations
     for (int it = 1; bestAUC > baseAUC; ++it)
