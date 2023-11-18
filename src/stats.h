@@ -92,6 +92,7 @@ void init_stats(bool onlyD = false);
 
 constexpr int  HISTORY_BUCKETS  = 10000;
 constexpr bool USE_DEPTH_WEIGHT = true;
+constexpr bool USE_ONLY_RANK    = true;
 
 constexpr bool STATS_REFUTATION           = false;
 constexpr bool STATS_QUIETS               = false;
@@ -142,19 +143,19 @@ constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
   {3, 2, "1.5" },
   {2, 1, "2"   },
   */
-  {-1, 16, "-1/16"   },
-  {-1, 32, "-1/32"   },
-  {-1, 64, "-1/64"   },
-  {0, 1, "0"   },
-  {1, 64, "1/64"   },
-  {1, 32, "1/32"   },
-  {1, 16, "1/16"   },
-  {2, 16, "1/8"   },
+  {-1, 16, "-1/16"},
+  {-1, 32, "-1/32"},
+  {-1, 64, "-1/64"},
+  {0,  1,  "0"    },
+  {1,  64, "1/64" },
+  {1,  32, "1/32" },
+  {1,  16, "1/16" },
+  {2,  16, "1/8"  },
 };
 
 constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
-  {HISTORY_CAPTURE,    "capture"   },
-  //{HISTORY_MAIN,    "main"   },
+  {HISTORY_CAPTURE, "capture"},
+ //{HISTORY_MAIN,    "main"   },
   //{HISTORY_PAWN,    "pawn"   },
   //{HISTORY_INCHECK, "incheck"},
   //{HISTORY_CMH0,    "cmh0"   },

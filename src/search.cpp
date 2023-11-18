@@ -934,6 +934,7 @@ moves_loop:  // When in check, search starts here
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     ExtMove extmove;
+    int     rank = 0;
     while ((move = extmove = mp.next_move(moveCountPruning)) != MOVE_NONE)
     {
         assert(is_ok(move));
@@ -1319,8 +1320,17 @@ moves_loop:  // When in check, search starts here
                                 + ((STATS_QUIET_EVASION_MAIN && STATS_QUIET_EVASION_QS)
                                    || (STATS_CAPTURE_EVASION_MAIN && STATS_CAPTURE_EVASION_QS)))
                           : 1;
-            int  index  = getBucket(V);
-            dbg_hit_on(T, index, weight);
+
+            if (USE_ONLY_RANK)
+            {
+                ++rank;
+                dbg_hit_on(T, -rank, weight);
+            }
+            else
+            {
+                int index = getBucket(V);
+                dbg_hit_on(T, index, weight);
+            }
         }
 
         if (value > bestValue)
@@ -1540,6 +1550,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
     // Step 5. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     ExtMove extmove;
+    int     rank = 0;
     while ((extmove = mp.next_move()) != MOVE_NONE)
     {
         move = extmove.move;
@@ -1636,8 +1647,16 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
         if (CC)
         {
             bool T     = value > alpha;
-            int  index = getBucket(V);
-            dbg_hit_on(T, index);
+            if (USE_ONLY_RANK)
+            {
+                ++rank;
+                dbg_hit_on(T, -rank);
+            }
+            else
+            {
+                int index = getBucket(V);
+                dbg_hit_on(T, index);
+            }
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
