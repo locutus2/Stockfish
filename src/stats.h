@@ -94,13 +94,13 @@ constexpr int  HISTORY_BUCKETS  = 10000;
 constexpr bool USE_DEPTH_WEIGHT = true;
 constexpr bool USE_ONLY_RANK    = true;
 
-constexpr bool STATS_REFUTATION           = false;
+constexpr bool STATS_REFUTATION           = true;
 constexpr bool STATS_QUIETS               = false;
 constexpr bool STATS_QUIET_EVASION_MAIN   = false;
 constexpr bool STATS_QUIET_EVASION_QS     = false;
 constexpr bool STATS_CAPTURE_EVASION_MAIN = false;
 constexpr bool STATS_CAPTURE_EVASION_QS   = false;
-constexpr bool STATS_CAPTURE_MAIN         = true;
+constexpr bool STATS_CAPTURE_MAIN         = false;
 
 static_assert(!(STATS_REFUTATION
                 && (STATS_QUIETS || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS
@@ -131,18 +131,23 @@ static_assert(!(STATS_CAPTURE_MAIN
 // uci stats command
 
 constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
-  //{-2, 1, "-2"   },
-  //{-1, 1, "-1"   },
-  //{-1, 2, "-0.5" },
-  //{-1, 4, "-0.25"},
+  // refutations
+  {0, 1, "0"   },
+  {1, 1, "1"   },
   /*
+  // quiets
+  //{-2, 1, "-2"   },
+  {-1, 1, "-1"   },
+  {-1, 2, "-0.5" },
+  {-1, 4, "-0.25"},
   {0, 1, "0"   },
   {1, 4, "0.25"},
   {1, 2, "0.5" },
   {1, 1, "1"   },
-  {3, 2, "1.5" },
-  {2, 1, "2"   },
+  //{2, 1, "2"   },
   */
+  /*
+  // captures
   {-1, 16, "-1/16"},
   {-1, 32, "-1/32"},
   {-1, 64, "-1/64"},
@@ -151,19 +156,20 @@ constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
   {1,  32, "1/32" },
   {1,  16, "1/16" },
   {2,  16, "1/8"  },
+  */
 };
 
 constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
-  {HISTORY_CAPTURE, "capture"},
- //{HISTORY_MAIN,    "main"   },
-  //{HISTORY_PAWN,    "pawn"   },
+  //{HISTORY_CAPTURE, "capture"},
+ {HISTORY_MAIN,    "main"   },
+  {HISTORY_PAWN,    "pawn"   },
   //{HISTORY_INCHECK, "incheck"},
-  //{HISTORY_CMH0,    "cmh0"   },
-  //{HISTORY_CMH1,    "cmh1"   },
-  //{HISTORY_CMH2,    "cmh2"   },
-  //{HISTORY_CMH3,    "cmh3"   },
-  //{HISTORY_CMH4,    "cmh4"   },
-  //{HISTORY_CMH5,    "cmh5"   },
+  {HISTORY_CMH0,    "cmh0"   },
+  {HISTORY_CMH1,    "cmh1"   },
+  {HISTORY_CMH2,    "cmh2"   },
+  {HISTORY_CMH3,    "cmh3"   },
+  {HISTORY_CMH4,    "cmh4"   },
+  {HISTORY_CMH5,    "cmh5"   },
   //{HISTORY_CMH0_POS, "cmh0_pos"},
   //{HISTORY_CMH0_NEG, "cmh0_neg"},
   //{HISTORY_REF_ORDER, "k1k2cm"},
