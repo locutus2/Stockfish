@@ -173,6 +173,7 @@ class MovePicker {
     bool    isQuiet() const;
     bool    isEvasion() const;
     bool    isRefutation() const;
+    bool    isCapture() const;
 
    private:
     template<PickType T, typename Pred>

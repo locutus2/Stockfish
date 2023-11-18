@@ -1136,6 +1136,8 @@ moves_loop:  // When in check, search starts here
             CC = CC && mp.isEvasion() && !capture;
         else if (STATS_CAPTURE_EVASION_MAIN)
             CC = CC && mp.isEvasion() && capture;
+        else if (STATS_CAPTURE_MAIN)
+            CC = CC && mp.isCapture();
         else if (STATS_REFUTATION)
             CC = CC && mp.isRefutation();
         else if (STATS_QUIETS)

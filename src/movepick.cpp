@@ -74,21 +74,21 @@ void init_stats(bool onlyD) {
         int DmaxCap = 0;
         for (int i = 0; i < N_HISTORY; ++i)
             DmaxCap += HISTORY_DIVISOR[i]
-                  * std::abs(HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]
-                             + HISTORY_WEIGHT[i] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i])
-                  / (HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]);
+                     * std::abs(HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]
+                                + HISTORY_WEIGHT[i] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i])
+                     / (HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]);
         int DminCap = -DmaxCap;
-        DmaxCap += CapWeight*QueenValue;
-        DminCap -= CapWeight*int(KING);
+        DmaxCap += CapWeight * QueenValue;
+        DminCap -= CapWeight * int(KING);
         DmaxCap += CapOffset;
         DminCap += CapOffset;
 
         int DmaxQuiet = 0;
         for (int i = 0; i < N_HISTORY; ++i)
             DmaxQuiet += HISTORY_DIVISOR[i]
-                  * std::abs(HISTORY_WEIGHT_QUIET_EVASION_MASTER[i] * HISTORY_SCALE[i]
-                             + HISTORY_WEIGHT[i] * HISTORY_SCALE_QUIET_EVASION_MASTER[i])
-                  / (HISTORY_SCALE_QUIET_EVASION_MASTER[i] * HISTORY_SCALE[i]);
+                       * std::abs(HISTORY_WEIGHT_QUIET_EVASION_MASTER[i] * HISTORY_SCALE[i]
+                                  + HISTORY_WEIGHT[i] * HISTORY_SCALE_QUIET_EVASION_MASTER[i])
+                       / (HISTORY_SCALE_QUIET_EVASION_MASTER[i] * HISTORY_SCALE[i]);
         int DminQuiet = -DmaxQuiet;
 
         Dmax = std::max(DmaxCap, DmaxQuiet);
@@ -111,8 +111,8 @@ void init_stats(bool onlyD) {
                              + HISTORY_WEIGHT[i] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i])
                   / (HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]);
         Dmin = -Dmax;
-        Dmax += CapWeight*QueenValue;
-        Dmin -= CapWeight*int(KING);
+        Dmax += CapWeight * QueenValue;
+        Dmin -= CapWeight * int(KING);
         Dmax += CapOffset;
         Dmin += CapOffset;
     }
@@ -126,10 +126,20 @@ void init_stats(bool onlyD) {
         Dmax = std::max(Dmax, 1);
         Dmin = -Dmax;
     }
+    else if (STATS_CAPTURE_MAIN)
+    {
+        for (int i = 0; i < N_HISTORY; ++i)
+            Dmax += HISTORY_DIVISOR[i]
+                  * std::abs(HISTORY_WEIGHT_CAPTURE_MAIN_MASTER[i] * HISTORY_SCALE[i]
+                             + HISTORY_WEIGHT[i] * HISTORY_SCALE_CAPTURE_MAIN_MASTER[i])
+                  / (HISTORY_SCALE_CAPTURE_MAIN_MASTER[i] * HISTORY_SCALE[i]);
+        Dmin = -Dmax;
+        Dmax += 7 * QueenValue / 16;
+    }
 
 
     Dmax = std::max(Dmax, 1);
-    std::cerr << "[" << Dmin << "|" << Dmax << "]" << std::flush << std::endl;
+    //std::cerr << "[" << Dmin << "|" << Dmax << "]" << std::flush << std::endl;
     //std::exit(1);
 }
 
@@ -337,18 +347,20 @@ void MovePicker::score() {
         {
             if (pos.capture_stage(m))
             {
-                m.value = CapWeight*(PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m))))
-                        + CapOffset;
-                dbg_mean_of(m.value-CapOffset, 100);
-                dbg_stdev_of(m.value-CapOffset, 100);
+                m.value =
+                  CapWeight
+                    * (PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m))))
+                  + CapOffset;
+                //dbg_mean_of(m.value - CapOffset, 100);
+                //dbg_stdev_of(m.value - CapOffset, 100);
             }
             else
             {
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                         + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
-                dbg_mean_of(m.value, 101);
-                dbg_stdev_of(m.value, 101);
+                //dbg_mean_of(m.value, 101);
+                //dbg_stdev_of(m.value, 101);
             }
         }
 
@@ -358,7 +370,8 @@ void MovePicker::score() {
                 || (STATS_QUIET_EVASION_MAIN && Type == SCORE_EVASIONS && depth > 0)
                 || (STATS_QUIET_EVASION_QS && Type == SCORE_EVASIONS && depth <= 0)
                 || (STATS_CAPTURE_EVASION_MAIN && Type == SCORE_EVASIONS && depth > 0)
-                || (STATS_CAPTURE_EVASION_QS && Type == SCORE_EVASIONS && depth <= 0)))
+                || (STATS_CAPTURE_EVASION_QS && Type == SCORE_EVASIONS && depth <= 0)
+                || (STATS_CAPTURE_MAIN && Type == SCORE_CAPTURES && depth > 0)))
         {
             int V                 = 0;
             int values[N_HISTORY] = {
@@ -418,6 +431,7 @@ ExtMove MovePicker::select(Pred filter) {
 bool MovePicker::isQuiet() const { return stage == QUIET; }
 bool MovePicker::isEvasion() const { return stage == EVASION; }
 bool MovePicker::isRefutation() const { return stage == REFUTATION; }
+bool MovePicker::isCapture() const { return stage == GOOD_CAPTURE || stage == BAD_CAPTURE; }
 
 // Most important method of the MovePicker class. It
 // returns a new pseudo-legal move every time it is called until there are no more
