@@ -500,7 +500,10 @@ top:
             endMoves = generate<QUIETS>(pos, cur);
 
             score<SCORE_QUIETS>();
-            partial_insertion_sort(cur, endMoves, -1960 - 3130 * depth /*+ 1114 + 24 * depth*/);
+            if (USE_FULL_QUIET_SORT)
+                partial_insertion_sort(cur, endMoves, std::numeric_limits<int>::min());
+            else
+                partial_insertion_sort(cur, endMoves, -1960 - 3130 * depth /*+ 1114 + 24 * depth*/);
         }
 
         ++stage;
