@@ -44,6 +44,19 @@ constexpr int EvCapOffset = QueenValue;
 //constexpr int EvCapOffset = (1 << 28);
 constexpr int EvCapWeight = 1;
 
+void calculateMinMax(StageType stage, int& Dmin, int& Dmax);
+
+void calculateMinMax(StageType stage, int& Min, int& Max) {
+    for (int i = 0; i < N_HISTORY; ++i)
+    {
+        int S = HISTORY_WEIGHT_MASTER[stage][i][0] * HISTORY_WEIGHT[i][1];
+        int W = HISTORY_WEIGHT_MASTER[stage][i][0] * HISTORY_WEIGHT[i][1]
+              + HISTORY_WEIGHT[i][0] * HISTORY_WEIGHT_MASTER[stage][i][1];
+        Max += HISTORY_RANGE[i][W > 0] * W / S;
+        Min += HISTORY_RANGE[i][W <= 0] * W / S;
+    }
+}
+
 void init_stats(bool onlyD) {
 
     if (!onlyD)
@@ -57,38 +70,27 @@ void init_stats(bool onlyD) {
 
     Dmax = 0;
     Dmin = 0;
+
     if (STATS_QUIETS)
     {
-        for (int i = 0; i < N_HISTORY; ++i)
-        {
-            int S = HISTORY_SCALE_QUIET_MASTER[i] * HISTORY_WEIGHT[i][1];
-            int W = HISTORY_WEIGHT_QUIET_MASTER[i] * HISTORY_WEIGHT[i][1]
-                  + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_QUIET_MASTER[i];
-            Dmax += HISTORY_RANGE[i][W > 0] * W / S;
-            Dmin += HISTORY_RANGE[i][W <= 0] * W / S;
-        }
-        /*
-        Dmin = -Dmax;
-        Dmax -= HISTORY_DIVISOR_OFFSET[HISTORY_GIVES_CHECK] * HISTORY_WEIGHT_QUIET_MASTER[HISTORY_GIVES_CHECK] * HISTORY_SCALE_QUIET_MASTER[HISTORY_GIVES_CHECK];
-        Dmin -= HISTORY_DIVISOR_OFFSET[HISTORY_GIVES_CHECK] * HISTORY_WEIGHT_QUIET_MASTER[HISTORY_GIVES_CHECK] * HISTORY_SCALE_QUIET_MASTER[HISTORY_GIVES_CHECK];
-        Dmax -= HISTORY_DIVISOR_OFFSET[HISTORY_ESCAPE] * HISTORY_WEIGHT_QUIET_MASTER[HISTORY_ESCAPE] * HISTORY_SCALE_QUIET_MASTER[HISTORY_ESCAPE];
-        Dmin -= HISTORY_DIVISOR_OFFSET[HISTORY_ESCAPE] * HISTORY_WEIGHT_QUIET_MASTER[HISTORY_ESCAPE] * HISTORY_SCALE_QUIET_MASTER[HISTORY_ESCAPE];
-        Dmax -= HISTORY_DIVISOR_OFFSET[HISTORY_EN_PRISE] * HISTORY_WEIGHT_QUIET_MASTER[HISTORY_EN_PRISE] * HISTORY_SCALE_QUIET_MASTER[HISTORY_EN_PRISE];
-        Dmin -= HISTORY_DIVISOR_OFFSET[HISTORY_EN_PRISE] * HISTORY_WEIGHT_QUIET_MASTER[HISTORY_EN_PRISE] * HISTORY_SCALE_QUIET_MASTER[HISTORY_EN_PRISE];
-        */
+        calculateMinMax(STAGE_QUIETS, Dmin, Dmax);
+    }
+    else if (STATS_REFUTATION)
+    {
+        Dmax = 1;
+        Dmax = -1;
+        calculateMinMax(STAGE_REFUTATIONS, Dmin, Dmax);
+    }
+    else if (STATS_CAPTURE_MAIN)
+    {
+        calculateMinMax(STAGE_CAPTURES_MAIN, Dmin, Dmax);
+        Dmax += 7 * QueenValue / 16;
     }
     else if (STATS_QUIET_EVASION_MAIN && STATS_CAPTURE_EVASION_MAIN)
     {
         int DmaxCap = 0;
         int DminCap = 0;
-        for (int i = 0; i < N_HISTORY; ++i)
-        {
-            int S = HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1];
-            int W = HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]
-                  + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i];
-            DmaxCap += HISTORY_RANGE[i][W > 0] * W / S;
-            DminCap += HISTORY_RANGE[i][W <= 0] * W / S;
-        }
+        calculateMinMax(STAGE_CAPTURE_EVASIONS, DminCap, DmaxCap);
         DmaxCap += EvCapWeight * QueenValue;
         DminCap -= EvCapWeight * int(KING);
         DmaxCap += EvCapOffset;
@@ -96,122 +98,23 @@ void init_stats(bool onlyD) {
 
         int DmaxQuiet = 0;
         int DminQuiet = 0;
-        for (int i = 0; i < N_HISTORY; ++i)
-        {
-            int S = HISTORY_SCALE_QUIET_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1];
-            int W = HISTORY_WEIGHT_QUIET_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]
-                  + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_QUIET_EVASION_MASTER[i];
-            DmaxQuiet += HISTORY_RANGE[i][W > 0] * W / S;
-            DminQuiet += HISTORY_RANGE[i][W <= 0] * W / S;
-        }
-        /*
-        int DmaxCap = 0;
-        for (int i = 0; i < N_HISTORY; ++i)
-            DmaxCap += HISTORY_DIVISOR[i]
-                     * std::abs(HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]
-                                + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i])
-                     / (HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]);
-        int DminCap = -DmaxCap;
-        DmaxCap += EvCapWeight * QueenValue;
-        DminCap -= EvCapWeight * int(KING);
-        DmaxCap += EvCapOffset;
-        DminCap += EvCapOffset;
-
-        int DmaxQuiet = 0;
-        for (int i = 0; i < N_HISTORY; ++i)
-            DmaxQuiet += HISTORY_DIVISOR[i]
-                       * std::abs(HISTORY_WEIGHT_QUIET_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]
-                                  + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_QUIET_EVASION_MASTER[i])
-                       / (HISTORY_SCALE_QUIET_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]);
-        int DminQuiet = -DmaxQuiet;
-        */
+        calculateMinMax(STAGE_QUIET_EVASIONS, DminQuiet, DmaxQuiet);
 
         Dmax = std::max(DmaxCap, DmaxQuiet);
         Dmin = std::min(DminCap, DminQuiet);
     }
     else if (STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS)
     {
-        for (int i = 0; i < N_HISTORY; ++i)
-        {
-            int S = HISTORY_SCALE_QUIET_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1];
-            int W = HISTORY_WEIGHT_QUIET_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]
-                  + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_QUIET_EVASION_MASTER[i];
-            Dmax += HISTORY_RANGE[i][W > 0] * W / S;
-            Dmin += HISTORY_RANGE[i][W <= 0] * W / S;
-        }
-        /*
-        for (int i = 0; i < N_HISTORY; ++i)
-            Dmax += HISTORY_DIVISOR[i]
-                  * std::abs(HISTORY_WEIGHT_QUIET_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]
-                             + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_QUIET_EVASION_MASTER[i])
-                  / (HISTORY_SCALE_QUIET_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]);
-        Dmin = -Dmax;
-        */
+        calculateMinMax(STAGE_QUIET_EVASIONS, Dmin, Dmax);
     }
     else if (STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)
     {
-        for (int i = 0; i < N_HISTORY; ++i)
-        {
-            int S = HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1];
-            int W = HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]
-                  + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i];
-            Dmax += HISTORY_RANGE[i][W > 0] * W / S;
-            Dmin += HISTORY_RANGE[i][W <= 0] * W / S;
-        }
-        /*
-        for (int i = 0; i < N_HISTORY; ++i)
-            Dmax += HISTORY_DIVISOR[i]
-                  * std::abs(HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]
-                             + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i])
-                  / (HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_WEIGHT[i][1]);
-        Dmin = -Dmax;
-        Dmax += EvCapOffset;
-        Dmin += EvCapOffset;
-        */
+        calculateMinMax(STAGE_CAPTURE_EVASIONS, Dmin, Dmax);
         Dmax += EvCapWeight * QueenValue;
         Dmin -= EvCapWeight * int(KING);
+        Dmax += EvCapOffset;
+        Dmin += EvCapOffset;
     }
-    else if (STATS_REFUTATION)
-    {
-        for (int i = 0; i < N_HISTORY; ++i)
-        {
-            int S = HISTORY_SCALE_REFUTATION_MASTER[i] * HISTORY_WEIGHT[i][1];
-            int W = HISTORY_WEIGHT_REFUTATION_MASTER[i] * HISTORY_WEIGHT[i][1]
-                  + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_REFUTATION_MASTER[i];
-            Dmax += HISTORY_RANGE[i][W > 0] * W / S;
-            Dmin += HISTORY_RANGE[i][W <= 0] * W / S;
-        }
-        /*
-        for (int i = 0; i < N_HISTORY; ++i)
-            Dmax += HISTORY_DIVISOR[i]
-                  * std::abs(HISTORY_WEIGHT_REFUTATION_MASTER[i] * HISTORY_WEIGHT[i][1]
-                             + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_REFUTATION_MASTER[i])
-                  / (HISTORY_SCALE_REFUTATION_MASTER[i] * HISTORY_WEIGHT[i][1]);
-        Dmax = std::max(Dmax, 1);
-        Dmin = -Dmax;
-        */
-    }
-    else if (STATS_CAPTURE_MAIN)
-    {
-        for (int i = 0; i < N_HISTORY; ++i)
-        {
-            int S = HISTORY_SCALE_CAPTURE_MAIN_MASTER[i] * HISTORY_WEIGHT[i][1];
-            int W = HISTORY_WEIGHT_CAPTURE_MAIN_MASTER[i] * HISTORY_WEIGHT[i][1]
-                  + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_CAPTURE_MAIN_MASTER[i];
-            Dmax += HISTORY_RANGE[i][W > 0] * W / S;
-            Dmin += HISTORY_RANGE[i][W <= 0] * W / S;
-        }
-        /*
-        for (int i = 0; i < N_HISTORY; ++i)
-            Dmax += HISTORY_DIVISOR[i]
-                  * std::abs(HISTORY_WEIGHT_CAPTURE_MAIN_MASTER[i] * HISTORY_WEIGHT[i][1]
-                             + HISTORY_WEIGHT[i][0] * HISTORY_SCALE_CAPTURE_MAIN_MASTER[i])
-                  / (HISTORY_SCALE_CAPTURE_MAIN_MASTER[i] * HISTORY_WEIGHT[i][1]);
-        Dmin = -Dmax;
-        */
-        Dmax += 7 * QueenValue / 16;
-    }
-
 
     Dmax = std::max(Dmax, Dmin + 1);
     //std::cerr << "[" << Dmin << "|" << Dmax << "]" << std::flush << std::endl;
