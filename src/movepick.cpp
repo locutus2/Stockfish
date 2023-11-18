@@ -67,7 +67,8 @@ void init_stats(bool onlyD) {
                   / (HISTORY_SCALE_QUIET_MASTER[i] * HISTORY_SCALE[i]);
         Dmax += 50000;
         Dmin = -Dmax;
-        Dmax += 16384;
+        Dmax += HISTORY_DIVISOR[HISTORY_GIVES_CHECK];
+        Dmin += HISTORY_DIVISOR[HISTORY_GIVES_CHECK];
     }
     else if (STATS_QUIET_EVASION_MAIN && STATS_CAPTURE_EVASION_MAIN)
     {
@@ -397,6 +398,7 @@ void MovePicker::score() {
                   / (2 * 8192)
                 - 7183,
               (STATS_REFUTATION ? position[k] : 0),
+              (bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 16384 - 8291),
             };
 
             for (int i = 0; i < N_HISTORY; ++i)
@@ -404,9 +406,9 @@ void MovePicker::score() {
 
             m.value += V;
             k++;
-            int weight = getWeight(depth);
-            dbg_mean_of(V, 0, weight);
-            dbg_mean_of(V, depth, weight);
+            //int weight = getWeight(depth);
+            //dbg_mean_of(V, 0, weight);
+            //dbg_mean_of(V, depth, weight);
         }
     }
 }
