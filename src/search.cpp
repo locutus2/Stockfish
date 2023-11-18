@@ -1314,13 +1314,7 @@ moves_loop:  // When in check, search starts here
         if (CC)
         {
             bool T      = value > alpha;
-            int  weight = USE_DEPTH_WEIGHT
-                          ? depth
-                             * (1
-                                + ((STATS_QUIET_EVASION_MAIN && STATS_QUIET_EVASION_QS)
-                                   || (STATS_CAPTURE_EVASION_MAIN && STATS_CAPTURE_EVASION_QS)))
-                          : 1;
-
+            int  weight = getWeight(depth);
             if (USE_ONLY_RANK)
             {
                 dbg_hit_on(T, rank, weight);
@@ -1646,16 +1640,17 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
         if (CC)
         {
-            bool T = value > alpha;
+            bool T      = value > alpha;
+            int  weight = getWeight(depth);
             if (USE_ONLY_RANK)
             {
-                dbg_hit_on(T, rank);
+                dbg_hit_on(T, rank, weight);
                 ++rank;
             }
             else
             {
                 int index = getBucket(V);
-                dbg_hit_on(T, index);
+                dbg_hit_on(T, index, weight);
             }
         }
 

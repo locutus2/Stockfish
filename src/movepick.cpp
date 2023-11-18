@@ -404,8 +404,9 @@ void MovePicker::score() {
 
             m.value += V;
             k++;
-            //dbg_mean_of(V,0);
-            //dbg_mean_of(V,depth);
+            int weight = getWeight(depth);
+            dbg_mean_of(V, 0, weight);
+            dbg_mean_of(V, depth, weight);
         }
     }
 }
