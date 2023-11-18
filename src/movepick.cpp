@@ -404,9 +404,11 @@ void MovePicker::score() {
 
             m.value += V;
             k++;
+            /*
             int weight = getWeight(depth);
             dbg_mean_of(V, 0, weight);
             dbg_mean_of(V, depth, weight);
+            */
         }
     }
 }
@@ -498,7 +500,7 @@ top:
             endMoves = generate<QUIETS>(pos, cur);
 
             score<SCORE_QUIETS>();
-            partial_insertion_sort(cur, endMoves, -1960 - 3130 * depth);
+            partial_insertion_sort(cur, endMoves, -1960 - 3130 * depth /*+ 1114 + 24 * depth*/);
         }
 
         ++stage;
