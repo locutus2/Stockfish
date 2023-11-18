@@ -134,15 +134,26 @@ constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
   //{-1, 1, "-1"   },
   //{-1, 2, "-0.5" },
   //{-1, 4, "-0.25"},
+  /*
   {0, 1, "0"   },
   {1, 4, "0.25"},
   {1, 2, "0.5" },
   {1, 1, "1"   },
   {3, 2, "1.5" },
   {2, 1, "2"   },
+  */
+  {-1, 16, "-1/16"   },
+  {-1, 32, "-1/32"   },
+  {-1, 64, "-1/64"   },
+  {0, 1, "0"   },
+  {1, 64, "1/64"   },
+  {1, 32, "1/32"   },
+  {1, 16, "1/16"   },
+  {2, 16, "1/8"   },
 };
 
 constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
+  {HISTORY_CAPTURE,    "capture"   },
   //{HISTORY_MAIN,    "main"   },
   //{HISTORY_PAWN,    "pawn"   },
   //{HISTORY_INCHECK, "incheck"},
@@ -154,7 +165,7 @@ constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
   //{HISTORY_CMH5,    "cmh5"   },
   //{HISTORY_CMH0_POS, "cmh0_pos"},
   //{HISTORY_CMH0_NEG, "cmh0_neg"},
-  {HISTORY_REF_ORDER, "k1k2cm"},
+  //{HISTORY_REF_ORDER, "k1k2cm"},
 };
 
 inline int getBucket(int V) {
