@@ -76,8 +76,8 @@ constexpr int HISTORY_WEIGHT_REFUTATION_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0
                                                              0, 0, 0, 0, 0, 0, 0, 0};
 
 constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0};
-//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+//constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0};
 //constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 void init_stats(bool onlyD = false);
@@ -91,7 +91,7 @@ constexpr bool USE_DEPTH_WEIGHT = true;
 
 constexpr bool STATS_REFUTATION           = false;
 constexpr bool STATS_QUIETS               = false;
-constexpr bool STATS_QUIET_EVASION_MAIN   = false;
+constexpr bool STATS_QUIET_EVASION_MAIN   = true;
 constexpr bool STATS_QUIET_EVASION_QS     = false;
 constexpr bool STATS_CAPTURE_EVASION_MAIN = true;
 constexpr bool STATS_CAPTURE_EVASION_QS   = false;
@@ -103,16 +103,16 @@ static_assert(!(STATS_QUIETS
                 && (STATS_REFUTATION || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS
                     || STATS_CAPTURE_EVASION_MAIN || STATS_CAPTURE_EVASION_QS)));
 static_assert(!(STATS_QUIET_EVASION_MAIN
-                && (STATS_REFUTATION || STATS_QUIETS || STATS_CAPTURE_EVASION_MAIN
+                && (STATS_REFUTATION || STATS_QUIETS //|| STATS_CAPTURE_EVASION_MAIN
                     || STATS_CAPTURE_EVASION_QS)));
 static_assert(!(STATS_QUIET_EVASION_QS
-                && (STATS_REFUTATION || STATS_QUIETS || STATS_CAPTURE_EVASION_MAIN
+                && (STATS_REFUTATION || STATS_QUIETS //|| STATS_CAPTURE_EVASION_MAIN
                     || STATS_CAPTURE_EVASION_QS)));
 static_assert(!(STATS_CAPTURE_EVASION_MAIN
-                && (STATS_REFUTATION || STATS_QUIETS || STATS_QUIET_EVASION_MAIN
+                && (STATS_REFUTATION || STATS_QUIETS //|| STATS_QUIET_EVASION_MAIN
                     || STATS_QUIET_EVASION_QS)));
 static_assert(!(STATS_CAPTURE_EVASION_QS
-                && (STATS_REFUTATION || STATS_QUIETS || STATS_QUIET_EVASION_MAIN
+                && (STATS_REFUTATION || STATS_QUIETS //|| STATS_QUIET_EVASION_MAIN
                     || STATS_QUIET_EVASION_QS)));
 
 //---------------

@@ -35,6 +35,15 @@ std::vector<int> HISTORY_SCALE(N_HISTORY);
 std::vector<int> HISTORY_WEIGHT(N_HISTORY);
 
 int Dmax, Dmin;
+//constexpr int CapOffset = (1 << 28);
+//constexpr int CapOffset = 45334;
+//constexpr int CapWeight = 1;
+
+//constexpr int CapOffset = -16778;
+//constexpr int CapWeight = 12;
+
+constexpr int CapOffset = QueenValue;
+constexpr int CapWeight = 4;
 
 void init_stats(bool onlyD) {
 
@@ -60,6 +69,31 @@ void init_stats(bool onlyD) {
         Dmin = -Dmax;
         Dmax += 16384;
     }
+    else if (STATS_QUIET_EVASION_MAIN && STATS_CAPTURE_EVASION_MAIN)
+    {
+        int DmaxCap = 0;
+        for (int i = 0; i < N_HISTORY; ++i)
+            DmaxCap += HISTORY_DIVISOR[i]
+                  * std::abs(HISTORY_WEIGHT_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]
+                             + HISTORY_WEIGHT[i] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i])
+                  / (HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]);
+        int DminCap = -DmaxCap;
+        DmaxCap += CapWeight*QueenValue;
+        DminCap -= CapWeight*int(KING);
+        DmaxCap += CapOffset;
+        DminCap += CapOffset;
+
+        int DmaxQuiet = 0;
+        for (int i = 0; i < N_HISTORY; ++i)
+            DmaxQuiet += HISTORY_DIVISOR[i]
+                  * std::abs(HISTORY_WEIGHT_QUIET_EVASION_MASTER[i] * HISTORY_SCALE[i]
+                             + HISTORY_WEIGHT[i] * HISTORY_SCALE_QUIET_EVASION_MASTER[i])
+                  / (HISTORY_SCALE_QUIET_EVASION_MASTER[i] * HISTORY_SCALE[i]);
+        int DminQuiet = -DmaxQuiet;
+
+        Dmax = std::max(DmaxCap, DmaxQuiet);
+        Dmin = std::min(DminCap, DminQuiet);
+    }
     else if (STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS)
     {
         for (int i = 0; i < N_HISTORY; ++i)
@@ -77,10 +111,10 @@ void init_stats(bool onlyD) {
                              + HISTORY_WEIGHT[i] * HISTORY_SCALE_CAPTURE_EVASION_MASTER[i])
                   / (HISTORY_SCALE_CAPTURE_EVASION_MASTER[i] * HISTORY_SCALE[i]);
         Dmin = -Dmax;
-        Dmax += QueenValue;
-        Dmin -= int(KING);
-        Dmax += (1 << 28);
-        Dmin += (1 << 28);
+        Dmax += CapWeight*QueenValue;
+        Dmin -= CapWeight*int(KING);
+        Dmax += CapOffset;
+        Dmin += CapOffset;
     }
     else if (STATS_REFUTATION)
     {
@@ -302,13 +336,19 @@ void MovePicker::score() {
         else  // Type == SCORE_EVASIONS
         {
             if (pos.capture_stage(m))
-                m.value = PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m)))
-                        + (1 << 28);
+            {
+                m.value = CapWeight*(PieceValue[pos.piece_on(to_sq(m))] - Value(type_of(pos.moved_piece(m))))
+                        + CapOffset;
+                dbg_mean_of(m.value-CapOffset, 100);
+                dbg_stdev_of(m.value-CapOffset, 100);
+            }
             else
             {
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                         + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+                dbg_mean_of(m.value, 101);
+                dbg_stdev_of(m.value, 101);
             }
         }
 
