@@ -48,6 +48,7 @@ using fun8_t = bool (*)(HANDLE, BOOL, PTOKEN_PRIVILEGES, DWORD, PTOKEN_PRIVILEGE
 }
 #endif
 
+#include <cassert>
 #include <atomic>
 #include <cmath>
 #include <cstdlib>
@@ -331,6 +332,7 @@ DebugInfo<6> correl[MaxDebugSlots];
 
 void dbg_hit_on(bool cond, int slot, int weight) {
 
+    assert(0 <= slot && slot < MaxDebugSlots);
     hit[slot][0] += weight;
     if (cond)
         hit[slot][1] += weight;
@@ -338,12 +340,14 @@ void dbg_hit_on(bool cond, int slot, int weight) {
 
 void dbg_mean_of(int64_t value, int slot, int weight) {
 
+    assert(0 <= slot && slot < MaxDebugSlots);
     mean[slot][0] += weight;
     mean[slot][1] += weight * value;
 }
 
 void dbg_stdev_of(int64_t value, int slot, int weight) {
 
+    assert(0 <= slot && slot < MaxDebugSlots);
     stdev[slot][0] += weight;
     stdev[slot][1] += weight * value;
     stdev[slot][2] += weight * value * value;
@@ -351,6 +355,7 @@ void dbg_stdev_of(int64_t value, int slot, int weight) {
 
 void dbg_correl_of(int64_t value1, int64_t value2, int slot, int weight) {
 
+    assert(0 <= slot && slot < MaxDebugSlots);
     correl[slot][0] += weight;
     correl[slot][1] += weight * value1;
     correl[slot][2] += weight * value1 * value1;
@@ -418,6 +423,9 @@ double dbg_print_auc(int start, int end, bool display) {
             }
 
         auc = double(nAuc) / 2 / n_neg / n_pos;
+        if (USE_ONLY_RANK)
+            auc = 1 - auc;
+
         if (display)
             std::cerr << "AUC #" << start << "-" << end << ": Total " << n_pos + n_neg << " AUC "
                       << 100 * auc << "%" << std::endl;

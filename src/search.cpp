@@ -1323,8 +1323,8 @@ moves_loop:  // When in check, search starts here
 
             if (USE_ONLY_RANK)
             {
+                dbg_hit_on(T, rank, weight);
                 ++rank;
-                dbg_hit_on(T, -rank, weight);
             }
             else
             {
@@ -1646,11 +1646,11 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
         if (CC)
         {
-            bool T     = value > alpha;
+            bool T = value > alpha;
             if (USE_ONLY_RANK)
             {
+                dbg_hit_on(T, rank);
                 ++rank;
-                dbg_hit_on(T, -rank);
             }
             else
             {
