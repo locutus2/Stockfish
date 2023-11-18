@@ -75,6 +75,128 @@ constexpr int HISTORY_RANGE[N_HISTORY][2] = {
   {0,      50000   }
 };
 
+enum StageType {
+    STAGE_QUIETS,
+    STAGE_QUIET_EVASIONS,
+    STAGE_CAPTURE_EVASIONS,
+    STAGE_REFUTATIONS,
+    STAGE_CAPTURES_MAIN,
+    N_STAGES,
+};
+
+constexpr int HISTORY_WEIGHT_MASTER[N_STAGES][N_HISTORY][2] = {
+  // STAGE_QUIETS
+  {
+   {2, 1}, // HISTORY_MAIN
+    {2, 1}, // HISTORY_PAWN
+    {0, 1}, // HISTORY_INCHECK
+    {2, 1}, // HISTORY_CMH0
+    {1, 1}, // HISTORY_CMH1
+    {1, 4}, // HISTORY_CMH2
+    {1, 1}, // HISTORY_CMH3
+    {0, 1}, // HISTORY_CMH4
+    {1, 1}, // HISTORY_CMH5
+    {0, 1},  // HISTORY_CAPTURE
+    {0, 1},  // HISTORY_CMH0_POS
+    {0, 1},  // HISTORY_CMH0_NEG
+    {0, 1},  // HISTORY_MAIN_PAWN
+    {0, 1},  // HISTORY_MAIN_PAWN_SHIFT
+    {0, 1},  // HISTORY_MAIN_SHIFT_PAWN_SHIFT
+    {0, 1},  // HISTORY_REF_ORDER
+    {1, 1},  // HISTORY_GIVES_CHECK
+    {1, 1},  // HISTORY_ESCAPE
+    {-1, 1}  // HISTORY_EN_PRISE
+  },
+ // STAGE_QUIET_EVASIONS
+  {
+   {1, 1}, // HISTORY_MAIN
+    {1, 1}, // HISTORY_PAWN
+    {0, 1}, // HISTORY_INCHECK
+    {1, 1}, // HISTORY_CMH0
+    {0, 1}, // HISTORY_CMH1
+    {0, 1}, // HISTORY_CMH2
+    {0, 1}, // HISTORY_CMH3
+    {0, 1}, // HISTORY_CMH4
+    {0, 1}, // HISTORY_CMH5
+    {0, 1},  // HISTORY_CAPTURE
+    {0, 1},  // HISTORY_CMH0_POS
+    {0, 1},  // HISTORY_CMH0_NEG
+    {0, 1},  // HISTORY_MAIN_PAWN
+    {0, 1},  // HISTORY_MAIN_PAWN_SHIFT
+    {0, 1},  // HISTORY_MAIN_SHIFT_PAWN_SHIFT
+    {0, 1},  // HISTORY_REF_ORDER
+    {0, 1},  // HISTORY_GIVES_CHECK
+    {0, 1},  // HISTORY_ESCAPE
+    {0, 1}   // HISTORY_EN_PRISE
+  },
+ // STAGE_CAPTURE_EVASIONS
+  {
+   {0, 1}, // HISTORY_MAIN
+    {0, 1}, // HISTORY_PAWN
+    {0, 1}, // HISTORY_INCHECK
+    {0, 1}, // HISTORY_CMH0
+    {0, 1}, // HISTORY_CMH1
+    {0, 1}, // HISTORY_CMH2
+    {0, 1}, // HISTORY_CMH3
+    {0, 1}, // HISTORY_CMH4
+    {0, 1}, // HISTORY_CMH5
+    {0, 1},  // HISTORY_CAPTURE
+    {0, 1},  // HISTORY_CMH0_POS
+    {0, 1},  // HISTORY_CMH0_NEG
+    {0, 1},  // HISTORY_MAIN_PAWN
+    {0, 1},  // HISTORY_MAIN_PAWN_SHIFT
+    {0, 1},  // HISTORY_MAIN_SHIFT_PAWN_SHIFT
+    {0, 1},  // HISTORY_REF_ORDER
+    {0, 1},  // HISTORY_GIVES_CHECK
+    {0, 1},  // HISTORY_ESCAPE
+    {0, 1}   // HISTORY_EN_PRISE
+  },
+ // STAGE_REFUTATIONS
+  {
+   {0, 1}, // HISTORY_MAIN
+    {0, 1}, // HISTORY_PAWN
+    {0, 1}, // HISTORY_INCHECK
+    {0, 1}, // HISTORY_CMH0
+    {0, 1}, // HISTORY_CMH1
+    {0, 1}, // HISTORY_CMH2
+    {0, 1}, // HISTORY_CMH3
+    {0, 1}, // HISTORY_CMH4
+    {0, 1}, // HISTORY_CMH5
+    {0, 1},  // HISTORY_CAPTURE
+    {0, 1},  // HISTORY_CMH0_POS
+    {0, 1},  // HISTORY_CMH0_NEG
+    {0, 1},  // HISTORY_MAIN_PAWN
+    {0, 1},  // HISTORY_MAIN_PAWN_SHIFT
+    {0, 1},  // HISTORY_MAIN_SHIFT_PAWN_SHIFT
+    {0, 1},  // HISTORY_REF_ORDER
+    {0, 1},  // HISTORY_GIVES_CHECK
+    {0, 1},  // HISTORY_ESCAPE
+    {0, 1}   // HISTORY_EN_PRISE
+  },
+ // STAGE_CAPTURES_MAIN
+  {
+   {0, 1}, // HISTORY_MAIN
+    {0, 1}, // HISTORY_PAWN
+    {0, 1}, // HISTORY_INCHECK
+    {0, 1}, // HISTORY_CMH0
+    {0, 1}, // HISTORY_CMH1
+    {0, 1}, // HISTORY_CMH2
+    {0, 1}, // HISTORY_CMH3
+    {0, 1}, // HISTORY_CMH4
+    {0, 1}, // HISTORY_CMH5
+    {1, 16}, // HISTORY_CAPTURE
+    {0, 1}, // HISTORY_CMH0_POS
+    {0, 1}, // HISTORY_CMH0_NEG
+    {0, 1}, // HISTORY_MAIN_PAWN
+    {0, 1}, // HISTORY_MAIN_PAWN_SHIFT
+    {0, 1}, // HISTORY_MAIN_SHIFT_PAWN_SHIFT
+    {0, 1}, // HISTORY_REF_ORDER
+    {0, 1}, // HISTORY_GIVES_CHECK
+    {0, 1}, // HISTORY_ESCAPE
+    {0, 1}    // HISTORY_EN_PRISE
+  },
+};
+
 constexpr int HISTORY_SCALE_QUIET_MASTER[N_HISTORY]  = {1, 1, 1, 1, 1, 4, 1, 1, 1, 1,
                                                         1, 1, 1, 1, 1, 1, 1, 1, 1};
 constexpr int HISTORY_WEIGHT_QUIET_MASTER[N_HISTORY] = {2, 2, 0, 2, 1, 1, 1, 0, 1, 0,
