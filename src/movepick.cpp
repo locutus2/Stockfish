@@ -51,8 +51,8 @@ void init_stats(bool onlyD) {
     {
         for (int i = 0; i < N_HISTORY; ++i)
         {
-            HISTORY_SCALE[i]  = HISTORY_SCALE_START[i];
-            HISTORY_WEIGHT[i] = HISTORY_WEIGHT_START[i];
+            HISTORY_WEIGHT[i] = HISTORY_START[i][0];
+            HISTORY_SCALE[i]  = HISTORY_START[i][1];
         }
     }
 

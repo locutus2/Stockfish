@@ -102,10 +102,27 @@ constexpr int HISTORY_WEIGHT_CAPTURE_MAIN_MASTER[N_HISTORY] = {0, 0, 0, 0, 0, 0,
                                                                0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 //###############################################################################
-constexpr int HISTORY_SCALE_START[N_HISTORY]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                                 1, 1, 1, 1, 1, 1, 1, 1, 1};
-constexpr int HISTORY_WEIGHT_START[N_HISTORY] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                 0, 0, 0, 0, 0, 0, 0, 0, 0};
+constexpr int HISTORY_START[N_HISTORY][2] = {
+  {0, 1}, // HISTORY_MAIN
+  {0, 1}, // HISTORY_PAWN
+  {0, 1}, // HISTORY_INCHECK
+  {0, 1}, // HISTORY_CMH0
+  {0, 1}, // HISTORY_CMH1
+  {0, 1}, // HISTORY_CMH2
+  {0, 1}, // HISTORY_CMH3
+  {0, 1}, // HISTORY_CMH4
+  {0, 1}, // HISTORY_CMH5
+  {0, 1}, // HISTORY_CAPTURE
+  {0, 1}, // HISTORY_CMH0_POS
+  {0, 1}, // HISTORY_CMH0_NEG
+  {0, 1}, // HISTORY_MAIN_PAWN
+  {0, 1}, // HISTORY_MAIN_PAWN_SHIFT
+  {0, 1}, // HISTORY_MAIN_SHIFT_PAWN_SHIFT
+  {0, 1}, // HISTORY_REF_ORDER
+  {0, 1}, // HISTORY_GIVES_CHECK
+  {0, 1}, // HISTORY_ESCAPE
+  {0, 1}, // HISTORY_EN_PRISE
+};
 
 void init_stats(bool onlyD = false);
 
@@ -186,18 +203,18 @@ constexpr std::tuple<int, int, const char*> STATS_STEPS[] = {
 
 constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
   //{HISTORY_CAPTURE, "capture"},
-  {HISTORY_MAIN, "main"},
-  {HISTORY_PAWN, "pawn"},
-  //{HISTORY_INCHECK, "incheck"},
-  {HISTORY_CMH0, "cmh0"},
-  {HISTORY_CMH1, "cmh1"},
-  {HISTORY_CMH2, "cmh2"},
-  {HISTORY_CMH3, "cmh3"},
-  {HISTORY_CMH4, "cmh4"},
-  {HISTORY_CMH5, "cmh5"},
+  {HISTORY_MAIN,        "main"      },
+  {HISTORY_PAWN,        "pawn"      },
+ //{HISTORY_INCHECK, "incheck"},
+  {HISTORY_CMH0,        "cmh0"      },
+  {HISTORY_CMH1,        "cmh1"      },
+  {HISTORY_CMH2,        "cmh2"      },
+  {HISTORY_CMH3,        "cmh3"      },
+  {HISTORY_CMH4,        "cmh4"      },
+  {HISTORY_CMH5,        "cmh5"      },
   {HISTORY_GIVES_CHECK, "givesCheck"},
-  {HISTORY_ESCAPE,   "escape" },
-  {HISTORY_EN_PRISE, "enprise"},
+  {HISTORY_ESCAPE,      "escape"    },
+  {HISTORY_EN_PRISE,    "enprise"   },
  //{HISTORY_CMH0_POS, "cmh0_pos"},
   //{HISTORY_CMH0_NEG, "cmh0_neg"},
   //{HISTORY_REF_ORDER, "k1k2cm"},
