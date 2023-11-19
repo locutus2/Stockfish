@@ -254,7 +254,7 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
     out << std::endl << std::flush;
 
     constexpr int SCALE_MAX = 8;
-    int SCALE           = 1;
+    int           SCALE     = 1;
 
     // iterations
     for (int it = 1; bestAUC > baseAUC || (LEARN_INCREASE_SCALE && SCALE <= SCALE_MAX); ++it)
@@ -278,12 +278,12 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         out << std::endl << std::flush;
 
         // search all combinations of steps and histories
-        for (const auto& step : STATS_STEPS)
+        for (const auto& step : LEARN_STEPS)
         {
             out << tr(std::string(std::get<2>(step))) << std::flush;
             double AUC = -1;
 
-            for (const auto& p : STATS_PARAMS)
+            for (const auto& p : LEARN_PARAMS)
             {
                 if (AUC < 0 || std::get<0>(step) != 0)
                 {
