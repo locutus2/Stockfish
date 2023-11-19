@@ -256,6 +256,7 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
     // iterations
     for (int it = 1; bestAUC > baseAUC; ++it)
     {
+        out << "--------------------------------------" << std::endl << std::flush;
         out << "Iteration: " << it << std::endl << std::flush;
 
         // use last best solution as base
@@ -289,9 +290,9 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
                         HISTORY_WEIGHT[i][1] = BASE_HISTORY_WEIGHT[i][1];
                     }
                     int P                = std::get<0>(p);
-                    int S                = std::get<1>(step);
                     int W                = std::get<0>(step);
-                    HISTORY_WEIGHT[P][0] = HISTORY_WEIGHT[P][0] * S + W * HISTORY_START[P][1];
+                    int S                = std::get<1>(step);
+                    HISTORY_WEIGHT[P][0] = HISTORY_WEIGHT[P][0] * S + W * HISTORY_WEIGHT[P][1];
                     HISTORY_WEIGHT[P][1] *= S;
 
                     int t = ggt(HISTORY_WEIGHT[P][0], HISTORY_WEIGHT[P][1]);
@@ -324,17 +325,19 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         }
 
         // print iteration best
-        out << "=> BEST AUC=" << bestAUC << " Terms:";
-        for (int i = 0; i < N_HISTORY; ++i)
+        if (bestAUC > baseAUC)
         {
-            if (BEST_HISTORY_WEIGHT[i][0] != 0)
+            out << "=> BEST AUC=" << bestAUC << " Terms:";
+            for (int i = 0; i < N_HISTORY; ++i)
             {
-                out << " " << BEST_HISTORY_WEIGHT[i][0] << "/" << BEST_HISTORY_WEIGHT[i][1] << "*"
-                    << HISTORY_NAME[i];
+                if (BEST_HISTORY_WEIGHT[i][0] != 0)
+                {
+                    out << " " << BEST_HISTORY_WEIGHT[i][0] << "/" << BEST_HISTORY_WEIGHT[i][1]
+                        << "*" << HISTORY_NAME[i];
+                }
             }
+            out << std::endl << std::flush;
         }
-        out << std::endl << std::flush;
-        out << "--------------------------------------" << std::endl << std::flush;
     }
     out << "=> FINISHED: found no better solution" << std::endl << std::flush;
 }
