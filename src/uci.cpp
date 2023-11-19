@@ -253,11 +253,14 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
     }
     out << std::endl << std::flush;
 
+    constexpr int SCALE_MAX = 8;
+    int SCALE           = 1;
+
     // iterations
-    for (int it = 1; bestAUC > baseAUC; ++it)
+    for (int it = 1; bestAUC > baseAUC || (LEARN_INCREASE_SCALE && SCALE <= SCALE_MAX); ++it)
     {
         out << "--------------------------------------" << std::endl << std::flush;
-        out << "Iteration: " << it << std::endl << std::flush;
+        out << "Iteration: " << it << " Scale: " << SCALE << std::endl << std::flush;
 
         // use last best solution as base
         baseAUC = bestAUC;
@@ -290,7 +293,7 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
                         HISTORY_WEIGHT[i][1] = BASE_HISTORY_WEIGHT[i][1];
                     }
                     int P                = std::get<0>(p);
-                    int W                = std::get<0>(step);
+                    int W                = std::get<0>(step) * SCALE;
                     int S                = std::get<1>(step);
                     HISTORY_WEIGHT[P][0] = HISTORY_WEIGHT[P][0] * S + W * HISTORY_WEIGHT[P][1];
                     HISTORY_WEIGHT[P][1] *= S;
@@ -327,7 +330,7 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         // print iteration best
         if (bestAUC > baseAUC)
         {
-            out << "=> BEST AUC=" << bestAUC << " Terms:";
+            out << "=> BEST AUC=" << bestAUC << " Scale: " << SCALE << " Terms:";
             for (int i = 0; i < N_HISTORY; ++i)
             {
                 if (BEST_HISTORY_WEIGHT[i][0] != 0)
@@ -337,6 +340,15 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
                 }
             }
             out << std::endl << std::flush;
+            SCALE = 1;
+        }
+        else if (LEARN_INCREASE_SCALE)
+        {
+            SCALE *= 2;
+            if (SCALE <= SCALE_MAX)
+            {
+                out << "=> INCREASE SCALE: found no better solution" << std::endl << std::flush;
+            }
         }
     }
     out << "=> FINISHED: found no better solution" << std::endl << std::flush;
