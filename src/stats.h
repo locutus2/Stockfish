@@ -353,7 +353,7 @@ constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
 //
 constexpr std::tuple<int, int, const char*> LEARN_STEPS[] = {
   {-1, 4, "-0.25"},
-  {0,  1, "0"    },
+ //{0,  1, "0"    },
   {1,  4, "0.25" },
 };
 

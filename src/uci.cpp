@@ -231,6 +231,9 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         return s;
     };
 
+    constexpr int SCALE_MAX = 8;
+    int           SCALE     = 1;
+
     // init
     double bestAUC = -1, baseAUC = -2;
     int    BEST_HISTORY_WEIGHT[N_HISTORY][2];
@@ -242,7 +245,17 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         BEST_HISTORY_WEIGHT[i][1] = HISTORY_START[i][1];
     }
 
-    out << "=> START solution: ";
+    for (int i = 0; i < N_HISTORY; ++i)
+    {
+        HISTORY_WEIGHT[i][0] = BEST_HISTORY_WEIGHT[i][0];
+        HISTORY_WEIGHT[i][1] = BEST_HISTORY_WEIGHT[i][1];
+    }
+    init_stats(true);
+    dbg_clear();
+    executeBench(list, pos, states);
+    bestAUC = dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
+
+    out << "=> START solution: Scale=" << SCALE << " AUC=" << bestAUC;
     for (int i = 0; i < N_HISTORY; ++i)
     {
         if (BEST_HISTORY_WEIGHT[i][0] != 0)
@@ -252,9 +265,6 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         }
     }
     out << std::endl << std::flush;
-
-    constexpr int SCALE_MAX = 8;
-    int           SCALE     = 1;
 
     // iterations
     for (int it = 1; bestAUC > baseAUC || (LEARN_INCREASE_SCALE && SCALE <= SCALE_MAX); ++it)
