@@ -302,6 +302,10 @@ void Thread::search() {
     {
         (ss - i)->continuationHistory =
           &this->continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
+        (ss - i)->kingHistory[WHITE] =
+          &this->continuationHistory[W_KING+1][rootPos.square<KING>(WHITE)][NO_PIECE][0];  // Use as a sentinel
+        (ss - i)->kingHistory[BLACK] =
+          &this->continuationHistory[B_KING+1][rootPos.square<KING>(BLACK)][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->staticEval = VALUE_NONE;
     }
 
