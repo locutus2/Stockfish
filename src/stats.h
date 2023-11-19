@@ -335,6 +335,7 @@ constexpr std::tuple<int, const char*> STATS_PARAMS[] = {
  //{HISTORY_INCHECK, "incheck"},
   {HISTORY_CMH0,        "cmh0"      },
   {HISTORY_CMH1,        "cmh1"      },
+  {HISTORY_CMH2,        "cmh2"      },
   {HISTORY_CMH3,        "cmh3"      },
   {HISTORY_CMH4,        "cmh4"      },
   {HISTORY_CMH5,        "cmh5"      },
