@@ -169,11 +169,14 @@ void go(Position& pos, std::istringstream& is, StateListPtr& states) {
     Threads.start_thinking(pos, states, limits, ponderMode);
 }
 
-void executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states);
+double executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states);
 
-void executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states) {
+double executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states) {
 
     std::string token;
+
+    init_stats(true);
+    dbg_clear();
 
     for (const auto& cmd : list)
     {
@@ -199,6 +202,7 @@ void executeBench(const std::vector<std::string>& list, Position& pos, StateList
             Search::clear();
         }  // Search::clear() may take a while
     }
+    return dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
 }
 
 int ggt(int a, int b);
@@ -250,10 +254,8 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         HISTORY_WEIGHT[i][0] = BEST_HISTORY_WEIGHT[i][0];
         HISTORY_WEIGHT[i][1] = BEST_HISTORY_WEIGHT[i][1];
     }
-    init_stats(true);
-    dbg_clear();
-    executeBench(list, pos, states);
-    bestAUC = dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
+
+    bestAUC = executeBench(list, pos, states);
 
     out << "=> START solution: Scale=" << SCALE << " AUC=" << bestAUC;
     for (int i = 0; i < N_HISTORY; ++i)
@@ -315,11 +317,7 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
                         HISTORY_WEIGHT[P][1] /= t;
                     }
 
-                    init_stats(true);
-                    dbg_clear();
-                    executeBench(list, pos, states);
-
-                    AUC = dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
+                    AUC = executeBench(list, pos, states);
 
                     if (AUC > bestAUC)
                     {
