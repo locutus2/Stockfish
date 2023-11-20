@@ -303,9 +303,9 @@ void Thread::search() {
         (ss - i)->continuationHistory =
           &this->continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->kingHistory[WHITE] =
-          &this->continuationHistory[W_KING+1][rootPos.square<KING>(WHITE)][NO_PIECE][0];  // Use as a sentinel
+          &this->continuationHistory[0][0][W_KING+1][rootPos.square<KING>(WHITE)];  // Use as a sentinel
         (ss - i)->kingHistory[BLACK] =
-          &this->continuationHistory[B_KING+1][rootPos.square<KING>(BLACK)][NO_PIECE][0];  // Use as a sentinel
+          &this->continuationHistory[0][0][B_KING+1][rootPos.square<KING>(BLACK)];  // Use as a sentinel
         (ss - i)->staticEval = VALUE_NONE;
     }
 
@@ -805,6 +805,8 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
 
         ss->currentMove         = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+        ss->kingHistory[WHITE] = &thisThread->continuationHistory[0][0][W_KING+1][pos.square<KING>(WHITE)];
+        ss->kingHistory[BLACK] = &thisThread->continuationHistory[0][0][B_KING+1][pos.square<KING>(BLACK)];
 
         pos.do_null_move(st);
 
@@ -882,6 +884,13 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
 
                 pos.do_move(move, st);
 
+                ss->kingHistory[WHITE] =
+                  &thisThread
+                     ->continuationHistory[ss->inCheck][true][W_KING+1][pos.count<KING>(WHITE)];
+                ss->kingHistory[BLACK] =
+                  &thisThread
+                     ->continuationHistory[ss->inCheck][true][B_KING+1][pos.count<KING>(BLACK)];
+
                 // Perform a preliminary qsearch to verify that the move holds
                 value = -qsearch<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1);
 
@@ -917,6 +926,10 @@ moves_loop:  // When in check, search starts here
       (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
       (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
 
+    const PieceToHistory*[COLOR_NB] kingHist[] = {
+      (ss - 1)->kingHistory, (ss - 2)->kingHistory, (ss - 3)->kingHistory,
+      (ss - 4)->kingHistory, (ss - 5)->kingHistory, (ss - 6)->kingHistory};
+
     Move countermove =
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
 
@@ -925,7 +938,7 @@ moves_loop:  // When in check, search starts here
     //const bool PC = cutNode;
     const bool PC = true;  //STATS_QUIETS || STATS_EVASION_MAIN || STATS_REFUTATION;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
-                  &thisThread->pawnHistory, countermove, ss->killers, PC);
+                  &thisThread->pawnHistory, kingHist, countermove, ss->killers, PC);
 
     value            = bestValue;
     moveCountPruning = singularQuietLMR = false;
@@ -1135,6 +1148,13 @@ moves_loop:  // When in check, search starts here
 
         // Step 16. Make the move
         pos.do_move(move, st, givesCheck);
+
+                ss->kingHistory[WHITE] =
+                  &thisThread
+                     ->continuationHistory[ss->inCheck][capture][W_KING+1][pos.count<KING>(WHITE)];
+                ss->kingHistory[BLACK] =
+                  &thisThread
+                     ->continuationHistory[ss->inCheck][capture][B_KING+1][pos.count<KING>(BLACK)];
 
         bool CC = PC;
         if (STATS_QUIET_EVASION_MAIN)
@@ -1629,6 +1649,14 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
         // Step 7. Make and search the move
         pos.do_move(move, st, givesCheck);
+
+                ss->kingHistory[WHITE] =
+                  &thisThread
+                     ->continuationHistory[ss->inCheck][capture][W_KING+1][pos.count<KING>(WHITE)];
+                ss->kingHistory[BLACK] =
+                  &thisThread
+                     ->continuationHistory[ss->inCheck][capture][B_KING+1][pos.count<KING>(BLACK)];
+
         value = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha, depth - 1);
         pos.undo_move(move);
 
