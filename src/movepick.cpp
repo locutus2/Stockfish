@@ -303,7 +303,7 @@ top:
             endMoves = generate<QUIETS>(pos, cur);
 
             score<QUIETS>();
-            partial_insertion_sort(cur, endMoves, 3267 - 3130 * depth);
+            partial_insertion_sort(cur, endMoves, 3023 - 3010 * depth - 9 * depth * depth);
         }
 
         ++stage;
