@@ -979,7 +979,11 @@ moves_loop:  // When in check, search starts here
             if (capture || givesCheck)
             {
                 // Futility pruning for captures (~2 Elo)
-                if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
+                if (!givesCheck && lmrDepth < 7 && !ss->inCheck
+                    && (!mp.isBadCapture()
+                        || thisThread->badCaptureHistory[movedPiece][to_sq(move)]
+                                                        [type_of(pos.piece_on(to_sq(move)))]
+                             <= 0))
                 {
                     Piece capturedPiece = pos.piece_on(to_sq(move));
                     int   futilityEval =
@@ -988,6 +992,7 @@ moves_loop:  // When in check, search starts here
                     if (futilityEval < alpha)
                         continue;
                 }
+
 
                 // SEE based pruning for captures and checks (~11 Elo)
                 if (!pos.see_ge(move, Value(-185) * depth))
@@ -1158,11 +1163,6 @@ moves_loop:  // When in check, search starts here
         // Nullifies all previous reduction adjustments to ttMove and leaves only history to do them
         else if (move == ttMove)
             r = 0;
-
-        if (!ss->inCheck && mp.isBadCapture()
-            && thisThread->badCaptureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())]
-                 > 0)
-            r--;
 
         ss->statScore = 2 * thisThread->mainHistory[us][from_to(move)]
                       + (*contHist[0])[movedPiece][to_sq(move)]
