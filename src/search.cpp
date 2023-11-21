@@ -914,6 +914,9 @@ moves_loop:  // When in check, search starts here
         ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq][type_of(pos.captured_piece())]
         : MOVE_NONE;
 
+    if (prevSq != SQ_NONE && priorCapture && countermove == MOVE_NONE)
+        countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq][NO_PIECE_TYPE];
+
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
                   &thisThread->pawnHistory, countermove, ss->killers);
 
