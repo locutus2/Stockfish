@@ -67,6 +67,7 @@ class Thread {
     CounterMoveHistory    counterMoves;
     ButterflyHistory      mainHistory;
     CapturePieceToHistory captureHistory;
+    CapturePieceToHistory badCaptureHistory;
     ContinuationHistory   continuationHistory[2][2];
     PawnHistory           pawnHistory;
 };

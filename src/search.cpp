@@ -1284,6 +1284,13 @@ moves_loop:  // When in check, search starts here
                 rm.score = -VALUE_INFINITE;
         }
 
+        if (!ss->inCheck && mp.isBadCapture())
+        {
+            int bonus = value > alpha ? stat_bonus(depth) : -stat_bonus(depth);
+            thisThread->badCaptureHistory[movedPiece][to_sq(move)][pos.piece_on(to_sq(move))]
+              << bonus;
+        }
+
         if (value > bestValue)
         {
             bestValue = value;
@@ -1291,10 +1298,6 @@ moves_loop:  // When in check, search starts here
             if (value > alpha)
             {
                 bestMove = move;
-
-                if (mp.isBadCapture())
-                    thisThread->captureHistory[movedPiece][to_sq(move)][pos.piece_on(to_sq(move))]
-                      << stat_bonus(depth);
 
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     update_pv(ss->pv, move, (ss + 1)->pv);
