@@ -172,7 +172,7 @@ class MovePicker {
     const CapturePieceToHistory* captureHistory;
     const PieceToHistory**       continuationHistory;
     const PawnHistory*           pawnHistory;
-    const CapturePieceToHistory* badCaptureHistory;
+    const CapturePieceToHistory* badCaptureHistory = nullptr;
     Move                         ttMove;
     ExtMove                      refutations[3], *cur, *endMoves, *endBadCaptures;
     int                          stage;

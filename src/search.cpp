@@ -1287,7 +1287,7 @@ moves_loop:  // When in check, search starts here
 
         if (!ss->inCheck && mp.isBadCapture())
         {
-            int bonus = value > alpha ? stat_bonus(depth) : -stat_bonus(depth);
+            int bonus = value > alpha ? stat_bonus(depth) : -stat_malus(depth);
             thisThread->badCaptureHistory[movedPiece][to_sq(move)][pos.piece_on(to_sq(move))]
               << bonus;
         }
