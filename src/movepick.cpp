@@ -90,6 +90,7 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
+                       const CapturePieceToHistory* bcph,
                        Move                         cm,
                        const Move*                  killers) :
     pos(p),
@@ -97,6 +98,7 @@ MovePicker::MovePicker(const Position&              p,
     captureHistory(cph),
     continuationHistory(ch),
     pawnHistory(ph),
+    badCaptureHistory(bcph),
     ttMove(ttm),
     refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}},
     depth(d) {
@@ -272,8 +274,12 @@ top:
     case GOOD_CAPTURE :
         if (select<Next>([&]() {
                 // Move losing capture to endBadCaptures to be tried later
-                return pos.see_ge(*cur, Value(-cur->value)) ? true
-                                                            : (*endBadCaptures++ = *cur, false);
+                return (*badCaptureHistory)[pos.moved_piece(*cur)][to_sq(*cur)]
+                                           [pos.piece_on(to_sq(*cur))]
+                           > 0
+                        || pos.see_ge(*cur, Value(-cur->value))
+                       ? true
+                       : (*endBadCaptures++ = *cur, false);
             }))
             return *(cur - 1);
 
