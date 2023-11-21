@@ -910,7 +910,9 @@ moves_loop:  // When in check, search starts here
                                         (ss - 6)->continuationHistory};
 
     Move countermove =
-      prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
+      prevSq != SQ_NONE
+        ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq][type_of(pos.captured_piece())]
+        : MOVE_NONE;
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
                   &thisThread->pawnHistory, countermove, ss->killers);
@@ -1772,8 +1774,9 @@ void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus) {
     // Update countermove history
     if (is_ok((ss - 1)->currentMove))
     {
-        Square prevSq                                          = to_sq((ss - 1)->currentMove);
-        thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] = move;
+        Square prevSq = to_sq((ss - 1)->currentMove);
+        thisThread->counterMoves[pos.piece_on(prevSq)][prevSq][type_of(pos.captured_piece())] =
+          move;
     }
 }
 
