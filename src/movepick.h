@@ -156,6 +156,7 @@ class MovePicker {
                Square);
     MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
     Move next_move(bool skipQuiets = false);
+    bool isBadCapture() const;
 
    private:
     template<PickType T, typename Pred>

@@ -1292,6 +1292,10 @@ moves_loop:  // When in check, search starts here
             {
                 bestMove = move;
 
+                if (mp.isBadCapture())
+                    thisThread->captureHistory[movedPiece][to_sq(move)][pos.piece_on(to_sq(move))]
+                      << stat_bonus(depth);
+
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     update_pv(ss->pv, move, (ss + 1)->pv);
 

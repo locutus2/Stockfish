@@ -222,6 +222,8 @@ void MovePicker::score() {
         }
 }
 
+bool MovePicker::isBadCapture() const { return stage == BAD_CAPTURE; }
+
 // Returns the next move satisfying a predicate function.
 // It never returns the TT move.
 template<MovePicker::PickType T, typename Pred>
