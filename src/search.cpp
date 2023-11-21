@@ -1159,6 +1159,11 @@ moves_loop:  // When in check, search starts here
         else if (move == ttMove)
             r = 0;
 
+        if (!ss->inCheck && mp.isBadCapture()
+            && thisThread->badCaptureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())]
+                 > 0)
+            r--;
+
         ss->statScore = 2 * thisThread->mainHistory[us][from_to(move)]
                       + (*contHist[0])[movedPiece][to_sq(move)]
                       + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1286,7 +1291,7 @@ moves_loop:  // When in check, search starts here
 
         if (!ss->inCheck && mp.isBadCapture())
         {
-            int bonus = value > alpha ? stat_bonus(depth) : -stat_bonus(depth);
+            int bonus = value > alpha ? stat_bonus(depth) : -stat_malus(depth);
             thisThread->badCaptureHistory[movedPiece][to_sq(move)][pos.piece_on(to_sq(move))]
               << bonus;
         }
