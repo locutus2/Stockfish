@@ -979,11 +979,7 @@ moves_loop:  // When in check, search starts here
             if (capture || givesCheck)
             {
                 // Futility pruning for captures (~2 Elo)
-                if (!givesCheck && lmrDepth < 7 && !ss->inCheck
-                    && (!mp.isBadCapture()
-                        || thisThread->badCaptureHistory[movedPiece][to_sq(move)]
-                                                        [type_of(pos.piece_on(to_sq(move)))]
-                             <= 0))
+                if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
                     Piece capturedPiece = pos.piece_on(to_sq(move));
                     int   futilityEval =
@@ -995,7 +991,11 @@ moves_loop:  // When in check, search starts here
 
 
                 // SEE based pruning for captures and checks (~11 Elo)
-                if (!pos.see_ge(move, Value(-185) * depth))
+                if ((ss->inCheck || !mp.isBadCapture()
+                     || thisThread->badCaptureHistory[movedPiece][to_sq(move)]
+                                                     [type_of(pos.piece_on(to_sq(move)))]
+                          <= 0)
+                    && !pos.see_ge(move, Value(-185) * depth))
                     continue;
             }
             else
