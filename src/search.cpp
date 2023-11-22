@@ -926,9 +926,9 @@ moves_loop:  // When in check, search starts here
       (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
       (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
 
-    const PieceToHistory*[COLOR_NB] kingHist[] = {
-      (ss - 1)->kingHistory, (ss - 2)->kingHistory, (ss - 3)->kingHistory,
-      (ss - 4)->kingHistory, (ss - 5)->kingHistory, (ss - 6)->kingHistory};
+    //const PieceToHistory*[COLOR_NB] kingHist[] = {
+    //  (ss - 1)->kingHistory, (ss - 2)->kingHistory, (ss - 3)->kingHistory,
+    //  (ss - 4)->kingHistory, (ss - 5)->kingHistory, (ss - 6)->kingHistory};
 
     Move countermove =
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
@@ -938,7 +938,7 @@ moves_loop:  // When in check, search starts here
     //const bool PC = cutNode;
     const bool PC = true;  //STATS_QUIETS || STATS_EVASION_MAIN || STATS_REFUTATION;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
-                  &thisThread->pawnHistory, kingHist, countermove, ss->killers, PC);
+                  &thisThread->pawnHistory, countermove, ss->killers, PC);
 
     value            = bestValue;
     moveCountPruning = singularQuietLMR = false;

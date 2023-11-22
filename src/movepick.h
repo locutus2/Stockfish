@@ -58,6 +58,9 @@ class StatsEntry {
         assert(abs(bonus) <= D);  // Ensure range is [-D, D]
         static_assert(D <= std::numeric_limits<T>::max(), "D overflows T");
 
+        //if (bonus > 0)
+        //    entry = std::max(entry, short(0));
+
         entry += (bonus * D - entry * abs(bonus)) / (D * 5 / 4);
 
         assert(abs(entry) <= D);
@@ -156,7 +159,7 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const PawnHistory*,
-               const PieceToHistory***,
+               //const PieceToHistory***,
                Move,
                const Move*,
                bool);
@@ -189,7 +192,7 @@ class MovePicker {
     const CapturePieceToHistory* captureHistory;
     const PieceToHistory**       continuationHistory;
     const PawnHistory*           pawnHistory;
-    const PieceToHistory*       kingHistory[COLOR_NB];
+    const PieceToHistory*        kingHistory[COLOR_NB];
     Move                         ttMove;
     ExtMove                      refutations[3], *cur, *endMoves, *endBadCaptures;
     int                          stage;
