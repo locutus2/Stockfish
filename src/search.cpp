@@ -994,7 +994,7 @@ moves_loop:  // When in check, search starts here
                 if ((ss->inCheck || !mp.isBadCapture()
                      || thisThread->badCaptureHistory[movedPiece][to_sq(move)]
                                                      [type_of(pos.piece_on(to_sq(move)))]
-                          <= 0)
+                          < -8000)
                     && !pos.see_ge(move, Value(-185) * depth))
                     continue;
             }
