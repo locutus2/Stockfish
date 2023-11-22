@@ -983,7 +983,7 @@ moves_loop:  // When in check, search starts here
                     && (!mp.isBadCapture()
                         || thisThread->badCaptureHistory[movedPiece][to_sq(move)]
                                                         [type_of(pos.piece_on(to_sq(move)))]
-                             < -7000))
+                             < -6000))
                 {
                     Piece capturedPiece = pos.piece_on(to_sq(move));
                     int   futilityEval =
