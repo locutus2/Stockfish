@@ -110,10 +110,10 @@ using ButterflyHistory = Stats<int16_t, 7183, false, COLOR_NB, int(SQUARE_NB) * 
 using CounterMoveHistory = Stats<Move, NOT_USED, false, PIECE_NB, SQUARE_NB>;
 
 // CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
-using CapturePieceToHistory = Stats<int16_t, 10692, true, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
+using CapturePieceToHistory = Stats<int16_t, 10692, false, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
 
 // PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
-using PieceToHistory = Stats<int16_t, 29952, false, PIECE_NB, SQUARE_NB>;
+using PieceToHistory = Stats<int16_t, 29952, true, PIECE_NB, SQUARE_NB>;
 
 // ContinuationHistory is the combined history of a given pair of moves, usually
 // the current one given a previous one. The nested history table is based on
