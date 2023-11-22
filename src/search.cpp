@@ -983,7 +983,7 @@ moves_loop:  // When in check, search starts here
                     && (!mp.isBadCapture()
                         || thisThread->badCaptureHistory[movedPiece][to_sq(move)]
                                                         [type_of(pos.piece_on(to_sq(move)))]
-                             < -8000))
+                             <= 0))
                 {
                     Piece capturedPiece = pos.piece_on(to_sq(move));
                     int   futilityEval =
@@ -1291,7 +1291,7 @@ moves_loop:  // When in check, search starts here
 
         if (!ss->inCheck && mp.isBadCapture())
         {
-            int bonus = value > alpha ? stat_bonus(depth) : -stat_malus(depth);
+            int bonus = value > alpha ? 7 * stat_bonus(depth) : -stat_malus(depth);
             thisThread->badCaptureHistory[movedPiece][to_sq(move)][pos.piece_on(to_sq(move))]
               << bonus;
         }
