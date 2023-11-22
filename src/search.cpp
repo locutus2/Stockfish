@@ -909,12 +909,12 @@ moves_loop:  // When in check, search starts here
                                         nullptr,
                                         (ss - 6)->continuationHistory};
 
+    Move pawnstructuremove = thisThread->pawnStructureMoves[pawn_structure(pos)];
     Move countermove =
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
-    Move pawnstructuremove = thisThread->pawnStructureMoves[pawn_structure(pos)];
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
-                  &thisThread->pawnHistory, countermove, ss->killers);
+                  &thisThread->pawnHistory, countermove, pawnstructuremove, ss->killers);
 
     value            = bestValue;
     moveCountPruning = singularQuietLMR = false;
