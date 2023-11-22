@@ -1161,7 +1161,7 @@ moves_loop:  // When in check, search starts here
 
         if (!ss->inCheck && mp.isBadCapture()
             && thisThread->badCaptureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())]
-                 > 0)
+                 >= -8000)
             r--;
 
         ss->statScore = 2 * thisThread->mainHistory[us][from_to(move)]
