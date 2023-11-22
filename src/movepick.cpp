@@ -99,7 +99,7 @@ MovePicker::MovePicker(const Position&              p,
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
-    refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}, {psm, 0}},
+    refutations{{psm, 0}, {killers[0], 0}, {killers[1], 0}, {cm, 0}},
     depth(d) {
     assert(d > 0);
 
@@ -280,18 +280,15 @@ top:
         cur      = std::begin(refutations);
         endMoves = std::end(refutations);
 
-        // If the pawnstructuremove is the same as a killer or countermove, skip it
+        // If the counter move is the same as a killer or pawn structure move, skip it
         if (refutations[0].move == refutations[3].move || refutations[1].move == refutations[3].move
             || refutations[2].move == refutations[3].move)
             --endMoves;
 
-        // If the countermove is the same as a killer, skip it
-        if (refutations[0].move == refutations[2].move
-            || refutations[1].move == refutations[2].move)
-        {
-            refutations[2] = refutations[3];
-            --endMoves;
-        }
+        // If the pawn structure move is the same as a killer, skip it
+        if (refutations[0].move == refutations[1].move
+            || refutations[0].move == refutations[2].move)
+            ++cur;
 
         ++stage;
         [[fallthrough]];
