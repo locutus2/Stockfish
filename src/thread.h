@@ -58,17 +58,18 @@ class Thread {
     int                   selDepth, nmpMinPly;
     Value                 bestValue, optimism[COLOR_NB];
 
-    Position              rootPos;
-    StateInfo             rootState;
-    Search::RootMoves     rootMoves;
-    Depth                 rootDepth, completedDepth;
-    Value                 rootDelta;
-    Value                 rootSimpleEval;
-    CounterMoveHistory    counterMoves;
-    ButterflyHistory      mainHistory;
-    CapturePieceToHistory captureHistory;
-    ContinuationHistory   continuationHistory[2][2];
-    PawnHistory           pawnHistory;
+    Position                 rootPos;
+    StateInfo                rootState;
+    Search::RootMoves        rootMoves;
+    Depth                    rootDepth, completedDepth;
+    Value                    rootDelta;
+    Value                    rootSimpleEval;
+    CounterMoveHistory       counterMoves;
+    PawnStructureMoveHistory pawnStructureMoves;
+    ButterflyHistory         mainHistory;
+    CapturePieceToHistory    captureHistory;
+    ContinuationHistory      continuationHistory[2][2];
+    PawnHistory              pawnHistory;
 };
 
 

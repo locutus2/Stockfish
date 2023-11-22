@@ -85,7 +85,19 @@ struct Stats: public std::array<Stats<T, D, Sizes...>, Size> {
 };
 
 template<typename T, int D, int Size>
-struct Stats<T, D, Size>: public std::array<StatsEntry<T, D>, Size> {};
+struct Stats<T, D, Size>: public std::array<StatsEntry<T, D>, Size> {
+    using stats = Stats<T, D, Size>;
+
+    void fill(const T& v) {
+
+        // For standard-layout 'this' points to the first struct member
+        assert(std::is_standard_layout_v<stats>);
+
+        using entry = StatsEntry<T, D>;
+        entry* p    = reinterpret_cast<entry*>(this);
+        std::fill(p, p + sizeof(*this) / sizeof(entry), v);
+    }
+};
 
 // In stats table, D=0 means that the template parameter is not used
 enum StatsParams {
@@ -105,6 +117,8 @@ using ButterflyHistory = Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQU
 // CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
 // move, see www.chessprogramming.org/Countermove_Heuristic
 using CounterMoveHistory = Stats<Move, NOT_USED, PIECE_NB, SQUARE_NB>;
+
+using PawnStructureMoveHistory = Stats<Move, NOT_USED, PAWN_HISTORY_SIZE>;
 
 // CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
 using CapturePieceToHistory = Stats<int16_t, 10692, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
