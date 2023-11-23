@@ -909,7 +909,7 @@ moves_loop:  // When in check, search starts here
                                         nullptr,
                                         (ss - 6)->continuationHistory};
 
-    Move pawnstructuremove = thisThread->pawnStructureMoves[pawn_structure(pos)];
+    Move pawnstructuremove = thisThread->pawnStructureMoves[us][pawn_structure(pos)];
     Move countermove =
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : MOVE_NONE;
 
@@ -1776,7 +1776,7 @@ void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus) {
         Square prevSq                                          = to_sq((ss - 1)->currentMove);
         thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] = move;
     }
-    thisThread->pawnStructureMoves[pawn_structure(pos)] = move;
+    thisThread->pawnStructureMoves[us][pawn_structure(pos)] = move;
 }
 
 // When playing with strength handicap, choose the best move among a set of RootMoves
