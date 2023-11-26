@@ -397,6 +397,7 @@ inline int getWeight(int depth) {
     return USE_DEPTH_WEIGHT
             && !((STATS_QUIET_EVASION_QS && !STATS_QUIET_EVASION_MAIN)
                  || (STATS_CAPTURE_EVASION_QS && !STATS_CAPTURE_EVASION_MAIN))
+            && depth > 0
            ? depth
                * (1
                   + ((STATS_QUIET_EVASION_MAIN && STATS_QUIET_EVASION_QS)
