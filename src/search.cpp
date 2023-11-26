@@ -95,13 +95,13 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 
 // History and stats update bonus, based on depth
 int stat_bonus(Depth d, bool PvNode, bool cutNode) {
-    int weight = (PvNode ? 122 : cutNode ? 139 : 135);
+    int weight = (PvNode ? 112 : cutNode ? 155 : 147);
     return std::min((291 * d - 350) * weight / 128, 1200);
 }
 
 // History and stats update malus, based on depth
 int stat_malus(Depth d, bool PvNode, bool cutNode) {
-    int weight = (PvNode ? 131 : cutNode ? 134 : 130);
+    int weight = (PvNode ? 135 : cutNode ? 130 : 133);
     return std::min((361 * d - 361) * weight / 128, 1182);
 }
 
@@ -754,7 +754,7 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     // Use static evaluation difference to improve quiet move ordering (~4 Elo)
     if (is_ok((ss - 1)->currentMove) && !(ss - 1)->inCheck && !priorCapture)
     {
-        int weight = (PvNode ? 133 : cutNode ? 118 : 123);
+        int weight = (PvNode ? 125 : cutNode ? 120 : 136);
         int bonus =
           std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval) * weight / 128, -1449, 1449);
         thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << bonus;
