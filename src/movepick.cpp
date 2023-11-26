@@ -184,9 +184,9 @@ MovePicker::MovePicker(const Position&              p,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
                        //const PieceToHistory***       kh,
-                       Move                         cm,
-                       const Move*                  killers,
-                       bool                         cond) :
+                       Move        cm,
+                       const Move* killers,
+                       bool        cond) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),

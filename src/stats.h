@@ -252,16 +252,20 @@ constexpr int  HISTORY_BUCKETS      = 10000;
 constexpr bool USE_DEPTH_WEIGHT     = true;
 constexpr bool USE_ONLY_RANK        = true;
 constexpr bool USE_FULL_QUIET_SORT  = false;
-constexpr bool MEASURE_BIAS         = true;
+constexpr bool MEASURE_BIAS         = false;
 constexpr bool LEARN_INCREASE_SCALE = true;
 
+constexpr bool STATS_ALL                  = true;
 constexpr bool STATS_REFUTATION           = false;
-constexpr bool STATS_QUIETS               = true;
+constexpr bool STATS_QUIETS               = false;
 constexpr bool STATS_QUIET_EVASION_MAIN   = false;
 constexpr bool STATS_QUIET_EVASION_QS     = false;
 constexpr bool STATS_CAPTURE_EVASION_MAIN = false;
 constexpr bool STATS_CAPTURE_EVASION_QS   = false;
 constexpr bool STATS_CAPTURE_MAIN         = false;
+
+static_assert(!(STATS_ALL && !USE_ONLY_RANK));
+static_assert(!(STATS_ALL && MEASURE_BIAS));
 
 static_assert(!(STATS_REFUTATION
                 && (STATS_QUIETS || STATS_QUIET_EVASION_MAIN || STATS_QUIET_EVASION_QS

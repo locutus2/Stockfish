@@ -303,9 +303,11 @@ void Thread::search() {
         (ss - i)->continuationHistory =
           &this->continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->kingHistory[WHITE] =
-          &this->continuationHistory[0][0][W_KING+1][rootPos.square<KING>(WHITE)];  // Use as a sentinel
+          &this->continuationHistory[0][0][W_KING + 1]
+                                    [rootPos.square<KING>(WHITE)];  // Use as a sentinel
         (ss - i)->kingHistory[BLACK] =
-          &this->continuationHistory[0][0][B_KING+1][rootPos.square<KING>(BLACK)];  // Use as a sentinel
+          &this->continuationHistory[0][0][B_KING + 1]
+                                    [rootPos.square<KING>(BLACK)];  // Use as a sentinel
         (ss - i)->staticEval = VALUE_NONE;
     }
 
@@ -805,8 +807,10 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
 
         ss->currentMove         = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
-        ss->kingHistory[WHITE] = &thisThread->continuationHistory[0][0][W_KING+1][pos.square<KING>(WHITE)];
-        ss->kingHistory[BLACK] = &thisThread->continuationHistory[0][0][B_KING+1][pos.square<KING>(BLACK)];
+        ss->kingHistory[WHITE] =
+          &thisThread->continuationHistory[0][0][W_KING + 1][pos.square<KING>(WHITE)];
+        ss->kingHistory[BLACK] =
+          &thisThread->continuationHistory[0][0][B_KING + 1][pos.square<KING>(BLACK)];
 
         pos.do_null_move(st);
 
@@ -885,10 +889,10 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
 
                 ss->kingHistory[WHITE] =
                   &thisThread
-                     ->continuationHistory[ss->inCheck][true][W_KING+1][pos.count<KING>(WHITE)];
+                     ->continuationHistory[ss->inCheck][true][W_KING + 1][pos.count<KING>(WHITE)];
                 ss->kingHistory[BLACK] =
                   &thisThread
-                     ->continuationHistory[ss->inCheck][true][B_KING+1][pos.count<KING>(BLACK)];
+                     ->continuationHistory[ss->inCheck][true][B_KING + 1][pos.count<KING>(BLACK)];
 
                 // Perform a preliminary qsearch to verify that the move holds
                 value = -qsearch<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1);
@@ -1148,26 +1152,29 @@ moves_loop:  // When in check, search starts here
         // Step 16. Make the move
         pos.do_move(move, st, givesCheck);
 
-                ss->kingHistory[WHITE] =
-                  &thisThread
-                     ->continuationHistory[ss->inCheck][capture][W_KING+1][pos.count<KING>(WHITE)];
-                ss->kingHistory[BLACK] =
-                  &thisThread
-                     ->continuationHistory[ss->inCheck][capture][B_KING+1][pos.count<KING>(BLACK)];
+        ss->kingHistory[WHITE] =
+          &thisThread
+             ->continuationHistory[ss->inCheck][capture][W_KING + 1][pos.count<KING>(WHITE)];
+        ss->kingHistory[BLACK] =
+          &thisThread
+             ->continuationHistory[ss->inCheck][capture][B_KING + 1][pos.count<KING>(BLACK)];
 
         bool CC = PC;
-        if (STATS_QUIET_EVASION_MAIN)
-            CC = CC && mp.isEvasion() && !capture;
-        else if (STATS_CAPTURE_EVASION_MAIN)
-            CC = CC && mp.isEvasion() && capture;
-        else if (STATS_CAPTURE_MAIN)
-            CC = CC && mp.isCapture();
-        else if (STATS_REFUTATION)
-            CC = CC && mp.isRefutation();
-        else if (STATS_QUIETS)
-            CC = CC && mp.isQuiet();
-        else
-            CC = false;
+        if (!STATS_ALL)
+        {
+            if (STATS_QUIET_EVASION_MAIN)
+                CC = CC && mp.isEvasion() && !capture;
+            else if (STATS_CAPTURE_EVASION_MAIN)
+                CC = CC && mp.isEvasion() && capture;
+            else if (STATS_CAPTURE_MAIN)
+                CC = CC && mp.isCapture();
+            else if (STATS_REFUTATION)
+                CC = CC && mp.isRefutation();
+            else if (STATS_QUIETS)
+                CC = CC && mp.isQuiet();
+            else
+                CC = false;
+        }
         int V = extmove.value;
 
         // Decrease reduction if position is or has been on the PV (~4 Elo)
@@ -1647,23 +1654,26 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
         // Step 7. Make and search the move
         pos.do_move(move, st, givesCheck);
 
-                ss->kingHistory[WHITE] =
-                  &thisThread
-                     ->continuationHistory[ss->inCheck][capture][W_KING+1][pos.count<KING>(WHITE)];
-                ss->kingHistory[BLACK] =
-                  &thisThread
-                     ->continuationHistory[ss->inCheck][capture][B_KING+1][pos.count<KING>(BLACK)];
+        ss->kingHistory[WHITE] =
+          &thisThread
+             ->continuationHistory[ss->inCheck][capture][W_KING + 1][pos.count<KING>(WHITE)];
+        ss->kingHistory[BLACK] =
+          &thisThread
+             ->continuationHistory[ss->inCheck][capture][B_KING + 1][pos.count<KING>(BLACK)];
 
         value = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha, depth - 1);
         pos.undo_move(move);
 
         bool CC = PC;
-        if (STATS_QUIET_EVASION_QS)
-            CC = CC && mp.isEvasion() && !capture;
-        else if (STATS_CAPTURE_EVASION_QS)
-            CC = CC && mp.isEvasion() && capture;
-        else
-            CC = false;
+        if (!STATS_ALL)
+        {
+            if (STATS_QUIET_EVASION_QS)
+                CC = CC && mp.isEvasion() && !capture;
+            else if (STATS_CAPTURE_EVASION_QS)
+                CC = CC && mp.isEvasion() && capture;
+            else
+                CC = false;
+        }
 
         int V = extmove.value;
 
