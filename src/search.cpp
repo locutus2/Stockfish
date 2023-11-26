@@ -1256,6 +1256,11 @@ moves_loop:  // When in check, search starts here
                           : value >= beta  ? stat_bonus(newDepth)
                                            : 0;
 
+                //if(!improving||(!PvNode&&!cutNode))
+                {
+                    bonus = bonus * (4+!improving+(!PvNode&&!cutNode))/4;
+                }
+
                 update_continuation_histories(ss, movedPiece, to_sq(move), bonus, moveCount);
             }
         }
