@@ -95,7 +95,7 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 }
 
 // History and stats update bonus, based on depth
-int stat_bonus(Depth d, bool improving) { return std::min(364 * d - 438, 1501); }
+int stat_bonus(Depth d, bool improving) { return std::min(364 * (d+improving) - 438, 1501); }
 
 // History and stats update malus, based on depth
 int stat_malus(Depth d, bool improving) { return std::min(452 * d - 452, 1478); }
@@ -1258,7 +1258,7 @@ moves_loop:  // When in check, search starts here
                                            : 0;
 
                 //if(!improving||(!PvNode&&!cutNode))
-                { bonus = bonus * (4 + !improving + (!PvNode && !cutNode)) / 4; }
+                //{ bonus = bonus * (4 + !improving + (!PvNode && !cutNode)) / 4; }
 
                 update_continuation_histories(ss, movedPiece, to_sq(move), bonus, moveCount);
             }
