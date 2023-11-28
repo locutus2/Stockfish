@@ -95,12 +95,12 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 
 // History and stats update bonus, based on depth
 int stat_bonus(const Position& pos, Depth d) {
-    return std::clamp(291 * d - 11 * pos.this_thread()->rootDepth, 0, 1200);
+    return std::clamp(291 * d - 17 * pos.this_thread()->rootDepth, 0, 1200);
 }
 
 // History and stats update malus, based on depth
 int stat_malus(const Position& pos, Depth d) {
-    return std::clamp(361 * d - 13 * pos.this_thread()->rootDepth, 0, 1182);
+    return std::clamp(361 * d - 21 * pos.this_thread()->rootDepth, 0, 1182);
 }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
