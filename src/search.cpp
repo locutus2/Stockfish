@@ -95,7 +95,7 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 
 // History and stats update bonus, based on depth
 int stat_bonus(const Position& pos, Depth d) {
-    return std::clamp(291 * d - 17 * pos.this_thread()->rootDepth, 0, 1200);
+    return std::clamp(291 * d - 11 * pos.this_thread()->rootDepth, 0, 1200);
 }
 
 // History and stats update malus, based on depth
