@@ -712,11 +712,8 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     if (ss->inCheck)
     {
         // Skip early pruning when in check
-        ss->staticEval = eval =
-          (!priorCapture && (ss - 1)->staticEval != VALUE_NONE && (ss - 2)->staticEval != VALUE_NONE
-             ? ((ss - 2)->staticEval - (ss - 1)->staticEval) / 2
-             : VALUE_NONE);
-        improving = false;
+        ss->staticEval = eval = (pos.rule50_count() >= 2 ? (ss - 2)->staticEval : VALUE_NONE);
+        improving             = false;
         goto moves_loop;
     }
     else if (excludedMove)
