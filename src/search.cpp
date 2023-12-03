@@ -713,7 +713,8 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     {
         // Skip early pruning when in check
         ss->staticEval = eval =
-          (!ss->priorCapture && !(ss - 1)->priorCapture ? (ss - 2)->staticEval : VALUE_NONE);
+          (!ss->priorCapture && !(ss - 1)->priorCapture && !(ss - 2)->inCheck ? (ss - 2)->staticEval
+                                                                              : VALUE_NONE);
         improving = false;
         goto moves_loop;
     }
