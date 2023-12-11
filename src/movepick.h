@@ -154,13 +154,13 @@ class MovePicker {
                const PieceToHistory**,
                const PawnHistory*);
     MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
-    Move next_move(bool skipQuiets = false);
+    Move next_move(bool skipQuiets = false, bool allNode = false);
 
    private:
     template<PickType T, typename Pred>
     Move select(Pred);
     template<GenType>
-    void     score();
+    void     score(bool allNode = false);
     ExtMove* begin() { return cur; }
     ExtMove* end() { return endMoves; }
 

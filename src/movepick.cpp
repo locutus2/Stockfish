@@ -142,7 +142,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 // for sorting. Captures are ordered by Most Valuable Victim (MVV), preferring
 // captures with a good history. Quiets moves are ordered using the history tables.
 template<GenType Type>
-void MovePicker::score() {
+void MovePicker::score(bool allNode) {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
@@ -187,7 +187,7 @@ void MovePicker::score() {
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += bool(pos.check_squares(pt) & to) * 16384;
+            m.value += (!allNode && pos.check_squares(pt) & to) * 16384;
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 50000
@@ -241,7 +241,7 @@ Move MovePicker::select(Pred filter) {
 // Most important method of the MovePicker class. It
 // returns a new pseudo-legal move every time it is called until there are no more
 // moves left, picking the move with the highest score from a list of generated moves.
-Move MovePicker::next_move(bool skipQuiets) {
+Move MovePicker::next_move(bool skipQuiets, bool allNode) {
 
 top:
     switch (stage)
@@ -299,7 +299,7 @@ top:
             cur      = endBadCaptures;
             endMoves = generate<QUIETS>(pos, cur);
 
-            score<QUIETS>();
+            score<QUIETS>(allNode);
             partial_insertion_sort(cur, endMoves, -1960 - 3130 * depth);
         }
 
