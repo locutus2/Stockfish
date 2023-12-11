@@ -187,7 +187,7 @@ void MovePicker::score() {
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += bool(pos.check_squares(pt) & to) * (pt == QUEEN ? 32768 : 16384);
+            m.value += bool(pos.check_squares(pt) & to) * (pt == QUEEN ? 65536 : 16384);
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 50000
