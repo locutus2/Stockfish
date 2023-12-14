@@ -28,6 +28,13 @@
 
 namespace Stockfish {
 
+int CheckBonus[PIECE_TYPE_NB] = { 0, 16384, 16384, 16384, 16384, 16384, 16384 };
+
+template <int D>
+Range centeredRange(int v) { return Range(v-D,v+D); }
+
+TUNE(SetRange(centeredRange<16384>), CheckBonus);
+
 namespace {
 
 enum Stages {
@@ -187,7 +194,7 @@ void MovePicker::score() {
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += bool(pos.check_squares(pt) & to) * 16384;
+            m.value += bool(pos.check_squares(pt) & to) * CheckBonus[pt];
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 50000
