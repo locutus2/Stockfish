@@ -28,14 +28,9 @@
 
 namespace Stockfish {
 
-int CheckBonus[PIECE_TYPE_NB] = { 0, 16384, 16384, 16384, 16384, 16384, 16384 };
-
-template <int D>
-Range centeredRange(int v) { return Range(v-D,v+D); }
-
-TUNE(SetRange(centeredRange<16384>), CheckBonus);
-
 namespace {
+
+constexpr int CheckBonus[PIECE_TYPE_NB] = {0, 16210, 14104, 16022, 16204, 15698, 15684};
 
 enum Stages {
     // generate main search moves
