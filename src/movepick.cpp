@@ -30,8 +30,6 @@ namespace Stockfish {
 
 namespace {
 
-constexpr int CheckBonus[PIECE_TYPE_NB] = {0, 16210, 14104, 16022, 16204, 15698, 15684};
-
 enum Stages {
     // generate main search moves
     MAIN_TT,
@@ -189,7 +187,7 @@ void MovePicker::score() {
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += bool(pos.check_squares(pt) & to) * CheckBonus[pt];
+            m.value += bool(pos.check_squares(pt) & to) * (pt == KNIGHT ? 14104 : 16384);
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 50000
