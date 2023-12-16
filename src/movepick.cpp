@@ -30,7 +30,7 @@ namespace Stockfish {
 
 namespace {
 
-constexpr int CheckBonus[PIECE_TYPE_NB] = {0, 16210, 14104, 16022, 16204, 15698, 15684};
+constexpr int CheckBonus[PIECE_TYPE_NB] = {0, 15764, 14421, 16010, 17457, 14372, 17040};
 
 enum Stages {
     // generate main search moves
