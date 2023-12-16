@@ -30,6 +30,14 @@ namespace Stockfish {
 
 namespace {
 
+constexpr int S = 128;
+
+int A[2][7];
+
+TUNE(SetRange(-S, S), A);
+
+inline int TRANS(int i, int h) { return h * (S + A[h > 0][i]) / S; }
+
 enum Stages {
     // generate main search moves
     MAIN_TT,
@@ -178,13 +186,13 @@ void MovePicker::score() {
             Square    to   = to_sq(m);
 
             // histories
-            m.value = 2 * (*mainHistory)[pos.side_to_move()][from_to(m)];
-            m.value += 2 * (*pawnHistory)[pawn_structure(pos)][pc][to];
-            m.value += 2 * (*continuationHistory[0])[pc][to];
-            m.value += (*continuationHistory[1])[pc][to];
-            m.value += (*continuationHistory[2])[pc][to] / 4;
-            m.value += (*continuationHistory[3])[pc][to];
-            m.value += (*continuationHistory[5])[pc][to];
+            m.value = 2 * TRANS(0, (*mainHistory)[pos.side_to_move()][from_to(m)]);
+            m.value += 2 * TRANS(1, (*pawnHistory)[pawn_structure(pos)][pc][to]);
+            m.value += 2 * TRANS(2, (*continuationHistory[0])[pc][to]);
+            m.value += TRANS(3, (*continuationHistory[1])[pc][to]);
+            m.value += TRANS(4, (*continuationHistory[2])[pc][to]) / 4;
+            m.value += TRANS(5, (*continuationHistory[3])[pc][to]);
+            m.value += TRANS(6, (*continuationHistory[5])[pc][to]);
 
             // bonus for checks
             m.value += bool(pos.check_squares(pt) & to) * 16384;
