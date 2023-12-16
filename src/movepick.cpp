@@ -32,11 +32,16 @@ namespace {
 
 constexpr int S = 128;
 
+int T[7];
 int A[2][7];
+
+TUNE(SetRange(-7183, 7183), T[0]);
+TUNE(SetRange(-8192, 8192), T[1]);
+TUNE(SetRange(-29952, 29952), T[2], T[3], T[4], T[5], T[6]);
 
 TUNE(SetRange(-S, S), A);
 
-inline int TRANS(int i, int h) { return h * (S + A[h > 0][i]) / S; }
+inline int TRANS(int i, int h) { return T[i] + (h - T[i]) * (S + A[h > T[i]][i]) / S; }
 
 enum Stages {
     // generate main search moves
