@@ -1405,7 +1405,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
     Move     ttMove, move, bestMove;
     Depth    ttDepth;
     Value    bestValue, value, ttValue, futilityValue, futilityBase;
-    bool     pvHit, givesCheck, capture;
+    bool     pvHit, givesCheck, capture, onlyTTmove;
     int      moveCount;
     Color    us = pos.side_to_move();
 
@@ -1420,6 +1420,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
     bestMove           = MOVE_NONE;
     ss->inCheck        = pos.checkers();
     moveCount          = 0;
+    onlyTTmove         = false;
 
     // Used to send selDepth info to GUI (selDepth counts from 1, ply from 0)
     if (PvNode && thisThread->selDepth < ss->ply + 1)
@@ -1475,8 +1476,10 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
                 tte->save(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER, DEPTH_NONE,
                           MOVE_NONE, ss->staticEval);
 
-            if (!PvNode || !ttMove)
+            if (!ttMove)
                 return bestValue;
+
+            onlyTTmove = true;
         }
 
         if (bestValue > alpha)
@@ -1500,7 +1503,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move()) != MOVE_NONE && (move == ttMove || bestValue < beta))
+    while ((move = mp.next_move()) != MOVE_NONE && (!onlyTTmove || move == ttMove))
     {
         assert(is_ok(move));
 
@@ -1585,7 +1588,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
         // Step 8. Check for a new best move
-        if (value > bestValue)
+        if (value > bestValue || onlyTTmove)
         {
             bestValue = value;
 
