@@ -1475,7 +1475,8 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
                 tte->save(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER, DEPTH_NONE,
                           MOVE_NONE, ss->staticEval);
 
-            return bestValue;
+            if (!ttMove)
+                return bestValue;
         }
 
         if (bestValue > alpha)
@@ -1499,7 +1500,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move()) != MOVE_NONE)
+    while ((move = mp.next_move()) != MOVE_NONE && (move == ttMove || bestValue < beta))
     {
         assert(is_ok(move));
 
