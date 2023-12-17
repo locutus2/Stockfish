@@ -1145,7 +1145,7 @@ moves_loop:  // When in check, search starts here
             r--;
 
         if (PvNode && capture && bestMove && !pos.capture_stage(bestMove))
-            r--;
+            r++;
 
         // Decrease reduction if a quiet ttMove has been singularly extended (~1 Elo)
         if (singularQuietLMR)
