@@ -1475,7 +1475,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
                 tte->save(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER, DEPTH_NONE,
                           MOVE_NONE, ss->staticEval);
 
-            if (!ttMove)
+            if (!PvNode || !ttMove)
                 return bestValue;
         }
 
