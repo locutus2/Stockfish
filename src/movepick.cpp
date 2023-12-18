@@ -182,13 +182,15 @@ void MovePicker::score() {
 
             // histories
             m.value =
-              (scale_history((*mainHistory)[pos.side_to_move()][from_to(m)], 2 * 116, 2 * 132)
-               + scale_history((*pawnHistory)[pawn_structure(pos)][pc][to], 2 * 114, 2 * 126)
-               + scale_history((*continuationHistory[0])[pc][to], 2 * 119, 2 * 135)
-               + scale_history((*continuationHistory[1])[pc][to], 127, 124)
-               + scale_history((*continuationHistory[2])[pc][to], 122 / 4, 140 / 4)
-               + scale_history((*continuationHistory[3])[pc][to], 123, 126)
-               + scale_history((*continuationHistory[5])[pc][to], 118, 130))
+              (scale_history((*mainHistory)[pos.side_to_move()][from_to(m)], 2 * (128 - 12),
+                             2 * (128 + 4))
+               + scale_history((*pawnHistory)[pawn_structure(pos)][pc][to], 2 * (128 - 23),
+                               2 * (128))
+               + scale_history((*continuationHistory[0])[pc][to], 2 * (128 - 14), 2 * (128 + 1))
+               + scale_history((*continuationHistory[1])[pc][to], 128 - 2, 128)
+               + scale_history((*continuationHistory[2])[pc][to], (128 - 10) / 4, (128 + 18) / 4)
+               + scale_history((*continuationHistory[3])[pc][to], 128 - 4, 128 + 1)
+               + scale_history((*continuationHistory[5])[pc][to], 128 - 8, 128))
               / 128;
 
             // bonus for checks
