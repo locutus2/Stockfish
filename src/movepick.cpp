@@ -30,7 +30,8 @@ namespace Stockfish {
 
 namespace {
 
-// Scales history values with different weights w0 and w1 for negative and positive values.
+// Scales history values with different weights w0 and w1 for values left and right of the threshold t0.
+// Also use at t0 value t1.
 inline int scale_history(int h, int t0, int t1, int w0, int w1) {
     return t1 + (h - t0) * (h > t0 ? w1 : w0);
 }
@@ -184,15 +185,13 @@ void MovePicker::score() {
 
             // histories
             m.value =
-              (scale_history((*mainHistory)[pos.side_to_move()][from_to(m)], -585, 2 * -11, 2 * 126,
-                             2 * 132)
-               + scale_history((*pawnHistory)[pawn_structure(pos)][pc][to], -5, 2 * -56, 2 * 129,
-                               2 * 126)
-               + scale_history((*continuationHistory[0])[pc][to], -268, 2 * 3212, 2 * 131, 2 * 135)
-               + scale_history((*continuationHistory[1])[pc][to], 146, 2319, 137, 124)
-               + scale_history((*continuationHistory[2])[pc][to], 2510, 3363 / 4, 122 / 4, 140 / 4)
-               + scale_history((*continuationHistory[3])[pc][to], -4774, 3311, 123, 126)
-               + scale_history((*continuationHistory[5])[pc][to], 1300, 776, 118, 130))
+              (scale_history((*mainHistory)[pos.side_to_move()][from_to(m)], -674, -324, 276, 244)
+               + scale_history((*pawnHistory)[pawn_structure(pos)][pc][to], 33, 806, 236, 240)
+               + scale_history((*continuationHistory[0])[pc][to], 1387, 6984, 222, 308)
+               + scale_history((*continuationHistory[1])[pc][to], 775, 3136, 125, 125)
+               + scale_history((*continuationHistory[2])[pc][to], 2133, 521, 34, 32)
+               + scale_history((*continuationHistory[3])[pc][to], -3996, 5391, 102, 137)
+               + scale_history((*continuationHistory[5])[pc][to], 1416, 749, 116, 135))
               / 128;
 
             // bonus for checks
