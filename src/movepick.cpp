@@ -31,7 +31,9 @@ namespace Stockfish {
 namespace {
 
 // Scales history values with different weights w0 and w1 for negative and positive values.
-inline int scale_history(int h, int t, int w0, int w1) { return t + (h - t) * (h > t ? w1 : w0); }
+inline int scale_history(int h, int t0, int t1, int w0, int w1) {
+    return t1 + (h - t0) * (h > t0 ? w1 : w0);
+}
 
 enum Stages {
     // generate main search moves
@@ -182,13 +184,15 @@ void MovePicker::score() {
 
             // histories
             m.value =
-              (scale_history(2 * (*mainHistory)[pos.side_to_move()][from_to(m)], 2 * 381, 126, 132)
-               + scale_history(2 * (*pawnHistory)[pawn_structure(pos)][pc][to], 2 * -118, 129, 126)
-               + scale_history(2 * (*continuationHistory[0])[pc][to], 2 * -869, 131, 135)
-               + scale_history((*continuationHistory[1])[pc][to], -1623, 137, 124)
-               + scale_history((*continuationHistory[2])[pc][to] / 4, -90 / 41, 122, 140)
-               + scale_history((*continuationHistory[3])[pc][to], -353, 123, 126)
-               + scale_history((*continuationHistory[5])[pc][to], 518, 118, 130))
+              (scale_history((*mainHistory)[pos.side_to_move()][from_to(m)], -585, 2 * -11, 2 * 126,
+                             2 * 132)
+               + scale_history((*pawnHistory)[pawn_structure(pos)][pc][to], -5, 2 * -56, 2 * 129,
+                               2 * 126)
+               + scale_history((*continuationHistory[0])[pc][to], -268, 2 * 3212, 2 * 131, 2 * 135)
+               + scale_history((*continuationHistory[1])[pc][to], 146, 2319, 137, 124)
+               + scale_history((*continuationHistory[2])[pc][to], 2510, 3363 / 4, 122 / 4, 140 / 4)
+               + scale_history((*continuationHistory[3])[pc][to], -4774, 3311, 123, 126)
+               + scale_history((*continuationHistory[5])[pc][to], 1300, 776, 118, 130))
               / 128;
 
             // bonus for checks
