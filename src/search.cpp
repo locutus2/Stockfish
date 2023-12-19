@@ -924,7 +924,7 @@ moves_loop:  // When in check, search starts here
     // at a depth equal to or greater than the current depth, and the result
     // of this search was a fail low.
     bool likelyFailLow = PvNode && ttMove && (tte->bound() & BOUND_UPPER) && tte->depth() >= depth;
-    bool captureBestMove = false;
+    bool quietBestMove = false;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1145,7 +1145,7 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
-        if (PvNode && !capture && captureBestMove)
+        if (PvNode && capture && quietBestMove)
             r++;
 
         // Decrease reduction if a quiet ttMove has been singularly extended (~1 Elo)
@@ -1295,8 +1295,8 @@ moves_loop:  // When in check, search starts here
 
             if (value > alpha)
             {
-                bestMove        = move;
-                captureBestMove = capture;
+                bestMove      = move;
+                quietBestMove = !capture;
 
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     update_pv(ss->pv, move, (ss + 1)->pv);
