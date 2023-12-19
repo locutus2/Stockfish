@@ -1310,6 +1310,9 @@ moves_loop:  // When in check, search starts here
 
                     assert(depth > 0);
                     alpha = value;  // Update alpha! Always alpha < beta
+
+                    if (prevSq != SQ_NONE && !capture)
+                        thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] = move;
                 }
             }
         }
