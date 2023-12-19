@@ -184,15 +184,14 @@ void MovePicker::score() {
             Square    to   = to_sq(m);
 
             // histories
-            m.value =
-              (scale_history((*mainHistory)[pos.side_to_move()][from_to(m)], -674, -324, 276, 244)
-               + scale_history((*pawnHistory)[pawn_structure(pos)][pc][to], 33, 806, 236, 240)
-               + scale_history((*continuationHistory[0])[pc][to], 1387, 6984, 222, 308)
-               + scale_history((*continuationHistory[1])[pc][to], 775, 3136, 125, 125)
-               + scale_history((*continuationHistory[2])[pc][to], 2133, 521, 34, 32)
-               + scale_history((*continuationHistory[3])[pc][to], -3996, 5391, 102, 137)
-               + scale_history((*continuationHistory[5])[pc][to], 1416, 749, 116, 135))
-              / 128;
+            m.value = 2 * (*mainHistory)[pos.side_to_move()][from_to(m)];
+            m.value += 2 * (*pawnHistory)[pawn_structure(pos)][pc][to];
+            m.value += (*continuationHistory[1])[pc][to];
+            m.value += (*continuationHistory[2])[pc][to] / 4;
+            m.value += (*continuationHistory[5])[pc][to];
+            m.value += (scale_history((*continuationHistory[0])[pc][to], 1387, 6984, 222, 308)
+                        + scale_history((*continuationHistory[3])[pc][to], -3996, 5391, 102, 137))
+                     / 128;
 
             // bonus for checks
             m.value += bool(pos.check_squares(pt) & to) * 16384;
