@@ -750,10 +750,10 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     {
         int bonus = std::clamp(-13 * int((ss - 1)->staticEval + ss->staticEval), -1652, 1546);
         thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)]
-          << bonus * (bonus > 0 ? 34 : 29) / 32;
+          << bonus * (bonus > 0 ? 71 : 52) / 64;
         if (type_of(pos.piece_on(prevSq)) != PAWN && type_of((ss - 1)->currentMove) != PROMOTION)
             thisThread->pawnHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq]
-              << bonus * (bonus > 0 ? 15 : 13) / 64;
+              << bonus * (bonus > 0 ? 14 : 11) / 64;
     }
 
     // Set up the improving flag, which is true if current static evaluation is
