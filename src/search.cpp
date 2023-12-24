@@ -47,11 +47,6 @@
 
 namespace Stockfish {
 
-int POS1 = 0, NEG1 = 0;
-int POS2 = 0, NEG2 = 0;
-TUNE(SetRange(-64,64), POS1, NEG1);
-TUNE(SetRange(-16,112), POS2, NEG2);
-
 namespace Search {
 
 LimitsType Limits;
@@ -754,13 +749,11 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     if (is_ok((ss - 1)->currentMove) && !(ss - 1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-13 * int((ss - 1)->staticEval + ss->staticEval), -1652, 1546);
-        int bonus1 = bonus * (64 + (bonus > 0 ? POS1 : NEG1)) / 64; 
-        thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << bonus1;
+        thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)]
+          << bonus * (bonus > 0 ? 34 : 29) / 32;
         if (type_of(pos.piece_on(prevSq)) != PAWN && type_of((ss - 1)->currentMove) != PROMOTION)
-        {
-            int bonus2 = bonus * (16 + (bonus > 0 ? POS2 : NEG2)) / 64; 
-            thisThread->pawnHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq] << bonus2;
-        }
+            thisThread->pawnHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq]
+              << bonus * (bonus > 0 ? 15 : 13) / 64;
     }
 
     // Set up the improving flag, which is true if current static evaluation is
