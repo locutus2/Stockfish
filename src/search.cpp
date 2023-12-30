@@ -759,7 +759,7 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     {
         int bonus = std::clamp(-13 * int((ss - 1)->staticEval + ss->staticEval), -1652, 1546);
         if (bonus > 0)
-            thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << 2 * bonus;
+            thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << bonus;
         if (type_of(pos.piece_on(prevSq)) != PAWN && type_of((ss - 1)->currentMove) != PROMOTION)
             thisThread->pawnHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq] << bonus / 4;
     }
