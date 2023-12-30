@@ -40,8 +40,8 @@ int Dmax, Dmin;
 //constexpr int EvCapOffset = -16778;
 //constexpr int EvCapWeight = 12;
 
-constexpr int EvCapOffset = QueenValue;
-//constexpr int EvCapOffset = (1 << 28);
+//constexpr int EvCapOffset = QueenValue;
+constexpr int EvCapOffset = (1 << 28);
 constexpr int EvCapWeight = 1;
 
 void calculateMinMax(StageType stage, int& Dmin, int& Dmax);
