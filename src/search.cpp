@@ -653,6 +653,7 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
             {
                 int penalty = -stat_malus(depth);
                 thisThread->mainHistory[us][from_to(ttMove)] << penalty;
+                thisThread->mainOrderHistory[us][from_to(ttMove)] << penalty;
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
 
                 if (ss->inCheck)
@@ -761,7 +762,8 @@ Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, boo
     if (is_ok((ss - 1)->currentMove) && !(ss - 1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-13 * int((ss - 1)->staticEval + ss->staticEval), -1652, 1546);
-        thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << bonus * (64 + (bonus > 0 ? 0 : 1)) / 64;
+        thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)] << bonus;
+        thisThread->mainOrderHistory[~us][from_to((ss - 1)->currentMove)] << bonus * (64 + (bonus > 0 ? 0 : 0)) / 64;
         if (type_of(pos.piece_on(prevSq)) != PAWN && type_of((ss - 1)->currentMove) != PROMOTION)
             thisThread->pawnHistory[pawn_structure(pos)][pos.piece_on(prevSq)][prevSq] << bonus / 4;
     }
@@ -943,7 +945,7 @@ moves_loop:  // When in check, search starts here
     //const bool PC = !PvNode&&!cutNode;
     //const bool PC = cutNode;
     const bool PC = true;  //STATS_QUIETS || STATS_EVASION_MAIN || STATS_REFUTATION;
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &captureHistory, contHist,
+    MovePicker mp(pos, ttMove, depth, &thisThread->mainOrderHistory, &captureHistory, contHist,
                   &thisThread->pawnHistory, countermove, ss->killers, PC);
 
     value            = bestValue;
@@ -1425,6 +1427,8 @@ moves_loop:  // When in check, search starts here
                                       stat_bonus(depth) * bonus);
         thisThread->mainHistory[~us][from_to((ss - 1)->currentMove)]
           << stat_bonus(depth) * bonus / 2;
+        thisThread->mainOrderHistory[~us][from_to((ss - 1)->currentMove)]
+          << stat_bonus(depth) * bonus / 2;
 
         if ((ss - 1)->inCheck)
             thisThread->inCheckHistory[~us][from_to((ss - 1)->currentMove)]
@@ -1573,7 +1577,7 @@ Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
     // will be generated.
     const bool PC     = false;
     Square     prevSq = is_ok((ss - 1)->currentMove) ? to_sq((ss - 1)->currentMove) : SQ_NONE;
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
+    MovePicker mp(pos, ttMove, depth, &thisThread->mainOrderHistory, &thisThread->captureHistory,
                   contHist, &thisThread->pawnHistory, PC);
 
     int quietCheckEvasions = 0;
@@ -1860,6 +1864,7 @@ void update_all_stats(const Position& pos,
                 thisThread->inCheckHistory[us][from_to(quietsSearched[i])] << -quietMoveMalus;
 
             thisThread->mainHistory[us][from_to(quietsSearched[i])] << -quietMoveMalus;
+            thisThread->mainOrderHistory[us][from_to(quietsSearched[i])] << -quietMoveMalus;
             update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]),
                                           to_sq(quietsSearched[i]), -quietMoveMalus);
         }
@@ -1923,6 +1928,7 @@ void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus) {
     Color   us         = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
     thisThread->mainHistory[us][from_to(move)] << bonus;
+    thisThread->mainOrderHistory[us][from_to(move)] << bonus;
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     if (ss->inCheck)
