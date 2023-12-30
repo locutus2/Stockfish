@@ -21,6 +21,7 @@
 
 #include <array>
 #include <cassert>
+#include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <limits>
@@ -55,15 +56,12 @@ class StatsEntry {
     operator const T&() const { return entry; }
 
     void operator<<(int bonus) {
-        assert(abs(bonus) <= D);  // Ensure range is [-D, D]
+        assert(std::abs(bonus) <= D);  // Ensure range is [-D, D]
         static_assert(D <= std::numeric_limits<T>::max(), "D overflows T");
 
-        //if (bonus > 0)
-        //    entry = std::max(entry, short(0));
+        entry += bonus - entry * std::abs(bonus) / D;
 
-        entry += (bonus * D - entry * abs(bonus)) / (D * 5 / 4);
-
-        assert(abs(entry) <= D);
+        assert(std::abs(entry) <= D);
     }
 };
 
@@ -169,7 +167,6 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const PawnHistory*,
-               Square,
                bool);
     MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
     ExtMove next_move(bool skipQuiets = false);
@@ -195,7 +192,6 @@ class MovePicker {
     Move                         ttMove;
     ExtMove                      refutations[3], *cur, *endMoves, *endBadCaptures;
     int                          stage;
-    Square                       recaptureSquare;
     Value                        threshold;
     Depth                        depth;
     ExtMove                      moves[MAX_MOVES];
