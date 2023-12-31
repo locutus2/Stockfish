@@ -359,7 +359,7 @@ void MovePicker::score() {
             int V                 = 0;
             int values[N_HISTORY] = {
               (*mainHistory)[pos.side_to_move()][from_to(m)],
-              (*pawnHistory)[pawn_structure(pos)][pc][to],
+              (*pawnHistory)[pawn_structure_index(pos)][pc][to],
               pos.this_thread()->inCheckHistory[pos.side_to_move()][from_to(m)],
               (*continuationHistory[0])[pc][to],
               (*continuationHistory[1])[pc][to],
