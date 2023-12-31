@@ -1396,7 +1396,7 @@ moves_loop:  // When in check, search starts here
                   depth, bestMove, unadjustedStaticEval);
 
     // Adjust correction history
-    if (!ss->inCheck && (!bestMove || !pos.capture(bestMove))
+    if (!ss->inCheck && (!bestMove || !pos.capture_stage(bestMove))
         && !(bestValue >= beta && bestValue <= ss->staticEval)
         && !(!bestMove && bestValue >= ss->staticEval))
     {
