@@ -307,10 +307,7 @@ top:
         [[fallthrough]];
 
     case QUIET :
-        if (skipQuiets)
-            return MOVE_NONE;
-
-        if (select<Next>([&]() {
+        if (!skipQuiets && select<Next>([&]() {
                 return *cur != refutations[0].move && *cur != refutations[1].move
                     && *cur != refutations[2].move;
             }))
@@ -324,7 +321,8 @@ top:
         [[fallthrough]];
 
     case BAD_CAPTURE :
-        return select<Next>([]() { return true; });
+        return select<Next>(
+          [&]() { return !skipQuiets || type_of(pos.piece_on(to_sq(*cur))) != PAWN; });
 
     case EVASION_INIT :
         cur      = moves;
