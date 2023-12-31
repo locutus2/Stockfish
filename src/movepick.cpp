@@ -292,7 +292,7 @@ void MovePicker::score() {
 
             // histories
             m.value = 2 * (*mainHistory)[pos.side_to_move()][from_to(m)];
-            m.value += 2 * (*pawnHistory)[pawn_structure(pos)][pc][to];
+            m.value += 2 * (*pawnHistory)[pawn_structure_index(pos)][pc][to];
             m.value += 2 * (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to] / 4;
@@ -336,7 +336,7 @@ void MovePicker::score() {
             {
                 m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
                         + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                        + (*pawnHistory)[pawn_structure(pos)][pos.moved_piece(m)][to_sq(m)];
+                        + (*pawnHistory)[pawn_structure_index(pos)][pos.moved_piece(m)][to_sq(m)];
                 //dbg_mean_of(m.value, 101);
                 //dbg_stdev_of(m.value, 101);
             }
@@ -371,11 +371,11 @@ void MovePicker::score() {
               std::max(int((*continuationHistory[0])[pc][to]), 0),
               std::min(int((*continuationHistory[0])[pc][to]), 0),
               (*mainHistory)[pos.side_to_move()][from_to(m)]
-                * (*pawnHistory)[pawn_structure(pos)][pc][to] / 8192,
+                * (*pawnHistory)[pawn_structure_index(pos)][pc][to] / 8192,
               (*mainHistory)[pos.side_to_move()][from_to(m)]
-                * (8192 + (*pawnHistory)[pawn_structure(pos)][pc][to]) / (2 * 8192),
+                * (8192 + (*pawnHistory)[pawn_structure_index(pos)][pc][to]) / (2 * 8192),
               (7183 + (*mainHistory)[pos.side_to_move()][from_to(m)])
-                * (8192 + (*pawnHistory)[pawn_structure(pos)][pc][to]) / (2 * 8192),
+                * (8192 + (*pawnHistory)[pawn_structure_index(pos)][pc][to]) / (2 * 8192),
               (STATS_REFUTATION ? position[k] : 0),
               bool(pos.check_squares(pt) & to) * 16384,
               (STATS_QUIETS && threatenedPieces & from

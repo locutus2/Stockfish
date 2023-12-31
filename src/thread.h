@@ -73,6 +73,7 @@ class Thread {
     PawnHistory           pawnHistory;
     PieceFromHistory      pieceFromHistory;
     PieceFromHistory      pieceToHistory;
+    CorrectionHistory     correctionHistory;
 };
 
 
