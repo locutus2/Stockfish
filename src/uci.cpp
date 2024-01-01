@@ -399,7 +399,7 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
     };
 
     constexpr int D = 10;
-    constexpr int K = 5;
+    constexpr int K = 4;
     const std::string PARAMS_NAME[] = {"a0", "a1"};
     constexpr int PARAMS_MIN[] = {238-K*D, 305-K*D};
     constexpr int PARAMS_MAX[] = {238+K*D, 305+K*D};
