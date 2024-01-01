@@ -398,10 +398,12 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         return s;
     };
 
-    const std::string PARAMS_NAME[] = {"pos", "neg"};
-    constexpr int PARAMS_MIN[] = {-64, -64};
-    constexpr int PARAMS_MAX[] = {64, 64};
-    constexpr int PARAMS_STEP[] = {16, 16};
+    constexpr int D = 10;
+    constexpr int K = 5;
+    const std::string PARAMS_NAME[] = {"a0", "a1"};
+    constexpr int PARAMS_MIN[] = {238-K*D, 305-K*D};
+    constexpr int PARAMS_MAX[] = {238+K*D, 305+K*D};
+    constexpr int PARAMS_STEP[] = {D, D};
 
     std::vector<int> PARAMS_VALUES[2];
     for(int i = 0; i < N_PARAMS; ++i)
