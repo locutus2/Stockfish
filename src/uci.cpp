@@ -482,7 +482,7 @@ void bench(Position& pos, std::istream& args, StateListPtr& states) {
 
     elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
 
-    //dbg_print();
+    dbg_print();
     dbg_print_auc(0, HISTORY_BUCKETS - 1);
 
     std::cerr << "\n==========================="
