@@ -410,7 +410,7 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
        for(int v = PARAMS_MIN[i]; v <= PARAMS_MAX[i]; v += PARAMS_STEP[i])
            PARAMS_VALUES[i].push_back(v);
 
-    out << "weight";
+    out << "AUC";
     for (const auto& name : PARAMS_NAME)
     {
         out << SEP << name;
