@@ -1047,7 +1047,8 @@ moves_loop:  // When in check, search starts here
                 lmrDepth = std::max(lmrDepth, -1);
 
                 //bool C = cutNode;
-                bool C = improving;
+                //bool C = improving;
+                bool C = priorCapture;
                 // Futility pruning: parent node (~13 Elo)
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
