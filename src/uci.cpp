@@ -394,7 +394,7 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
 
     auto tr = [](const std::string& str) -> std::string {
         std::string s(str);
-        std::replace(s.begin(), s.end(), '.', ',');
+        //std::replace(s.begin(), s.end(), '.', ',');
         return s;
     };
 
