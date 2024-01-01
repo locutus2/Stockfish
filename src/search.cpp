@@ -1049,7 +1049,8 @@ moves_loop:  // When in check, search starts here
                 //bool C = cutNode;
                 //bool C = improving;
                 //bool C = priorCapture;
-                bool C = PvNode;
+                //bool C = PvNode;
+                bool C = singularQuietLMR;
                 // Futility pruning: parent node (~13 Elo)
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
