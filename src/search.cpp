@@ -1016,11 +1016,11 @@ moves_loop:  // When in check, search starts here
                 {
                     Piece capturedPiece = pos.piece_on(to_sq(move));
                     int   futilityEval =
-                      ss->staticEval + 238 + getParam(0)*!cutNode + getParam(1)*cutNode + 305 * lmrDepth + PieceValue[capturedPiece]
+                      ss->staticEval + 238 + 305 * lmrDepth + PieceValue[capturedPiece]
+                      //ss->staticEval + 238 + getParam(0)*!cutNode + getParam(1)*cutNode + 305 * lmrDepth + PieceValue[capturedPiece]
                       //ss->staticEval + 238 + getParam(0)*!priorCapture + getParam(1)*priorCapture + 305 * lmrDepth + PieceValue[capturedPiece]
                       //ss->staticEval + 238 + getParam(0)*!improving + getParam(1)*improving + 305 * lmrDepth + PieceValue[capturedPiece]
                       //ss->staticEval + 238 + getParam(0) + (305 + getParam(1)) * lmrDepth + PieceValue[capturedPiece]
-                      //ss->staticEval + 238 + 305 * lmrDepth + PieceValue[capturedPiece]
                       + captureHistory[movedPiece][to_sq(move)][type_of(capturedPiece)] / 7;
                     if (futilityEval < alpha)
                         continue;
@@ -1046,10 +1046,11 @@ moves_loop:  // When in check, search starts here
                 lmrDepth += history / 7838;
                 lmrDepth = std::max(lmrDepth, -1);
 
+                bool C = cutNode;
                 // Futility pruning: parent node (~13 Elo)
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
-                           + 118 * lmrDepth
+                           + 118 * lmrDepth + getParam(0) + (getParam(1)-getParam)*C
                          <= alpha)
                     continue;
 
