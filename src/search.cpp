@@ -1402,7 +1402,7 @@ moves_loop:  // When in check, search starts here
     {
         int bonus = std::clamp(int(bestValue - ss->staticEval) * depth / 8,
                                -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
-        thisThread->correctionHistory[us][pawn_structure_index<Correction>(pos)] << bonus * (bonus > 0 ? 3 : 2) / 2;
+        thisThread->correctionHistory[us][pawn_structure_index<Correction>(pos)] << bonus * (bonus > 0 ? 5 : 1) / 4;
     }
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
