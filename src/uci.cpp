@@ -398,12 +398,13 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         return s;
     };
 
-    constexpr int D = 64;
+    constexpr int D0 = 59;
+    constexpr int D1 = 76;
     constexpr int K = 4;
     const std::string PARAMS_NAME[] = {"a0", "a1"};
-    constexpr int PARAMS_MIN[] = {-K*D, -K*D};
-    constexpr int PARAMS_MAX[] = {K*D, K*D};
-    constexpr int PARAMS_STEP[] = {D, D};
+    constexpr int PARAMS_MIN[] = {-K*D0, -K*D1};
+    constexpr int PARAMS_MAX[] = {K*D0, K*D1};
+    constexpr int PARAMS_STEP[] = {D0, D1};
 
     std::vector<int> PARAMS_VALUES[2];
     for(int i = 0; i < N_PARAMS; ++i)
