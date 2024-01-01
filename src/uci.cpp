@@ -40,7 +40,6 @@
 #include "nnue/evaluate_nnue.h"
 #include "position.h"
 #include "search.h"
-#include "stats.h"
 #include "thread.h"
 
 namespace Stockfish {
@@ -174,7 +173,6 @@ double executeBench(const std::vector<std::string>& list, Position& pos, StateLi
 
     std::string token;
 
-    init_stats(true);
     dbg_clear();
 
     for (const auto& cmd : list)
@@ -226,6 +224,7 @@ int ggt(int a, int b) {
 void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
     std::vector<std::string> list = setup_bench(pos, args);
 
+    /*
     constexpr char SEP = ';';
 
     auto tr = [](const std::string& str) -> std::string {
@@ -359,11 +358,13 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         }
     }
     out << "=> FINISHED: found no better solution" << std::endl << std::flush;
+    */
 }
 
 void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
     std::vector<std::string> list = setup_bench(pos, args);
 
+    /*
     constexpr char SEP = ';';
 
     auto tr = [](const std::string& str) -> std::string {
@@ -409,6 +410,7 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         }
         out << std::endl << std::flush;
     }
+    */
 }
 
 // Called when the engine receives the "bench" command.
@@ -458,7 +460,7 @@ void bench(Position& pos, std::istream& args, StateListPtr& states) {
 
     elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
 
-    dbg_print();
+    //dbg_print();
     dbg_print_auc(0, HISTORY_BUCKETS - 1);
 
     std::cerr << "\n==========================="

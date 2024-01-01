@@ -290,10 +290,7 @@ class TBFile: public std::ifstream {
 #endif
         uint8_t* data = (uint8_t*) *baseAddress;
 
-        constexpr uint8_t Magics[][4] = {
-          {0xD7, 0x66, 0x0C, 0xA5},
-          {0x71, 0xE8, 0x23, 0x5D}
-        };
+        constexpr uint8_t Magics[][4] = {{0xD7, 0x66, 0x0C, 0xA5}, {0x71, 0xE8, 0x23, 0x5D}};
 
         if (memcmp(data, Magics[type == WDL], 4))
         {
@@ -1148,10 +1145,8 @@ void set(T& e, uint8_t* data) {
         for (int i = 0; i < sides; i++)
             *e.get(i, f) = PairsData();
 
-        int order[][2] = {
-          {*data & 0xF, pp ? *(data + 1) & 0xF : 0xF},
-          {*data >> 4,  pp ? *(data + 1) >> 4 : 0xF }
-        };
+        int order[][2] = {{*data & 0xF, pp ? *(data + 1) & 0xF : 0xF},
+                          {*data >> 4, pp ? *(data + 1) >> 4 : 0xF}};
         data += 1 + pp;
 
         for (int k = 0; k < e.pieceCount; ++k, ++data)

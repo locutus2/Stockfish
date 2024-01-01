@@ -24,7 +24,6 @@
 #include "misc.h"
 #include "position.h"
 #include "search.h"
-#include "stats.h"
 #include "thread.h"
 #include "tune.h"
 #include "types.h"
@@ -41,7 +40,6 @@ int main(int argc, char* argv[]) {
     Tune::init();
     Bitboards::init();
     Position::init();
-    init_stats();
     Threads.set(size_t(Options["Threads"]));
     Search::clear();  // After threads are up
     Eval::NNUE::init();

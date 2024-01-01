@@ -31,6 +31,8 @@
 
 namespace Stockfish {
 
+constexpr int HISTORY_BUCKETS = 10000;
+
 std::string engine_info(bool to_uci = false);
 std::string compiler_info();
 

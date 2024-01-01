@@ -116,8 +116,6 @@ enum StatsType {
 // see www.chessprogramming.org/Butterfly_Boards (~11 elo)
 using ButterflyHistory = Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
 
-using InCheckHistory = Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
-
 // CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
 // move, see www.chessprogramming.org/Countermove_Heuristic
 using CounterMoveHistory = Stats<Move, NOT_USED, PIECE_NB, SQUARE_NB>;
@@ -141,14 +139,6 @@ using PawnHistory = Stats<int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>
 using CorrectionHistory =
   Stats<int16_t, CORRECTION_HISTORY_LIMIT, COLOR_NB, CORRECTION_HISTORY_SIZE>;
 
-using PieceFromHistory = Stats<int16_t, 8192, PIECE_NB, SQUARE_NB>;
-
-enum ScoreType {
-    SCORE_CAPTURES,
-    SCORE_REFUTATIONS,
-    SCORE_QUIETS,
-    SCORE_EVASIONS
-};
 // MovePicker class is used to pick one pseudo-legal move at a time from the
 // current position. The most important method is next_move(), which returns a
 // new pseudo-legal move each time it is called, until there are no moves left,
@@ -172,7 +162,6 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const PawnHistory*,
-               //const PieceToHistory***,
                Move,
                const Move*,
                bool,
@@ -186,16 +175,12 @@ class MovePicker {
                const PawnHistory*,
                bool);
     MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
-    ExtMove next_move(bool skipQuiets = false);
-    bool    isQuiet() const;
-    bool    isEvasion() const;
-    bool    isRefutation() const;
-    bool    isCapture() const;
+    Move next_move(bool skipQuiets = false);
 
    private:
     template<PickType T, typename Pred>
-    ExtMove select(Pred);
-    template<ScoreType>
+    Move select(Pred);
+    template<GenType>
     void     score();
     ExtMove* begin() { return cur; }
     ExtMove* end() { return endMoves; }
@@ -205,7 +190,6 @@ class MovePicker {
     const CapturePieceToHistory* captureHistory;
     const PieceToHistory**       continuationHistory;
     const PawnHistory*           pawnHistory;
-    const PieceToHistory*        kingHistory[COLOR_NB];
     Move                         ttMove;
     ExtMove                      refutations[3], *cur, *endMoves, *endBadCaptures;
     int                          stage;
@@ -213,7 +197,7 @@ class MovePicker {
     Depth                        depth;
     ExtMove                      moves[MAX_MOVES];
     bool                         C = false;
-    Move prevMove;
+    Move                         prevMove;
 };
 
 }  // namespace Stockfish

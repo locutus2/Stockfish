@@ -17,7 +17,6 @@
 */
 
 #include "misc.h"
-#include "stats.h"
 
 #ifdef _WIN32
     #if _WIN32_WINNT < 0x0601
@@ -423,8 +422,7 @@ double dbg_print_auc(int start, int end, bool display) {
             }
 
         auc = double(nAuc) / 2 / n_neg / n_pos;
-        if (USE_ONLY_RANK)
-            auc = 1 - auc;
+        auc = 1 - auc;
 
         if (display)
             std::cerr << "AUC #" << start << "-" << end << ": Total " << n_pos + n_neg << " AUC "
