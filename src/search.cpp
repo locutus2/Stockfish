@@ -968,7 +968,7 @@ moves_loop:  // When in check, search starts here
     //const bool PC = cutNode;
     const bool PC = true;  //STATS_QUIETS || STATS_EVASION_MAIN || STATS_REFUTATION;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainOrderHistory, &captureHistory, contHist,
-                  &thisThread->pawnHistory, countermove, ss->killers, PC);
+                  &thisThread->pawnHistory, countermove, ss->killers, PC, (ss-1)->currentMove);
 
     value            = bestValue;
     moveCountPruning = singularQuietLMR = false;

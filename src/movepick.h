@@ -175,7 +175,8 @@ class MovePicker {
                //const PieceToHistory***,
                Move,
                const Move*,
-               bool);
+               bool,
+               Move prevMove);
     MovePicker(const Position&,
                Move,
                Depth,
@@ -212,6 +213,7 @@ class MovePicker {
     Depth                        depth;
     ExtMove                      moves[MAX_MOVES];
     bool                         C = false;
+    Move prevMove;
 };
 
 }  // namespace Stockfish

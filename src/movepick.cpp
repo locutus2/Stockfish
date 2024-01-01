@@ -186,7 +186,8 @@ MovePicker::MovePicker(const Position&              p,
                        //const PieceToHistory***       kh,
                        Move        cm,
                        const Move* killers,
-                       bool        cond) :
+                       bool        cond,
+                       Move pm) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
@@ -199,7 +200,7 @@ MovePicker::MovePicker(const Position&              p,
       {killers[1], 0 },
       {cm,         -1}
 },
-    depth(d), C(cond) {
+    depth(d), C(cond), prevMove(pm) {
     assert(d > 0);
 
     stage = (pos.checkers() ? EVASION_TT : MAIN_TT) + !(ttm && pos.pseudo_legal(ttm));
@@ -469,7 +470,7 @@ top:
     case GOOD_CAPTURE :
         if (select<Next>([&]() {
                 // Move losing capture to endBadCaptures to be tried later
-                return pos.see_ge(*cur, Value(-cur->value)) ? true
+                return pos.see_ge(*cur, Value(-cur->value) - 0 * (is_ok(prevMove) && to_sq(cur->move) == to_sq(prevMove))) ? true
                                                             : (*endBadCaptures++ = *cur, false);
             }))
             return *(cur - 1);
