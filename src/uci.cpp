@@ -398,8 +398,8 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         return s;
     };
 
-    constexpr int D0 = 59;
-    constexpr int D1 = 59;
+    constexpr int D0 = 64;
+    constexpr int D1 = 64;
     constexpr int K = 4;
     const std::string PARAMS_NAME[] = {"a0", "a1"};
     constexpr int PARAMS_MIN[] = {-K*D0, -K*D1};
