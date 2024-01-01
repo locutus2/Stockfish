@@ -1070,8 +1070,8 @@ moves_loop:  // When in check, search starts here
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
                            + 118 * lmrDepth// + getParam(0) + (getParam(1) - getParam(0)) * C
                            //+ 118 * lmrDepth + getParam(0) + (getParam(1) - getParam(0)) * C
-                           - int(getParam(0) * P0 / (1-P0)) * !C0 + getParam(0) * C0
-                           - int(getParam(1) * P1 / (1-P1)) * !C1 + getParam(1) * C1
+                           - int(getParam(0) * P0) + getParam(0) * C0
+                           - int(getParam(1) * P1) + getParam(1) * C1
                          <= alpha)
                     continue;
 
