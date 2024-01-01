@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <deque>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -361,10 +362,34 @@ void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream
     */
 }
 
+template<int N>
+struct Loop
+{
+    typedef std::function<void(void)> F;
+    const F action;
+    std::vector<int> values[N];
+    Loop(const std::vector<int> v[N], const F& f) : action(f) { 
+        for(int i = 0; i < N; ++i)
+            values[i] = v[i];
+    }
+
+    void run(int i = 0)
+    {
+        if (i < N)
+        {
+            for(int v : values[i])
+            {
+                setParam(i, v);
+                run(i+1);
+            }
+        }
+        else action();
+    }
+};
+
 void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
     std::vector<std::string> list = setup_bench(pos, args);
 
-    /*
     constexpr char SEP = ';';
 
     auto tr = [](const std::string& str) -> std::string {
@@ -373,44 +398,36 @@ void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream
         return s;
     };
 
+    const std::string PARAMS_NAME[] = {"pos", "neg"};
+    constexpr int PARAMS_MIN[] = {-64, -64};
+    constexpr int PARAMS_MAX[] = {64, 64};
+    constexpr int PARAMS_STEP[] = {16, 16};
+
+    std::vector<int> PARAMS_VALUES[2];
+    for(int i = 0; i < N_PARAMS; ++i)
+       for(int v = PARAMS_MIN[i]; v <= PARAMS_MAX[i]; v += PARAMS_STEP[i])
+           PARAMS_VALUES[i].push_back(v);
+
     out << "weight";
-    for (const auto& head : STATS_PARAMS)
+    for (const auto& name : PARAMS_NAME)
     {
-        out << SEP << std::get<1>(head);
+        out << SEP << name;
     }
     out << std::endl << std::flush;
 
-    for (const auto& step : STATS_STEPS)
-    {
-        out << tr(std::string(std::get<2>(step))) << std::flush;
-        double AUC = -1;
+    auto action = [&]()->void{
+       //dbg_clear();
+       double AUC = executeBench(list, pos, states);
+       //double AUC = dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
 
-        for (const auto& p : STATS_PARAMS)
-        {
-            if (AUC < 0 || std::get<0>(step) != 0)
-            {
-                for (int i = 0; i < N_HISTORY; ++i)
-                {
-                    HISTORY_WEIGHT[i][0] = HISTORY_START[i][0];
-                    HISTORY_WEIGHT[i][1] = HISTORY_START[i][1];
-                }
-                int P                = std::get<0>(p);
-                int S                = std::get<1>(step);
-                int W                = std::get<0>(step);
-                HISTORY_WEIGHT[P][0] = HISTORY_WEIGHT[P][0] * S + W * HISTORY_START[P][1];
-                HISTORY_WEIGHT[P][1] *= S;
+       out << tr(std::to_string(AUC));
+       for(int i = 0; i < N_PARAMS; ++i)
+           out << SEP << tr(std::to_string(getParam(i)));
+       out << std::endl << std::flush;
+    };
 
-                init_stats(true);
-                dbg_clear();
-                executeBench(list, pos, states);
-
-                AUC = dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
-            }
-            out << SEP << tr(std::to_string(AUC)) << '%' << std::flush;
-        }
-        out << std::endl << std::flush;
-    }
-    */
+    Loop<N_PARAMS> loop(PARAMS_VALUES, action);
+    loop.run();
 }
 
 // Called when the engine receives the "bench" command.

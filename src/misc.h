@@ -31,6 +31,7 @@
 
 namespace Stockfish {
 
+constexpr int N_PARAMS = 2;
 constexpr int HISTORY_BUCKETS = 10000;
 
 std::string engine_info(bool to_uci = false);
@@ -48,6 +49,9 @@ void  std_aligned_free(void* ptr);
 void* aligned_large_pages_alloc(size_t size);
 // nop if mem == nullptr
 void aligned_large_pages_free(void* mem);
+
+int getParam(int n);
+void setParam(int n, int v);
 
 void   dbg_hit_on(bool cond, int slot = 0, int weight = 1);
 void   dbg_mean_of(int64_t value, int slot = 0, int weight = 1);

@@ -309,6 +309,21 @@ std::string compiler_info() {
     return compiler;
 }
 
+namespace {
+    int PARAMS[N_PARAMS];
+}
+
+int getParam(int n)
+{
+    assert(n >= 0 && n < N_PARAMS);
+    return PARAMS[n];
+}
+
+void setParam(int n, int v)
+{
+    assert(n >= 0 && n < N_PARAMS);
+    PARAMS[n] = v;
+}
 
 // Debug functions used mainly to collect run-time statistics
 constexpr int MaxDebugSlots = HISTORY_BUCKETS;
