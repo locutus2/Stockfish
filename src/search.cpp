@@ -1052,12 +1052,20 @@ moves_loop:  // When in check, search starts here
                 //bool C = PvNode;
                 //bool C = singularQuietLMR;
                 // Futility pruning: parent node (~13 Elo)
+                /*
                 bool C0 = cutNode;
                 bool C1 = improving;
                 //Mean #0: Total 24482496 Mean 0.321481
                 //Mean #1: Total 24482496 Mean 0.378073
                 constexpr double P0 = 0.321481;
                 constexpr double P1 = 0.378073;
+                */
+                bool C0 = priorCapture;
+                bool C1 = PvNode;
+                //Mean #0: Total 24482496 Mean 0.28863
+                //Mean #1: Total 24482496 Mean 0.0781727
+                constexpr double P0 = 0.28863;
+                constexpr double P1 = 0.0781727;
                 /*
                 if (!ss->inCheck && lmrDepth < 14)
                 {
