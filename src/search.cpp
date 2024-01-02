@@ -1104,10 +1104,8 @@ moves_loop:  // When in check, search starts here
                 const int I1 = K + getParam(1) / D1;
                 bool C0 = cutNode;
                 bool C1 = improving;
-                //constexpr double P0 = 0.321481;
-                //constexpr double P1 = 0.378073;
-                constexpr int V0[9] = {};
-                constexpr int V1[9] = {};
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                constexpr int V1[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
