@@ -1046,6 +1046,7 @@ moves_loop:  // When in check, search starts here
                 lmrDepth += history / 7838;
                 lmrDepth = std::max(lmrDepth, -1);
 
+                // old stuff
                 //bool C = cutNode;
                 //bool C = improving;
                 //bool C = priorCapture;
@@ -1076,12 +1077,14 @@ moves_loop:  // When in check, search starts here
                 constexpr double P0 = 0.0476765;
                 constexpr double P1 = 0.0927054;
                 */
+                /*
                 int C0 = !PvNode&&!cutNode;
                 int C1 = moveCount;
                 //Mean #0: Total 24482496 Mean 0.600346
                 //Mean #1: Total 24482496 Mean 10.2757
                 constexpr double P0 = 0.600346;
                 constexpr double P1 = 10.2757;
+                */
                 /*
                 if (!ss->inCheck && lmrDepth < 14)
                 {
@@ -1090,12 +1093,75 @@ moves_loop:  // When in check, search starts here
                 }
                 */
 
+                //new stuff
+                // P(V <= 0) = P(V <= -x1) * (1-P0) + P(V <= -x2) * P0
+                // P(V <= -x1) = (P(V>=0) - P(V <= -x2) * P0) / (1-P0)
+                // determine x1 = f(x2)
+                constexpr int K = 4;
+                constexpr int D0 = 64;
+                constexpr int D1 = 64;
+                const int I0 = K + getParam(0) / D0;
+                const int I1 = K + getParam(1) / D1;
+                bool C0 = cutNode;
+                bool C1 = improving;
+                //constexpr double P0 = 0.321481;
+                //constexpr double P1 = 0.378073;
+                constexpr int V0[9] = {};
+                constexpr int V1[9] = {};
+
+                if (MEASURE && !ss->inCheck && lmrDepth < 14)
+                {
+                    dbg_mean_of(C0, 0);
+                    dbg_mean_of(C1, 1);
+
+                    int V = ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth - alpha;
+                    bool PR = (V <= 0);
+                    dbg_mean_of(PR, 10);
+
+                    for(int v0 = -(K+1)*D0; v0 <= (K+1)*D0; ++v0)
+                    {
+                        int i = v0 + (K+1)*D0;
+                        bool PR0 = (V + v0 <= 0);
+                        dbg_mean_of(PR0, 1000*(1+C0)+i);
+                    }
+
+                    for(int v1 = -(K+1)*D1; v1 <= (K+1)*D1; ++v1)
+                    {
+                        int i = v1 + (K+1)*D1;
+                        bool PR1 = (V + v1 <= 0);
+                        dbg_mean_of(PR1, 1000*(5+C1)+i);
+                    }
+
+                    /*
+                    for(int i = 0; i < 9; ++i)
+                    {
+                        int v0 = 64*(i-4);
+                        int v1 = 64*(i-4);
+                        bool PR0 = (V + v0*C0 <= 0);
+                        bool PR1 = (V + v1*C1 <= 0);
+                        dbg_mean_of(PR0, 100+i);
+                        dbg_mean_of(PR1, 200+i);
+
+                        for(int j = 0; j < 8; ++j)
+                        {
+                            v0 = 64*(i-4)+(64/8)*(j-4);
+                            v1 = 64*(i-4)+(64/8)*(j-4);
+                            PR0 = (V + v0*C0 <= 0);
+                            PR1 = (V + v1*C1 <= 0);
+                            dbg_mean_of(PR0, 1000+i*10+j);
+                            dbg_mean_of(PR1, 2000+i*10+j);
+                        }
+                    }
+                    */
+                }
+
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
-                           + 118 * lmrDepth// + getParam(0) + (getParam(1) - getParam(0)) * C
-                           //+ 118 * lmrDepth + getParam(0) + (getParam(1) - getParam(0)) * C
-                           - int(getParam(0) * P0) + getParam(0) * C0
-                           - int(getParam(1) * P1) + getParam(1) * C1
+                           + 118 * lmrDepth
+                           + V0[I0] * !C0 + getParam(0) * C0
+                           + V1[I1] * !C1 + getParam(1) * C1
+                           //- int(getParam(0) * P0) + getParam(0) * C0
+                           //- int(getParam(1) * P1) + getParam(1) * C1
                          <= alpha)
                     continue;
 
