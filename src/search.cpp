@@ -1068,12 +1068,20 @@ moves_loop:  // When in check, search starts here
                 constexpr double P0 = 0.28863;
                 constexpr double P1 = 0.0781727;
                 */
+                /*
                 bool C0 = singularQuietLMR;
                 bool C1 = moveCountPruning;
                 //Mean #0: Total 24482496 Mean 0.0476765
                 //Mean #1: Total 24482496 Mean 0.0927054
                 constexpr double P0 = 0.0476765;
                 constexpr double P1 = 0.0927054;
+                */
+                int C0 = !PvNode&&!cutNode;
+                int C1 = moveCount;
+                //Mean #0: Total 24482496 Mean 0.600346
+                //Mean #1: Total 24482496 Mean 10.2757
+                constexpr double P0 = 0.600346;
+                constexpr double P1 = 10.2757;
                 /*
                 if (!ss->inCheck && lmrDepth < 14)
                 {
