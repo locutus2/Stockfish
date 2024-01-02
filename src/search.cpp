@@ -1115,13 +1115,19 @@ moves_loop:  // When in check, search starts here
                 constexpr double P1 = 0.0781727;
                 constexpr int V0[9] = {48,   40,  30,  16,  0,   -23, -43, -57, -66, };
                 constexpr int V1[9] = {18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
-                */
                 bool C0 = cutNode;
                 bool C1 = priorCapture;
                 constexpr double P0 = 0.321481;
                 constexpr double P1 = 0.28863;
                 constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
                 constexpr int V1[9] = {48,   40,  30,  16,  0,   -23, -43, -57, -66, };
+                */
+                bool C0 = cutNode;
+                bool C1 = PvNode;
+                constexpr double P0 = 0.321481;
+                constexpr double P1 = 0.0781727;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                constexpr int V1[9] = {18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
