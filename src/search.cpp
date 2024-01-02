@@ -1104,36 +1104,46 @@ moves_loop:  // When in check, search starts here
                 const int I1 = K + getParam(1) / D1;
                 /*
                 bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
                 bool C1 = improving;
-                constexpr double P0 = 0.321481;
                 constexpr double P1 = 0.378073;
-                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
                 constexpr int V1[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
+
                 bool C0 = priorCapture;
-                bool C1 = PvNode;
                 constexpr double P0 = 0.28863;
-                constexpr double P1 = 0.0781727;
                 constexpr int V0[9] = {48,   40,  30,  16,  0,   -23, -43, -57, -66, };
-                constexpr int V1[9] = {18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
-                bool C0 = cutNode;
-                bool C1 = priorCapture;
-                constexpr double P0 = 0.321481;
-                constexpr double P1 = 0.28863;
-                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
-                constexpr int V1[9] = {48,   40,  30,  16,  0,   -23, -43, -57, -66, };
-                bool C0 = cutNode;
                 bool C1 = PvNode;
-                constexpr double P0 = 0.321481;
                 constexpr double P1 = 0.0781727;
-                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
                 constexpr int V1[9] = {18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
+
+                bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                bool C1 = priorCapture;
+                constexpr double P1 = 0.28863;
+                constexpr int V1[9] = {48,   40,  30,  16,  0,   -23, -43, -57, -66, };
+
+                bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                bool C1 = PvNode;
+                constexpr double P1 = 0.0781727;
+                constexpr int V1[9] = {18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
+
+                bool C0 = improving;
+                constexpr double P0 = 0.378073;
+                constexpr int V0[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
+                bool C1 = priorCapture;
+                constexpr double P1 = 0.28863;
+                constexpr int V1[9] = {48,   40,  30,  16,  0,   -23, -43, -57, -66, };
                 */
                 bool C0 = improving;
-                bool C1 = priorCapture;
                 constexpr double P0 = 0.378073;
-                constexpr double P1 = 0.28863;
                 constexpr int V0[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
-                constexpr int V1[9] = {48,   40,  30,  16,  0,   -23, -43, -57, -66, };
+                bool C1 = PvNode;
+                constexpr double P1 = 0.0781727;
+                constexpr int V1[9] = {18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
