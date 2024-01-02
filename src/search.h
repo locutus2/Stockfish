@@ -28,8 +28,6 @@
 
 namespace Stockfish {
 
-constexpr bool MEASURE = false;
-
 class Position;
 
 namespace Search {
