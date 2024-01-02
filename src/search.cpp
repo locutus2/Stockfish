@@ -1061,8 +1061,8 @@ moves_loop:  // When in check, search starts here
                 /*
                 if (!ss->inCheck && lmrDepth < 14)
                 {
-                    dbg_mean_of(C1, 0);
-                    dbg_mean_of(C2, 1);
+                    dbg_mean_of(C0, 0);
+                    dbg_mean_of(C1, 1);
                 }
                 */
 
