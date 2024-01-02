@@ -1102,10 +1102,20 @@ moves_loop:  // When in check, search starts here
                 constexpr int D1 = 64;
                 const int I0 = K + getParam(0) / D0;
                 const int I1 = K + getParam(1) / D1;
+                /*
                 bool C0 = cutNode;
                 bool C1 = improving;
+                constexpr double P0 = 0.321481;
+                constexpr double P1 = 0.378073;
                 constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
                 constexpr int V1[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
+                */
+                bool C0 = priorCapture;
+                bool C1 = PvNode;
+                constexpr double P0 = 0.28863;
+                constexpr double P1 = 0.0781727;
+                constexpr int V0[9] = { };
+                constexpr int V1[9] = { };
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
@@ -1129,37 +1139,29 @@ moves_loop:  // When in check, search starts here
                         bool PR1 = (V + v1 <= 0);
                         dbg_mean_of(PR1, 1000*(5+C1)+i);
                     }
-
-                    /*
-                    for(int i = 0; i < 9; ++i)
-                    {
-                        int v0 = 64*(i-4);
-                        int v1 = 64*(i-4);
-                        bool PR0 = (V + v0*C0 <= 0);
-                        bool PR1 = (V + v1*C1 <= 0);
-                        dbg_mean_of(PR0, 100+i);
-                        dbg_mean_of(PR1, 200+i);
-
-                        for(int j = 0; j < 8; ++j)
-                        {
-                            v0 = 64*(i-4)+(64/8)*(j-4);
-                            v1 = 64*(i-4)+(64/8)*(j-4);
-                            PR0 = (V + v0*C0 <= 0);
-                            PR1 = (V + v1*C1 <= 0);
-                            dbg_mean_of(PR0, 1000+i*10+j);
-                            dbg_mean_of(PR1, 2000+i*10+j);
-                        }
-                    }
-                    */
                 }
 
+                /*
+                if (!ss->inCheck && lmrDepth < 14)
+                {
+                    dbg_mean_of(ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth <= alpha, 0);
+                    dbg_mean_of(ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth + 256 * (cutNode - improving) + 14 <= alpha, 1);
+                    dbg_mean_of(ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth + 342 * cutNode - 383 * improving + 41 <= alpha, 2);
+                    dbg_mean_of(ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth + 342 * cutNode - 256 * (PvNode + priorCapture) + 94 <= alpha, 3);
+                    dbg_mean_of(ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth - 192 * singularQuietLMR + 64 * moveCountPruning <= alpha, 4);
+                }
+                */
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
                            + 118 * lmrDepth
-                           + V0[I0] * !C0 + getParam(0) * C0
-                           + V1[I1] * !C1 + getParam(1) * C1
-                           //- int(getParam(0) * P0) + getParam(0) * C0
-                           //- int(getParam(1) * P1) + getParam(1) * C1
+                           //- 192 * singularQuietLMR + 64 * moveCountPruning
+                           //+ 342 * cutNode - 383 * improving + 41
+                           + (MEASURE ? 0 : 
+                             + V0[I0] * !C0 + getParam(0) * C0
+                             + V1[I1] * !C1 + getParam(1) * C1
+                             //- int(getParam(0) * P0) + getParam(0) * C0
+                             //- int(getParam(1) * P1) + getParam(1) * C1
+                           )
                          <= alpha)
                     continue;
 
