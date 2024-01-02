@@ -1114,8 +1114,8 @@ moves_loop:  // When in check, search starts here
                 bool C1 = PvNode;
                 constexpr double P0 = 0.28863;
                 constexpr double P1 = 0.0781727;
-                constexpr int V0[9] = { };
-                constexpr int V1[9] = { };
+                constexpr int V0[9] = {48,   40,  30,  16,  0,   -23, -43, -57, -66, };
+                constexpr int V1[9] = {18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
@@ -1156,12 +1156,10 @@ moves_loop:  // When in check, search starts here
                            + 118 * lmrDepth
                            //- 192 * singularQuietLMR + 64 * moveCountPruning
                            //+ 342 * cutNode - 383 * improving + 41
-                           + (MEASURE ? 0 : 
                              + V0[I0] * !C0 + getParam(0) * C0
                              + V1[I1] * !C1 + getParam(1) * C1
                              //- int(getParam(0) * P0) + getParam(0) * C0
                              //- int(getParam(1) * P1) + getParam(1) * C1
-                           )
                          <= alpha)
                     continue;
 

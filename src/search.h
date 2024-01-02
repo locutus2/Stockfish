@@ -28,7 +28,7 @@
 
 namespace Stockfish {
 
-constexpr bool MEASURE = true;
+constexpr bool MEASURE = false;
 
 class Position;
 
