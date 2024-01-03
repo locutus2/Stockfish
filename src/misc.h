@@ -36,8 +36,8 @@ namespace Stockfish {
 constexpr int HISTORY_BUCKETS = 10000;
 
 constexpr int N_PARAMS = 2;
-constexpr bool MEASURE = false;
 constexpr bool ADVANCED = true;
+constexpr bool MEASURE = false;
 //------------------------------------
 
 std::string engine_info(bool to_uci = false);
