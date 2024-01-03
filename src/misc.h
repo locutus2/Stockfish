@@ -39,7 +39,8 @@ constexpr int N_PARAMS = 2;
 
 enum Modes { ADVANCED_COMP, SIMPLE_COMP, SINGLE };
 
-constexpr Modes MODE = ADVANCED_COMP;
+//constexpr Modes MODE = ADVANCED_COMP;
+constexpr Modes MODE = SINGLE;
 
 constexpr bool MEASURE = false;
 //------------------------------------

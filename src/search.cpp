@@ -1179,7 +1179,6 @@ moves_loop:  // When in check, search starts here
                 bool C1 = moveCountPruning;
                 constexpr double P1 = 0.0927054;
                 constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
-                */
 
                 bool C0 = ttCapture;
                 constexpr double P0 = 0.091047;
@@ -1187,6 +1186,14 @@ moves_loop:  // When in check, search starts here
                 bool C1 = !PvNode && !cutNode;
                 constexpr double P1 = 0.600346;
                 constexpr int V1[9] = { 320, 320, 320, 80,  0,   -98, -196,    -271,    -320 };
+                */
+
+                bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                bool C1 = moveCountPruning;
+                constexpr double P1 = 0.0927054;
+                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
@@ -1237,7 +1244,7 @@ moves_loop:  // When in check, search starts here
                              - int(getParam(0) * P0) + getParam(0) * C0
                              - int(getParam(1) * P1) + getParam(1) * C1
                              : MODE == SINGLE ?
-                             + getParam(0) * !C0 + getParam(0) * C0
+                             + getParam(0) * !C0 + getParam(1) * C0
                              : 0
                              )
                          <= alpha)
