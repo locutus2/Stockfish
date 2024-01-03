@@ -1159,26 +1159,12 @@ moves_loop:  // When in check, search starts here
                 constexpr double P1 = 0.0476765;
                 constexpr int V1[9] = { 12,   9,   6,   2,   0,   -5,  -7,  -8,  -9 };
 
-                bool C0 = improving;
-                constexpr double P0 = 0.378073;
-                constexpr int V0[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
-                bool C1 = moveCountPruning;
-                constexpr double P1 = 0.0927054;
-                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
-
                 bool C0 = ttCapture;
                 constexpr double P0 = 0.091047;
                 constexpr int V0[9] = { 18,  14,  10,  5,   0,   -7,  -13, -19, -23 };
                 bool C1 = !PvNode && !cutNode;
                 constexpr double P1 = 0.600346;
                 constexpr int V1[9] = { 320, 320, 320, 80,  0,   -98, -196,    -271,    -320 };
-
-                bool C0 = cutNode;
-                constexpr double P0 = 0.321481;
-                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
-                bool C1 = moveCountPruning;
-                constexpr double P1 = 0.0927054;
-                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
 
                 bool C0 = singularQuietLMR;
                 constexpr double P0 = 0.0476765;
@@ -1187,7 +1173,6 @@ moves_loop:  // When in check, search starts here
                 constexpr double P1 = 0.0927054;
                 constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
                 constexpr double P01 = 0.00100067;
-                */
 
                 bool C0 = cutNode;
                 constexpr double P0 = 0.321481;
@@ -1196,6 +1181,23 @@ moves_loop:  // When in check, search starts here
                 constexpr double P1 = 0.378073;
                 constexpr int V1[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
                 constexpr double P01 = 0.167329;
+
+                bool C0 = improving;
+                constexpr double P0 = 0.378073;
+                constexpr int V0[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
+                bool C1 = moveCountPruning;
+                constexpr double P1 = 0.0927054;
+                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
+                constexpr double P01 = 0.0158756;
+                */
+
+                bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                bool C1 = moveCountPruning;
+                constexpr double P1 = 0.0927054;
+                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
+                constexpr double P01 = 0.0398305;
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
