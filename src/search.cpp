@@ -1194,11 +1194,13 @@ moves_loop:  // When in check, search starts here
                 bool C1 = moveCountPruning;
                 constexpr double P1 = 0.0927054;
                 constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
+                constexpr double P01 = 0.0927054;
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
                     dbg_mean_of(C0, 0);
                     dbg_mean_of(C1, 1);
+                    dbg_mean_of(C0*C1, 2);
 
                     int V = ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth - alpha;
                     bool PR = (V <= 0);
@@ -1245,6 +1247,8 @@ moves_loop:  // When in check, search starts here
                              - int(getParam(1) * P1) + getParam(1) * C1
                              : MODE == SINGLE ?
                              + getParam(0) * !C0 + getParam(1) * C0
+                             : MODE == COMBINE ?
+                             + getParam(0) * C0 + getParam(1) * C1 - C0 * C1 * int((getParam(0) * P0 + getParam(1) * P1) / P01)
                              : 0
                              )
                          <= alpha)

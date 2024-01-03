@@ -37,10 +37,10 @@ constexpr int HISTORY_BUCKETS = 10000;
 
 constexpr int N_PARAMS = 2;
 
-enum Modes { ADVANCED_COMP, SIMPLE_COMP, SINGLE };
+enum Modes { ADVANCED_COMP, SIMPLE_COMP, SINGLE, COMBINE };
 
 //constexpr Modes MODE = ADVANCED_COMP;
-constexpr Modes MODE = SINGLE;
+constexpr Modes MODE = COMBINE;
 
 constexpr bool MEASURE = false;
 //------------------------------------
