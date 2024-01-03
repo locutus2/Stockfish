@@ -1186,7 +1186,6 @@ moves_loop:  // When in check, search starts here
                 bool C1 = !PvNode && !cutNode;
                 constexpr double P1 = 0.600346;
                 constexpr int V1[9] = { 320, 320, 320, 80,  0,   -98, -196,    -271,    -320 };
-                */
 
                 bool C0 = cutNode;
                 constexpr double P0 = 0.321481;
@@ -1194,7 +1193,15 @@ moves_loop:  // When in check, search starts here
                 bool C1 = moveCountPruning;
                 constexpr double P1 = 0.0927054;
                 constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
-                constexpr double P01 = 0.0927054;
+                */
+
+                bool C0 = singularQuietLMR;
+                constexpr double P0 = 0.0476765;
+                constexpr int V0[9] = { 12,   9,   6,   2,   0,   -5,  -7,  -8,  -9 };
+                bool C1 = moveCountPruning;
+                constexpr double P1 = 0.0927054;
+                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
+                constexpr double P01 = 0.00100067;
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
