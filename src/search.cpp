@@ -1197,7 +1197,7 @@ moves_loop:  // When in check, search starts here
                     bool PR = (V <= 0);
                     dbg_mean_of(PR, 10);
 
-                    if (ADVANCED)
+                    if (MODE == ADVANCED_COMP)
                     {
                         for(int v0 = -(K+1)*D0; v0 <= (K+1)*D0; ++v0)
                         {
@@ -1230,12 +1230,15 @@ moves_loop:  // When in check, search starts here
                            + 118 * lmrDepth
                            //- 192 * singularQuietLMR + 64 * moveCountPruning
                            //+ 342 * cutNode - 383 * improving + 41
-                           + (ADVANCED ?
+                           + (MODE == ADVANCED_COMP ?
                              + V0[I0] * !C0 + getParam(0) * C0
                              + V1[I1] * !C1 + getParam(1) * C1
-                             :
+                             : MODE == SIMPLE_COMP ?
                              - int(getParam(0) * P0) + getParam(0) * C0
                              - int(getParam(1) * P1) + getParam(1) * C1
+                             : MODE == SINGLE ?
+                             + getParam(0) * !C0 + getParam(0) * C0
+                             : 0
                              )
                          <= alpha)
                     continue;

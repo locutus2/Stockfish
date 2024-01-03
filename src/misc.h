@@ -36,7 +36,11 @@ namespace Stockfish {
 constexpr int HISTORY_BUCKETS = 10000;
 
 constexpr int N_PARAMS = 2;
-constexpr bool ADVANCED = true;
+
+enum Modes { ADVANCED_COMP, SIMPLE_COMP, SINGLE };
+
+constexpr Modes MODE = ADVANCED_COMP;
+
 constexpr bool MEASURE = false;
 //------------------------------------
 
