@@ -1190,18 +1190,21 @@ moves_loop:  // When in check, search starts here
                     bool PR = (V <= 0);
                     dbg_mean_of(PR, 10);
 
-                    for(int v0 = -(K+1)*D0; v0 <= (K+1)*D0; ++v0)
+                    if (ADVANCED)
                     {
-                        int i = v0 + (K+1)*D0;
-                        bool PR0 = (V + v0 <= 0);
-                        dbg_mean_of(PR0, 1000*(1+C0)+i);
-                    }
+                        for(int v0 = -(K+1)*D0; v0 <= (K+1)*D0; ++v0)
+                        {
+                            int i = v0 + (K+1)*D0;
+                            bool PR0 = (V + v0 <= 0);
+                            dbg_mean_of(PR0, 1000*(1+C0)+i);
+                        }
 
-                    for(int v1 = -(K+1)*D1; v1 <= (K+1)*D1; ++v1)
-                    {
-                        int i = v1 + (K+1)*D1;
-                        bool PR1 = (V + v1 <= 0);
-                        dbg_mean_of(PR1, 1000*(5+C1)+i);
+                        for(int v1 = -(K+1)*D1; v1 <= (K+1)*D1; ++v1)
+                        {
+                            int i = v1 + (K+1)*D1;
+                            bool PR1 = (V + v1 <= 0);
+                            dbg_mean_of(PR1, 1000*(5+C1)+i);
+                        }
                     }
                 }
 
@@ -1220,10 +1223,13 @@ moves_loop:  // When in check, search starts here
                            + 118 * lmrDepth
                            //- 192 * singularQuietLMR + 64 * moveCountPruning
                            //+ 342 * cutNode - 383 * improving + 41
+                           + (ADVANCED ?
                              + V0[I0] * !C0 + getParam(0) * C0
                              + V1[I1] * !C1 + getParam(1) * C1
-                             //- int(getParam(0) * P0) + getParam(0) * C0
-                             //- int(getParam(1) * P1) + getParam(1) * C1
+                             :
+                             - int(getParam(0) * P0) + getParam(0) * C0
+                             - int(getParam(1) * P1) + getParam(1) * C1
+                             )
                          <= alpha)
                     continue;
 
