@@ -1041,6 +1041,8 @@ moves_loop:  // When in check, search starts here
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
                            + 118 * lmrDepth
+                           + 118 * lmrDepth + 256 * singularQuietLMR + 192 * moveCountPruning
+                           - 29984 * singularQuietLMR * moveCountPruning
                          <= alpha)
                     continue;
 
