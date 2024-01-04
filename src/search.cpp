@@ -1206,7 +1206,6 @@ moves_loop:  // When in check, search starts here
                 constexpr double P1 = 0.0476765;
                 constexpr int V1[9] = { 12,   9,   6,   2,   0,   -5,  -7,  -8,  -9 };
                 constexpr double P01 = 0.0105854;
-                */
 
                 bool C0 = PvNode;
                 constexpr double P0 = 0.0781727;
@@ -1215,6 +1214,15 @@ moves_loop:  // When in check, search starts here
                 constexpr double P1 = 0.091047;
                 constexpr int V1[9] = { 18,  14,  10,  5,   0,   -7,  -13, -19, -23 };
                 constexpr double P01 = 0.0231626;
+                */
+
+                bool C0 = PvNode;
+                constexpr double P0 = 0.0781727;
+                constexpr int V0[9] = { 18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
+                bool C1 = moveCountPruning;
+                constexpr double P1 = 0.0927054;
+                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
+                constexpr double P01 = 0.00337457;
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
