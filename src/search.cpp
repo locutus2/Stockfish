@@ -1230,6 +1230,20 @@ moves_loop:  // When in check, search starts here
                     dbg_mean_of(C1, 1);
                     dbg_mean_of(C0*C1, 2);
 
+                    std::vector<bool> C = {
+                        cutNode,
+                        improving,
+                        priorCapture,
+                        PvNode,
+                        singularQuietLMR,
+                        moveCountPruning,
+                        ttCapture,
+                        !PvNode&&!cutNode
+                    };
+                    for(int i = 0; i < int(C.size()); ++i)
+                        for(int j = 0; j < int(C.size()); ++j)
+                            dbg_correl_of(C[i], C[j], 10*i+j);
+
                     int V = ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth - alpha;
                     bool PR = (V <= 0);
                     dbg_mean_of(PR, 10);

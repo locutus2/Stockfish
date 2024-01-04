@@ -42,7 +42,7 @@ enum Modes { ADVANCED_COMP, SIMPLE_COMP, SINGLE, COMBINE };
 //constexpr Modes MODE = ADVANCED_COMP;
 constexpr Modes MODE = COMBINE;
 
-constexpr bool MEASURE = false;
+constexpr bool MEASURE = true;
 //------------------------------------
 
 std::string engine_info(bool to_uci = false);
