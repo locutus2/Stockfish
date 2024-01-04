@@ -1045,13 +1045,13 @@ moves_loop:  // When in check, search starts here
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
                            + 118 * lmrDepth
-                           + cutNode * A[0]          - int(A[0] * 0.321481)
-                           + improving * A[1]        - int(A[1] * 0.378073)
-                           + priorCapture * A[2]     - int(A[2] * 0.28863)
-                           + PvNode * A[3]           - int(A[3] * 0.0781727)
-                           + singularQuietLMR * A[4] - int(A[4] * 0.0476765)
-                           + moveCountPruning * A[5] - int(A[5] * 0.0927054)
-                           + ttCapture * A[6]        - int(A[6] * 0.091047)
+                           + cutNode * A[0]          - int(A[0] * 0.4464)
+                           + improving * A[1]        - int(A[1] * 0.5844)
+                           + priorCapture * A[2]     - int(A[2] * 0.2427)
+                           + PvNode * A[3]           - int(A[3] * 0.0544)
+                           + singularQuietLMR * A[4] - int(A[4] * 0.0438)
+                           + moveCountPruning * A[5] - int(A[5] * 0.1391)
+                           + ttCapture * A[6]        - int(A[6] * 0.0836)
                          <= alpha)
                     continue;
 
