@@ -47,6 +47,9 @@
 
 namespace Stockfish {
 
+int A[7][2];
+TUNE(SetRange(-512, 512), A);
+
 namespace Search {
 
 LimitsType Limits;
@@ -1042,6 +1045,13 @@ moves_loop:  // When in check, search starts here
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
                            + 118 * lmrDepth
+                           + !cutNode * A[0][0] + cutNode * A[0][1]
+                           + !improving * A[1][0] + improving * A[1][1]
+                           + !priorCapture * A[2][0] + priorCapture * A[2][1]
+                           + !PvNode * A[3][0] + PvNode * A[3][1]
+                           + !singularQuietLMR * A[4][0] + singularQuietLMR * A[4][1]
+                           + !moveCountPruning * A[5][0] + moveCountPruning * A[5][1]
+                           + !ttCapture * A[6][0] + ttCapture * A[6][1]
                          <= alpha)
                     continue;
 
