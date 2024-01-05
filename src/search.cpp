@@ -1040,15 +1040,15 @@ moves_loop:  // When in check, search starts here
 
                 // Futility pruning: parent node (~13 Elo)
                 if (!ss->inCheck && lmrDepth < 14
-                    && ss->staticEval + (bestValue < ss->staticEval - 57 ? 128 : 75)
+                    && ss->staticEval + (bestValue < ss->staticEval - 57 ? 130 : 77)
                            + 118 * lmrDepth
-                           -  46 * cutNode
-                           +  12 * improving
-                           +  12 * priorCapture
-                           -  46 * PvNode
-                           -  34 * singularQuietLMR
-                           +  24 * moveCountPruning
-                           +  54 * ttCapture
+                           -  69 * cutNode
+                           +  18 * improving
+                           +  18 * priorCapture
+                           -  69 * PvNode
+                           -  51 * singularQuietLMR
+                           +  36 * moveCountPruning
+                           +  81 * ttCapture
                          <= alpha)
                     continue;
 
