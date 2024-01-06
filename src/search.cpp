@@ -1238,7 +1238,6 @@ moves_loop:  // When in check, search starts here
                 constexpr double M1 = -0.6185;
                 constexpr int V1[9] = { 200, 135, 86, 38, 0, -58, -85, -100, -108};
                 constexpr double P01 = 0.167629;
-                */
 
                 bool C0 = priorCapture;
                 constexpr double P0 = 0.293493;
@@ -1249,6 +1248,18 @@ moves_loop:  // When in check, search starts here
                 constexpr double M1 = -0.0602;
                 constexpr int V1[9] = {20,   14,  9,   3,   0,   -5,  -8,  -9,  -10, };
                 constexpr double P01 = 0.0209741;
+                */
+
+                int MARGIN = 35 - 104 * cutNode;
+                bool C0 = cutNode;
+                constexpr double P0 = 0.32076;
+                constexpr double M0 = -0.4503;
+                constexpr int V0[9] = { 132, 96, 65, 30, 0, -47, -68, -78, -84 };
+                bool C1 = improving;
+                constexpr double P1 = 0.384446;
+                constexpr double M1 = -0.6185;
+                constexpr int V1[9] = { 200, 135, 86, 38, 0, -58, -85, -100, -108};
+                constexpr double P01 = 0.167629;
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
@@ -1270,7 +1281,8 @@ moves_loop:  // When in check, search starts here
                         for(int j = 0; j < int(C.size()); ++j)
                             dbg_correl_of(C[i], C[j], 10*i+j);
 
-                    int V = ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth - alpha;
+                    int V = ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth - alpha
+                        + MARGIN;
                     bool PR = (V <= 0);
                     dbg_mean_of(PR, 10);
 
@@ -1305,6 +1317,7 @@ moves_loop:  // When in check, search starts here
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
                            + 118 * lmrDepth
+                           + MARGIN
                            //- 192 * singularQuietLMR + 64 * moveCountPruning
                            //+ 342 * cutNode - 383 * improving + 41
                            + (MODE == ADVANCED_COMP ?
