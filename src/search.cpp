@@ -47,8 +47,37 @@
 
 namespace Stockfish {
 
-int A[7];
-TUNE(SetRange(-512, 512), A);
+constexpr int N = 7;
+
+constexpr double M[N] = { -0.4464, -0.5844, -0.2427, -0.0544, -0.0438, -0.1391, -0.0836 };
+
+int A[N];
+int B[N][2];
+
+void initMargin();
+
+void initMargin()
+{
+    for(int i = 0; i < N; ++i)
+    {
+        double D0 = std::sqrt(1 + M[i] * M[i]);
+        B[i][1] = A[i] * (1 - M[i]) / D0;
+        B[i][0] = A[i] * M[i] / D0;
+    }
+
+    /*
+    std::cerr << "#####################" << std::endl;
+    for(int i = 0; i < N; ++i)
+        std::cerr << B[i][0]  << " " << B[i][1] << std::endl;
+        */
+}
+
+TUNE(SetRange(-256, 256), A, initMargin);
+
+inline int MARGIN(int i, bool C)
+{
+   return C * B[i][1] + B[i][0];
+}
 
 namespace Search {
 
@@ -1045,13 +1074,13 @@ moves_loop:  // When in check, search starts here
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
                            + 118 * lmrDepth
-                           + cutNode * A[0]          - int(A[0] * 0.308628)
-                           + improving * A[1]        - int(A[1] * 0.368846)
-                           + priorCapture * A[2]     - int(A[2] * 0.195300)
-                           + PvNode * A[3]           - int(A[3] * 0.051593)
-                           + singularQuietLMR * A[4] - int(A[4] * 0.041962)
-                           + moveCountPruning * A[5] - int(A[5] * 0.122113)
-                           + ttCapture * A[6]        - int(A[6] * 0.077150)
+                           + MARGIN(0, cutNode)
+                           + MARGIN(1, improving)
+                           + MARGIN(2, priorCapture)
+                           + MARGIN(3, PvNode)
+                           + MARGIN(4, singularQuietLMR)
+                           + MARGIN(5, moveCountPruning)
+                           + MARGIN(6, ttCapture)
                          <= alpha)
                     continue;
 
