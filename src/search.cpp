@@ -49,35 +49,44 @@ namespace Stockfish {
 
 constexpr int N = 7;
 
+// The slopes of constant pruning rate contour lines from linear approximation for each condtiion
 constexpr double M[N] = { -0.4464, -0.5844, -0.2427, -0.0544, -0.0438, -0.1391, -0.0836 };
 
-int A[N];
-int B[N][2];
+int A[N][2];
+int B[N];
+int Bias = 0;
 
 void initMargin();
 
 void initMargin()
 {
+    double bias = 0;
     for(int i = 0; i < N; ++i)
     {
-        double D0 = std::sqrt(1 + M[i] * M[i]);
-        B[i][1] = A[i] * (1 - M[i]) / D0;
-        B[i][0] = A[i] * M[i] / D0;
+        double D = std::sqrt(1 + M[i] * M[i]); // normalization factor
+
+        // movement along the contours
+        int b = A[i][0] * (1 - M[i]) / D;
+        bias += A[i][0] * M[i] / D;
+
+        // movement orthogonal to the contours
+        b += A[i][1] * (1 + M[i]) / D;
+        bias -= A[i][1] / D;
+
+        B[i] = b;
     }
+    Bias = bias;
+
 
     /*
     std::cerr << "#####################" << std::endl;
     for(int i = 0; i < N; ++i)
-        std::cerr << B[i][0]  << " " << B[i][1] << std::endl;
-        */
+        std::cerr << "B[" << i << "]=" << B[i] << std::endl;
+    std::cerr << "Bias=" << Bias << std::endl;
+    */
 }
 
 TUNE(SetRange(-256, 256), A, initMargin);
-
-inline int MARGIN(int i, bool C)
-{
-   return C * B[i][1] + B[i][0];
-}
 
 namespace Search {
 
@@ -1074,13 +1083,14 @@ moves_loop:  // When in check, search starts here
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
                            + 118 * lmrDepth
-                           + MARGIN(0, cutNode)
-                           + MARGIN(1, improving)
-                           + MARGIN(2, priorCapture)
-                           + MARGIN(3, PvNode)
-                           + MARGIN(4, singularQuietLMR)
-                           + MARGIN(5, moveCountPruning)
-                           + MARGIN(6, ttCapture)
+                           + B[0] * cutNode
+                           + B[1] * improving
+                           + B[2] * priorCapture
+                           + B[3] * PvNode
+                           + B[4] * singularQuietLMR
+                           + B[5] * moveCountPruning
+                           + B[6] * ttCapture
+                           + Bias
                          <= alpha)
                     continue;
 
