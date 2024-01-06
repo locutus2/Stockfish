@@ -1214,7 +1214,6 @@ moves_loop:  // When in check, search starts here
                 constexpr double P1 = 0.091047;
                 constexpr int V1[9] = { 18,  14,  10,  5,   0,   -7,  -13, -19, -23 };
                 constexpr double P01 = 0.0231626;
-                */
 
                 bool C0 = PvNode;
                 constexpr double P0 = 0.0781727;
@@ -1223,6 +1222,16 @@ moves_loop:  // When in check, search starts here
                 constexpr double P1 = 0.0927054;
                 constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
                 constexpr double P01 = 0.00337457;
+                */
+
+                // based on master + PR4967 + new net + bad quiets
+                bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                bool C1 = improving;
+                constexpr double P1 = 0.378073;
+                constexpr int V1[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
+                constexpr double P01 = 0.167329;
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
