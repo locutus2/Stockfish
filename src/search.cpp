@@ -1241,14 +1241,14 @@ moves_loop:  // When in check, search starts here
                 */
 
                 bool C0 = priorCapture;
-                constexpr double P0 = 0.28863;
-                constexpr double M0 = -0.4503;
-                constexpr int V0[9] = {48,   40,  30,  16,  0,   -23, -43, -57, -66, };
+                constexpr double P0 = 0.293493;
+                constexpr double M0 = -0.2477;
+                constexpr int V0[9] = {50,   42,  31,  16,  0,   -24, -44, -57, -66, };
                 bool C1 = PvNode;
-                constexpr double P1 = 0.0781727;
-                constexpr double M1 = -0.6185;
-                constexpr int V1[9] = {18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
-                constexpr double P01 = 0.167629;
+                constexpr double P1 = 0.0874722;
+                constexpr double M1 = -0.0602;
+                constexpr int V1[9] = {20,   14,  9,   3,   0,   -5,  -8,  -9,  -10, };
+                constexpr double P01 = 0.0209741;
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {
