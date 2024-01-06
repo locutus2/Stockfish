@@ -66,7 +66,7 @@ void initMargin()
         double D = std::sqrt(1 + M[i] * M[i]); // normalization factor
 
         // movement along the contours
-        int b = A[i][0] * (1 - M[i]) / D;
+        double b = A[i][0] * (1 - M[i]) / D;
         bias += A[i][0] * M[i] / D;
 
         // movement orthogonal to the contours
