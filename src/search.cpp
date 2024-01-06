@@ -1229,12 +1229,14 @@ moves_loop:  // When in check, search starts here
 
                 // based on master + PR4967 + new net + bad quiets
                 bool C0 = cutNode;
-                constexpr double P0 = 0.321481;
-                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                constexpr double P0 = 0.32076;
+                constexpr double M0 = -0.4503;
+                constexpr int V0[9] = { 132, 96, 65, 30, 0, -47, -68, -78, -84 };
                 bool C1 = improving;
-                constexpr double P1 = 0.378073;
-                constexpr int V1[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
-                constexpr double P01 = 0.167329;
+                constexpr double P1 = 0.384446;
+                constexpr double M1 = -0.6185;
+                constexpr int V1[9] = { 200, 135, 86, 38, 0, -58, -85, -100, -108};
+                constexpr double P01 = 0.167629;
 
                 if (MEASURE && !ss->inCheck && lmrDepth < 14)
                 {

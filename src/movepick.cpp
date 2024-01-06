@@ -280,7 +280,7 @@ top:
                 // Move losing capture to endBadCaptures to be tried later
                 return pos.see_ge(*cur,
                                   Value(-cur->value)
-                                    - 0 * (is_ok(prevMove) && to_sq(cur->move) == to_sq(prevMove)))
+                                    - 0 * (prevMove.is_ok() && cur->to_sq() == prevMove.to_sq()))
                        ? true
                        : (*endBadCaptures++ = *cur, false);
             }))
