@@ -305,7 +305,7 @@ top:
         [[fallthrough]];
 
     case GOOD_QUIET :
-        if ((!skipQuiets || cur == endBadCaptures) && select<Next>([&]() {
+        if ((!skipQuiets || cur->value > 0) && select<Next>([&]() {
                 return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
             }))
         {
