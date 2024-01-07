@@ -191,13 +191,13 @@ class MovePicker {
     const PieceToHistory**       continuationHistory;
     const PawnHistory*           pawnHistory;
     Move                         ttMove;
-    ExtMove                      refutations[3], *cur, *endMoves, *endBadCaptures, *beginBadQuiets, *endBadQuiets;
-    int                          stage;
-    int                          threshold;
-    Depth                        depth;
-    ExtMove                      moves[MAX_MOVES];
-    bool                         C = false;
-    Move                         prevMove;
+    ExtMove refutations[3], *cur, *endMoves, *endBadCaptures, *beginBadQuiets, *endBadQuiets;
+    int     stage;
+    int     threshold;
+    Depth   depth;
+    ExtMove moves[MAX_MOVES];
+    bool    C = false;
+    Move    prevMove;
 };
 
 }  // namespace Stockfish

@@ -309,7 +309,7 @@ top:
         if (!skipQuiets)
         {
             cur      = endBadCaptures;
-            endMoves = generate<QUIETS>(pos, cur);
+            endMoves = beginBadQuiets = endBadQuiets = generate<QUIETS>(pos, cur);
 
             score<QUIETS>();
             partial_insertion_sort(cur, endMoves, quiet_threshold(depth));
@@ -328,18 +328,15 @@ top:
             {
                 // Remaining quiets are bad
                 beginBadQuiets = cur;
-                endBadQuiets   = endMoves;
 
-                cur            = moves;
-                endMoves       = endBadCaptures;
+                // Prepare the pointers to loop over the bad captures
+                cur      = moves;
+                endMoves = endBadCaptures;
 
                 ++stage;
             }
             return tmp;
         }
-
-        // No bad quiets
-        beginBadQuiets = endBadQuiets;
 
         // Prepare the pointers to loop over the bad captures
         cur      = moves;
@@ -351,7 +348,7 @@ top:
     case BAD_CAPTURE :
         if (select<Next>([]() { return true; }))
             return *(cur - 1);
-        
+
         // Prepare the pointers to loop over the bad quiets
         cur      = beginBadQuiets;
         endMoves = endBadQuiets;
