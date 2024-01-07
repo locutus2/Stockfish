@@ -242,7 +242,7 @@ Move MovePicker::select(Pred filter) {
 // Most important method of the MovePicker class. It
 // returns a new pseudo-legal move every time it is called until there are no more
 // moves left, picking the move with the highest score from a list of generated moves.
-Move MovePicker::next_move(bool skipQuiets) {
+Move MovePicker::next_move() {
 
     auto quiet_threshold = [](Depth d) { return -3330 * d; };
 
@@ -343,12 +343,9 @@ top:
         [[fallthrough]];
 
     case BAD_QUIET :
-        if (!skipQuiets)
-            return select<Next>([&]() {
-                return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
-            });
-
-        return Move::none();
+        return select<Next>([&]() {
+            return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
+        });
 
     case EVASION_INIT :
         cur      = moves;
