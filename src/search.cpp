@@ -1003,10 +1003,10 @@ moves_loop:  // When in check, search starts here
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~8 Elo)
             if (!skipBadQuiets)
-                skipBadQuiets = moveCount >= futility_move_count(improving, depth - 1);
+                skipBadQuiets = moveCount >= futility_move_count(improving, depth);
 
             if (!skipGoodQuiets)
-                skipGoodQuiets = moveCount >= futility_move_count(improving, depth);
+                skipGoodQuiets = moveCount >= futility_move_count(improving, depth + 2);
 
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r;
