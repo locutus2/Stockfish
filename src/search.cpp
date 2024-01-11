@@ -68,9 +68,6 @@ using namespace Search;
 
 namespace {
 
-constexpr bool USE_DEPTH_WEIGHT = true;
-inline int     getWeight(int depth) { return USE_DEPTH_WEIGHT && depth > 0 ? depth : 1; }
-
 // Different node types, used as a template parameter
 enum NodeType {
     NonPV,
