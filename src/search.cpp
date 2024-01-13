@@ -90,7 +90,7 @@ Depth reduction(bool i, Depth d, int mn, int delta, int rootDelta) {
 }
 
 constexpr int futility_move_count(bool improving, Depth depth, Depth rootDepth) {
-    return improving ? (3 + depth * depth) : (3 + 4 * depth / rootDepth + depth * depth) / 2;
+    return improving ? (3 + depth * depth) : (3 + 5 * depth / rootDepth + depth * depth) / 2;
 }
 
 // Guarantee evaluation does not hit the tablebase range
