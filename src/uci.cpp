@@ -219,9 +219,7 @@ void UCI::go(Position& pos, std::istringstream& is, StateListPtr& states) {
     threads.start_thinking(options, pos, states, limits, ponderMode);
 }
 
-double executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states);
-
-double executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states) {
+double UCI::executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states) {
 
     std::string token;
 
@@ -237,7 +235,7 @@ double executeBench(const std::vector<std::string>& list, Position& pos, StateLi
             if (token == "go")
             {
                 go(pos, is, states);
-                Threads.main()->wait_for_search_finished();
+                threads.main_thread()->wait_for_search_finished();
             }
             else
                 trace_eval(pos);
@@ -247,9 +245,7 @@ double executeBench(const std::vector<std::string>& list, Position& pos, StateLi
         else if (token == "position")
             position(pos, is, states);
         else if (token == "ucinewgame")
-        {
-            Search::clear();
-        }  // Search::clear() may take a while
+            search_clear(); // search_clear() may take a while
     }
     return dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
 }
@@ -273,7 +269,7 @@ int ggt(int a, int b) {
     return abs(a);
 }
 
-void learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
+void UCI::learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out) {
     std::vector<std::string> list = setup_bench(pos, args);
 
     /*
@@ -438,7 +434,7 @@ struct Loop
     }
 };
 
-void stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr) {
+void UCI::stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out) {
     std::vector<std::string> list = setup_bench(pos, args);
 
     constexpr char SEP = ';';
@@ -521,7 +517,7 @@ void UCI::bench(Position& pos, std::istream& args, StateListPtr& states) {
             position(pos, is, states);
         else if (token == "ucinewgame")
         {
-            search_clear();  // Search::clear() may take a while
+            search_clear();  // search_clear() may take a while
             elapsed = now();
         }
     }
