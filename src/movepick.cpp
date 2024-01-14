@@ -245,6 +245,7 @@ Move MovePicker::select(Pred filter) {
 Move MovePicker::next_move(bool skipQuiets) {
 
     auto quiet_threshold = [](Depth d) { return -3330 * d; };
+    auto good_quiet_threshold = [](Depth d) { return -6000 - 1000 * d; };
 
 top:
     switch (stage)
@@ -312,7 +313,7 @@ top:
                 return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
             }))
         {
-            if ((cur - 1)->value > -8000 || (cur - 1)->value <= quiet_threshold(depth))
+            if ((cur - 1)->value > good_quiet_threshold(depth) || (cur - 1)->value <= quiet_threshold(depth))
                 return *(cur - 1);
 
             // Remaining quiets are bad
