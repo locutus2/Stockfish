@@ -68,7 +68,7 @@ Value futility_margin(Depth d, bool noTtCutNode, bool improving) {
 }
 
 constexpr int futility_move_count(bool improving, Depth depth, Depth rootDepth) {
-    return improving ? (3 + depth * depth) : (2 + 5 * depth / rootDepth + depth * depth) / 2;
+    return improving ? (3 + depth * depth) : (4 + 4 * depth / rootDepth + depth * depth) / 2;
 }
 
 // Guarantee evaluation does not hit the tablebase range
