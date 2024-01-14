@@ -64,9 +64,9 @@ UCI::UCI(int argc, char** argv) :
         tt.resize(o, options["Threads"]);
     });
 
-    options["Clear Hash"] << Option(true, [this](const Option&) { search_clear(); });
+    options["Clear Hash"] << Option([this](const Option&) { search_clear(); });
     options["Ponder"] << Option(false);
-    options["MultiPV"] << Option(1, 1, 500);
+    options["MultiPV"] << Option(1, 1, MAX_MOVES);
     options["Skill Level"] << Option(20, 0, 20);
     options["Move Overhead"] << Option(10, 0, 5000);
     options["nodestime"] << Option(0, 0, 10000);
@@ -270,7 +270,7 @@ void UCI::trace_eval(Position& pos) {
 
     Eval::NNUE::verify(options, evalFiles);
 
-    sync_cout << "\n" << Eval::trace(p, *threads.main_thread()->worker.get()) << sync_endl;
+    sync_cout << "\n" << Eval::trace(p) << sync_endl;
 }
 
 void UCI::search_clear() {
