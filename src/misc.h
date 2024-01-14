@@ -31,6 +31,28 @@
 
 namespace Stockfish {
 
+//------------------------------------
+// AUC stuff
+constexpr int  HISTORY_BUCKETS  = 10000;
+constexpr bool USE_DEPTH_WEIGHT = true;
+
+inline int getWeight(int depth) { return USE_DEPTH_WEIGHT && depth > 0 ? depth : 1; }
+
+constexpr int N_PARAMS = 2;
+
+enum Modes {
+    ADVANCED_COMP,
+    SIMPLE_COMP,
+    SINGLE,
+    COMBINE
+};
+
+constexpr Modes MODE = ADVANCED_COMP;
+//constexpr Modes MODE = COMBINE;
+
+constexpr bool MEASURE = false;
+//------------------------------------
+
 std::string engine_info(bool to_uci = false);
 std::string compiler_info();
 
@@ -47,11 +69,16 @@ void* aligned_large_pages_alloc(size_t size);
 // nop if mem == nullptr
 void aligned_large_pages_free(void* mem);
 
-void dbg_hit_on(bool cond, int slot = 0);
-void dbg_mean_of(int64_t value, int slot = 0);
-void dbg_stdev_of(int64_t value, int slot = 0);
-void dbg_correl_of(int64_t value1, int64_t value2, int slot = 0);
-void dbg_print();
+int  getParam(int n);
+void setParam(int n, int v);
+
+void   dbg_hit_on(bool cond, int slot = 0, int weight = 1);
+void   dbg_mean_of(int64_t value, int slot = 0, int weight = 1);
+void   dbg_stdev_of(int64_t value, int slot = 0, int weight = 1);
+void   dbg_correl_of(int64_t value1, int64_t value2, int slot = 0, int weight = 1);
+void   dbg_print();
+double dbg_print_auc(int start, int end, bool display = true);
+void   dbg_clear();
 
 using TimePoint = std::chrono::milliseconds::rep;  // A value in milliseconds
 static_assert(sizeof(TimePoint) == sizeof(int64_t), "TimePoint should be 64 bits");

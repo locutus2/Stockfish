@@ -47,6 +47,7 @@ using fun8_t = bool (*)(HANDLE, BOOL, PTOKEN_PRIVILEGES, DWORD, PTOKEN_PRIVILEGE
 }
 #endif
 
+#include <cassert>
 #include <atomic>
 #include <cmath>
 #include <cstdlib>
@@ -308,9 +309,22 @@ std::string compiler_info() {
     return compiler;
 }
 
+namespace {
+int PARAMS[N_PARAMS];
+}
+
+int getParam(int n) {
+    assert(n >= 0 && n < N_PARAMS);
+    return PARAMS[n];
+}
+
+void setParam(int n, int v) {
+    assert(n >= 0 && n < N_PARAMS);
+    PARAMS[n] = v;
+}
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+constexpr int MaxDebugSlots = HISTORY_BUCKETS;
 
 namespace {
 
@@ -328,34 +342,38 @@ DebugInfo<6> correl[MaxDebugSlots];
 
 }  // namespace
 
-void dbg_hit_on(bool cond, int slot) {
+void dbg_hit_on(bool cond, int slot, int weight) {
 
-    ++hit[slot][0];
+    assert(0 <= slot && slot < MaxDebugSlots);
+    hit[slot][0] += weight;
     if (cond)
-        ++hit[slot][1];
+        hit[slot][1] += weight;
 }
 
-void dbg_mean_of(int64_t value, int slot) {
+void dbg_mean_of(int64_t value, int slot, int weight) {
 
-    ++mean[slot][0];
-    mean[slot][1] += value;
+    assert(0 <= slot && slot < MaxDebugSlots);
+    mean[slot][0] += weight;
+    mean[slot][1] += weight * value;
 }
 
-void dbg_stdev_of(int64_t value, int slot) {
+void dbg_stdev_of(int64_t value, int slot, int weight) {
 
-    ++stdev[slot][0];
-    stdev[slot][1] += value;
-    stdev[slot][2] += value * value;
+    assert(0 <= slot && slot < MaxDebugSlots);
+    stdev[slot][0] += weight;
+    stdev[slot][1] += weight * value;
+    stdev[slot][2] += weight * value * value;
 }
 
-void dbg_correl_of(int64_t value1, int64_t value2, int slot) {
+void dbg_correl_of(int64_t value1, int64_t value2, int slot, int weight) {
 
-    ++correl[slot][0];
-    correl[slot][1] += value1;
-    correl[slot][2] += value1 * value1;
-    correl[slot][3] += value2;
-    correl[slot][4] += value2 * value2;
-    correl[slot][5] += value1 * value2;
+    assert(0 <= slot && slot < MaxDebugSlots);
+    correl[slot][0] += weight;
+    correl[slot][1] += weight * value1;
+    correl[slot][2] += weight * value1 * value1;
+    correl[slot][3] += weight * value2;
+    correl[slot][4] += weight * value2 * value2;
+    correl[slot][5] += weight * value1 * value2;
 }
 
 void dbg_print() {
@@ -392,6 +410,52 @@ void dbg_print() {
         }
 }
 
+double dbg_print_auc(int start, int end, bool display) {
+    int n_pos = 0, n_neg = 0;
+    for (int i = start; i < end; ++i)
+        if (hit[i][0])
+        {
+            n_pos += hit[i][1];
+            n_neg += hit[i][0] - hit[i][1];
+        }
+
+    double  auc     = 0;
+    int     sum_neg = 0;
+    int64_t nAuc    = 0;
+    if (n_pos + n_neg > 0)
+    {
+        for (int i = start; i < end; ++i)
+            if (hit[i][0])
+            {
+                //double p = hit[i][1] * (sum_neg + (hit[i][0] - hit[i][1]) / 2.0) / n_neg / n_pos;
+                //double p = hit[i][1] * (sum_neg + (hit[i][0] - hit[i][1]) / 2);
+                //nAuc += hit[i][1] * (sum_neg + (hit[i][0] - hit[i][1]) / 2);
+                nAuc += hit[i][1] * (2 * sum_neg + hit[i][0] - hit[i][1]);
+                sum_neg += hit[i][0] - hit[i][1];
+            }
+
+        auc = double(nAuc) / 2 / n_neg / n_pos;
+        auc = 1 - auc;
+
+        if (display)
+            std::cerr << "AUC #" << start << "-" << end << ": Total " << n_pos + n_neg << " AUC "
+                      << 100 * auc << "%" << std::endl;
+        return 100 * auc;
+    }
+    return 0;
+}
+
+void dbg_clear() {
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+    {
+        hit[i][0] = hit[i][1] = 0;
+        mean[i][0] = mean[i][1] = 0;
+        stdev[i][0] = stdev[i][1] = stdev[i][2] = 0;
+        correl[i][0] = correl[i][1] = correl[i][2] = 0,
+        correl[i][3] = correl[i][4] = correl[i][5] = 0;
+    }
+}
 
 // Used to serialize access to std::cout
 // to avoid multiple threads writing at the same time.

@@ -67,7 +67,7 @@ Value futility_margin(Depth d, bool noTtCutNode, bool improving) {
     return ((116 - 44 * noTtCutNode) * (d - improving));
 }
 
-constexpr int futility_move_count(bool improving, Depth depth) {
+constexpr int futility_move_count(bool improving, Depth depth, Depth rootDepth) {
     return improving ? (3 + depth * depth) : (3 + depth * depth) / 2;
 }
 
@@ -930,18 +930,20 @@ moves_loop:  // When in check, search starts here
         && std::abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY)
         return probCutBeta;
 
-    const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
-                                        (ss - 2)->continuationHistory,
-                                        (ss - 3)->continuationHistory,
-                                        (ss - 4)->continuationHistory,
-                                        nullptr,
-                                        (ss - 6)->continuationHistory};
+    const PieceToHistory* contHist[] = {
+      (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
+      (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
 
     Move countermove =
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : Move::none();
 
+    //const bool PC = true;//!PvNode&&!cutNode;
+    //const bool PC = !PvNode&&!cutNode;
+    //const bool PC = cutNode;
+    const bool PC = true;  //STATS_QUIETS || STATS_EVASION_MAIN || STATS_REFUTATION;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, &thisThread->pawnHistory, countermove, ss->killers);
+                  contHist, &thisThread->pawnHistory, countermove, ss->killers, PC,
+                  (ss - 1)->currentMove);
 
     value            = bestValue;
     moveCountPruning = singularQuietLMR = false;
@@ -953,6 +955,7 @@ moves_loop:  // When in check, search starts here
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
+    int rank = 0;
     while ((move = mp.next_move(moveCountPruning)) != Move::none())
     {
         assert(move.is_ok());
@@ -1000,7 +1003,8 @@ moves_loop:  // When in check, search starts here
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~8 Elo)
             if (!moveCountPruning)
-                moveCountPruning = moveCount >= futility_move_count(improving, depth);
+                moveCountPruning =
+                  moveCount >= futility_move_count(improving, depth, thisThread->rootDepth);
 
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r;
@@ -1012,7 +1016,12 @@ moves_loop:  // When in check, search starts here
                 {
                     Piece capturedPiece = pos.piece_on(move.to_sq());
                     int   futilityEval =
-                      ss->staticEval + 238 + 305 * lmrDepth + PieceValue[capturedPiece]
+                      ss->staticEval + 238 + 305 * lmrDepth
+                      + PieceValue[capturedPiece]
+                      //ss->staticEval + 238 + getParam(0)*!cutNode + getParam(1)*cutNode + 305 * lmrDepth + PieceValue[capturedPiece]
+                      //ss->staticEval + 238 + getParam(0)*!priorCapture + getParam(1)*priorCapture + 305 * lmrDepth + PieceValue[capturedPiece]
+                      //ss->staticEval + 238 + getParam(0)*!improving + getParam(1)*improving + 305 * lmrDepth + PieceValue[capturedPiece]
+                      //ss->staticEval + 238 + getParam(0) + (305 + getParam(1)) * lmrDepth + PieceValue[capturedPiece]
                       + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)]
                           / 7;
                     if (futilityEval < alpha)
@@ -1040,10 +1049,280 @@ moves_loop:  // When in check, search starts here
                 lmrDepth += history / 7838;
                 lmrDepth = std::max(lmrDepth, -1);
 
+                // old stuff
+                //bool C = cutNode;
+                //bool C = improving;
+                //bool C = priorCapture;
+                //bool C = PvNode;
+                //bool C = singularQuietLMR;
                 // Futility pruning: parent node (~13 Elo)
+                /*
+                bool C0 = cutNode;
+                bool C1 = improving;
+                //Mean #0: Total 24482496 Mean 0.321481
+                //Mean #1: Total 24482496 Mean 0.378073
+                constexpr double P0 = 0.321481;
+                constexpr double P1 = 0.378073;
+                */
+                /*
+                bool C0 = priorCapture;
+                bool C1 = PvNode;
+                //Mean #0: Total 24482496 Mean 0.28863
+                //Mean #1: Total 24482496 Mean 0.0781727
+                constexpr double P0 = 0.28863;
+                constexpr double P1 = 0.0781727;
+                */
+                /*
+                bool C0 = singularQuietLMR;
+                bool C1 = moveCountPruning;
+                //Mean #0: Total 24482496 Mean 0.0476765
+                //Mean #1: Total 24482496 Mean 0.0927054
+                constexpr double P0 = 0.0476765;
+                constexpr double P1 = 0.0927054;
+                */
+                /*
+                int C0 = !PvNode&&!cutNode;
+                int C1 = moveCount;
+                //Mean #0: Total 24482496 Mean 0.600346
+                //Mean #1: Total 24482496 Mean 10.2757
+                constexpr double P0 = 0.600346;
+                constexpr double P1 = 10.2757;
+                */
+                /*
+                if (!ss->inCheck && lmrDepth < 14)
+                {
+                    dbg_mean_of(C0, 0);
+                    dbg_mean_of(C1, 1);
+                }
+                */
+
+                //new stuff
+                // P(V <= 0) = P(V <= -x1) * (1-P0) + P(V <= -x2) * P0
+                // P(V <= -x1) = (P(V>=0) - P(V <= -x2) * P0) / (1-P0)
+                // determine x1 = f(x2)
+                constexpr int K  = 4;
+                constexpr int D0 = 64;
+                constexpr int D1 = 64;
+                const int     I0 = K + getParam(0) / D0;
+                const int     I1 = K + getParam(1) / D1;
+                /*
+                bool C0 = priorCapture;
+                constexpr double P0 = 0.28863;
+                constexpr int V0[9] = {48,   40,  30,  16,  0,   -23, -43, -57, -66, };
+                bool C1 = PvNode;
+                constexpr double P1 = 0.0781727;
+                constexpr int V1[9] = {18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
+
+                bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                bool C1 = priorCapture;
+                constexpr double P1 = 0.28863;
+                constexpr int V1[9] = { 48,   40,  30,  16,  0,   -23, -43, -57, -66, };
+
+                bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                bool C1 = PvNode;
+                constexpr double P1 = 0.0781727;
+                constexpr int V1[9] = { 18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
+
+                bool C0 = improving;
+                constexpr double P0 = 0.378073;
+                constexpr int V0[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
+                bool C1 = priorCapture;
+                constexpr double P1 = 0.28863;
+                constexpr int V1[9] = { 48,   40,  30,  16,  0,   -23, -43, -57, -66, };
+
+                bool C0 = improving;
+                constexpr double P0 = 0.378073;
+                constexpr int V0[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
+                bool C1 = PvNode;
+                constexpr double P1 = 0.0781727;
+                constexpr int V1[9] = { 18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
+
+                bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                bool C1 = moveCountPruning;
+                constexpr double P1 = 0.0927054;
+                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
+
+                bool C0 = improving;
+                constexpr double P0 = 0.378073;
+                constexpr int V0[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
+                bool C1 = singularQuietLMR;
+                constexpr double P1 = 0.0476765;
+                constexpr int V1[9] = { 12,   9,   6,   2,   0,   -5,  -7,  -8,  -9 };
+
+                bool C0 = ttCapture;
+                constexpr double P0 = 0.091047;
+                constexpr int V0[9] = { 18,  14,  10,  5,   0,   -7,  -13, -19, -23 };
+                bool C1 = !PvNode && !cutNode;
+                constexpr double P1 = 0.600346;
+                constexpr int V1[9] = { 320, 320, 320, 80,  0,   -98, -196,    -271,    -320 };
+
+                bool C0 = singularQuietLMR;
+                constexpr double P0 = 0.0476765;
+                constexpr int V0[9] = { 12,   9,   6,   2,   0,   -5,  -7,  -8,  -9 };
+                bool C1 = moveCountPruning;
+                constexpr double P1 = 0.0927054;
+                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
+                constexpr double P01 = 0.00100067;
+
+                bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                bool C1 = improving;
+                constexpr double P1 = 0.378073;
+                constexpr int V1[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
+                constexpr double P01 = 0.167329;
+
+                bool C0 = improving;
+                constexpr double P0 = 0.378073;
+                constexpr int V0[9] = { 179, 126, 82, 38, 0, -56, -84, -99, -107};
+                bool C1 = moveCountPruning;
+                constexpr double P1 = 0.0927054;
+                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
+                constexpr double P01 = 0.0158756;
+
+                bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                bool C1 = moveCountPruning;
+                constexpr double P1 = 0.0927054;
+                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
+                constexpr double P01 = 0.0398305;
+
+                bool C0 = cutNode;
+                constexpr double P0 = 0.321481;
+                constexpr int V0[9] = { 127, 94, 65, 30, 0, -47, -68, -79, -86 };
+                bool C1 = singularQuietLMR;
+                constexpr double P1 = 0.0476765;
+                constexpr int V1[9] = { 12,   9,   6,   2,   0,   -5,  -7,  -8,  -9 };
+                constexpr double P01 = 0.0366509;
+
+                bool C0 = PvNode;
+                constexpr double P0 = 0.0781727;
+                constexpr int V0[9] = { 18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
+                bool C1 = singularQuietLMR;
+                constexpr double P1 = 0.0476765;
+                constexpr int V1[9] = { 12,   9,   6,   2,   0,   -5,  -7,  -8,  -9 };
+                constexpr double P01 = 0.0105854;
+
+                bool C0 = PvNode;
+                constexpr double P0 = 0.0781727;
+                constexpr int V0[9] = { 18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
+                bool C1 = ttCapture;
+                constexpr double P1 = 0.091047;
+                constexpr int V1[9] = { 18,  14,  10,  5,   0,   -7,  -13, -19, -23 };
+                constexpr double P01 = 0.0231626;
+
+                bool C0 = PvNode;
+                constexpr double P0 = 0.0781727;
+                constexpr int V0[9] = { 18,   12,  8,   3,   0,   -5,  -7,  -9,  -9, };
+                bool C1 = moveCountPruning;
+                constexpr double P1 = 0.0927054;
+                constexpr int V1[9] = { 22,  19,  15,  8,   0,   -16, -30, -37, -41 };
+                constexpr double P01 = 0.00337457;
+                */
+
+                // based on master + PR4967 + new net + bad quiets
+                /*
+                bool C0 = cutNode;
+                constexpr double P0 = 0.32076;
+                constexpr double M0 = -0.4503;
+                constexpr int V0[9] = { 132, 96, 65, 30, 0, -47, -68, -78, -84 };
+                bool C1 = improving;
+                constexpr double P1 = 0.384446;
+                constexpr double M1 = -0.6185;
+                constexpr int V1[9] = { 200, 135, 86, 38, 0, -58, -85, -100, -108};
+                constexpr double P01 = 0.167629;
+
+                bool C0 = priorCapture;
+                constexpr double P0 = 0.293493;
+                constexpr double M0 = -0.2477;
+                constexpr int V0[9] = {50,   42,  31,  16,  0,   -24, -44, -57, -66, };
+                bool C1 = PvNode;
+                constexpr double P1 = 0.0874722;
+                constexpr double M1 = -0.0602;
+                constexpr int V1[9] = {20,   14,  9,   3,   0,   -5,  -8,  -9,  -10, };
+                constexpr double P01 = 0.0209741;
+                */
+
+                //int MARGIN = 35 - 104 * cutNode;
+                int              MARGIN = 0;
+                bool             C0     = cutNode;
+                constexpr double P0     = 0.32076;
+                constexpr double M0     = -0.4503;
+                constexpr int    V0[9]  = {132, 96, 65, 30, 0, -47, -68, -78, -84};
+                bool             C1     = improving;
+                constexpr double P1     = 0.384446;
+                constexpr double M1     = -0.6185;
+                constexpr int    V1[9]  = {200, 135, 86, 38, 0, -58, -85, -100, -108};
+                constexpr double P01    = 0.167629;
+
+                if (MEASURE && !ss->inCheck && lmrDepth < 14)
+                {
+                    dbg_mean_of(C0, 0);
+                    dbg_mean_of(C1, 1);
+                    dbg_mean_of(C0 * C1, 2);
+
+                    std::vector<bool> C = {cutNode,   improving,          priorCapture,
+                                           PvNode,    singularQuietLMR,   moveCountPruning,
+                                           ttCapture, !PvNode && !cutNode};
+                    for (int i = 0; i < int(C.size()); ++i)
+                        for (int j = 0; j < int(C.size()); ++j)
+                            dbg_correl_of(C[i], C[j], 10 * i + j);
+
+                    int V = ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
+                          + 118 * lmrDepth - alpha + MARGIN;
+                    bool PR = (V <= 0);
+                    dbg_mean_of(PR, 10);
+
+                    if (MODE == ADVANCED_COMP)
+                    {
+                        for (int v0 = -(K + 1) * D0; v0 <= (K + 1) * D0; ++v0)
+                        {
+                            int  i   = v0 + (K + 1) * D0;
+                            bool PR0 = (V + v0 <= 0);
+                            dbg_mean_of(PR0, 1000 * (1 + C0) + i);
+                        }
+
+                        for (int v1 = -(K + 1) * D1; v1 <= (K + 1) * D1; ++v1)
+                        {
+                            int  i   = v1 + (K + 1) * D1;
+                            bool PR1 = (V + v1 <= 0);
+                            dbg_mean_of(PR1, 1000 * (5 + C1) + i);
+                        }
+                    }
+                }
+
+                /*
+                if (!ss->inCheck && lmrDepth < 14)
+                {
+                    dbg_mean_of(ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth <= alpha, 0);
+                    dbg_mean_of(ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth + 256 * (cutNode - improving) + 14 <= alpha, 1);
+                    dbg_mean_of(ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth + 342 * cutNode - 383 * improving + 41 <= alpha, 2);
+                    dbg_mean_of(ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth + 342 * cutNode - 256 * (PvNode + priorCapture) + 94 <= alpha, 3);
+                    dbg_mean_of(ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71) + 118 * lmrDepth - 192 * singularQuietLMR + 64 * moveCountPruning <= alpha, 4);
+                }
+                */
                 if (!ss->inCheck && lmrDepth < 14
                     && ss->staticEval + (bestValue < ss->staticEval - 57 ? 124 : 71)
                            + 118 * lmrDepth
+                           + MARGIN
+                           //- 192 * singularQuietLMR + 64 * moveCountPruning
+                           //+ 342 * cutNode - 383 * improving + 41
+                           + (MODE == ADVANCED_COMP
+                                ? +V0[I0] * !C0 + getParam(0) * C0 + V1[I1] * !C1 + getParam(1) * C1
+                              : MODE == SIMPLE_COMP ? -int(getParam(0) * P0) + getParam(0) * C0
+                                                        - int(getParam(1) * P1) + getParam(1) * C1
+                              : MODE == SINGLE ? +getParam(0) * !C0 + getParam(1) * C0
+                              : MODE == COMBINE
+                                ? +getParam(0) * C0 + getParam(1) * C1
+                                    - C0 * C1 * int((getParam(0) * P0 + getParam(1) * P1) / P01)
+                                : 0)
                          <= alpha)
                     continue;
 
@@ -1155,6 +1434,8 @@ moves_loop:  // When in check, search starts here
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
         pos.do_move(move, st, givesCheck);
 
+        bool CC = PC;
+
         // Decrease reduction if position is or has been on the PV (~4 Elo)
         if (ss->ttPv && !likelyFailLow)
             r -= 1 + (cutNode && tte->depth() >= depth) + (ttValue > alpha);
@@ -1233,6 +1514,9 @@ moves_loop:  // When in check, search starts here
                 int bonus = value <= alpha ? -stat_malus(newDepth)
                           : value >= beta  ? stat_bonus(newDepth)
                                            : 0;
+
+                //if(!improving||(!PvNode&&!cutNode))
+                //{ bonus = bonus * (4 + !improving + (!PvNode && !cutNode)) / 4; }
 
                 update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
@@ -1315,6 +1599,14 @@ moves_loop:  // When in check, search starts here
                 // is not a problem when sorting because the sort is stable and the
                 // move position in the list is preserved - just the PV is pushed up.
                 rm.score = -VALUE_INFINITE;
+        }
+
+        if (CC)
+        {
+            bool T      = value > alpha;
+            int  weight = getWeight(depth);
+            dbg_hit_on(T, rank, weight);
+            ++rank;
         }
 
         if (value > bestValue)
@@ -1409,6 +1701,7 @@ moves_loop:  // When in check, search starts here
         auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth / 8,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         thisThread->correctionHistory[us][pawn_structure_index<Correction>(pos)] << bonus;
+        //thisThread->correctionHistory[us][pawn_structure_index<Correction>(pos)] << bonus * (16 + (bonus > 0 ? 0 : 0)) / 16;
     }
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
@@ -1550,21 +1843,24 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
         futilityBase = ss->staticEval + 182;
     }
 
-    const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
-                                        (ss - 2)->continuationHistory};
+    const PieceToHistory* contHist[] = {
+      (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
+      (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
 
     // Initialize a MovePicker object for the current position, and prepare
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions, and other checks (only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
+    const bool PC     = false;
     Square     prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, &thisThread->pawnHistory);
+                  contHist, &thisThread->pawnHistory, PC);
 
     int quietCheckEvasions = 0;
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
+    int rank = 0;
     while ((move = mp.next_move()) != Move::none())
     {
         assert(move.is_ok());
@@ -1645,8 +1941,18 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
         // Step 7. Make and search the move
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
         pos.do_move(move, st, givesCheck);
+
         value = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha, depth - 1);
         pos.undo_move(move);
+
+        bool CC = PC;
+        if (CC)
+        {
+            bool T      = value > alpha;
+            int  weight = getWeight(depth);
+            dbg_hit_on(T, rank, weight);
+            ++rank;
+        }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1832,6 +2138,12 @@ void update_all_stats(const Position& pos,
 // by moves at ply -1, -2, -3, -4, and -6 with current move.
 void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
+    //if (bonus > 0)
+    //    bonus = bonus * 2;//std::min(1 + moveCount, 4) / 2;
+    //dbg_mean_of(bonus, 0);
+    //dbg_mean_of(std::max(bonus,0), 1);
+    //dbg_mean_of(std::min(bonus,0), 2);
+
     for (int i : {1, 2, 3, 4, 6})
     {
         // Only update the first 2 continuation histories if we are in check
@@ -1916,7 +2228,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        dbg_print();
+        //dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI

@@ -24,10 +24,12 @@
 #include <cmath>
 #include <cstdlib>
 #include <deque>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <sstream>
 #include <vector>
+#include <tuple>
 
 #include "benchmark.h"
 #include "evaluate.h"
@@ -140,6 +142,10 @@ void UCI::loop() {
             pos.flip();
         else if (token == "bench")
             bench(pos, is, states);
+        else if (token == "stats")
+            stats(pos, is, states);
+        else if (token == "learn")
+            learn(pos, is, states);
         else if (token == "d")
             sync_cout << pos << sync_endl;
         else if (token == "eval")
@@ -210,8 +216,271 @@ void UCI::go(Position& pos, std::istringstream& is, StateListPtr& states) {
             ponderMode = true;
 
     Eval::NNUE::verify(options, evalFiles);
-
     threads.start_thinking(options, pos, states, limits, ponderMode);
+}
+
+double
+UCI::executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states) {
+
+    std::string token;
+
+    dbg_clear();
+
+    for (const auto& cmd : list)
+    {
+        std::istringstream is(cmd);
+        is >> std::skipws >> token;
+
+        if (token == "go" || token == "eval")
+        {
+            if (token == "go")
+            {
+                go(pos, is, states);
+                threads.main_thread()->wait_for_search_finished();
+            }
+            else
+                trace_eval(pos);
+        }
+        else if (token == "setoption")
+            setoption(is);
+        else if (token == "position")
+            position(pos, is, states);
+        else if (token == "ucinewgame")
+            search_clear();  // search_clear() may take a while
+    }
+    return dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
+}
+
+int ggt(int a, int b);
+
+int ggt(int a, int b) {
+    int h;
+    if (a == 0)
+        return abs(b);
+    if (b == 0)
+        return abs(a);
+
+    do
+    {
+        h = a % b;
+        a = b;
+        b = h;
+    } while (b != 0);
+
+    return abs(a);
+}
+
+void UCI::learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out) {
+    std::vector<std::string> list = setup_bench(pos, args);
+
+    /*
+    constexpr char SEP = ';';
+
+    auto tr = [](const std::string& str) -> std::string {
+        std::string s(str);
+        std::replace(s.begin(), s.end(), '.', ',');
+        return s;
+    };
+
+    constexpr int SCALE_MAX = 8;
+    int           SCALE     = 1;
+
+    // init
+    double bestAUC = -1, baseAUC = -2;
+    int    BEST_HISTORY_WEIGHT[N_HISTORY][2];
+    int    BASE_HISTORY_WEIGHT[N_HISTORY][2];
+
+    for (int i = 0; i < N_HISTORY; ++i)
+    {
+        BEST_HISTORY_WEIGHT[i][0] = HISTORY_START[i][0];
+        BEST_HISTORY_WEIGHT[i][1] = HISTORY_START[i][1];
+    }
+
+    for (int i = 0; i < N_HISTORY; ++i)
+    {
+        HISTORY_WEIGHT[i][0] = BEST_HISTORY_WEIGHT[i][0];
+        HISTORY_WEIGHT[i][1] = BEST_HISTORY_WEIGHT[i][1];
+    }
+
+    bestAUC = executeBench(list, pos, states);
+
+    out << "=> START solution: Scale=" << SCALE << " AUC=" << bestAUC;
+    for (int i = 0; i < N_HISTORY; ++i)
+    {
+        if (BEST_HISTORY_WEIGHT[i][0] != 0)
+        {
+            out << " " << BEST_HISTORY_WEIGHT[i][0] << "/" << BEST_HISTORY_WEIGHT[i][1] << "*"
+                << HISTORY_NAME[i];
+        }
+    }
+    out << std::endl << std::flush;
+
+    // iterations
+    for (int it = 1; bestAUC > baseAUC || (LEARN_INCREASE_SCALE && SCALE <= SCALE_MAX); ++it)
+    {
+        out << "--------------------------------------" << std::endl << std::flush;
+        out << "Iteration: " << it << " Scale: " << SCALE << std::endl << std::flush;
+
+        // use last best solution as base
+        baseAUC = bestAUC;
+        for (int i = 0; i < N_HISTORY; ++i)
+        {
+            BASE_HISTORY_WEIGHT[i][0] = BEST_HISTORY_WEIGHT[i][0];
+            BASE_HISTORY_WEIGHT[i][1] = BEST_HISTORY_WEIGHT[i][1];
+        }
+
+        out << "weight";
+        for (const auto& head : STATS_PARAMS)
+        {
+            out << SEP << std::get<1>(head);
+        }
+        out << std::endl << std::flush;
+
+        // search all combinations of steps and histories
+        for (const auto& step : LEARN_STEPS)
+        {
+            out << tr(std::string(std::get<2>(step))) << std::flush;
+            double AUC = -1;
+
+            for (const auto& p : LEARN_PARAMS)
+            {
+                if (AUC < 0 || std::get<0>(step) != 0)
+                {
+                    for (int i = 0; i < N_HISTORY; ++i)
+                    {
+                        HISTORY_WEIGHT[i][0] = BASE_HISTORY_WEIGHT[i][0];
+                        HISTORY_WEIGHT[i][1] = BASE_HISTORY_WEIGHT[i][1];
+                    }
+                    int P                = std::get<0>(p);
+                    int W                = std::get<0>(step) * SCALE;
+                    int S                = std::get<1>(step);
+                    HISTORY_WEIGHT[P][0] = HISTORY_WEIGHT[P][0] * S + W * HISTORY_WEIGHT[P][1];
+                    HISTORY_WEIGHT[P][1] *= S;
+
+                    int t = ggt(HISTORY_WEIGHT[P][0], HISTORY_WEIGHT[P][1]);
+                    if (t > 1)
+                    {
+                        HISTORY_WEIGHT[P][0] /= t;
+                        HISTORY_WEIGHT[P][1] /= t;
+                    }
+
+                    AUC = executeBench(list, pos, states);
+
+                    if (AUC > bestAUC)
+                    {
+                        // found new best
+                        bestAUC = AUC;
+                        for (int i = 0; i < N_HISTORY; ++i)
+                        {
+                            BEST_HISTORY_WEIGHT[i][0] = HISTORY_WEIGHT[i][0];
+                            BEST_HISTORY_WEIGHT[i][1] = HISTORY_WEIGHT[i][1];
+                        }
+                    }
+                }
+                out << SEP << tr(std::to_string(AUC)) << '%' << std::flush;
+            }
+            out << std::endl << std::flush;
+        }
+
+        // print iteration best
+        if (bestAUC > baseAUC)
+        {
+            out << "=> BEST AUC=" << bestAUC << " Scale: " << SCALE << " Terms:";
+            for (int i = 0; i < N_HISTORY; ++i)
+            {
+                if (BEST_HISTORY_WEIGHT[i][0] != 0)
+                {
+                    out << " " << BEST_HISTORY_WEIGHT[i][0] << "/" << BEST_HISTORY_WEIGHT[i][1]
+                        << "*" << HISTORY_NAME[i];
+                }
+            }
+            out << std::endl << std::flush;
+            SCALE = 1;
+        }
+        else if (LEARN_INCREASE_SCALE)
+        {
+            SCALE *= 2;
+            if (SCALE <= SCALE_MAX)
+            {
+                out << "=> INCREASE SCALE: found no better solution" << std::endl << std::flush;
+            }
+        }
+    }
+    out << "=> FINISHED: found no better solution" << std::endl << std::flush;
+    */
+}
+
+template<int N>
+struct Loop {
+    typedef std::function<void(void)> F;
+    const F                           action;
+    std::vector<int>                  values[N];
+    Loop(const std::vector<int> v[N], const F& f) :
+        action(f) {
+        for (int i = 0; i < N; ++i)
+            values[i] = v[i];
+    }
+
+    void run(int i = 0) {
+        if (i < N)
+        {
+            for (int v : values[i])
+            {
+                setParam(i, v);
+                run(i + 1);
+            }
+        }
+        else
+            action();
+    }
+};
+
+void UCI::stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out) {
+    std::vector<std::string> list = setup_bench(pos, args);
+
+    constexpr char SEP = ';';
+
+    auto tr = [](const std::string& str) -> std::string {
+        std::string s(str);
+        //std::replace(s.begin(), s.end(), '.', ',');
+        return s;
+    };
+
+    constexpr int     K             = 4;
+    constexpr int     D0            = 64;
+    constexpr int     D1            = 64;
+    constexpr int     OFF0          = 0;
+    constexpr int     OFF1          = 0;
+    const std::string PARAMS_NAME[] = {"a0", "a1"};
+    constexpr int     PARAMS_MIN[]  = {-K * D0 + OFF0, -K * D1 + OFF1};
+    constexpr int     PARAMS_MAX[]  = {K * D0 + OFF0, K * D1 + OFF1};
+    constexpr int     PARAMS_STEP[] = {D0, D1};
+
+    std::vector<int> PARAMS_VALUES[2];
+    for (int i = 0; i < N_PARAMS; ++i)
+        for (int v = PARAMS_MIN[i]; v <= PARAMS_MAX[i]; v += PARAMS_STEP[i])
+            PARAMS_VALUES[i].push_back(v);
+
+    out << "AUC";
+    for (const auto& name : PARAMS_NAME)
+    {
+        out << SEP << name;
+    }
+    out << std::endl << std::flush;
+
+    auto action = [&]() -> void {
+        //dbg_clear();
+        double AUC = executeBench(list, pos, states);
+        //double AUC = dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
+
+        out << tr(std::to_string(AUC));
+        for (int i = 0; i < N_PARAMS; ++i)
+            out << SEP << tr(std::to_string(getParam(i)));
+        out << std::endl << std::flush;
+    };
+
+    Loop<N_PARAMS> loop(PARAMS_VALUES, action);
+    loop.run();
 }
 
 void UCI::bench(Position& pos, std::istream& args, StateListPtr& states) {
@@ -249,7 +518,7 @@ void UCI::bench(Position& pos, std::istream& args, StateListPtr& states) {
             position(pos, is, states);
         else if (token == "ucinewgame")
         {
-            search_clear();  // Search::clear() may take a while
+            search_clear();  // search_clear() may take a while
             elapsed = now();
         }
     }
@@ -257,6 +526,7 @@ void UCI::bench(Position& pos, std::istream& args, StateListPtr& states) {
     elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
 
     dbg_print();
+    dbg_print_auc(0, HISTORY_BUCKETS - 1);
 
     std::cerr << "\n==========================="
               << "\nTotal time (ms) : " << elapsed << "\nNodes searched  : " << nodes

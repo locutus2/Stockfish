@@ -92,7 +92,9 @@ MovePicker::MovePicker(const Position&              p,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
                        Move                         cm,
-                       const Move*                  killers) :
+                       const Move*                  killers,
+                       bool                         cond,
+                       Move                         pm) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
@@ -100,7 +102,9 @@ MovePicker::MovePicker(const Position&              p,
     pawnHistory(ph),
     ttMove(ttm),
     refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}},
-    depth(d) {
+    depth(d),
+    C(cond),
+    prevMove(pm) {
     assert(d > 0);
 
     stage = (pos.checkers() ? EVASION_TT : MAIN_TT) + !(ttm && pos.pseudo_legal(ttm));
@@ -113,14 +117,16 @@ MovePicker::MovePicker(const Position&              p,
                        const ButterflyHistory*      mh,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
-                       const PawnHistory*           ph) :
+                       const PawnHistory*           ph,
+                       bool                         cond) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
-    depth(d) {
+    depth(d),
+    C(cond) {
     assert(d <= 0);
 
     stage = (pos.checkers() ? EVASION_TT : QSEARCH_TT) + !(ttm && pos.pseudo_legal(ttm));
@@ -132,7 +138,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     pos(p),
     captureHistory(cph),
     ttMove(ttm),
-    threshold(th) {
+    threshold(th),
+    C(false) {
     assert(!pos.checkers());
 
     stage = PROBCUT_TT
@@ -271,7 +278,11 @@ top:
     case GOOD_CAPTURE :
         if (select<Next>([&]() {
                 // Move losing capture to endBadCaptures to be tried later
-                return pos.see_ge(*cur, -cur->value) ? true : (*endBadCaptures++ = *cur, false);
+                return pos.see_ge(*cur,
+                                  Value(-cur->value)
+                                    - 0 * (prevMove.is_ok() && cur->to_sq() == prevMove.to_sq()))
+                       ? true
+                       : (*endBadCaptures++ = *cur, false);
             }))
             return *(cur - 1);
 

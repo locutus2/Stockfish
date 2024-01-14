@@ -77,10 +77,15 @@ class UCI {
 
     void go(Position& pos, std::istringstream& is, StateListPtr& states);
     void bench(Position& pos, std::istream& args, StateListPtr& states);
-    void position(Position& pos, std::istringstream& is, StateListPtr& states);
-    void trace_eval(Position& pos);
-    void search_clear();
-    void setoption(std::istringstream& is);
+    void
+    stats(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr);
+    void
+    learn(Position& pos, std::istream& args, StateListPtr& states, std::ostream& out = std::cerr);
+    void   position(Position& pos, std::istringstream& is, StateListPtr& states);
+    void   trace_eval(Position& pos);
+    void   search_clear();
+    void   setoption(std::istringstream& is);
+    double executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states);
 };
 
 }  // namespace Stockfish
