@@ -330,9 +330,14 @@ top:
         if (select<Next>([]() { return true; }))
             return *(cur - 1);
 
-        // Prepare the pointers to loop over the bad quiets
-        cur      = beginBadQuiets;
-        endMoves = endBadQuiets;
+        if (!skipQuiets)
+        {
+            // Prepare the pointers to loop over the bad quiets
+            cur      = beginBadQuiets;
+            endMoves = endBadQuiets;
+
+            partial_insertion_sort(cur, endMoves, std::numeric_limits<int>::min());
+        }
 
         ++stage;
         [[fallthrough]];
