@@ -28,6 +28,16 @@
 
 namespace Stockfish {
 
+int A[20] = {
+        0, -3330, -6660, -8000,
+    -8000, -8000, -8000, -8000, 
+    -8000, -8000, -8000, -8000, 
+    -8000, -8000, -8000, -8000, 
+    -8000, -8000, -8000, -8000, 
+};
+
+TUNE(A);
+
 namespace {
 
 enum Stages {
@@ -312,7 +322,7 @@ top:
                 return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
             }))
         {
-            if ((cur - 1)->value > -8000 || (cur - 1)->value <= quiet_threshold(depth))
+            if ((cur - 1)->value > A[std::min(depth, 20)] || (cur - 1)->value <= quiet_threshold(depth))
                 return *(cur - 1);
 
             // Remaining quiets are bad
