@@ -28,15 +28,27 @@
 
 namespace Stockfish {
 
+int B[20];
 int A[20] = {
-        0, -3330, -6660, -8000,
-    -8000, -8000, -8000, -8000, 
-    -8000, -8000, -8000, -8000, 
-    -8000, -8000, -8000, -8000, 
-    -8000, -8000, -8000, -8000, 
+        0, -3330, -3330, -1340,
+        0,     0,     0,     0, 
+        0,     0,     0,     0, 
+        0,     0,     0,     0, 
+        0,     0,     0,     0, 
 };
 
-TUNE(A);
+void initParams()
+{
+    B[0] = 0;
+    for (int i = 1; i < 20; ++i)
+        B[i] = B[i - 1] + A[i];
+/*
+    for (int i = 1; i < 20; ++i)
+        std::cerr << "B[" << i << "]=" << B[i] << std::endl;
+        */
+}
+
+TUNE(SetRange(-8000, 0), A, initParams);
 
 namespace {
 
@@ -322,7 +334,7 @@ top:
                 return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
             }))
         {
-            if ((cur - 1)->value > A[std::min(depth, 19)] || (cur - 1)->value <= quiet_threshold(depth))
+            if ((cur - 1)->value > B[std::min(depth, 19)] || (cur - 1)->value <= quiet_threshold(depth))
                 return *(cur - 1);
 
             // Remaining quiets are bad
