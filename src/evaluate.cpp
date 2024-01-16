@@ -61,10 +61,15 @@ const unsigned int         gEmbeddedNNUESmallSize    = 1;
 
 namespace Stockfish {
 
-int O[2] = { 512, 512 };
-int N[2] = { 32768, 32768 };
+int A[2] = { 512, 512 };
+int B[2] = { 32768, 32768 };
+int C[2] = { 64, 64 };
+int D[2] = { 915, 915 };
+int E[2] = { 9, 9 };
+int F[2] = { 154, 154 };
+int G[2] = { 1024, 1024 };
 
-TUNE(O, N);
+TUNE(A, B, C, D, E, F, G);
 
 namespace Eval {
 
@@ -222,11 +227,11 @@ Value Eval::evaluate(const Position& pos, int optimism) {
                               : NNUE::evaluate<NNUE::Big>(pos, true, &nnueComplexity);
 
         // Blend optimism and eval with nnue complexity and material imbalance
-        optimism += optimism * (nnueComplexity + std::abs(simpleEval - nnue)) / O[smallNet];
-        nnue -= nnue * (nnueComplexity + std::abs(simpleEval - nnue)) / N[smallNet];
+        optimism += optimism * (nnueComplexity + std::abs(simpleEval - nnue)) / A[smallNet];
+        nnue -= nnue * (nnueComplexity + std::abs(simpleEval - nnue)) / B[smallNet];
 
-        int npm = pos.non_pawn_material() / 64;
-        v       = (nnue * (915 + npm + 9 * pos.count<PAWN>()) + optimism * (154 + npm)) / 1024;
+        int npm = pos.non_pawn_material() / C[smallNet];
+        v       = (nnue * (D[smallNet] + npm + E[smallNet] * pos.count<PAWN>()) + optimism * (F[smallNet] + npm)) / G[smallNet];
     }
 
     // Damp down the evaluation linearly when shuffling
