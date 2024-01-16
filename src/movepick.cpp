@@ -28,15 +28,9 @@
 
 namespace Stockfish {
 
-int A[20] = {
-        0, -3330, -6660, -8000,
-    -8000, -8000, -8000, -8000, 
-    -8000, -8000, -8000, -8000, 
-    -8000, -8000, -8000, -8000, 
-    -8000, -8000, -8000, -8000, 
-};
-
-TUNE(A);
+constexpr int GoodQuietsThreshold[20] = {0,     -3134, -7063, -8557, -8232, -7839, -8186,
+                                         -7136, -7484, -8452, -8089, -8147, -8120, -7901,
+                                         -8321, -8161, -8258, -8320, -8111, -7963};
 
 namespace {
 
@@ -322,7 +316,8 @@ top:
                 return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
             }))
         {
-            if ((cur - 1)->value > A[std::min(depth, 19)] || (cur - 1)->value <= quiet_threshold(depth))
+            if ((cur - 1)->value > GoodQuietsThreshold[std::min(depth, 19)]
+                || (cur - 1)->value <= quiet_threshold(depth))
                 return *(cur - 1);
 
             // Remaining quiets are bad
