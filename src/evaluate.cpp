@@ -61,10 +61,8 @@ const unsigned int         gEmbeddedNNUESmallSize    = 1;
 
 namespace Stockfish {
 
-constexpr int EvalModifier[2][2] = {
-  {525, 478},
-  {30047, 31418},
-};
+constexpr int EvalModifier[7][2] = {{558, 492}, {30175, 31822}, {64, 61},    {867, 942},
+                                    {9, 10},    {150, 154},     {1028, 1065}};
 
 namespace Eval {
 
@@ -226,8 +224,11 @@ Value Eval::evaluate(const Position& pos, int optimism) {
           optimism * (nnueComplexity + std::abs(simpleEval - nnue)) / EvalModifier[0][smallNet];
         nnue -= nnue * (nnueComplexity + std::abs(simpleEval - nnue)) / EvalModifier[1][smallNet];
 
-        int npm = pos.non_pawn_material() / 64;
-        v       = (nnue * (915 + npm + 9 * pos.count<PAWN>()) + optimism * (154 + npm)) / 1024;
+        int npm = pos.non_pawn_material() / EvalModifier[2][smallNet];
+        v =
+          (nnue * (EvalModifier[3][smallNet] + npm + EvalModifier[4][smallNet] * pos.count<PAWN>())
+           + optimism * (EvalModifier[5][smallNet] + npm))
+          / EvalModifier[6][smallNet];
     }
 
     // Damp down the evaluation linearly when shuffling
