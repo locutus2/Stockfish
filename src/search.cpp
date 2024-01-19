@@ -769,6 +769,9 @@ Value Search::Worker::search(
     if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-13 * int((ss - 1)->staticEval + ss->staticEval), -1652, 1546);
+        //dbg_mean_of(bonus > 0, 10+PvNode);
+        //dbg_mean_of(bonus > 0, 0);
+        //bonus     = bonus * (bonus > 0 ? 19 : 5) / 8;
         bonus     = bonus > 0 ? 2 * bonus : bonus / 2;
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
@@ -1034,6 +1037,8 @@ moves_loop:  // When in check, search starts here
                   + thisThread->pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
                 // Continuation history based pruning (~2 Elo)
+                //dbg_mean_of(lmrDepth < 6 && history < -3752 * depth + (*contHist[0])[movedPiece][move.to_sq()] * 1 - (*contHist[1])[movedPiece][move.to_sq()] * -1, 0);
+                //if (lmrDepth < 6 && history < -3752 * depth + (*contHist[0])[movedPiece][move.to_sq()] * 1 - (*contHist[1])[movedPiece][move.to_sq()] * -1)
                 if (lmrDepth < 6 && history < -3752 * depth)
                     continue;
 
