@@ -530,7 +530,7 @@ void Search::Worker::clear() {
 
 
 // Main search function for both PV and non-PV nodes.
-template<NodeType nodeType>
+template<NodeType nodeType, bool LmrSearch>
 Value Search::Worker::search(
   Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode) {
 
@@ -1208,7 +1208,7 @@ moves_loop:  // When in check, search starts here
             // std::clamp has been replaced by a more robust implementation.
             Depth d = std::max(1, std::min(newDepth - r, newDepth + 1));
 
-            value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+            value = -search<NonPV, true>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
@@ -1738,7 +1738,6 @@ void update_pv(Move* pv, Move move, const Move* childPv) {
         *pv++ = *childPv++;
     *pv = Move::none();
 }
-
 
 // Updates stats at the end of search() when a bestMove is found
 void update_all_stats(const Position& pos,
