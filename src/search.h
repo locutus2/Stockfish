@@ -47,6 +47,10 @@ class ThreadPool;
 class OptionsMap;
 class UCI;
 
+constexpr int NormalizeToPawnValue = 345;
+
+int win_rate_model(Value v, int ply);
+
 namespace Search {
 
 // Stack struct keeps track of the information we need to remember from nodes
