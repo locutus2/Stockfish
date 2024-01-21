@@ -878,6 +878,7 @@ Value Search::Worker::search(
 
         ss->currentMove         = Move::null();
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+        ss->wdlScore            = 1000 - (ss + 1)->wdlScore;
 
         pos.do_null_move(st, tt);
 
@@ -889,10 +890,7 @@ Value Search::Worker::search(
         if (nullValue >= beta && nullValue < VALUE_TB_WIN_IN_MAX_PLY)
         {
             if (thisThread->nmpMinPly || depth < 15)
-            {
-                ss->wdlScore = wdl_score(nullValue, pos.game_ply());
                 return nullValue;
-            }
 
             assert(!thisThread->nmpMinPly);  // Recursive verification is not allowed
 
@@ -905,10 +903,7 @@ Value Search::Worker::search(
             thisThread->nmpMinPly = 0;
 
             if (v >= beta)
-            {
-                ss->wdlScore = wdl_score(nullValue, pos.game_ply());
                 return nullValue;
-            }
         }
     }
 
@@ -966,12 +961,16 @@ Value Search::Worker::search(
                 pos.do_move(move, st);
 
                 // Perform a preliminary qsearch to verify that the move holds
-                value = -qsearch<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1);
+                value        = -qsearch<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1);
+                ss->wdlScore = wdl_score(value, pos.game_ply());
 
                 // If the qsearch held, perform the regular search
                 if (value >= probCutBeta)
+                {
                     value = -search<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1, depth - 4,
                                            !cutNode);
+                    ss->wdlScore = 1000 - (ss + 1)->wdlScore;
+                }
 
                 pos.undo_move(move);
 
@@ -980,11 +979,8 @@ Value Search::Worker::search(
                     // Save ProbCut data into transposition table
                     tte->save(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER, depth - 3,
                               move, unadjustedStaticEval, tt.generation());
-                    Value v      = std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY
-                                   ? value - (probCutBeta - beta)
-                                   : value;
-                    ss->wdlScore = wdl_score(v, pos.game_ply());
-                    return v;
+                    return std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY ? value - (probCutBeta - beta)
+                                                                     : value;
                 }
             }
 
