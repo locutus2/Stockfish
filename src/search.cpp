@@ -76,6 +76,14 @@ int win_rate_model(Value v, int ply) {
 namespace {
 
 
+int wdl_score(Value v, int ply) {
+
+    int wdl_w = win_rate_model(v, ply);
+    int wdl_l = win_rate_model(-v, ply);
+    int wdl_d = 1000 - wdl_w - wdl_l;
+    return wdl_w + wdl_d / 2;
+}
+
 // Futility margin
 Value futility_margin(Depth d, bool noTtCutNode, bool improving) {
     Value futilityMult = 114 - 47 * noTtCutNode;
@@ -1293,6 +1301,7 @@ moves_loop:  // When in check, search starts here
             RootMove& rm =
               *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
 
+            rm.wdlScore = ss->wdlScore;
             rm.averageScore =
               rm.averageScore != -VALUE_INFINITE ? (2 * value + rm.averageScore) / 3 : value;
 
