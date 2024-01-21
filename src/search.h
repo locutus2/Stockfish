@@ -86,9 +86,7 @@ struct RootMove {
     bool operator==(const Move& m) const { return pv[0] == m; }
     // Sort in descending order
     bool operator<(const RootMove& m) const {
-        return m.wdlScore != wdlScore ? m.wdlScore < wdlScore
-             : m.score != score       ? m.score < score
-                                      : m.previousScore < previousScore;
+        return m.score != score ? m.score < score : m.previousScore < previousScore;
     }
 
     Value             score           = -VALUE_INFINITE;
