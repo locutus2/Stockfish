@@ -1340,14 +1340,14 @@ moves_loop:  // When in check, search starts here
         if (threads.stop.load(std::memory_order_relaxed))
             return VALUE_ZERO;
 
-        ss->wdlScore = std::max(wdl_score(value, pos.game_ply()), ss->wdlScore);
+        ss->wdlScore = std::max(1000 - (ss + 1)->wdlScore, ss->wdlScore);
 
         if (rootNode)
         {
             RootMove& rm =
               *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
 
-            rm.wdlScore = ss->wdlScore;
+            rm.wdlScore = 1000 - (ss + 1)->wdlScore;
             rm.averageScore =
               rm.averageScore != -VALUE_INFINITE ? (2 * value + rm.averageScore) / 3 : value;
 
