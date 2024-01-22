@@ -76,12 +76,11 @@ int win_rate_model(Value v, int ply) {
 namespace {
 
 
-int wdl_score(Value v, int ply) {
+int wdl_draw(Value v, int ply) {
 
     int wdl_w = win_rate_model(v, ply);
     int wdl_l = win_rate_model(-v, ply);
-    int wdl_d = 1000 - wdl_w - wdl_l;
-    return wdl_w + wdl_d / 2;
+    return 1000 - wdl_w - wdl_l;
 }
 
 // Futility margin
@@ -571,11 +570,7 @@ Value Search::Worker::search(
 
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
-    {
-        Value v      = qsearch < PvNode ? PV : NonPV > (pos, ss, alpha, beta);
-        ss->wdlScore = wdl_score(v, pos.game_ply());
-        return v;
-    }
+        return qsearch < PvNode ? PV : NonPV > (pos, ss, alpha, beta);
 
     // Check if we have an upcoming move that draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
@@ -583,10 +578,7 @@ Value Search::Worker::search(
     {
         alpha = value_draw(this->nodes);
         if (alpha >= beta)
-        {
-            ss->wdlScore = wdl_score(alpha, pos.game_ply());
             return alpha;
-        }
     }
 
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
@@ -610,7 +602,6 @@ Value Search::Worker::search(
 
     // Step 1. Initialize node
     Worker* thisThread = this;
-    ss->wdlScore       = 500;
     ss->inCheck        = pos.checkers();
     priorCapture       = pos.captured_piece();
     Color us           = pos.side_to_move();
@@ -631,12 +622,8 @@ Value Search::Worker::search(
         // Step 2. Check for aborted search and immediate draw
         if (threads.stop.load(std::memory_order_relaxed) || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
-        {
-            Value v = (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos, thisThread->optimism[us])
-                                                           : value_draw(thisThread->nodes);
-            ss->wdlScore = wdl_score(v, pos.game_ply());
-            return v;
-        }
+            return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos, thisThread->optimism[us])
+                                                        : value_draw(thisThread->nodes);
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply + 1), but if alpha is already bigger because
@@ -647,10 +634,7 @@ Value Search::Worker::search(
         alpha = std::max(mated_in(ss->ply), alpha);
         beta  = std::min(mate_in(ss->ply + 1), beta);
         if (alpha >= beta)
-        {
-            ss->wdlScore = wdl_score(alpha, pos.game_ply());
             return alpha;
-        }
     }
     else
         thisThread->rootDelta = beta - alpha;
@@ -711,13 +695,9 @@ Value Search::Worker::search(
         // Partial workaround for the graph history interaction problem
         // For high rule50 counts don't produce transposition table cutoffs.
         if (pos.rule50_count() < 90)
-        {
-            Value v      = ttValue >= beta && std::abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY
-                           ? (ttValue * 3 + beta) / 4
-                           : ttValue;
-            ss->wdlScore = wdl_score(v, pos.game_ply());
-            return v;
-        }
+            return ttValue >= beta && std::abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY
+                   ? (ttValue * 3 + beta) / 4
+                   : ttValue;
     }
 
     // Step 5. Tablebases probe
@@ -759,7 +739,6 @@ Value Search::Worker::search(
                               std::min(MAX_PLY - 1, depth + 6), Move::none(), VALUE_NONE,
                               tt.generation());
 
-                    ss->wdlScore = wdl_score(value, pos.game_ply());
                     return value;
                 }
 
@@ -845,10 +824,7 @@ Value Search::Worker::search(
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha)
-        {
-            ss->wdlScore = wdl_score(value, pos.game_ply());
             return value;
-        }
     }
 
     // Step 8. Futility pruning: child node (~40 Elo)
@@ -859,11 +835,7 @@ Value Search::Worker::search(
              >= beta
         && eval >= beta && eval < 27734  // smaller than TB wins
         && (!ttMove || ttCapture))
-    {
-        Value v      = beta > VALUE_TB_LOSS_IN_MAX_PLY ? (eval + beta) / 2 : eval;
-        ss->wdlScore = wdl_score(v, pos.game_ply());
-        return v;
-    }
+        return beta > VALUE_TB_LOSS_IN_MAX_PLY ? (eval + beta) / 2 : eval;
 
     // Step 9. Null move search with verification search (~35 Elo)
     if (!PvNode && (ss - 1)->currentMove != Move::null() && (ss - 1)->statScore < 17787
@@ -878,7 +850,6 @@ Value Search::Worker::search(
 
         ss->currentMove         = Move::null();
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
-        ss->wdlScore            = 1000 - (ss + 1)->wdlScore;
 
         pos.do_null_move(st, tt);
 
@@ -916,11 +887,7 @@ Value Search::Worker::search(
         depth -= 2 + 2 * (ss->ttHit && tte->depth() >= depth);
 
     if (depth <= 0)
-    {
-        Value v      = qsearch<PV>(pos, ss, alpha, beta);
-        ss->wdlScore = wdl_score(v, pos.game_ply());
-        return v;
-    }
+        return qsearch<PV>(pos, ss, alpha, beta);
 
     // For cutNodes without a ttMove, we decrease depth by 2 if depth is high enough.
     if (cutNode && depth >= 8 && !ttMove)
@@ -961,16 +928,12 @@ Value Search::Worker::search(
                 pos.do_move(move, st);
 
                 // Perform a preliminary qsearch to verify that the move holds
-                value        = -qsearch<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1);
-                ss->wdlScore = wdl_score(value, pos.game_ply());
+                value = -qsearch<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1);
 
                 // If the qsearch held, perform the regular search
                 if (value >= probCutBeta)
-                {
                     value = -search<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1, depth - 4,
                                            !cutNode);
-                    ss->wdlScore = 1000 - (ss + 1)->wdlScore;
-                }
 
                 pos.undo_move(move);
 
@@ -994,10 +957,7 @@ moves_loop:  // When in check, search starts here
     if (ss->inCheck && !PvNode && ttCapture && (tte->bound() & BOUND_LOWER)
         && tte->depth() >= depth - 4 && ttValue >= probCutBeta
         && std::abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY)
-    {
-        ss->wdlScore = wdl_score(probCutBeta, pos.game_ply());
         return probCutBeta;
-    }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
                                         (ss - 2)->continuationHistory,
@@ -1013,7 +973,6 @@ moves_loop:  // When in check, search starts here
                   contHist, &thisThread->pawnHistory, countermove, ss->killers);
 
     value            = bestValue;
-    ss->wdlScore     = 0;
     moveCountPruning = singularQuietLMR = false;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
@@ -1336,14 +1295,12 @@ moves_loop:  // When in check, search starts here
         if (threads.stop.load(std::memory_order_relaxed))
             return VALUE_ZERO;
 
-        ss->wdlScore = std::max(1000 - (ss + 1)->wdlScore, ss->wdlScore);
-
         if (rootNode)
         {
             RootMove& rm =
               *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
 
-            rm.wdlScore = 1000 - (ss + 1)->wdlScore;
+            rm.wdlDraw = wdl_draw(value, pos.game_ply() + depth);
             rm.averageScore =
               rm.averageScore != -VALUE_INFINITE ? (2 * value + rm.averageScore) / 3 : value;
 
@@ -1434,10 +1391,7 @@ moves_loop:  // When in check, search starts here
     assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
 
     if (!moveCount)
-    {
-        bestValue    = excludedMove ? alpha : ss->inCheck ? mated_in(ss->ply) : VALUE_DRAW;
-        ss->wdlScore = wdl_score(bestValue, pos.game_ply());
-    }
+        bestValue = excludedMove ? alpha : ss->inCheck ? mated_in(ss->ply) : VALUE_DRAW;
 
     // If there is a move that produces search value greater than alpha we update the stats of searched moves
     else if (bestMove)

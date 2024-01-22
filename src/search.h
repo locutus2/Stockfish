@@ -71,7 +71,6 @@ struct Stack {
     bool            ttHit;
     int             doubleExtensions;
     int             cutoffCnt;
-    int             wdlScore;
 };
 
 
@@ -97,7 +96,7 @@ struct RootMove {
     bool              scoreUpperbound = false;
     int               selDepth        = 0;
     int               tbRank          = 0;
-    int               wdlScore        = 0;
+    int               wdlDraw         = 0;
     Value             tbScore;
     std::vector<Move> pv;
 };
