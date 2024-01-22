@@ -62,8 +62,8 @@ const unsigned int         gEmbeddedNNUESmallSize    = 1;
 namespace Stockfish {
 
 constexpr int EvalModifier[2][2] = {
-  {525, 478},
-  {30047, 31418},
+  {538, 444},
+  {27326, 30068},
 };
 
 namespace Eval {
