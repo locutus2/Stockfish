@@ -1224,7 +1224,7 @@ moves_loop:  // When in check, search starts here
         if (rootNode)
         {
             const RootMove& rm = getRootMove(move);
-            ss->statScore += 16486 - 32 * rm.wdlDraw;
+            ss->statScore += 8243 - 16 * rm.wdlDraw;
         }
 
         // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
