@@ -1223,8 +1223,7 @@ moves_loop:  // When in check, search starts here
 
         if (rootNode)
         {
-            RootMove& rm =
-              *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
+            const RootMove& rm = getRootMove(move);
             ss->statScore += 16486 - 32 * rm.wdlDraw;
         }
 
@@ -1304,10 +1303,8 @@ moves_loop:  // When in check, search starts here
 
         if (rootNode)
         {
-            RootMove& rm =
-              *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
-
-            rm.wdlDraw = wdl_draw(value, pos.game_ply() + depth);
+            RootMove& rm = getRootMove(move);
+            rm.wdlDraw   = wdl_draw(value, pos.game_ply() + depth);
             rm.averageScore =
               rm.averageScore != -VALUE_INFINITE ? (2 * value + rm.averageScore) / 3 : value;
 

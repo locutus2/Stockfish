@@ -214,6 +214,10 @@ class Worker {
              + (!i && reductionScale > 842);
     }
 
+    RootMove& getRootMove(Move move) {
+        return *std::find(rootMoves.begin(), rootMoves.end(), move);
+    }
+
     // Get a pointer to the search manager, only allowed to be called by the
     // main thread.
     SearchManager* main_manager() const {
