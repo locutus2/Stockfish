@@ -1221,6 +1221,13 @@ moves_loop:  // When in check, search starts here
                       + (*contHist[1])[movedPiece][move.to_sq()]
                       + (*contHist[3])[movedPiece][move.to_sq()] - 4119;
 
+        if (rootNode)
+        {
+            RootMove& rm =
+              *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
+            ss->statScore -= 16 * rm.wdlDraw;
+        }
+
         // Decrease/increase reduction for moves with a good/bad history (~25 Elo)
         r -= ss->statScore / 15373;
 
