@@ -310,7 +310,7 @@ top:
                 return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
             }))
         {
-            if ((cur - 1)->value > 39840 / (10 * depth - 3) - 9000
+            if ((cur - 1)->value > 17010 / (2 * depth + 1) - 9000
                 || (cur - 1)->value <= quiet_threshold(depth))
                 return *(cur - 1);
 
