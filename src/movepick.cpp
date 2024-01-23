@@ -28,11 +28,11 @@
 
 namespace Stockfish {
 
-constexpr int GoodQuietsThreshold[20] = {0,     -3262, -6583, -7740,  -7905,  -7954, -8507,
-                                         -8533, -8563, -8813, -8826,  -9057,  -9157, -9253,
-                                         -9842, -9937, -9997, -10254, -10315, -10376};
-
 namespace {
+
+constexpr int GoodQuietsThreshold[20] = {0,     -3308, -6186, -7264, -7504, -7656, -7876,
+                                         -8061, -8217, -8303, -8368, -8480, -8533, -8619,
+                                         -8715, -8763, -8813, -8878, -8901, -8978};
 
 enum Stages {
     // generate main search moves
