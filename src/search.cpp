@@ -893,12 +893,9 @@ moves_loop:  // When in check, search starts here
         && std::abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY)
         return probCutBeta;
 
-    const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
-                                        (ss - 2)->continuationHistory,
-                                        (ss - 3)->continuationHistory,
-                                        (ss - 4)->continuationHistory,
-                                        nullptr,
-                                        (ss - 6)->continuationHistory};
+    const PieceToHistory* contHist[] = {
+      (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
+      (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
 
     Move countermove =
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : Move::none();
@@ -1164,20 +1161,15 @@ moves_loop:  // When in check, search starts here
         if (depth >= 2 && moveCount > 1 + rootNode
             && (!ss->ttPv || !capture || (cutNode && (ss - 1)->moveCount > 1)))
         {
-            if (+173 * (extension == 1) + 170 * (move.type_of() == PROMOTION) + 167 * rootNode
-                  + 116 * (tte->bound() == BOUND_UPPER) + 102 * (!PvNode && !cutNode)
-                  - 96 * (move == ss->killers[0]) - 95 * (move == countermove)
-                  + 88 * singularQuietLMR - 84 * givesCheck - 83 * (move == ss->killers[1])
-                  - 76 * (ss->statScore > 0) + 73 * (tte->bound() == BOUND_EXACT) + 72 * ttCapture
-                  + 72 * (extension == 0) + 63 * ss->ttPv + 62 * priorCapture
-                  - 53 * ((ss - 1)->currentMove == Move::null()) - 43 * ss->inCheck - 34 * ss->ttHit
-                  + 33 * cutNode + 25 * (tte->bound() == BOUND_LOWER)
-                  + 25 * ((ss + 1)->cutoffCnt > 3) + 25 * pos.has_repeated() - 20 * improving
-                  + 19 * PvNode - 15 * ((ss - 1)->moveCount > 7) + 14 * (ss - 1)->inCheck
-                  + 13 * bool(excludedMove) + 12 * (ss - 1)->ttHit + 11 * (extension == -3)
-                  - 8 * (extension == -1) - 5 * ((ss - 1)->moveCount > 1) - 4 * (extension == -2)
-                  - 4 * capture + (ss - 1)->ttPv
-                >= 374)
+            if (386 * thisThread->mainHistory[us][move.from_to()]
+                  + 19 * thisThread->pawnHistory[pawn_structure_index(pos)][us][move.from_to()]
+                  + 166 * (*contHist[0])[movedPiece][move.to_sq()]
+                  + 78 * (*contHist[1])[movedPiece][move.to_sq()]
+                  + 45 * (*contHist[2])[movedPiece][move.to_sq()]
+                  + 61 * (*contHist[3])[movedPiece][move.to_sq()]
+                  + 9 * (*contHist[4])[movedPiece][move.to_sq()]
+                  + 54 * (*contHist[5])[movedPiece][move.to_sq()]
+                <= -4801400)
                 r++;
 
             // In general we want to cap the LMR depth search at newDepth, but when
