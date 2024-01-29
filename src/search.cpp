@@ -1164,21 +1164,20 @@ moves_loop:  // When in check, search starts here
         if (depth >= 2 && moveCount > 1 + rootNode
             && (!ss->ttPv || !capture || (cutNode && (ss - 1)->moveCount > 1)))
         {
-            if (167 * rootNode + 19 * PvNode + 33 * cutNode + 102 * (!PvNode
-                && !cutNode) - 20 * improving - 43 * ss->inCheck + 72 * ttCapture
-                         + 88 * singularQuietLMR + 62 * priorCapture + 13 * bool(excludedMove)
-                         + 63 * ss->ttPv - 34 * ss->ttHit - 5 * ((ss - 1)->moveCount
-                       > 1) - 15 * ((ss - 1)->moveCount > 7) - 53 * ((ss - 1)->currentMove
-                     == Move::null()) + 14 * (ss - 1)->inCheck + 12 * (ss - 1)->ttHit
-                          + (ss - 1)->ttPv + 116 * (tte->bound()
-                     == BOUND_UPPER) + 25 * (tte->bound() == BOUND_LOWER) + 73 * (tte->bound()
-                     == BOUND_EXACT) + 173 * (extension == 1) + 72 * (extension == 0) - 8 * (extension
-                     == -1) - 4 * (extension == -2) + 11 * (extension
-                     == -3) - 84 * givesCheck - 4 * capture + 170 * (move.type_of()
-                     == PROMOTION) - 95 * (move == countermove) - 96 * (move
-                     == ss->killers[0]) - 83 * (move
-                     == ss->killers[1]) + 25 * ((ss + 1)->cutoffCnt
-                          > 3) + 25 * pos.has_repeated() - 76 * (ss->statScore > 0) >= 374)
+            if (+173 * (extension == 1) + 170 * (move.type_of() == PROMOTION) + 167 * rootNode
+                  + 116 * (tte->bound() == BOUND_UPPER) + 102 * (!PvNode && !cutNode)
+                  - 96 * (move == ss->killers[0]) - 95 * (move == countermove)
+                  + 88 * singularQuietLMR - 84 * givesCheck - 83 * (move == ss->killers[1])
+                  - 76 * (ss->statScore > 0) + 73 * (tte->bound() == BOUND_EXACT) + 72 * ttCapture
+                  + 72 * (extension == 0) + 63 * ss->ttPv + 62 * priorCapture
+                  - 53 * ((ss - 1)->currentMove == Move::null()) - 43 * ss->inCheck - 34 * ss->ttHit
+                  + 33 * cutNode + 25 * (tte->bound() == BOUND_LOWER)
+                  + 25 * ((ss + 1)->cutoffCnt > 3) + 25 * pos.has_repeated() - 20 * improving
+                  + 19 * PvNode - 15 * ((ss - 1)->moveCount > 7) + 14 * (ss - 1)->inCheck
+                  + 13 * bool(excludedMove) + 12 * (ss - 1)->ttHit + 11 * (extension == -3)
+                  - 8 * (extension == -1) - 5 * ((ss - 1)->moveCount > 1) - 4 * (extension == -2)
+                  - 4 * capture + (ss - 1)->ttPv
+                >= 374)
                 r++;
 
             // In general we want to cap the LMR depth search at newDepth, but when
