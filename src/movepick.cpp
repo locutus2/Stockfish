@@ -132,6 +132,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     pos(p),
     captureHistory(cph),
     ttMove(ttm),
+    depth(0),
     threshold(th) {
     assert(!pos.checkers());
 
