@@ -139,6 +139,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     captureHistory(cph),
     ttMove(ttm),
     threshold(th),
+    depth(0),
     C(false) {
     assert(!pos.checkers());
 
@@ -174,7 +175,7 @@ void MovePicker::score() {
     for (auto& m : *this)
         if constexpr (Type == CAPTURES)
             m.value =
-              (7 * int(PieceValue[pos.piece_on(m.to_sq())])
+              ((depth > 0 ? 7 : 7) * int(PieceValue[pos.piece_on(m.to_sq())])
                + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))])
               / 16;
 
@@ -277,7 +278,7 @@ top:
         if (select<Next>([&]() {
                 // Move losing capture to endBadCaptures to be tried later
                 return pos.see_ge(*cur,
-                                  Value(-cur->value)
+                                  Value(-cur->value - 0)
                                     - 0 * (prevMove.is_ok() && cur->to_sq() == prevMove.to_sq()))
                        ? true
                        : (*endBadCaptures++ = *cur, false);
