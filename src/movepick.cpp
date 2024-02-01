@@ -132,8 +132,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     pos(p),
     captureHistory(cph),
     ttMove(ttm),
-    depth(0),
-    threshold(th) {
+    threshold(th),
+    depth(0) {
     assert(!pos.checkers());
 
     stage = PROBCUT_TT
@@ -168,7 +168,7 @@ void MovePicker::score() {
     for (auto& m : *this)
         if constexpr (Type == CAPTURES)
             m.value =
-              ((depth > 0 ? 6 : 7) * int(PieceValue[pos.piece_on(m.to_sq())])
+              ((depth > 0 ? 6 : 8) * int(PieceValue[pos.piece_on(m.to_sq())])
                + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))])
               / 16;
 
