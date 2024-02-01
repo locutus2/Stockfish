@@ -36,7 +36,7 @@ namespace Stockfish {
 //------------------------------------
 // AUC stuff
 constexpr int  HISTORY_BUCKETS  = 10000;
-constexpr bool USE_DEPTH_WEIGHT = false;
+constexpr bool USE_DEPTH_WEIGHT = true;
 
 inline int getWeight(int depth) { return USE_DEPTH_WEIGHT && depth > 0 ? depth : 1; }
 
