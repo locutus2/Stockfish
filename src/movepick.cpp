@@ -176,6 +176,7 @@ void MovePicker::score() {
         if constexpr (Type == CAPTURES)
             m.value =
               ((depth > 0 ? 7 : 7) * int(PieceValue[pos.piece_on(m.to_sq())])
+               + (0*80*16 - int(PieceValue[pos.piece_on(m.from_sq())])) * (depth > 0 ? 0 : 0) / 2
                + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))])
               / 16;
 
