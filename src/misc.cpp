@@ -324,7 +324,7 @@ void setParam(int n, int v) {
 }
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = HISTORY_BUCKETS;
+constexpr int MaxDebugSlots = HISTORY_BUCKETS * N_AUC_Types;
 
 namespace {
 

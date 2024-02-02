@@ -848,6 +848,8 @@ Value Search::Worker::search(
 
         MovePicker mp(pos, ttMove, probCutBeta - ss->staticEval, &thisThread->captureHistory);
 
+        const bool PC     = true;
+        int rank = 0;
         while ((move = mp.next_move()) != Move::none())
             if (move != excludedMove && pos.legal(move))
             {
@@ -873,6 +875,15 @@ Value Search::Worker::search(
                                            !cutNode);
 
                 pos.undo_move(move);
+
+                bool CC = PC;
+                if (CC)
+                {
+                    bool T      = value >= probCutBeta;
+                    int  weight = 1;
+                    dbg_hit_on(T, rank + AUC_PROBCUT * HISTORY_BUCKETS, weight);
+                    ++rank;
+                }
 
                 if (value >= probCutBeta)
                 {
@@ -1566,7 +1577,7 @@ moves_loop:  // When in check, search starts here
         {
             bool T      = value > alpha;
             int  weight = getWeight(depth);
-            dbg_hit_on(T, rank, weight);
+            dbg_hit_on(T, rank + AUC_MAIN * HISTORY_BUCKETS, weight);
             ++rank;
         }
 
@@ -1800,7 +1811,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions, and other checks (only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
-    const bool PC     = false;
+    const bool PC     = true;
     Square     prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
                   contHist, &thisThread->pawnHistory, PC);
@@ -1898,8 +1909,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
         if (CC)
         {
             bool T      = value > alpha;
-            int  weight = getWeight(depth);
-            dbg_hit_on(T, rank, weight);
+            int  weight = 1;
+            dbg_hit_on(T, rank + AUC_QSEARCH * HISTORY_BUCKETS, weight);
             ++rank;
         }
 

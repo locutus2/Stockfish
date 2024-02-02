@@ -49,6 +49,13 @@ enum Modes {
     COMBINE
 };
 
+enum AUC_Types {
+    AUC_MAIN,
+    AUC_PROBCUT,
+    AUC_QSEARCH,
+    N_AUC_Types
+};
+
 constexpr Modes MODE = ADVANCED_COMP;
 //constexpr Modes MODE = COMBINE;
 

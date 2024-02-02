@@ -534,6 +534,8 @@ void UCI::bench(Position& pos, std::istream& args, StateListPtr& states) {
 
     dbg_print();
     dbg_print_auc(0, HISTORY_BUCKETS - 1);
+    dbg_print_auc(HISTORY_BUCKETS, 2 * HISTORY_BUCKETS - 1);
+    dbg_print_auc(2 * HISTORY_BUCKETS, 3 * HISTORY_BUCKETS - 1);
 
     std::cerr << "\n==========================="
               << "\nTotal time (ms) : " << elapsed << "\nNodes searched  : " << nodes
