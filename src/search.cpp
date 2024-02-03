@@ -1234,7 +1234,7 @@ moves_loop:  // When in check, search starts here
                     dbg_mean_of(C0 * C1, 2);
 
                     std::vector<bool> C = {cutNode,   improving,          priorCapture,
-                                           PvNode,    singularQuietLMR,   moveCountPruning,
+                                           PvNode,    moveCountPruning,
                                            ttCapture, !PvNode && !cutNode};
                     for (int i = 0; i < int(C.size()); ++i)
                         for (int j = 0; j < int(C.size()); ++j)
