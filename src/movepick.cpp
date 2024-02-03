@@ -341,7 +341,7 @@ top:
     case BAD_CAPTURE :
         if (select<Next>([&]() {
                 // Move very bad losing capture to endBadCaptures to be tried even later
-                return pos.see_ge(*cur, -2 * cur->value) ? true : (*endBadCaptures++ = *cur, false);
+                return true || pos.see_ge(*cur, -2 * cur->value) ? true : (*endBadCaptures++ = *cur, false);
             }))
             return *(cur - 1);
 
