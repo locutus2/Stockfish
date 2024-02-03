@@ -205,6 +205,8 @@ void MovePicker::score() {
                           : pt != PAWN ? bool(to & threatenedByPawn) * 15000
                                        : 0)
                        : 0;
+
+            m.value /= 16;
         }
 
         else  // Type == EVASIONS
@@ -242,7 +244,7 @@ Move MovePicker::select(Pred filter) {
 // moves left, picking the move with the highest score from a list of generated moves.
 Move MovePicker::next_move(bool skipQuiets) {
 
-    auto quiet_threshold = [](Depth d) { return -3330 * d; };
+    auto quiet_threshold = [](Depth d) { return -208 * d; };
 
 top:
     switch (stage)
@@ -310,7 +312,7 @@ top:
                 return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
             }))
         {
-            if ((cur - 1)->value > -8000 || (cur - 1)->value <= quiet_threshold(depth))
+            if ((cur - 1)->value > -500 || (cur - 1)->value <= quiet_threshold(depth))
                 return *(cur - 1);
 
             // Remaining quiets are bad
