@@ -40,6 +40,7 @@ enum Stages {
     GOOD_QUIET,
     BAD_CAPTURE,
     BAD_QUIET,
+    VERY_BAD_CAPTURE,
 
     // generate evasion moves
     EVASION_TT,
@@ -332,13 +333,16 @@ top:
 
         // Prepare the pointers to loop over the bad captures
         cur      = moves;
-        endMoves = endBadCaptures;
+        endMoves = beginVeryBadCaptures = endBadCaptures;
 
         ++stage;
         [[fallthrough]];
 
     case BAD_CAPTURE :
-        if (select<Next>([]() { return true; }))
+        if (select<Next>([&]() {
+                // Move very bad losing capture to endBadCaptures to be tried even later
+                return pos.see_ge(*cur, -2 * cur->value) ? true : (*endBadCaptures++ = *cur, false);
+            }))
             return *(cur - 1);
 
         // Prepare the pointers to loop over the bad quiets
@@ -354,7 +358,15 @@ top:
                 return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
             });
 
-        return Move::none();
+        // Prepare the pointers to loop over the very bad captures
+        cur      = beginVeryBadCaptures;
+        endMoves = endBadCaptures;
+
+        ++stage;
+        [[fallthrough]];
+
+    case VERY_BAD_CAPTURE :
+        return select<Next>([]() { return true; });
 
     case EVASION_INIT :
         cur      = moves;
