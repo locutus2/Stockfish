@@ -148,6 +148,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
           + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm) && pos.see_ge(ttm, threshold));
 }
 
+constexpr int S = 1;
+
 // Assigns a numerical value to each move in a list, used
 // for sorting. Captures are ordered by Most Valuable Victim (MVV), preferring
 // captures with a good history. Quiets moves are ordered using the history tables.
@@ -215,6 +217,8 @@ void MovePicker::score() {
                           : pt != PAWN ? bool(to & threatenedByPawn) * 15000
                                        : 0)
                        : 0;
+
+            m.value /= S;
         }
 
         else  // Type == EVASIONS
@@ -252,7 +256,7 @@ Move MovePicker::select(Pred filter) {
 // moves left, picking the move with the highest score from a list of generated moves.
 Move MovePicker::next_move(bool skipQuiets) {
 
-    auto quiet_threshold = [](Depth d) { return -3330 * d; };
+    auto quiet_threshold = [](Depth d) { return -3330 / S * d; };
 
 top:
     switch (stage)
@@ -324,7 +328,7 @@ top:
                 return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
             }))
         {
-            if ((cur - 1)->value > -8000 || (cur - 1)->value <= quiet_threshold(depth))
+            if ((cur - 1)->value > -8000 / S || (cur - 1)->value <= quiet_threshold(depth))
                 return *(cur - 1);
 
             // Remaining quiets are bad
