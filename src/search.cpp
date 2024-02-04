@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <initializer_list>
 #include <iostream>
+#include <limits>
 #include <utility>
 #include <sstream>
 
@@ -531,6 +532,7 @@ Value Search::Worker::search(
     // Step 1. Initialize node
     Worker* thisThread = this;
     ss->inCheck        = pos.checkers();
+    ss->maxQvalue      = int(std::numeric_limits<int>::min());
     priorCapture       = pos.captured_piece();
     Color us           = pos.side_to_move();
     moveCount = captureCount = quietCount = ss->moveCount = 0;
@@ -902,6 +904,7 @@ moves_loop:  // When in check, search starts here
 
     value            = bestValue;
     moveCountPruning = false;
+    ss->maxQvalue    = int(std::numeric_limits<int>::min());
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1032,6 +1035,7 @@ moves_loop:  // When in check, search starts here
                 value =
                   search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
                 ss->excludedMove = Move::none();
+                ss->maxQvalue    = int(std::numeric_limits<int>::min());
 
                 if (value < singularBeta)
                 {
@@ -1201,6 +1205,9 @@ moves_loop:  // When in check, search starts here
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
 
+        if (!capture)
+            ss->maxQvalue = std::max(ss->maxQvalue, -Q.get(pos, move));
+
         // Step 19. Undo move
         pos.undo_move(move);
 
@@ -1257,6 +1264,14 @@ moves_loop:  // When in check, search starts here
                 // is not a problem when sorting because the sort is stable and the
                 // move position in the list is preserved - just the PV is pushed up.
                 rm.score = -VALUE_INFINITE;
+        }
+
+        if (!capture && (ss + 1)->maxQvalue != std::numeric_limits<int>::min())
+        {
+            int bonus = value > alpha ? stat_bonus(depth) : -stat_malus(depth);
+            int val   = Q.get(pos, move);
+            val += (bonus + (ss + 1)->maxQvalue - val) / 10;
+            Q.set(pos, move, val);
         }
 
         if (value > bestValue)
