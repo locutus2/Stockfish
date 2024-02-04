@@ -1270,7 +1270,7 @@ moves_loop:  // When in check, search starts here
             {
                 int bonus = value > alpha ? 16 * stat_bonus(depth) : -16 * stat_malus(depth);
                 int val   = Q.get(pos, move);
-                val += (bonus - (ss + 1)->maxQvalue - val) / 16;
+                val += (2 * (bonus - val) - (ss + 1)->maxQvalue) / 64;
                 Q.set(pos, move, val);
             }
         }
