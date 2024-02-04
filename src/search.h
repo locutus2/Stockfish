@@ -199,7 +199,7 @@ class Worker {
     ContinuationHistory   continuationHistory[2][2];
     PawnHistory           pawnHistory;
     CorrectionHistory     correctionHistory;
-    QValue<>              Q;
+    QValue                Q;
 
    private:
     void iterative_deepening();

@@ -102,7 +102,7 @@ template<typename T, int D, int Size>
 struct Stats<T, D, Size>: public std::array<StatsEntry<T, D>, Size> {};
 
 template<int Size = 1024, typename T = int>
-struct QValue {
+struct QValueBase {
 
     std::array<std::array<std::array<T, SQUARE_NB>, PIECE_NB>, Size> value;
 
@@ -121,6 +121,8 @@ struct QValue {
         std::fill(p, p + sizeof(value) / sizeof(T), val);
     }
 };
+
+typedef QValueBase<> QValue;
 
 // In stats table, D=0 means that the template parameter is not used
 enum StatsParams {
