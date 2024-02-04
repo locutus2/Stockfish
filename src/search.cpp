@@ -1205,9 +1205,6 @@ moves_loop:  // When in check, search starts here
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
 
-        if (!capture)
-            ss->maxQvalue = std::max(ss->maxQvalue, -Q.get(pos, move));
-
         // Step 19. Undo move
         pos.undo_move(move);
 
@@ -1266,12 +1263,16 @@ moves_loop:  // When in check, search starts here
                 rm.score = -VALUE_INFINITE;
         }
 
-        if (!capture && (ss + 1)->maxQvalue != std::numeric_limits<int>::min())
+        if (!capture)
         {
-            int bonus = value > alpha ? 16 * stat_bonus(depth) : -16 * stat_malus(depth);
-            int val   = Q.get(pos, move);
-            val += (bonus - (ss + 1)->maxQvalue - val) / 10;
-            Q.set(pos, move, val);
+            ss->maxQvalue = std::max(ss->maxQvalue, Q.get(pos, move));
+            if ((ss + 1)->maxQvalue != std::numeric_limits<int>::min())
+            {
+                int bonus = value > alpha ? 16 * stat_bonus(depth) : -16 * stat_malus(depth);
+                int val   = Q.get(pos, move);
+                val += (bonus - (ss + 1)->maxQvalue - val) / 16;
+                Q.set(pos, move, val);
+            }
         }
 
         if (value > bestValue)
