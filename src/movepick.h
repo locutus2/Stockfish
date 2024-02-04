@@ -101,6 +101,27 @@ struct Stats: public std::array<Stats<T, D, Sizes...>, Size> {
 template<typename T, int D, int Size>
 struct Stats<T, D, Size>: public std::array<StatsEntry<T, D>, Size> {};
 
+template<int Size = 1024, typename T = int>
+struct QValue {
+
+    std::array<std::array<std::array<T, SQUARE_NB>, PIECE_NB>, Size> value;
+
+    T get(const Position& pos, Move move) const {
+        int key = pos.key() & (Size - 1);
+        return value[key][pos.moved_piece(move)][move.to_sq()];
+    }
+
+    void set(const Position& pos, Move move, T val) {
+        int key                                         = pos.key() & (Size - 1);
+        value[key][pos.moved_piece(move)][move.to_sq()] = val;
+    }
+
+    void fill(T val) {
+        T* p = reinterpret_cast<T*>(&value);
+        std::fill(p, p + sizeof(value) / sizeof(T), val);
+    }
+};
+
 // In stats table, D=0 means that the template parameter is not used
 enum StatsParams {
     NOT_USED = 0
