@@ -1264,16 +1264,13 @@ moves_loop:  // When in check, search starts here
                 rm.score = -VALUE_INFINITE;
         }
 
-        if (!capture)
+        ss->maxQvalue = std::max(ss->maxQvalue, Q.get((ss - 1)->currentMove, pos, move));
+        if ((ss + 1)->maxQvalue != std::numeric_limits<int>::min())
         {
-            ss->maxQvalue = std::max(ss->maxQvalue, Q.get((ss - 1)->currentMove, pos, move));
-            if ((ss + 1)->maxQvalue != std::numeric_limits<int>::min())
-            {
-                int bonus = value > alpha ? 16 * stat_bonus(depth) : -16 * stat_malus(depth);
-                int val   = Q.get((ss - 1)->currentMove, pos, move);
-                val += (2 * (bonus - val) - (ss + 1)->maxQvalue) / 64;
-                Q.set((ss - 1)->currentMove, pos, move, val);
-            }
+            int bonus = value > alpha ? 16 * stat_bonus(depth) : -16 * stat_malus(depth);
+            int val   = Q.get((ss - 1)->currentMove, pos, move);
+            val += (2 * (bonus - val) - (ss + 1)->maxQvalue) / 64;
+            Q.set((ss - 1)->currentMove, pos, move, val);
         }
 
         if (value > bestValue)
