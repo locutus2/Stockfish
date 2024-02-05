@@ -101,19 +101,21 @@ struct Stats: public std::array<Stats<T, D, Sizes...>, Size> {
 template<typename T, int D, int Size>
 struct Stats<T, D, Size>: public std::array<StatsEntry<T, D>, Size> {};
 
-template<int Size = PIECE_NB * SQUARE_NB, typename T = int>
+template<int Size = PIECE_NB * SQUARE_NB * PIECE_TYPE_NB, typename T = int>
 struct QValueBase {
 
     std::array<std::array<std::array<std::array<T, PIECE_TYPE_NB>, SQUARE_NB>, PIECE_NB>, Size>
       value;
 
     T get(Move prev_move, const Position& pos, Move move) const {
-        int key = pos.piece_on(prev_move.to_sq()) * SQUARE_NB + prev_move.to_sq();
+        int key = pos.piece_on(prev_move.to_sq()) * SQUARE_NB * PIECE_TYPE_NB
+                + prev_move.to_sq() * PIECE_TYPE_NB + type_of(pos.captured_piece());
         return value[key][pos.moved_piece(move)][move.to_sq()][type_of(pos.piece_on(move.to_sq()))];
     }
 
     void set(Move prev_move, const Position& pos, Move move, T val) {
-        int key = pos.piece_on(prev_move.to_sq()) * SQUARE_NB + prev_move.to_sq();
+        int key = pos.piece_on(prev_move.to_sq()) * SQUARE_NB * PIECE_TYPE_NB
+                + prev_move.to_sq() * PIECE_TYPE_NB + type_of(pos.captured_piece());
         value[key][pos.moved_piece(move)][move.to_sq()][type_of(pos.piece_on(move.to_sq()))] = val;
     }
 
