@@ -900,7 +900,8 @@ moves_loop:  // When in check, search starts here
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : Move::none();
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, &thisThread->pawnHistory, &Q, countermove, ss->killers);
+                  contHist, &thisThread->pawnHistory, &Q, countermove, ss->killers,
+                  (ss - 1)->currentMove);
 
     value            = bestValue;
     moveCountPruning = false;
@@ -1265,13 +1266,13 @@ moves_loop:  // When in check, search starts here
 
         if (!capture)
         {
-            ss->maxQvalue = std::max(ss->maxQvalue, Q.get(pos, move));
+            ss->maxQvalue = std::max(ss->maxQvalue, Q.get((ss - 1)->currentMove, pos, move));
             if ((ss + 1)->maxQvalue != std::numeric_limits<int>::min())
             {
                 int bonus = value > alpha ? 16 * stat_bonus(depth) : -16 * stat_malus(depth);
-                int val   = Q.get(pos, move);
+                int val   = Q.get((ss - 1)->currentMove, pos, move);
                 val += (2 * (bonus - val) - (ss + 1)->maxQvalue) / 64;
-                Q.set(pos, move, val);
+                Q.set((ss - 1)->currentMove, pos, move, val);
             }
         }
 

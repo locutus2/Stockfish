@@ -93,7 +93,8 @@ MovePicker::MovePicker(const Position&              p,
                        const PawnHistory*           ph,
                        const QValue*                q,
                        Move                         cm,
-                       const Move*                  killers) :
+                       const Move*                  killers,
+                       Move                         pm) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
@@ -102,6 +103,7 @@ MovePicker::MovePicker(const Position&              p,
     Q(q),
     ttMove(ttm),
     refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}},
+    prevMove(pm),
     depth(d) {
     assert(d > 0);
 
@@ -188,7 +190,7 @@ void MovePicker::score() {
             m.value += (*continuationHistory[2])[pc][to] / 4;
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
-            m.value += Q->get(pos, m);
+            m.value += Q->get(prevMove, pos, m);
 
             // bonus for checks
             m.value += bool(pos.check_squares(pt) & to) * 16384;

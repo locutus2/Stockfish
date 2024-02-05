@@ -101,18 +101,18 @@ struct Stats: public std::array<Stats<T, D, Sizes...>, Size> {
 template<typename T, int D, int Size>
 struct Stats<T, D, Size>: public std::array<StatsEntry<T, D>, Size> {};
 
-template<int Size = 1024, typename T = int>
+template<int Size = PIECE_NB * SQUARE_NB, typename T = int>
 struct QValueBase {
 
     std::array<std::array<std::array<T, SQUARE_NB>, PIECE_NB>, Size> value;
 
-    T get(const Position& pos, Move move) const {
-        int key = pos.key() & (Size - 1);
+    T get(Move prev_move, const Position& pos, Move move) const {
+        int key = pos.piece_on(prev_move.to_sq()) * SQUARE_NB + prev_move.to_sq();
         return value[key][pos.moved_piece(move)][move.to_sq()];
     }
 
-    void set(const Position& pos, Move move, T val) {
-        int key                                         = pos.key() & (Size - 1);
+    void set(Move prev_move, const Position& pos, Move move, T val) {
+        int key = pos.piece_on(prev_move.to_sq()) * SQUARE_NB + prev_move.to_sq();
         value[key][pos.moved_piece(move)][move.to_sq()] = val;
     }
 
@@ -187,7 +187,8 @@ class MovePicker {
                const PawnHistory*,
                const QValue* q,
                Move,
-               const Move*);
+               const Move*,
+               Move);
     MovePicker(const Position&,
                Move,
                Depth,
@@ -213,6 +214,7 @@ class MovePicker {
     const PawnHistory*           pawnHistory;
     const QValue*                Q;
     Move                         ttMove;
+    Move                         prevMove;
     ExtMove refutations[3], *cur, *endMoves, *endBadCaptures, *beginBadQuiets, *endBadQuiets;
     int     stage;
     int     threshold;
