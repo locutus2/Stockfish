@@ -10,6 +10,7 @@ jobs:
       COMP: ${{ matrix.config.comp }}
       CXXFLAGS: "-Werror"
     strategy:
+      fail-fast: false
       matrix:
         config:
           - name: Ubuntu 20.04 GCC
