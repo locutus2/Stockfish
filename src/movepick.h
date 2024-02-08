@@ -116,6 +116,8 @@ enum StatsType {
 // see www.chessprogramming.org/Butterfly_Boards (~11 elo)
 using ButterflyHistory = Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
 
+using EvalHistory = Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
+
 // CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
 // move, see www.chessprogramming.org/Countermove_Heuristic
 using CounterMoveHistory = Stats<Move, NOT_USED, PIECE_NB, SQUARE_NB>;
@@ -159,6 +161,7 @@ class MovePicker {
                Move,
                Depth,
                const ButterflyHistory*,
+               const EvalHistory*,
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const PawnHistory*,
@@ -168,6 +171,7 @@ class MovePicker {
                Move,
                Depth,
                const ButterflyHistory*,
+               const EvalHistory*,
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const PawnHistory*);
@@ -184,6 +188,7 @@ class MovePicker {
 
     const Position&              pos;
     const ButterflyHistory*      mainHistory;
+    const EvalHistory*           evalHistory;
     const CapturePieceToHistory* captureHistory;
     const PieceToHistory**       continuationHistory;
     const PawnHistory*           pawnHistory;

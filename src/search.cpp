@@ -471,6 +471,7 @@ void Search::Worker::iterative_deepening() {
 void Search::Worker::clear() {
     counterMoves.fill(Move::none());
     mainHistory.fill(0);
+    evalHistory.fill(0);
     captureHistory.fill(0);
     pawnHistory.fill(0);
     correctionHistory.fill(0);
@@ -729,6 +730,7 @@ Value Search::Worker::search(
         int bonus = std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval), -1661, 1495);
         bonus     = bonus > 0 ? 2 * bonus : bonus / 2;
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus;
+        thisThread->evalHistory[~us][((ss - 1)->currentMove).from_to()] << bonus;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
               << bonus / 4;
@@ -896,8 +898,9 @@ moves_loop:  // When in check, search starts here
     Move countermove =
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : Move::none();
 
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, &thisThread->pawnHistory, countermove, ss->killers);
+    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->evalHistory,
+                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory, countermove,
+                  ss->killers);
 
     value            = bestValue;
     moveCountPruning = false;
@@ -1487,8 +1490,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
     // queen promotions, and other checks (only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
     Square     prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, &thisThread->pawnHistory);
+    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->evalHistory,
+                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory);
 
     int quietCheckEvasions = 0;
 

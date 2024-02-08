@@ -194,6 +194,7 @@ class Worker {
     // Public because they need to be updatable by the stats
     CounterMoveHistory    counterMoves;
     ButterflyHistory      mainHistory;
+    EvalHistory           evalHistory;
     CapturePieceToHistory captureHistory;
     ContinuationHistory   continuationHistory[2][2];
     PawnHistory           pawnHistory;
