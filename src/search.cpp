@@ -723,10 +723,19 @@ Value Search::Worker::search(
                   unadjustedStaticEval, tt.generation());
     }
 
+     if (((ss - 1)->currentMove).is_ok() && (ss - 2)->currentMove.is_ok() && !(ss - 1)->inCheck
+                     && !(ss - 2)->inCheck && !priorCapture)
+     {
+        int bonus2 = std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval), -1661, 1495);
+                          int bonus = std::clamp(14 * int((ss - 2)->staticEval) - ss->staticEval, -1661, 1495);
+                          dbg_mean_of(bonus, 0);
+                          dbg_mean_of(bonus > 0, 10);
+                          dbg_mean_of(bonus2, 1);
+                          dbg_mean_of(bonus2 > 0, 11);
     // Use static evaluation difference to improve quiet move ordering (~9 Elo)
-    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
-    {
-        int bonus = std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval), -1661, 1495);
+    //if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
+    //{
+     //   int bonus = std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval), -1661, 1495);
         //dbg_mean_of(bonus > 0, 10+PvNode);
         //dbg_mean_of(bonus > 0, 0);
         //bonus     = bonus * (bonus > 0 ? 19 : 5) / 8;
