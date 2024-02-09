@@ -723,23 +723,24 @@ Value Search::Worker::search(
                   unadjustedStaticEval, tt.generation());
     }
 
-     if (((ss - 1)->currentMove).is_ok() && (ss - 2)->currentMove.is_ok() && !(ss - 1)->inCheck
-                     && !(ss - 2)->inCheck && !priorCapture)
-     {
-        int bonus2 = std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval), -1661, 1495);
-                          int bonus = std::clamp(14 * int((ss - 2)->staticEval) - ss->staticEval, -1661, 1495);
-                          dbg_mean_of(bonus, 0);
-                          dbg_mean_of(bonus > 0, 10);
-                          dbg_mean_of(bonus2, 1);
-                          dbg_mean_of(bonus2 > 0, 11);
-    // Use static evaluation difference to improve quiet move ordering (~9 Elo)
-    //if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
-    //{
-     //   int bonus = std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval), -1661, 1495);
+    //if (((ss - 1)->currentMove).is_ok() && (ss - 2)->currentMove.is_ok() && !(ss - 1)->inCheck
+    //    && !(ss - 2)->inCheck && !priorCapture)
+    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
+    {
+        int bonus = std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval), -1661, 1495);
+        //int bonus  = std::clamp(14 * int((ss - 2)->staticEval) - ss->staticEval, -1661, 1495);
+        //dbg_mean_of(bonus, 0);
+        //dbg_mean_of(bonus > 0, 10);
+        //dbg_mean_of(bonus2, 1);
+        //dbg_mean_of(bonus2 > 0, 11);
+        // Use static evaluation difference to improve quiet move ordering (~9 Elo)
+        //if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
+        //{
+        //   int bonus = std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval), -1661, 1495);
         //dbg_mean_of(bonus > 0, 10+PvNode);
         //dbg_mean_of(bonus > 0, 0);
         //bonus     = bonus * (bonus > 0 ? 19 : 5) / 8;
-        bonus     = bonus > 0 ? 2 * bonus : bonus / 2;
+        bonus = bonus > 0 ? 2 * bonus : bonus / 2;
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
@@ -850,8 +851,8 @@ Value Search::Worker::search(
 
         MovePicker mp(pos, ttMove, probCutBeta - ss->staticEval, &thisThread->captureHistory);
 
-        const bool PC     = true;
-        int rank = 0;
+        const bool PC   = true;
+        int        rank = 0;
         while ((move = mp.next_move()) != Move::none())
             if (move != excludedMove && pos.legal(move))
             {
@@ -990,7 +991,8 @@ moves_loop:  // When in check, search starts here
                 {
                     Piece capturedPiece = pos.piece_on(move.to_sq());
                     int   futilityEval =
-                      ss->staticEval + 279 + 295 * lmrDepth + PieceValue[capturedPiece]
+                      ss->staticEval + 279 + 295 * lmrDepth
+                      + PieceValue[capturedPiece]
                       //ss->staticEval + 238 + getParam(0)*!cutNode + getParam(1)*cutNode + 305 * lmrDepth + PieceValue[capturedPiece]
                       //ss->staticEval + 238 + getParam(0)*!priorCapture + getParam(1)*priorCapture + 305 * lmrDepth + PieceValue[capturedPiece]
                       //ss->staticEval + 238 + getParam(0)*!improving + getParam(1)*improving + 305 * lmrDepth + PieceValue[capturedPiece]
@@ -1242,9 +1244,8 @@ moves_loop:  // When in check, search starts here
                     dbg_mean_of(C1, 1);
                     dbg_mean_of(C0 * C1, 2);
 
-                    std::vector<bool> C = {cutNode,   improving,          priorCapture,
-                                           PvNode,    moveCountPruning,
-                                           ttCapture, !PvNode && !cutNode};
+                    std::vector<bool> C = {cutNode,          improving, priorCapture,       PvNode,
+                                           moveCountPruning, ttCapture, !PvNode && !cutNode};
                     for (int i = 0; i < int(C.size()); ++i)
                         for (int j = 0; j < int(C.size()); ++j)
                             dbg_correl_of(C[i], C[j], 10 * i + j);

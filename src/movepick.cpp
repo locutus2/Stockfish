@@ -40,7 +40,6 @@ enum Stages {
     GOOD_QUIET,
     BAD_CAPTURE,
     BAD_QUIET,
-    VERY_BAD_CAPTURE,
 
     // generate evasion moves
     EVASION_TT,
@@ -179,8 +178,8 @@ void MovePicker::score() {
         if constexpr (Type == CAPTURES)
             m.value =
               (depth > 0 ? 7 : 7) * int(PieceValue[pos.piece_on(m.to_sq())])
-               + (0*80*16 - int(PieceValue[pos.piece_on(m.from_sq())])) * (depth > 0 ? 0 : 0) / 2
-               + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
+              + (0 * 80 * 16 - int(PieceValue[pos.piece_on(m.from_sq())])) * (depth > 0 ? 0 : 0) / 2
+              + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
 
         else if constexpr (Type == QUIETS)
         {
@@ -282,7 +281,8 @@ top:
     case GOOD_CAPTURE :
         if (select<Next>([&]() {
                 // Move losing capture to endBadCaptures to be tried later
-                return pos.see_ge(*cur, -cur->value / 18
+                return pos.see_ge(*cur,
+                                  -cur->value / 18
                                     - 0 * (prevMove.is_ok() && cur->to_sq() == prevMove.to_sq()))
                        ? true
                        : (*endBadCaptures++ = *cur, false);
@@ -335,16 +335,13 @@ top:
 
         // Prepare the pointers to loop over the bad captures
         cur      = moves;
-        endMoves = beginVeryBadCaptures = endBadCaptures;
+        endMoves = endBadCaptures;
 
         ++stage;
         [[fallthrough]];
 
     case BAD_CAPTURE :
-        if (select<Next>([&]() {
-                // Move very bad losing capture to endBadCaptures to be tried even later
-                return true || pos.see_ge(*cur, -2 * cur->value) ? true : (*endBadCaptures++ = *cur, false);
-            }))
+        if (select<Next>([]() { return true; }))
             return *(cur - 1);
 
         // Prepare the pointers to loop over the bad quiets
@@ -360,15 +357,7 @@ top:
                 return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
             });
 
-        // Prepare the pointers to loop over the very bad captures
-        cur      = beginVeryBadCaptures;
-        endMoves = endBadCaptures;
-
-        ++stage;
-        [[fallthrough]];
-
-    case VERY_BAD_CAPTURE :
-        return select<Next>([]() { return true; });
+        return Move::none();
 
     case EVASION_INIT :
         cur      = moves;
