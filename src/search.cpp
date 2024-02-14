@@ -1073,6 +1073,9 @@ moves_loop:  // When in check, search starts here
                                                   [type_of(pos.piece_on(move.to_sq()))]
                           > 4356)
                 extension = 1;
+
+            else if (givesCheck && priorCapture)
+                extension = 1;
         }
 
         // Add extension to new depth
@@ -1119,9 +1122,6 @@ moves_loop:  // When in check, search starts here
         // Nullifies all previous reduction adjustments to ttMove and leaves only history to do them
         else if (move == ttMove)
             r = 0;
-
-        if (givesCheck && priorCapture)
-            r--;
 
         ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
                       + (*contHist[0])[movedPiece][move.to_sq()]
