@@ -1134,7 +1134,6 @@ moves_loop:  // When in check, search starts here
         else if (move == ttMove)
             r = 0;
 
-
         if (givesCheck && priorCapture && capture)
             r--;
 
