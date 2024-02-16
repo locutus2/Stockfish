@@ -24,6 +24,7 @@
 #include <memory>
 #include <unordered_map>
 #include <utility>
+#include <array>
 
 #include "misc.h"
 #include "movegen.h"
@@ -203,6 +204,7 @@ void ThreadPool::start_thinking(const OptionsMap&  options,
         th->worker->rootPos.set(pos.fen(), pos.is_chess960(), &th->worker->rootState);
         th->worker->rootState = setupStates->back();
         th->worker->tbConfig  = tbConfig;
+        th->worker->effort    = {};
     }
 
     main_thread()->start_searching();
@@ -212,7 +214,9 @@ Thread* ThreadPool::get_best_thread() const {
 
     Thread* bestThread = threads.front();
     Value   minScore   = VALUE_NONE;
-    std::unordered_map<Move, int64_t, Move::MoveHash> votes(2 * std::min(size(), bestThread->worker->rootMoves.size())); 
+
+    std::unordered_map<Move, int64_t, Move::MoveHash> votes(
+      2 * std::min(size(), bestThread->worker->rootMoves.size()));
 
     // Find the minimum score of all threads
     for (Thread* th : threads)
