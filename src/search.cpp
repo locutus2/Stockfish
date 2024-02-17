@@ -979,7 +979,7 @@ moves_loop:  // When in check, search starts here
                 }
 
                 // SEE based pruning for captures and checks (~11 Elo)
-                if ((!givesCheck || !capture) && !pos.see_ge(move, -197 * depth))
+                if ((!givesCheck || !capture || !priorCapture) && !pos.see_ge(move, -197 * depth))
                     continue;
             }
             else
