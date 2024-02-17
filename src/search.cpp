@@ -979,7 +979,7 @@ moves_loop:  // When in check, search starts here
                 }
 
                 // SEE based pruning for captures and checks (~11 Elo)
-                if (!pos.see_ge(move, -197 * depth))
+                if ((!givesCheck || !capture) && !pos.see_ge(move, -197 * depth))
                     continue;
             }
             else
@@ -1133,9 +1133,6 @@ moves_loop:  // When in check, search starts here
         // Nullifies all previous reduction adjustments to ttMove and leaves only history to do them
         else if (move == ttMove)
             r = 0;
-
-        if (givesCheck && priorCapture && capture)
-            r--;
 
         ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
                       + (*contHist[0])[movedPiece][move.to_sq()]
