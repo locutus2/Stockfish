@@ -533,7 +533,7 @@ Value Search::Worker::search(
     Move     ttMove, move, excludedMove, bestMove;
     Depth    extension, newDepth;
     Value    bestValue, value, ttValue, eval, maxValue, probCutBeta;
-    bool     givesCheck, improving, priorCapture;
+    bool     givesCheck, improving;
     bool     capture, moveCountPruning, ttCapture;
     Piece    movedPiece;
     int      moveCount, captureCount, quietCount;
@@ -541,7 +541,7 @@ Value Search::Worker::search(
     // Step 1. Initialize node
     Worker* thisThread = this;
     ss->inCheck        = pos.checkers();
-    priorCapture       = pos.captured_piece();
+    ss->priorCapture       = pos.captured_piece();
     Color us           = pos.side_to_move();
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     bestValue                                             = -VALUE_INFINITE;
@@ -617,7 +617,7 @@ Value Search::Worker::search(
 
                 // Extra penalty for early quiet moves of
                 // the previous ply (~0 Elo on STC, ~2 Elo on LTC).
-                if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture)
+                if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !ss->priorCapture)
                     update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                                   -stat_malus(depth + 1));
             }
@@ -727,7 +727,7 @@ Value Search::Worker::search(
 
     //if (((ss - 1)->currentMove).is_ok() && (ss - 2)->currentMove.is_ok() && !(ss - 1)->inCheck
     //    && !(ss - 2)->inCheck && !priorCapture)
-    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
+    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !ss->priorCapture)
     {
         int bonus = std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval), -1723, 1455);
         //int bonus  = std::clamp(14 * int((ss - 2)->staticEval) - ss->staticEval, -1661, 1495);
@@ -1246,7 +1246,7 @@ moves_loop:  // When in check, search starts here
                     dbg_mean_of(C1, 1);
                     dbg_mean_of(C0 * C1, 2);
 
-                    std::vector<bool> C = {cutNode,          improving, priorCapture,       PvNode,
+                    std::vector<bool> C = {cutNode,          improving, ss->priorCapture,       PvNode,
                                            moveCountPruning, ttCapture, !PvNode && !cutNode};
                     for (int i = 0; i < int(C.size()); ++i)
                         for (int j = 0; j < int(C.size()); ++j)
@@ -1630,7 +1630,7 @@ moves_loop:  // When in check, search starts here
                          quietCount, capturesSearched, captureCount, depth);
 
     // Bonus for prior countermove that caused the fail low
-    else if (!priorCapture && prevSq != SQ_NONE)
+    else if (!ss->priorCapture && prevSq != SQ_NONE)
     {
         int bonus = (depth > 5) + (PvNode || cutNode) + ((ss - 1)->statScore < -15736)
                   + ((ss - 1)->moveCount > 11);
@@ -2103,7 +2103,7 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
         if (ss->inCheck && i > 2)
             break;
         if (((ss - i)->currentMove).is_ok())
-            (*(ss - i)->continuationHistory)[pc][to] << bonus / (1 + 3 * (i == 3));
+            (*(ss - i)->continuationHistory)[pc][to] << bonus / (1 + 3 * (i == 3) + 0*ss->priorCapture);
     }
 }
 
