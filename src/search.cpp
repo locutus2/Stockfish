@@ -912,7 +912,7 @@ moves_loop:  // When in check, search starts here
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move(PvNode && moveCount % 2 == 0, moveCountPruning)) != Move::none())
+    while ((move = mp.next_move(PvNode && moveCount % 4 == 0, moveCountPruning)) != Move::none())
     {
         assert(move.is_ok());
 
