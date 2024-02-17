@@ -1766,7 +1766,7 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
             break;
         if (((ss - i)->currentMove).is_ok())
             (*(ss - i)->continuationHistory)[pc][to]
-              << bonus / ((1 + 3 * (i == 3) + (ss->priorCapture && i > 2)));
+              << bonus / (1 + 3 * (i == 3) + (ss->priorCapture && i > 2));
     }
 }
 
