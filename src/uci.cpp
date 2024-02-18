@@ -461,7 +461,7 @@ void UCI::stats(Position& pos, std::istream& args, StateListPtr& states, std::os
     constexpr int     D1            = 1;
     constexpr int     OFF0          = 0;
     constexpr int     OFF1          = 0;
-    const std::string PARAMS_NAME[] = {"a4", "a5"};
+    const std::string PARAMS_NAME[] = {"a0", "a6"};
     constexpr int     PARAMS_MIN[]  = {-K * D0 + OFF0, -K * D1 + OFF1};
     constexpr int     PARAMS_MAX[]  = {K * D0 + OFF0, K * D1 + OFF1};
     constexpr int     PARAMS_STEP[] = {D0, D1};
