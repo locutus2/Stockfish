@@ -43,6 +43,7 @@ inline int getWeight(int depth) { return USE_DEPTH_WEIGHT && depth > 0 ? depth :
 constexpr int N_PARAMS = 2;
 
 enum Modes {
+    NONE_USE,
     ADVANCED_COMP,
     SIMPLE_COMP,
     SINGLE,
@@ -56,7 +57,8 @@ enum AUC_Types {
     N_AUC_Types
 };
 
-constexpr Modes MODE = ADVANCED_COMP;
+constexpr Modes MODE = NONE_USE;
+//constexpr Modes MODE = ADVANCED_COMP;
 //constexpr Modes MODE = COMBINE;
 
 constexpr bool MEASURE = false;

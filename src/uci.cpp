@@ -455,8 +455,10 @@ void UCI::stats(Position& pos, std::istream& args, StateListPtr& states, std::os
     };
 
     constexpr int     K             = 4;
-    constexpr int     D0            = 64;
-    constexpr int     D1            = 64;
+    //constexpr int     D0            = 64;
+    //constexpr int     D1            = 64;
+    constexpr int     D0            = 1;
+    constexpr int     D1            = 1;
     constexpr int     OFF0          = 0;
     constexpr int     OFF1          = 0;
     const std::string PARAMS_NAME[] = {"a0", "a1"};
