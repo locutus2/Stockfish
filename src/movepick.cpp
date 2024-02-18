@@ -192,17 +192,21 @@ void MovePicker::score() {
             constexpr int SCALE = 128;
             const int PARAMS[] = {
                 0,
-                3, 
+                3,
+                0,
+                0, 
                 getParam(0), 
-                getParam(1) 
+                getParam(1), 
+                0, 
             };
+            //constexpr int PARAMS[] = {0,0,0,0,0,0,0};
             m.value = (2 * SCALE + PARAMS[0]) * (*mainHistory)[pos.side_to_move()][m.from_to()] / SCALE;
             m.value += (2 * SCALE + PARAMS[1]) * (*pawnHistory)[pawn_structure_index(pos)][pc][to] / SCALE;
             m.value += (2 * SCALE + PARAMS[2]) * (*continuationHistory[0])[pc][to] / SCALE;
             m.value += (SCALE + PARAMS[3]) * (*continuationHistory[1])[pc][to] / SCALE;
-            m.value += (*continuationHistory[2])[pc][to] / 4;
-            m.value += (*continuationHistory[3])[pc][to];
-            m.value += (*continuationHistory[5])[pc][to];
+            m.value += (SCALE / 4 + PARAMS[4]) * (*continuationHistory[2])[pc][to] / SCALE;
+            m.value += (SCALE + PARAMS[5]) * (*continuationHistory[3])[pc][to] / SCALE;
+            m.value += (SCALE + PARAMS[6]) * (*continuationHistory[5])[pc][to] / SCALE;
 
             // bonus for checks
             m.value += bool(pos.check_squares(pt) & to) * 16384;
