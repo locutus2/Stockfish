@@ -454,7 +454,7 @@ void UCI::stats(Position& pos, std::istream& args, StateListPtr& states, std::os
         return s;
     };
 
-    constexpr int     K             = 4;
+    constexpr int     K             = 1;
     //constexpr int     D0            = 64;
     //constexpr int     D1            = 64;
     constexpr int     D0            = 1;

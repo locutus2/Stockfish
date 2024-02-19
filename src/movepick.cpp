@@ -190,6 +190,7 @@ void MovePicker::score() {
 
             // histories
             constexpr int SCALE = 128;
+            /*
             const int PARAMS[] = {
                 0 + getParam(0),
                 3,
@@ -197,6 +198,16 @@ void MovePicker::score() {
                 0,
                 -3,
                 0 + getParam(1),
+                0,
+            };
+            */
+            const int PARAMS[] = {
+                0 + getParam(0),
+                3 + getParam(1),
+                0 + getParam(2),
+                0 + getParam(3),
+               -3 + getParam(4),
+                0 + getParam(5),
                 0,
             };
             //constexpr int PARAMS[] = {0,0,0,0,0,0,0};
