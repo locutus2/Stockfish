@@ -461,20 +461,32 @@ void UCI::stats(Position& pos, std::istream& args, StateListPtr& states, std::os
     constexpr int     D1            = 1;
     constexpr int     OFF0          = 0;
     constexpr int     OFF1          = 0;
-    const std::string PARAMS_NAME[] = {"a0", "a5"};
-    constexpr int     PARAMS_MIN[]  = {-K * D0 + OFF0, -K * D1 + OFF1};
-    constexpr int     PARAMS_MAX[]  = {K * D0 + OFF0, K * D1 + OFF1};
-    constexpr int     PARAMS_STEP[] = {D0, D1};
+    //const std::string PARAMS_NAME[N_PARAMS] = {"a0", "a5"};
+    //constexpr int     PARAMS_MIN[]  = {-K * D0 + OFF0, -K * D1 + OFF1};
+    //constexpr int     PARAMS_MAX[]  = {K * D0 + OFF0, K * D1 + OFF1};
+    //constexpr int     PARAMS_STEP[] = {D0, D1};
+    const std::string PARAMS_NAME[N_PARAMS] = {"a0", "a5"};
+    int     PARAMS_MIN[N_PARAMS];
+    int     PARAMS_MAX[N_PARAMS];
+    int     PARAMS_STEP[N_PARAMS];
 
-    std::vector<int> PARAMS_VALUES[2];
+    for (int i = 0; i < N_PARAMS; ++i)
+    {
+        PARAMS_MIN[i] = -K * D0 + OFF0;
+        PARAMS_MAX[i] = K * D0 + OFF0;
+        PARAMS_STEP[i] = D0;
+    }
+
+
+    std::vector<int> PARAMS_VALUES[N_PARAMS];
     for (int i = 0; i < N_PARAMS; ++i)
         for (int v = PARAMS_MIN[i]; v <= PARAMS_MAX[i]; v += PARAMS_STEP[i])
             PARAMS_VALUES[i].push_back(v);
 
     out << "AUC";
-    for (const auto& name : PARAMS_NAME)
+    for (int i = 0; i < N_PARAMS; ++i)
     {
-        out << SEP << name;
+        out << SEP << PARAMS_NAME[i];
     }
     out << std::endl << std::flush;
 
