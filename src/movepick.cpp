@@ -201,12 +201,24 @@ void MovePicker::score() {
                 0,
             };
             */
+            /*
             constexpr int SCALE = 32;//128;
             const int PARAMS[] = {
                 1 + getParam(0),
                 0 + getParam(1),
                 0 + getParam(2),
                 1 + getParam(3),
+                1 + getParam(4),
+               -1 + getParam(5),
+                0,
+            };
+            */
+            constexpr int SCALE = 8;//32;//128;
+            const int PARAMS[] = {
+               -1 + getParam(0),
+               -1 + getParam(1),
+               -1 + getParam(2),
+               -1 + getParam(3),
                 1 + getParam(4),
                -1 + getParam(5),
                 0,
