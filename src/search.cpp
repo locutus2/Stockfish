@@ -2096,6 +2096,16 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
     //dbg_mean_of(bonus, 0);
     //dbg_mean_of(std::max(bonus,0), 1);
     //dbg_mean_of(std::min(bonus,0), 2);
+    constexpr int SCALE = 8;
+    const int PARAMS[] = {
+        0,
+        0 + getParam(0),
+        0 + getParam(1),
+        0 + getParam(2),
+        0 + getParam(3),
+        0,
+        0 + getParam(4),
+    };
 
     for (int i : {1, 2, 3, 4, 6})
     {
@@ -2103,7 +2113,7 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
         if (ss->inCheck && i > 2)
             break;
         if (((ss - i)->currentMove).is_ok())
-            (*(ss - i)->continuationHistory)[pc][to] << bonus / (1 + 3 * (i == 3) + 0*ss->priorCapture);
+            (*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE + PARAMS[i]) / (SCALE * (1 + 3 * (i == 3) + 0*ss->priorCapture));
     }
 }
 
