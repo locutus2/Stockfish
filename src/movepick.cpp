@@ -214,14 +214,25 @@ void MovePicker::score() {
             };
             */
             constexpr int SCALE = 8;//32;//128;
+            /*
             const int PARAMS[] = {
-               -1 + getParam(0),
-               -1 + getParam(1),
+                0 + getParam(0),
+               -2 + getParam(1),
                -1 + getParam(2),
-               -1 + getParam(3),
-                1 + getParam(4),
-               -1 + getParam(5),
+                0 + getParam(3),
+                2 + getParam(4),
+               -2 + getParam(5),
                 0,
+            };
+            */
+            const int PARAMS[] = {
+                0,
+               -2 + getParam(0),
+               -1 + getParam(1),
+                0 + getParam(2),
+                2 + getParam(3),
+               -2 + getParam(4),
+                0 + getParam(5),
             };
             //constexpr int PARAMS[] = {0,0,0,0,0,0,0};
             m.value = (2 * SCALE + PARAMS[0]) * (*mainHistory)[pos.side_to_move()][m.from_to()] / SCALE;
