@@ -1759,7 +1759,7 @@ void update_all_stats(const Position& pos,
 // by moves at ply -1, -2, -3, -4, and -6 with current move.
 void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
-    constexpr int WEIGHT[] = {0, 6, 8, 8, 9, 0, 6};
+    constexpr int WEIGHT[] = {0, 5, 7, 7, 9, 0, 6};
 
     for (int i : {1, 2, 3, 4, 6})
     {
