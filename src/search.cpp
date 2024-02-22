@@ -2099,16 +2099,16 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
     constexpr int SCALE = 8;
     const int PARAMS[] = {
         0,
-        -2 + getParam(0),
-        0 + getParam(1),
-        0 + getParam(2),
+        -3 + getParam(0),
+        -1 + getParam(1),
+        -1 + getParam(2),
         1 + getParam(3),
         0,
         -2 + getParam(4),
     };
     // 86.398856;-1;0;0;1;-1
     // 86.446632;-1;0;0;0;-1
-
+    // 86.534635;-1;-1;-1;0;0
     for (int i : {1, 2, 3, 4, 6})
     {
         // Only update the first 2 continuation histories if we are in check
