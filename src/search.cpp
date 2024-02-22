@@ -2099,14 +2099,15 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
     constexpr int SCALE = 8;
     const int PARAMS[] = {
         0,
-        -1 + getParam(0),
+        -2 + getParam(0),
         0 + getParam(1),
         0 + getParam(2),
         1 + getParam(3),
         0,
-        -1 + getParam(4),
+        -2 + getParam(4),
     };
     // 86.398856;-1;0;0;1;-1
+    // 86.446632;-1;0;0;0;-1
 
     for (int i : {1, 2, 3, 4, 6})
     {
