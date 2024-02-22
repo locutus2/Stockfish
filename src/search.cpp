@@ -2096,26 +2096,45 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
     //dbg_mean_of(bonus, 0);
     //dbg_mean_of(std::max(bonus,0), 1);
     //dbg_mean_of(std::min(bonus,0), 2);
+    /*
+    // version 1
     constexpr int SCALE = 8;
     const int PARAMS[] = {
         0,
-        -3 + getParam(0),
-        -1 + getParam(1),
+        -4 + getParam(0),
+        -2 + getParam(1),
         -1 + getParam(2),
         1 + getParam(3),
         0,
-        -2 + getParam(4),
+        -3 + getParam(4),
     };
+    */
     // 86.398856;-1;0;0;1;-1
     // 86.446632;-1;0;0;0;-1
     // 86.534635;-1;-1;-1;0;0
+    // 86.631289;-1;-1;0;0;-1
+
+    // version 2
+    constexpr int SCALE = 8;
+    const int PARAMS[] = {
+        0,
+        0 + getParam(0),
+        0 + getParam(1),
+        0 + getParam(2),
+        0 + getParam(3),
+        0,
+        0 + getParam(4),
+    };
     for (int i : {1, 2, 3, 4, 6})
     {
         // Only update the first 2 continuation histories if we are in check
         if (ss->inCheck && i > 2)
             break;
         if (((ss - i)->currentMove).is_ok())
-            (*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE + PARAMS[i]) / (SCALE * (1 + 3 * (i == 3) + 0*ss->priorCapture));
+            // version 1
+            //(*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE + PARAMS[i]) / (SCALE * (1 + 3 * (i == 3) + 0*ss->priorCapture));
+            // version 2
+            (*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE / (1 + 3 * (i == 3)) + PARAMS[i]) / SCALE;
     }
 }
 
