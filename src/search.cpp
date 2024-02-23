@@ -2115,6 +2115,7 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
     // 86.631289;-1;-1;0;0;-1
 
     // version 2
+    /*
     constexpr int SCALE = 8;
     const int PARAMS[] = {
         0,
@@ -2125,8 +2126,10 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
         0,
         -1 + getParam(4),
     };
+    */
     // 86.423708;0;-1;1;0;-1
     // 86.428200;-1;-1;0;-1;0
+    constexpr int PARAMS[] = { 0,0,0,0,0,0,0};
     for (int i : {1, 2, 3, 4, 6})
     {
         // Only update the first 2 continuation histories if we are in check
@@ -2134,9 +2137,9 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
             break;
         if (((ss - i)->currentMove).is_ok())
             // version 1
-            //(*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE + PARAMS[i]) / (SCALE * (1 + 3 * (i == 3) + 0*ss->priorCapture));
+            (*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE + PARAMS[i]) / (SCALE * (1 + 3 * (i == 3) + 0*ss->priorCapture));
             // version 2
-            (*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE / (1 + 3 * (i == 3)) + PARAMS[i]) / SCALE;
+            //(*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE / (1 + 3 * (i == 3)) + PARAMS[i]) / SCALE;
     }
 }
 
