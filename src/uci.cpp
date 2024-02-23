@@ -454,7 +454,7 @@ void UCI::stats(Position& pos, std::istream& args, StateListPtr& states, std::os
         return s;
     };
 
-    constexpr int     K             = 1;
+    constexpr int     K             = 40;
     //constexpr int     D0            = 64;
     //constexpr int     D1            = 64;
     constexpr int     D0            = 1;
@@ -465,7 +465,8 @@ void UCI::stats(Position& pos, std::istream& args, StateListPtr& states, std::os
     //constexpr int     PARAMS_MIN[]  = {-K * D0 + OFF0, -K * D1 + OFF1};
     //constexpr int     PARAMS_MAX[]  = {K * D0 + OFF0, K * D1 + OFF1};
     //constexpr int     PARAMS_STEP[] = {D0, D1};
-    const std::string PARAMS_NAME[N_PARAMS] = {"a0", "a1", "a2", "a3", "a4"};
+    //const std::string PARAMS_NAME[N_PARAMS] = {"a0", "a1", "a2", "a3", "a4"};
+    const std::string PARAMS_NAME[N_PARAMS] = {"a0"};
     int     PARAMS_MIN[N_PARAMS];
     int     PARAMS_MAX[N_PARAMS];
     int     PARAMS_STEP[N_PARAMS];

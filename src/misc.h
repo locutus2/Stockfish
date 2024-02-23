@@ -41,7 +41,8 @@ constexpr bool USE_DEPTH_WEIGHT = true;
 inline int getWeight(int depth) { return USE_DEPTH_WEIGHT && depth > 0 ? depth : 1; }
 
 //constexpr int N_PARAMS = 7;
-constexpr int N_PARAMS = 5;
+//constexpr int N_PARAMS = 5;
+constexpr int N_PARAMS = 1;
 
 enum Modes {
     NONE_USE,
