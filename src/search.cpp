@@ -2116,8 +2116,8 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
     // 86.631289;-1;-1;0;0;-1
 
     // version 2
-    /*
     constexpr int SCALE = 8;
+    /*
     const int PARAMS[] = {
         0,
         -1 + getParam(0),
