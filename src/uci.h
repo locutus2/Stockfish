@@ -74,7 +74,7 @@ class UCI {
     void   trace_eval(Position& pos);
     void   search_clear();
     void   setoption(std::istringstream& is);
-    double executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states);
+    auto executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states);
 };
 
 }  // namespace Stockfish

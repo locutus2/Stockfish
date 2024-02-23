@@ -227,8 +227,7 @@ void UCI::go(Position& pos, std::istringstream& is, StateListPtr& states) {
     threads.start_thinking(options, pos, states, limits, ponderMode);
 }
 
-double
-UCI::executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states) {
+auto UCI::executeBench(const std::vector<std::string>& list, Position& pos, StateListPtr& states) {
 
     std::string token;
 
@@ -256,7 +255,9 @@ UCI::executeBench(const std::vector<std::string>& list, Position& pos, StateList
         else if (token == "ucinewgame")
             search_clear();  // search_clear() may take a while
     }
-    return dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
+    return std::make_tuple(dbg_print_auc(0, HISTORY_BUCKETS - 1, false),
+            dbg_print_auc(HISTORY_BUCKETS, 2*HISTORY_BUCKETS - 1, false),
+            dbg_print_auc(2*HISTORY_BUCKETS, 3*HISTORY_BUCKETS - 1, false));
 }
 
 int ggt(int a, int b);
@@ -484,7 +485,7 @@ void UCI::stats(Position& pos, std::istream& args, StateListPtr& states, std::os
         for (int v = PARAMS_MIN[i]; v <= PARAMS_MAX[i]; v += PARAMS_STEP[i])
             PARAMS_VALUES[i].push_back(v);
 
-    out << "AUC";
+    out << "AUC_main" << SEP << "AUC_probcut" << SEP << "AUC_qsearch";
     for (int i = 0; i < N_PARAMS; ++i)
     {
         out << SEP << PARAMS_NAME[i];
@@ -493,10 +494,12 @@ void UCI::stats(Position& pos, std::istream& args, StateListPtr& states, std::os
 
     auto action = [&]() -> void {
         //dbg_clear();
-        double AUC = executeBench(list, pos, states);
+        auto [AUC_main, AUC_probcut, AUC_qsearch] = executeBench(list, pos, states);
         //double AUC = dbg_print_auc(0, HISTORY_BUCKETS - 1, false);
 
-        out << tr(std::to_string(AUC));
+        out << tr(std::to_string(AUC_main));
+        out << SEP << tr(std::to_string(AUC_probcut));
+        out << SEP << tr(std::to_string(AUC_qsearch));
         for (int i = 0; i < N_PARAMS; ++i)
             out << SEP << tr(std::to_string(getParam(i)));
         out << std::endl << std::flush;
