@@ -1770,7 +1770,7 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
             (*(ss - i)->continuationHistory)[pc][to] << (total + bonus) / (1 + 3 * (i == 3));
             total += (*(ss - i)->continuationHistory)[pc][to];
         }
-        total /= 16;
+        total /= 32;
     }
 }
 
