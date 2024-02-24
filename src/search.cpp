@@ -1437,8 +1437,12 @@ moves_loop:  // When in check, search starts here
         ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
                       + (*contHist[0])[movedPiece][move.to_sq()]
                       + (*contHist[1])[movedPiece][move.to_sq()]
-                      + (*contHist[3])[movedPiece][move.to_sq()] - 4392
-                      + getParam(0);
+                      + (*contHist[3])[movedPiece][move.to_sq()] - 4392;
+                      //+ getParam(0) * improving - int(getParam(0) * 0.370181);
+        //bool C = improving;
+        //dbg_mean_of(C, 0, 1);
+        //dbg_mean_of(C, 1, depth);
+        //dbg_mean_of(C, 10 + depth);
 
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore / 14189;
@@ -2131,14 +2135,16 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
     // 86.423708;0;-1;1;0;-1
     // 86.428200;-1;-1;0;-1;0
     constexpr int PARAMS[] = { 0,0,0,0,0,0,0};
-    for (int i : {1, 2, 3, 4, 6})
+    for (int i : {1, 2, 3, 4, 5, 6})
     {
         // Only update the first 2 continuation histories if we are in check
         if (ss->inCheck && i > 2)
             break;
         if (((ss - i)->currentMove).is_ok())
+            //(*(ss - i)->continuationHistory)[pc][to] << bonus  / (1 + 3 * (i == 3));
+            (*(ss - i)->continuationHistory)[pc][to] << bonus  / (1 + 3 * (i == 3)) * (i == 5 ? getParam(0) : 256) / 256;
             // version 1
-            (*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE + PARAMS[i]) / (SCALE * (1 + 3 * (i == 3) + 0*ss->priorCapture));
+            //(*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE + PARAMS[i]) / (SCALE * (1 + 3 * (i == 3) + 0*ss->priorCapture));
             // version 2
             //(*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE / (1 + 3 * (i == 3)) + PARAMS[i]) / SCALE;
     }
