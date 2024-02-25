@@ -2135,14 +2135,16 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
     // 86.423708;0;-1;1;0;-1
     // 86.428200;-1;-1;0;-1;0
     constexpr int PARAMS[] = { 0,0,0,0,0,0,0};
-    for (int i : {1, 2, 3, 4, 5, 6})
+    for (int i : {1, 2, 3, 4, 6})
+    //for (int i : {1, 2, 3, 4, 5, 6})
     {
         // Only update the first 2 continuation histories if we are in check
         if (ss->inCheck && i > 2)
             break;
         if (((ss - i)->currentMove).is_ok())
             //(*(ss - i)->continuationHistory)[pc][to] << bonus  / (1 + 3 * (i == 3));
-            (*(ss - i)->continuationHistory)[pc][to] << bonus  / (1 + 3 * (i == 3)) * (i == 5 ? getParam(0) : 256) / 256;
+            (*(ss - i)->continuationHistory)[pc][to] << bonus  / (1 + 3 * (i == 3)) * (i == 6 ? 256 + getParam(0) : 256) / 256;
+            //(*(ss - i)->continuationHistory)[pc][to] << bonus  / (1 + 3 * (i == 3)) * (i == 5 ? getParam(0) : 256) / 256;
             // version 1
             //(*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE + PARAMS[i]) / (SCALE * (1 + 3 * (i == 3) + 0*ss->priorCapture));
             // version 2
