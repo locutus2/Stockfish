@@ -1759,13 +1759,15 @@ void update_all_stats(const Position& pos,
 // by moves at ply -1, -2, -3, -4, and -6 with current move.
 void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
+    constexpr int WEIGHT[] = {0, 3, 13, 2, 8, 0, 8};
+
     for (int i : {1, 2, 3, 4, 6})
     {
         // Only update the first 2 continuation histories if we are in check
         if (ss->inCheck && i > 2)
             break;
         if (((ss - i)->currentMove).is_ok())
-            (*(ss - i)->continuationHistory)[pc][to] << bonus / (1 + 3 * (i == 3) + (i == 6));
+            (*(ss - i)->continuationHistory)[pc][to] << bonus * WEIGHT[i] / 8;
     }
 }
 
