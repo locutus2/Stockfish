@@ -2143,7 +2143,8 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
             break;
         if (((ss - i)->currentMove).is_ok())
             //(*(ss - i)->continuationHistory)[pc][to] << bonus  / (1 + 3 * (i == 3));
-            (*(ss - i)->continuationHistory)[pc][to] << bonus  / (1 + 3 * (i == 3)) * (i == 2 ? 128 + getParam(0) : 128) / 128;
+            (*(ss - i)->continuationHistory)[pc][to] << bonus  / (1 + 3 * (i == 3)) * (i == 1 ? 128 + getParam(0) : (i == 2 ? 128 - getParam(0) : 128)) / 128;
+            //(*(ss - i)->continuationHistory)[pc][to] << bonus  / (1 + 3 * (i == 3)) * (i == 3 ? 128 + getParam(0) : 128) / 128;
             //(*(ss - i)->continuationHistory)[pc][to] << bonus  / (1 + 3 * (i == 3)) * (i == 5 ? getParam(0) : 256) / 256;
             // version 1
             //(*(ss - i)->continuationHistory)[pc][to] << bonus * (SCALE + PARAMS[i]) / (SCALE * (1 + 3 * (i == 3) + 0*ss->priorCapture));
