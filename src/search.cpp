@@ -1138,6 +1138,10 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1 + rootNode)
         {
+            if (type_of(movedPiece) == QUEEN
+                && attacks_bb<KING>(pos.square<KING>(~us)) & move.to_sq())
+                r--;
+
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth. This may lead to hidden multiple extensions.
