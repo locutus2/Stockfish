@@ -952,7 +952,7 @@ moves_loop:  // When in check, search starts here
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r;
 
-            if (capture || givesCheck)
+            if (capture || givesCheck || move.type_of() == PROMOTION)
             {
                 // Futility pruning for captures (~2 Elo)
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
