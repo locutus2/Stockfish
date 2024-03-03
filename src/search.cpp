@@ -898,6 +898,13 @@ moves_loop:  // When in check, search starts here
     value            = bestValue;
     moveCountPruning = false;
 
+    Bitboard threatenedByPawn, threatenedByMinor, threatenedByRook;
+
+    threatenedByPawn = pos.attacks_by<PAWN>(~us);
+    threatenedByMinor =
+      pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us) | threatenedByPawn;
+    threatenedByRook = pos.attacks_by<ROOK>(~us) | threatenedByMinor;
+
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != Move::none())
@@ -1133,6 +1140,11 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1 + rootNode)
         {
+            if ((type_of(movedPiece) != PAWN && threatenedByPawn & move.to_sq())
+                || (type_of(movedPiece) == ROOK && threatenedByMinor & move.to_sq())
+                || (type_of(movedPiece) == QUEEN && threatenedByRook & move.to_sq()))
+                r++;
+
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth. This may lead to hidden multiple extensions.
