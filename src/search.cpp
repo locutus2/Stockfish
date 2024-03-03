@@ -498,6 +498,8 @@ void Search::Worker::clear() {
 }
 
 
+bool C[PIECE_NB][SQUARE_NB][PIECE_NB][SQUARE_NB];
+
 // Main search function for both PV and non-PV nodes.
 template<NodeType nodeType>
 Value Search::Worker::search(
@@ -1135,9 +1137,13 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore / 14189;
 
+        bool CC = false;
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1 + rootNode)
         {
+            int rank = relative_rank(us, move.to_sq());
+            CC = rank < RANK_8;
+
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth. This may lead to hidden multiple extensions.
@@ -1146,6 +1152,34 @@ moves_loop:  // When in check, search starts here
             Depth d = std::max(1, std::min(newDepth - r, newDepth + 1));
 
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+
+            if (CC)
+            {
+                bool T = value <= alpha;
+                dbg_hit_on(T, 0);
+
+                dbg_hit_on(T, 10 + type_of(movedPiece));
+                const int i0 = 1000 + 100 * type_of(movedPiece);
+                Piece p = pos.piece_on(move.to_sq() + pawn_push(us));
+                int i = i0 + (us == WHITE || p == NO_PIECE ? p : ~p);
+                dbg_hit_on(T, i);
+                /*
+                int relSq = relative_square(us, move.to_sq());
+                dbg_hit_on(T, 1 + (type_of(movedPiece) * SQUARE_NB + relSq));
+
+                const int i0 = 1 + (type_of(movedPiece) * SQUARE_NB + relSq) * (1 + SQUARE_NB * PIECE_TYPE_NB);
+                Piece p = pos.piece_on(move.to_sq() + pawn_push(us));
+                int i = i0 + (us == WHITE || p == NO_PIECE ? p : ~p);
+                dbg_hit_on(T, i);
+                */
+                /*
+                for(Square sq = SQ_A1; sq <= SQ_H8; ++sq)
+                {
+                    int i = i0 + pos.piece_on(sq) * SQUARE_NB + sq;
+                    dbg_hit_on(T, i);
+                }
+                */
+            }
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
@@ -1843,7 +1877,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        dbg_print();
+        //dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI
