@@ -1135,8 +1135,8 @@ moves_loop:  // When in check, search starts here
         {
             if (type_of(movedPiece) == QUEEN
                 && attacks_bb<KING>(pos.square<KING>(~us)) & move.to_sq()
-                && attacks_bb<KING>(pos.square<KING>(~us)) & ~attacks_bb<QUEEN>(move.to_sq())
-                     & pos.pieces(~us))
+                && !more_than_one(attacks_bb<KING>(pos.square<KING>(~us))
+                                  & ~attacks_bb<QUEEN>(move.to_sq()) & ~pos.pieces(~us)))
                 r--;
 
             // In general we want to cap the LMR depth search at newDepth, but when
