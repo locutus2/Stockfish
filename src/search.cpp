@@ -1133,9 +1133,9 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1 + rootNode)
         {
-            if (type_of(movedPiece) == KNIGHT
-                && move.to_sq() + pawn_push(us) == pos.square<KING>(~us))
-                r++;
+            if (type_of(movedPiece) == ROOK
+                && pos.pieces(us, ROOK) & (move.to_sq() + pawn_push(us)))
+                r--;
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
