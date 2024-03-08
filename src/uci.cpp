@@ -35,6 +35,7 @@
 #include "movegen.h"
 #include "nnue/evaluate_nnue.h"
 #include "nnue/nnue_architecture.h"
+#include "polybook.h"
 #include "position.h"
 #include "search.h"
 #include "syzygy/tbprobe.h"
@@ -80,6 +81,14 @@ UCI::UCI(int argc, char** argv) :
     options["SyzygyProbeDepth"] << Option(1, 1, 100);
     options["Syzygy50MoveRule"] << Option(true);
     options["SyzygyProbeLimit"] << Option(7, 0, 7);
+    options["Book1"] << Option(false);
+    options["Book1 File"] << Option("<empty>", [](const Option& o) { polybook[0].init(o); });
+    options["Book1 BestBookMove"] << Option(false);
+    options["Book1 Depth"] << Option(255, 1, 350);
+    options["Book2"] << Option(false);
+    options["Book2 File"] << Option("<empty>", [](const Option& o) { polybook[1].init(o); });
+    options["Book2 BestBookMove"] << Option(false);
+    options["Book2 Depth"] << Option(255, 1, 350);
     options["EvalFile"] << Option(EvalFileDefaultNameBig, [this](const Option&) {
         evalFiles = Eval::NNUE::load_networks(cli.binaryDirectory, options, evalFiles);
     });

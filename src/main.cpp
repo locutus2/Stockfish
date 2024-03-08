@@ -22,6 +22,7 @@
 #include "bitboard.h"
 #include "evaluate.h"
 #include "misc.h"
+#include "polybook.h"
 #include "position.h"
 #include "tune.h"
 #include "types.h"
@@ -39,6 +40,7 @@ int main(int argc, char* argv[]) {
     UCI uci(argc, argv);
 
     Tune::init(uci.options);
+    PolyBook::init(uci.options);
 
     uci.evalFiles = Eval::NNUE::load_networks(uci.workingDirectory(), uci.options, uci.evalFiles);
 
