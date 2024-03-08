@@ -46,6 +46,10 @@
 
 namespace Stockfish {
 
+int P[10][2];
+
+TUNE(SetRange(0, 100), P);
+
 namespace TB = Tablebases;
 
 using Eval::evaluate;
@@ -1144,6 +1148,31 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1 + rootNode)
         {
+            std::vector<bool> C = {
+              PvNode,    cutNode,      ss->ttPv,  improving, ss->inCheck,
+              ss->ttHit, priorCapture, ttCapture, capture,   givesCheck,
+            };
+
+            static int Y          = 50;
+            int        X          = nodes % 100;
+            bool       CC         = true;
+            int        conditions = 0;
+            Y                     = (X + Y) % 100;
+            for (int i = 0; i < int(C.size()) && CC; ++i)
+            {
+                if (X < P[i][0] || X < P[i][1])
+                {
+                    conditions++;
+                    if (X < P[i][0] && X < P[i][1])
+                        CC = CC && (100 * P[i][0] >= Y * (P[i][0] + P[i][1]) ? C[i] : !C[i]);
+                    else
+                        CC = CC && (C[i] || X >= P[i][0]) && (!C[i] || X >= P[i][1]);
+                }
+            }
+
+            if (CC && conditions > 0)
+                r--;
+
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth. This may lead to hidden multiple extensions.
