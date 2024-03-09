@@ -1178,7 +1178,7 @@ moves_loop:  // When in check, search starts here
             }
 
             if (CC && conditions > 0)
-                r++;
+                r--;
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
