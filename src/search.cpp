@@ -46,9 +46,9 @@
 
 namespace Stockfish {
 
-int P[10][2];
+int P[10];
 
-TUNE(SetRange(0, 100), P);
+TUNE(SetRange(-100, 100), P);
 
 namespace TB = Tablebases;
 
@@ -1158,24 +1158,17 @@ moves_loop:  // When in check, search starts here
 
                 int M = 0;
                 for (int i = 0; i < int(C.size()); ++i)
-                    M = std::max(M, std::max(P[i][0], P[i][1]));
+                    M = std::max(M, std::abs(P[i]));
                 M++;
 
-                static int Y          = 0;
-                int        X          = nodes % M;
-                int        conditions = 0;
+                int X          = nodes % M;
+                int conditions = 0;
                 for (int i = 0; i < int(C.size()) && CC; ++i)
                 {
-                    if (X < P[i][0] || X < P[i][1])
+                    if (X < std::abs(P[i]))
                     {
                         conditions++;
-                        if (X < P[i][0] && X < P[i][1])
-                        {
-                            Y  = (nodes + 13 * Y + 31 * i) % 100;
-                            CC = CC && (100 * P[i][0] >= Y * (P[i][0] + P[i][1]) ? C[i] : !C[i]);
-                        }
-                        else
-                            CC = CC && (C[i] || X >= P[i][0]) && (!C[i] || X >= P[i][1]);
+                        CC = CC && (P[i] > 0 ? C[i] : !C[i]);
                     }
                 }
 
