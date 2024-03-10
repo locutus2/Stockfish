@@ -1148,37 +1148,40 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1 + rootNode)
         {
-            std::vector<bool> C = {
-              PvNode,    cutNode,      ss->ttPv,  improving, ss->inCheck,
-              ss->ttHit, priorCapture, ttCapture, capture,   givesCheck,
-            };
-
-            int M = 0;
-            for (int i = 0; i < int(C.size()); ++i)
-                M = std::max(M, std::max(P[i][0], P[i][1]));
-            M++;
-
-            static int Y          = 0;
-            int        X          = nodes % M;
-            bool       CC         = true;
-            int        conditions = 0;
-            for (int i = 0; i < int(C.size()) && CC; ++i)
+            bool CC = true;
+            if (CC)
             {
-                if (X < P[i][0] || X < P[i][1])
-                {
-                    conditions++;
-                    if (X < P[i][0] && X < P[i][1])
-                    {
-                        Y  = (nodes + 13 * Y + 31 * i) % 100;
-                        CC = CC && (100 * P[i][0] >= Y * (P[i][0] + P[i][1]) ? C[i] : !C[i]);
-                    }
-                    else
-                        CC = CC && (C[i] || X >= P[i][0]) && (!C[i] || X >= P[i][1]);
-                }
-            }
+                std::vector<bool> C = {
+                  PvNode,    cutNode,      ss->ttPv,  improving, ss->inCheck,
+                  ss->ttHit, priorCapture, ttCapture, capture,   givesCheck,
+                };
 
-            if (CC && conditions > 0)
-                r--;
+                int M = 0;
+                for (int i = 0; i < int(C.size()); ++i)
+                    M = std::max(M, std::max(P[i][0], P[i][1]));
+                M++;
+
+                static int Y          = 0;
+                int        X          = nodes % M;
+                int        conditions = 0;
+                for (int i = 0; i < int(C.size()) && CC; ++i)
+                {
+                    if (X < P[i][0] || X < P[i][1])
+                    {
+                        conditions++;
+                        if (X < P[i][0] && X < P[i][1])
+                        {
+                            Y  = (nodes + 13 * Y + 31 * i) % 100;
+                            CC = CC && (100 * P[i][0] >= Y * (P[i][0] + P[i][1]) ? C[i] : !C[i]);
+                        }
+                        else
+                            CC = CC && (C[i] || X >= P[i][0]) && (!C[i] || X >= P[i][1]);
+                    }
+                }
+
+                if (CC && conditions > 0)
+                    r--;
+            }
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
