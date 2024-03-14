@@ -1176,7 +1176,7 @@ moves_loop:  // When in check, search starts here
         }
 
         // Step 18. Full-depth search when LMR is skipped
-        else if (!PvNode || moveCount > 1)
+        else if (!PvNode || (moveCount > 1 && (!rootNode || bestMove)))
         {
             // Increase reduction if ttMove is not present (~6 Elo)
             if (!ttMove)
@@ -1188,7 +1188,7 @@ moves_loop:  // When in check, search starts here
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
         // otherwise let the parent node fail low with value <= alpha and try another move.
-        if (PvNode && (moveCount == 1 || value > alpha))
+        if (PvNode && (moveCount == 1 || (rootNode && !bestMove) || value > alpha))
         {
             (ss + 1)->pv    = pv;
             (ss + 1)->pv[0] = Move::none();
