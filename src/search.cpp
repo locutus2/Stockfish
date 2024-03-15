@@ -539,7 +539,7 @@ Value Search::Worker::search(
     Move     ttMove, move, excludedMove, bestMove;
     Depth    extension, newDepth;
     Value    bestValue, value, ttValue, eval, maxValue, probCutBeta;
-    bool     givesCheck, improving, priorCapture, opponentWorsening;
+    bool     givesCheck, improving, opponentWorsening;
     bool     capture, moveCountPruning, ttCapture;
     Piece    movedPiece;
     int      moveCount, captureCount, quietCount;
@@ -547,7 +547,7 @@ Value Search::Worker::search(
     // Step 1. Initialize node
     Worker* thisThread = this;
     ss->inCheck        = pos.checkers();
-    priorCapture       = pos.captured_piece();
+    ss->priorCapture   = pos.captured_piece();
     Color us           = pos.side_to_move();
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     bestValue                                             = -VALUE_INFINITE;
@@ -622,7 +622,7 @@ Value Search::Worker::search(
 
             // Extra penalty for early quiet moves of
             // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
-            if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture)
+            if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !ss->priorCapture)
                 update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                               -stat_malus(depth + 1));
         }
@@ -730,7 +730,7 @@ Value Search::Worker::search(
     }
 
     // Use static evaluation difference to improve quiet move ordering (~9 Elo)
-    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
+    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !ss->priorCapture)
     {
         int bonus = std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval), -1621, 1238);
         bonus     = bonus > 0 ? 2 * bonus : bonus / 2;
@@ -1345,7 +1345,7 @@ moves_loop:  // When in check, search starts here
                          quietCount, capturesSearched, captureCount, depth);
 
     // Bonus for prior countermove that caused the fail low
-    else if (!priorCapture && prevSq != SQ_NONE)
+    else if (!ss->priorCapture && prevSq != SQ_NONE)
     {
         int bonus = (depth > 5) + (PvNode || cutNode) + ((ss - 1)->statScore < -14446)
                   + ((ss - 1)->moveCount > 11)
