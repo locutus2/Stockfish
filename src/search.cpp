@@ -1129,7 +1129,8 @@ moves_loop:  // When in check, search starts here
         else if (move == ttMove)
             r = 0;
 
-        if ((ss - 2)->currentMove.is_ok() && move.from_sq() == (ss - 2)->currentMove.to_sq()
+        if (type_of(movedPiece) != PAWN && (ss - 2)->currentMove.is_ok()
+            && move.from_sq() == (ss - 2)->currentMove.to_sq()
             && aligned((ss - 2)->currentMove.from_sq(), move.from_sq(), move.to_sq()))
             r++;
 
