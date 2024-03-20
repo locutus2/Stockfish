@@ -46,7 +46,7 @@
 
 namespace Stockfish {
 
-int P[10];
+int P[14];
 
 TUNE(SetRange(-100, 100), P);
 
@@ -1141,37 +1141,44 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore / 14956;
 
+        bool CC = (ss - 2)->currentMove.is_ok() && move.from_sq() == (ss - 2)->currentMove.to_sq()
+               && aligned((ss - 2)->currentMove.from_sq(), move.from_sq(), move.to_sq());
+        if (CC)
+        {
+            std::vector<bool> C = {
+              PvNode,
+              cutNode,
+              ss->ttPv,
+              improving,
+              ss->inCheck,
+              (ss - 1)->inCheck,
+              ss->priorCapture,
+              ttCapture,
+              capture,
+              givesCheck,
+              type_of(movedPiece) == PAWN,
+              type_of(movedPiece) == QUEEN,
+              type_of(movedPiece) == KING,
+              (ss - 1)->priorCapture,
+            };
+
+            int M = 0;
+            for (int i = 0; i < int(C.size()); ++i)
+                M = std::max(M, std::abs(P[i]));
+            M++;
+
+            int X = nodes % M;
+            for (int i = 0; i < int(C.size()) && CC; ++i)
+                if (X < std::abs(P[i]))
+                    CC = CC && (P[i] > 0 ? C[i] : !C[i]);
+
+            if (CC)
+                r++;
+        }
+
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1 + rootNode)
         {
-            bool CC = true;
-            if (CC)
-            {
-                std::vector<bool> C = {
-                  PvNode,    cutNode,      ss->ttPv,  improving, ss->inCheck,
-                  ss->ttHit, priorCapture, ttCapture, capture,   givesCheck,
-                };
-
-                int M = 0;
-                for (int i = 0; i < int(C.size()); ++i)
-                    M = std::max(M, std::abs(P[i]));
-                M++;
-
-                int X          = nodes % M;
-                int conditions = 0;
-                for (int i = 0; i < int(C.size()) && CC; ++i)
-                {
-                    if (X < std::abs(P[i]))
-                    {
-                        conditions++;
-                        CC = CC && (P[i] > 0 ? C[i] : !C[i]);
-                    }
-                }
-
-                if (CC && conditions > 0)
-                    r++;
-            }
-
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth. This may lead to hidden multiple extensions.
