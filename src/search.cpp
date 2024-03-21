@@ -1126,6 +1126,11 @@ moves_loop:  // When in check, search starts here
         else if (move == ttMove)
             r = 0;
 
+        if (!ss->ttPv && (ss - 2)->currentMove.is_ok()
+            && move.from_sq() == (ss - 2)->currentMove.to_sq()
+            && aligned((ss - 2)->currentMove.from_sq(), move.from_sq(), move.to_sq()))
+            r++;
+
         ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
                       + (*contHist[0])[movedPiece][move.to_sq()]
                       + (*contHist[1])[movedPiece][move.to_sq()]
