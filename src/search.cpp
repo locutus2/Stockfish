@@ -1137,7 +1137,7 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1 + rootNode)
         {
-            if (PvNode)
+            if (PvNode && capture && ttCapture)
                 r--;
 
             // In general we want to cap the LMR depth search at newDepth, but when
