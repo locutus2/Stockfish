@@ -99,7 +99,7 @@ MovePicker::MovePicker(const Position&              p,
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
-    refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}},
+    refutations{{killers[0], 0, 0}, {killers[1], 0, 0}, {cm, 0, 0}},
     depth(d) {
     assert(d > 0);
 
@@ -167,7 +167,7 @@ void MovePicker::score() {
     for (auto& m : *this)
         if constexpr (Type == CAPTURES)
         {
-            m.value =
+            m.value2 = m.value =
               7 * int(PieceValue[pos.piece_on(m.to_sq())])
               + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
             if (m.value > 19492)
@@ -272,8 +272,8 @@ top:
     case GOOD_CAPTURE :
         if (select<Next>([&]() {
                 // Move losing capture to endBadCaptures to be tried later
-                return pos.see_ge(*cur, -cur->value / 18) ? true
-                                                          : (*endBadCaptures++ = *cur, false);
+                return pos.see_ge(*cur, -cur->value2 / 18) ? true
+                                                           : (*endBadCaptures++ = *cur, false);
             }))
             return *(cur - 1);
 
