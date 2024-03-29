@@ -63,7 +63,7 @@ HEADERS = benchmark.h bitboard.h evaluate.h misc.h movegen.h movepick.h \
 		nnue/layers/sqr_clipped_relu.h nnue/nnue_accumulator.h nnue/nnue_architecture.h \
 		nnue/nnue_common.h nnue/nnue_feature_transformer.h position.h \
 		search.h syzygy/tbprobe.h thread.h thread_win32_osx.h timeman.h \
-		tt.h tune.h types.h uci.h ucioption.h perft.h nnue/network.cpp
+		tt.h tune.h types.h uci.h ucioption.h perft.h nnue/network.h
 
 OBJS = $(notdir $(SRCS:.cpp=.o))
 
@@ -502,7 +502,7 @@ endif
 # In earlier NDK versions, you'll need to pass -fno-addrsig if using GNU binutils.
 # Currently we don't know how to make PGO builds with the NDK yet.
 ifeq ($(COMP),ndk)
-	CXXFLAGS += -stdlib=libc++ -fPIE -mcmodel=large
+	CXXFLAGS += -stdlib=libc++ -fPIE
 	comp=clang
 	ifeq ($(arch),armv7)
 		CXX=armv7a-linux-androideabi16-clang++
