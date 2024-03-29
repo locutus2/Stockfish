@@ -46,7 +46,7 @@
 
 namespace Stockfish {
 
-int P[10];
+int P[13];
 
 TUNE(SetRange(-100, 100), P);
 
@@ -1130,6 +1130,45 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
+        bool CC = true;
+        if (CC)
+        {
+            std::vector<bool> C = {
+              PvNode,
+              cutNode,
+              ss->ttPv,
+              improving,
+              ss->inCheck,
+              ss->ttHit,
+              priorCapture,
+              ttCapture,
+              capture,
+              givesCheck,
+              move == ttMove,
+              type_of(movedPiece) == PAWN,
+              (ss - 1)->currentMove == Move::null(),
+            };
+
+            int M = 0;
+            for (int i = 0; i < int(C.size()); ++i)
+                M = std::max(M, std::abs(P[i]));
+            M++;
+
+            int X          = nodes % M;
+            int conditions = 0;
+            for (int i = 0; i < int(C.size()) && CC; ++i)
+            {
+                if (X <= std::abs(P[i]))
+                {
+                    conditions++;
+                    CC = CC && (P[i] > 0 ? C[i] : !C[i]);
+                }
+            }
+
+            if (CC && conditions > 0)
+                r++;
+        }
+
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
             r++;
@@ -1150,34 +1189,6 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1 + rootNode)
         {
-            bool CC = true;
-            if (CC)
-            {
-                std::vector<bool> C = {
-                  PvNode,    cutNode,      ss->ttPv,  improving, ss->inCheck,
-                  ss->ttHit, priorCapture, ttCapture, capture,   givesCheck,
-                };
-
-                int M = 0;
-                for (int i = 0; i < int(C.size()); ++i)
-                    M = std::max(M, std::abs(P[i]));
-                M++;
-
-                int X          = nodes % M;
-                int conditions = 0;
-                for (int i = 0; i < int(C.size()) && CC; ++i)
-                {
-                    if (X < std::abs(P[i]))
-                    {
-                        conditions++;
-                        CC = CC && (P[i] > 0 ? C[i] : !C[i]);
-                    }
-                }
-
-                if (CC && conditions > 0)
-                    r++;
-            }
-
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth. This may lead to hidden multiple extensions.
