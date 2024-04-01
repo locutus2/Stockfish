@@ -1153,8 +1153,9 @@ moves_loop:  // When in check, search starts here
             for (int i = 0; i < int(C.size()); ++i)
                 M = std::max(M, std::abs(P[i]));
             M++;
+            int Mi = M / 2;
 
-            int X          = nodes % M;
+            int X          = nodes % (M-Mi) + Mi;
             int conditions = 0;
             for (int i = 0; i < int(C.size()) && CC; ++i)
             {
