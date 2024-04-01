@@ -1149,13 +1149,15 @@ moves_loop:  // When in check, search starts here
               (ss - 1)->currentMove == Move::null(),
             };
 
-            int M = 0;
+            int Ma = 0;
+            int Mi = 100;
             for (int i = 0; i < int(C.size()); ++i)
-                M = std::max(M, std::abs(P[i]));
-            M++;
-            int Mi = M / 2;
+            {
+                Ma = std::max(Ma, std::abs(P[i]));
+                Mi = std::min(Mi, std::abs(P[i]));
+            }
 
-            int X          = nodes % (M-Mi) + Mi;
+            int X          = nodes % (Ma-Mi+1) + Mi;
             int conditions = 0;
             for (int i = 0; i < int(C.size()) && CC; ++i)
             {
