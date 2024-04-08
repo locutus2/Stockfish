@@ -46,8 +46,10 @@
 
 namespace Stockfish {
 
+int X = 0;
 int P[13];
 
+TUNE(SetRange(0, 100), X);
 TUNE(SetRange(-100, 100), P);
 
 namespace TB = Tablebases;
@@ -1149,13 +1151,15 @@ moves_loop:  // When in check, search starts here
               (ss - 1)->currentMove == Move::null(),
             };
 
+            /*
             int M = 0;
             for (int i = 0; i < int(C.size()); ++i)
                 M = std::max(M, std::abs(P[i]));
             M++;
-            int Mi = M / 2;
+            int Mi = uuu;
 
             int X          = nodes % (M-Mi) + Mi;
+            */
             int conditions = 0;
             for (int i = 0; i < int(C.size()) && CC; ++i)
             {
