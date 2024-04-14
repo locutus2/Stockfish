@@ -45,11 +45,27 @@
 
 namespace Stockfish {
 
-int X = 0;
-int P[13];
+constexpr int NPARAMS = 13;
+constexpr int NCOND = 4;
 
-TUNE(SetRange(0, 100), X);
-TUNE(SetRange(-100, 100), P);
+int X = 0;
+int P[NPARAMS];
+
+void initTune();
+
+void initTune()
+{
+    int Q[NPARAMS];
+    for(int i = 0; i < NPARAMS; ++i)
+        Q[i] = i;
+
+    std::sort(Q, Q + NPARAMS, [&](int a, int b)->bool {
+                                return std::abs(P[a]) > std::abs(P[b]);
+                              });
+    X = std::abs(P[Q[NCOND-1]]);
+}
+
+TUNE(SetRange(-100, 100), P, initTune);
 
 namespace TB = Tablebases;
 
@@ -1134,7 +1150,7 @@ moves_loop:  // When in check, search starts here
         bool CC = true;
         if (CC)
         {
-            std::vector<bool> C = {
+            bool C[NPARAMS] = {
               PvNode,
               cutNode,
               ss->ttPv,
@@ -1150,17 +1166,8 @@ moves_loop:  // When in check, search starts here
               (ss - 1)->currentMove == Move::null(),
             };
 
-            /*
-            int M = 0;
-            for (int i = 0; i < int(C.size()); ++i)
-                M = std::max(M, std::abs(P[i]));
-            M++;
-            int Mi = uuu;
-
-            int X          = nodes % (M-Mi) + Mi;
-            */
             int conditions = 0;
-            for (int i = 0; i < int(C.size()) && CC; ++i)
+            for (int i = 0; i < NPARAMS && CC; ++i)
             {
                 if (X <= std::abs(P[i]))
                 {
@@ -1170,7 +1177,7 @@ moves_loop:  // When in check, search starts here
             }
 
             if (CC && conditions > 0)
-                r--;
+                r++;
         }
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
