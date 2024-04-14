@@ -1129,8 +1129,7 @@ moves_loop:  // When in check, search starts here
             && PvNode
             && priorCapture
             && ttCapture
-            && move != ttMove
-            && capture)
+            && move != ttMove)
             r++;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
