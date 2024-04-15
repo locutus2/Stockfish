@@ -35,11 +35,15 @@
 namespace Stockfish {
 
 constexpr int PAWN_HISTORY_SIZE        = 512;    // has to be a power of 2
+constexpr int MOVE_SEQ_HISTORY_SIZE    = 512;    // has to be a power of 2
 constexpr int CORRECTION_HISTORY_SIZE  = 16384;  // has to be a power of 2
 constexpr int CORRECTION_HISTORY_LIMIT = 1024;
 
 static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
               "PAWN_HISTORY_SIZE has to be a power of 2");
+
+static_assert((MOVE_SEQ_HISTORY_SIZE & (MOVE_SEQ_HISTORY_SIZE - 1)) == 0,
+              "MOVE_SEQ_HISTORY_SIZE has to be a power of 2");
 
 static_assert((CORRECTION_HISTORY_SIZE & (CORRECTION_HISTORY_SIZE - 1)) == 0,
               "CORRECTION_HISTORY_SIZE has to be a power of 2");
@@ -52,6 +56,10 @@ enum PawnHistoryType {
 template<PawnHistoryType T = Normal>
 inline int pawn_structure_index(const Position& pos) {
     return pos.pawn_key() & ((T == Normal ? PAWN_HISTORY_SIZE : CORRECTION_HISTORY_SIZE) - 1);
+}
+
+inline int move_seq_index(Key key1, Key key2) {
+    return (key1 ^ key2) & (MOVE_SEQ_HISTORY_SIZE - 1);
 }
 
 // StatsEntry stores the stat table value. It is usually a number but could
@@ -126,7 +134,8 @@ using CounterMoveHistory = Stats<Move, NOT_USED, PIECE_NB, SQUARE_NB>;
 using CapturePieceToHistory = Stats<int16_t, 10692, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
 
 // PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
-using PieceToHistory = Stats<int16_t, 29952, PIECE_NB, SQUARE_NB>;
+using PieceToHistory  = Stats<int16_t, 29952, PIECE_NB, SQUARE_NB>;
+using PieceToHistory2 = Stats<int16_t, 8192, PIECE_NB, SQUARE_NB>;
 
 // ContinuationHistory is the combined history of a given pair of moves, usually
 // the current one given a previous one. The nested history table is based on
@@ -136,6 +145,9 @@ using ContinuationHistory = Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB>
 
 // PawnHistory is addressed by the pawn structure and a move's [piece][to]
 using PawnHistory = Stats<int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
+
+// MoveSeqHistory is addressed by the previous move sequence and a move's [piece][to]
+using MoveSeqHistory = Stats<PieceToHistory2, NOT_USED, MOVE_SEQ_HISTORY_SIZE>;
 
 // CorrectionHistory is addressed by color and pawn structure
 using CorrectionHistory =
@@ -164,6 +176,7 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const PawnHistory*,
+               const PieceToHistory2*,
                Move,
                const Move*);
     MovePicker(const Position&,
@@ -189,6 +202,7 @@ class MovePicker {
     const CapturePieceToHistory* captureHistory;
     const PieceToHistory**       continuationHistory;
     const PawnHistory*           pawnHistory;
+    const PieceToHistory2*       moveSeqHistory;
     Move                         ttMove;
     ExtMove refutations[3], *cur, *endMoves, *endBadCaptures, *beginBadQuiets, *endBadQuiets;
     int     stage;

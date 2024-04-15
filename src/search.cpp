@@ -492,6 +492,9 @@ void Search::Worker::clear() {
     pawnHistory.fill(0);
     correctionHistory.fill(0);
 
+    for (auto& h : moveSeqHistory)
+        h->fill(0);
+
     for (bool inCheck : {false, true})
         for (StatsType c : {NoCaptures, Captures})
             for (auto& to : continuationHistory[inCheck][c])
@@ -534,7 +537,6 @@ Value Search::Worker::search(
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     TTEntry* tte;
-    Key      posKey;
     Move     ttMove, move, excludedMove, bestMove;
     Depth    extension, newDepth;
     Value    bestValue, value, ttValue, eval, maxValue, probCutBeta;
@@ -594,8 +596,8 @@ Value Search::Worker::search(
 
     // Step 4. Transposition table lookup.
     excludedMove = ss->excludedMove;
-    posKey       = pos.key();
-    tte          = tt.probe(posKey, ss->ttHit);
+    ss->posKey   = pos.key();
+    tte          = tt.probe(ss->posKey, ss->ttHit);
     ttValue   = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove    = rootNode  ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
               : ss->ttHit ? tte->move()
@@ -669,7 +671,7 @@ Value Search::Worker::search(
 
                 if (b == BOUND_EXACT || (b == BOUND_LOWER ? value >= beta : value <= alpha))
                 {
-                    tte->save(posKey, value_to_tt(value, ss->ply), ss->ttPv, b,
+                    tte->save(ss->posKey, value_to_tt(value, ss->ply), ss->ttPv, b,
                               std::min(MAX_PLY - 1, depth + 6), Move::none(), VALUE_NONE,
                               tt.generation());
 
@@ -724,7 +726,7 @@ Value Search::Worker::search(
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
 
         // Static evaluation is saved as it was before adjustment by correction history
-        tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, Move::none(),
+        tte->save(ss->posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, Move::none(),
                   unadjustedStaticEval, tt.generation());
     }
 
@@ -870,8 +872,8 @@ Value Search::Worker::search(
                 if (value >= probCutBeta)
                 {
                     // Save ProbCut data into transposition table
-                    tte->save(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER, depth - 3,
-                              move, unadjustedStaticEval, tt.generation());
+                    tte->save(ss->posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
+                              depth - 3, move, unadjustedStaticEval, tt.generation());
                     return std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY ? value - (probCutBeta - beta)
                                                                      : value;
                 }
@@ -900,7 +902,9 @@ moves_loop:  // When in check, search starts here
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : Move::none();
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, &thisThread->pawnHistory, countermove, ss->killers);
+                  contHist, &thisThread->pawnHistory,
+                  &thisThread->moveSeqHistory[move_seq_index((ss - 2)->posKey, ss->posKey)],
+                  countermove, ss->killers);
 
     value            = bestValue;
     moveCountPruning = false;
@@ -1340,7 +1344,7 @@ moves_loop:  // When in check, search starts here
     // Write gathered information in transposition table
     // Static evaluation is saved as it was before correction history
     if (!excludedMove && !(rootNode && thisThread->pvIdx))
-        tte->save(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
+        tte->save(ss->posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
                   bestValue >= beta    ? BOUND_LOWER
                   : PvNode && bestMove ? BOUND_EXACT
                                        : BOUND_UPPER,
@@ -1723,14 +1727,19 @@ void update_all_stats(const Position& pos,
         // Increase stats for the best move in case it was a quiet move
         update_quiet_stats(pos, ss, workerThread, bestMove, bestMoveBonus);
 
-        int pIndex = pawn_structure_index(pos);
+        int              pIndex         = pawn_structure_index(pos);
+        int              msIndex        = move_seq_index((ss - 2)->posKey, ss->posKey);
+        PieceToHistory2* moveSeqHistory = &workerThread.moveSeqHistory[msIndex];
         workerThread.pawnHistory[pIndex][moved_piece][bestMove.to_sq()] << quietMoveBonus;
+        (*moveSeqHistory)[moved_piece][bestMove.to_sq()] << quietMoveBonus;
 
         // Decrease stats for all non-best quiet moves
         for (int i = 0; i < quietCount; ++i)
         {
             workerThread
                 .pawnHistory[pIndex][pos.moved_piece(quietsSearched[i])][quietsSearched[i].to_sq()]
+              << -quietMoveMalus;
+            (*moveSeqHistory)[pos.moved_piece(quietsSearched[i])][quietsSearched[i].to_sq()]
               << -quietMoveMalus;
 
             workerThread.mainHistory[us][quietsSearched[i].from_to()] << -quietMoveMalus;
