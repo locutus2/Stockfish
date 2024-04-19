@@ -1768,7 +1768,7 @@ void update_all_stats(const Position& pos,
 void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
     if (!(ss->ply & 1))
-        (*(ss - ss->ply)->continuationHistory)[pc][to] << bonus / 32;
+        (*(ss - ss->ply)->continuationHistory)[pc][to] << bonus / 64;
 
     for (int i : {1, 2, 3, 4, 6})
     {
