@@ -1131,7 +1131,10 @@ moves_loop:  // When in check, search starts here
             && cutNode
             && !improving
             && capture
-            && move != countermove)
+            && move != countermove
+            && type_of(movedPiece) == KING
+            && priorCapture
+            && !ttCapture)
             r++;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
