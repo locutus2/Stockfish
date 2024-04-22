@@ -1122,7 +1122,9 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
-        if (   !ss->ttHit
+        if (   !ss->ttPv
+            && move != ttMove
+            && !ss->ttHit
             && !cutNode
             && givesCheck
             && move != ss->killers[0])
