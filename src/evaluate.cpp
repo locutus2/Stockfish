@@ -70,7 +70,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
         optimism += optimism * (nnueComplexity + std::abs(simpleEval - nnue)) / optDiv;
         nnue -= nnue * (nnueComplexity * 5 / 3) / nnueDiv;
 
-        int npm = pos.non_pawn_material() / 64;
+        int npm = pos.non_pawn_material() / 66;
         v       = (nnue * (npm + pawnCountConstant + pawnCountMul * pos.count<PAWN>())
              + optimism * (npmConstant + npm))
           / evalDiv;
