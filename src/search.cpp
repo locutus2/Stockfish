@@ -1798,7 +1798,7 @@ void update_quiet_stats(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     // Update killers
-    if (ss->killers[0] != move && bonus >= 0)
+    if (ss->killers[0] != move)
     {
         ss->killers[1] = ss->killers[0];
         ss->killers[0] = move;
@@ -1809,7 +1809,7 @@ void update_quiet_stats(
     update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus);
 
     // Update countermove history
-    if (((ss - 1)->currentMove).is_ok())
+    if (((ss - 1)->currentMove).is_ok() && bonus >= 0)
     {
         Square prevSq                                           = ((ss - 1)->currentMove).to_sq();
         workerThread.counterMoves[pos.piece_on(prevSq)][prevSq] = move;
