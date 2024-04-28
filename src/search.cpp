@@ -1068,12 +1068,8 @@ moves_loop:  // When in check, search starts here
                 else if (singularBeta >= beta)
                 {
                     if (!ttCapture)
-                    {
-                        int penalty = -stat_malus(depth);
-                        mainHistory[us][move.from_to()] << penalty;
                         update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(),
-                                                      penalty);
-                    }
+                                                      -stat_malus(depth));
 
                     return singularBeta;
                 }
