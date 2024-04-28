@@ -47,6 +47,12 @@
 
 namespace Stockfish {
 
+int X = 0;
+int P[17];
+
+TUNE(SetRange(0, 100), X);
+TUNE(SetRange(-100, 100), P);
+
 namespace TB = Tablebases;
 
 using Eval::evaluate;
@@ -1137,6 +1143,52 @@ moves_loop:  // When in check, search starts here
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
         if (PvNode)
             r--;
+
+        bool CC = !ss->ttHit;
+        if (CC)
+        {
+            std::vector<bool> C = {
+              move == ss->killers[0], //PvNode,
+              cutNode,
+              move == ss->killers[1], //ss->ttPv,
+              improving,
+              ss->inCheck,
+              PvNode,
+              priorCapture,
+              ttCapture,
+              capture,
+              givesCheck,
+              ((ss + 1)->cutoffCnt > 3), //move == ttMove,
+              type_of(movedPiece) == PAWN,
+              (ss - 1)->currentMove == Move::null(),
+              type_of(movedPiece) == KING,
+              move == countermove,
+              move == ttMove,
+              ss->ttPv,
+            };
+
+            /*
+            int M = 0;
+            for (int i = 0; i < int(C.size()); ++i)
+                M = std::max(M, std::abs(P[i]));
+            M++;
+            int Mi = uuu;
+
+            int X          = nodes % (M-Mi) + Mi;
+            */
+            int conditions = 0;
+            for (int i = 0; i < int(C.size()) && CC; ++i)
+            {
+                if (X <= std::abs(P[i]))
+                {
+                    conditions++;
+                    CC = CC && (P[i] > 0 ? C[i] : !C[i]);
+                }
+            }
+
+            if (CC && conditions > 0)
+                r--;
+        }
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
