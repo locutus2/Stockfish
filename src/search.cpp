@@ -1068,7 +1068,12 @@ moves_loop:  // When in check, search starts here
                 else if (singularBeta >= beta)
                 {
                     if (!ttCapture)
-                        update_quiet_stats(pos, ss, *this, ttMove, -stat_malus(depth));
+                    {
+                        int penalty = -stat_malus(depth);
+                        mainHistory[us][move.from_to()] << penalty;
+                        update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(),
+                                                      penalty);
+                    }
 
                     return singularBeta;
                 }
@@ -1809,7 +1814,7 @@ void update_quiet_stats(
     update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus);
 
     // Update countermove history
-    if (((ss - 1)->currentMove).is_ok() && bonus >= 0)
+    if (((ss - 1)->currentMove).is_ok())
     {
         Square prevSq                                           = ((ss - 1)->currentMove).to_sq();
         workerThread.counterMoves[pos.piece_on(prevSq)][prevSq] = move;
