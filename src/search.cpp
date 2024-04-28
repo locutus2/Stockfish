@@ -1798,7 +1798,7 @@ void update_quiet_stats(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     // Update killers
-    if (ss->killers[0] != move)
+    if (ss->killers[0] != move && bonus >= 0)
     {
         ss->killers[1] = ss->killers[0];
         ss->killers[0] = move;
