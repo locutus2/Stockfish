@@ -1140,7 +1140,7 @@ moves_loop:  // When in check, search starts here
 
         if (   !ss->ttHit
             && move == ss->killers[0]
-            && capture)
+            && type_of(movedPiece) == PAWN)
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
