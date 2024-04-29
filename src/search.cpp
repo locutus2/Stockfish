@@ -1068,7 +1068,12 @@ moves_loop:  // When in check, search starts here
                 // and we can prune the whole subtree by returning a softbound.
                 else if (singularBeta >= beta)
                 {
-                    if (!ttCapture)
+                    if (ttCapture)
+                    {
+                        PieceType captured = type_of(pos.piece_on(move.to_sq()));
+                        captureHistory[movedPiece][move.to_sq()][captured] << -stat_malus(depth);
+                    }
+                    else
                         update_quiet_stats(pos, ss, *this, ttMove, -stat_malus(depth));
 
                     return singularBeta;
