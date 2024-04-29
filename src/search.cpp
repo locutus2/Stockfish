@@ -1139,7 +1139,8 @@ moves_loop:  // When in check, search starts here
             r--;
 
         if (   !ss->ttHit
-            && (move == ss->killers[0] || move == ss->killers[1]))
+            && move == ss->killers[0]
+            && improving)
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
