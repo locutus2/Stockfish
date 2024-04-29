@@ -1138,7 +1138,8 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
-        if (!ss->ttHit)
+        if (   !ss->ttHit
+            && (move == ss->killers[0] || move == ss->killers[1]))
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
