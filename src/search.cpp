@@ -1141,7 +1141,8 @@ moves_loop:  // When in check, search starts here
         if (   !ss->ttHit
             && !priorCapture
             && !givesCheck
-            && ss->inCheck)
+            && ss->inCheck
+            && type_of(movedPiece) != KING)
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
