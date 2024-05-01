@@ -1143,7 +1143,8 @@ moves_loop:  // When in check, search starts here
             && !priorCapture
             && !givesCheck
             && type_of(movedPiece) != KING
-            && (ss + 1)->cutoffCnt > 3)
+            && (ss + 1)->cutoffCnt > 3
+            && !cutNode)
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
