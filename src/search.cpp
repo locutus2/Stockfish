@@ -1139,7 +1139,8 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
-        if (ss->inCheck)
+        if (   ss->inCheck
+            && extension <= 0)
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
