@@ -1145,7 +1145,7 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
-        bool CC = ss->inCheck;
+        bool CC = (ss - 1)->currentMove == Move::null();
         if (CC)
         {
             std::vector<bool> C = {
@@ -1161,7 +1161,7 @@ moves_loop:  // When in check, search starts here
               givesCheck,
               ((ss + 1)->cutoffCnt > 3), //move == ttMove,
               type_of(movedPiece) == PAWN,
-              (ss - 1)->currentMove == Move::null(),
+              ss->inCheck,
               type_of(movedPiece) == KING,
               move == countermove,
               move == ttMove,
