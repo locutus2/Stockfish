@@ -48,7 +48,7 @@
 namespace Stockfish {
 
 int X = 0;
-int P[17];
+int P[18];
 
 TUNE(SetRange(0, 100), X);
 TUNE(SetRange(-100, 100), P);
@@ -1145,7 +1145,7 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
-        bool CC = !ss->ttHit;
+        bool CC = ss->inCheck;
         if (CC)
         {
             std::vector<bool> C = {
@@ -1153,7 +1153,7 @@ moves_loop:  // When in check, search starts here
               cutNode,
               move == ss->killers[1], //ss->ttPv,
               improving,
-              ss->inCheck,
+              ss->ttPv,
               PvNode,
               priorCapture,
               ttCapture,
@@ -1165,7 +1165,8 @@ moves_loop:  // When in check, search starts here
               type_of(movedPiece) == KING,
               move == countermove,
               move == ttMove,
-              ss->ttPv,
+              extension > 0,
+              extension < 0,
             };
 
             /*
