@@ -1102,7 +1102,8 @@ moves_loop:  // When in check, search starts here
                 extension = 1;
 
             else if (   priorCapture
-                     && move == countermove)
+                     && move == countermove
+                     && ss->inCheck)
                 extension = 1;
         }
 
