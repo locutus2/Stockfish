@@ -1103,7 +1103,8 @@ moves_loop:  // When in check, search starts here
 
             else if (   priorCapture
                      && move == countermove
-                     && ss->inCheck)
+                     && ss->inCheck
+                     && type_of(movedPiece) == KING)
                 extension = 1;
         }
 
