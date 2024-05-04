@@ -998,6 +998,9 @@ moves_loop:  // When in check, search starts here
                   + (*contHist[3])[movedPiece][move.to_sq()]
                   + thisThread->pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
+                if (lmrDepth < 6 && history < -4173 * depth)
+                    continue;
+
                 // Continuation history based pruning (~2 Elo)
                 bool CC = true, Prune = true;
                 if (CC)
@@ -1045,8 +1048,6 @@ moves_loop:  // When in check, search starts here
                     if (CC && conditions > 0)
                         Prune = false;
                 }
-                if (lmrDepth < 6 && history < -4173 * depth && Prune)
-                    continue;
 
                 history += 2 * thisThread->mainHistory[us][move.from_to()];
 
@@ -1056,7 +1057,7 @@ moves_loop:  // When in check, search starts here
                   ss->staticEval + (bestValue < ss->staticEval - 54 ? 128 : 57) + 131 * lmrDepth;
 
                 // Futility pruning: parent node (~13 Elo)
-                if (!ss->inCheck && lmrDepth < 14 && futilityValue <= alpha)
+                if (!ss->inCheck && lmrDepth < 14 && futilityValue <= alpha && Prune)
                 {
                     if (bestValue <= futilityValue && std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY
                         && futilityValue < VALUE_TB_WIN_IN_MAX_PLY)
