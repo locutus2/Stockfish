@@ -994,7 +994,7 @@ moves_loop:  // When in check, search starts here
 
                 // Continuation history based pruning (~2 Elo)
                 if (lmrDepth < 6 && history < -4173 * depth
-                    && (move != ss->killers[0] || type_of(movedPiece) == PAWN))
+                    && (!cutNode || move != ss->killers[0] || type_of(movedPiece) == PAWN))
                     continue;
 
                 history += 2 * thisThread->mainHistory[us][move.from_to()];
