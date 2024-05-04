@@ -993,7 +993,7 @@ moves_loop:  // When in check, search starts here
                   + thisThread->pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
                 // Continuation history based pruning (~2 Elo)
-                if (lmrDepth < 6 && history < -4173 * depth)
+                if (lmrDepth < 6 && history < -4173 * depth && move != ss->killers[0])
                     continue;
 
                 history += 2 * thisThread->mainHistory[us][move.from_to()];
