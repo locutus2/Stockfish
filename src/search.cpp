@@ -737,8 +737,8 @@ Value Search::Worker::search(
     if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp((PvNode    ? -12
-                                : cutNode ? -18
-                                          : -11)
+                                : cutNode ? -17
+                                          : -3)
                                  * int((ss - 1)->staticEval + ss->staticEval),
                                -1644, 1384);
         bonus     = bonus > 0 ? 2 * bonus : bonus / 2;
