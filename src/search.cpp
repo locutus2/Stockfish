@@ -734,10 +734,9 @@ Value Search::Worker::search(
     }
 
     // Use static evaluation difference to improve quiet move ordering (~9 Elo)
-    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture
-        && (PvNode || cutNode))
+    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
     {
-        int bonus = std::clamp(-14 * int((ss - 1)->staticEval + ss->staticEval), -1644, 1384);
+        int bonus = std::clamp(-(14 - 11 * (!PvNode && !cutNode)) * int((ss - 1)->staticEval + ss->staticEval), -1644, 1384);
         bonus     = bonus > 0 ? 2 * bonus : bonus / 2;
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
