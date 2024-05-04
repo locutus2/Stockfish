@@ -1005,7 +1005,7 @@ moves_loop:  // When in check, search starts here
 
                 // Futility pruning: parent node (~13 Elo)
                 if (!ss->inCheck && lmrDepth < 14 && futilityValue <= alpha
-                    && (!PvNode || move != countermove || type_of(movedPiece) != PAWN))
+                    && (!PvNode || move != countermove || type_of(movedPiece) != PAWN || move != ss->killers[1]))
                 {
                     if (bestValue <= futilityValue && std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY
                         && futilityValue < VALUE_TB_WIN_IN_MAX_PLY)
