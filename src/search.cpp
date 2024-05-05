@@ -736,7 +736,7 @@ Value Search::Worker::search(
     if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck)
     {
         int bonus = std::clamp(
-          (11 * priorCapture - 13) * int((ss - 1)->staticEval + ss->staticEval), -1796, 1526);
+          (10 * priorCapture - 13) * int((ss - 1)->staticEval + ss->staticEval), -1796, 1526);
         bonus = bonus > 0 ? 2 * bonus : bonus / 2;
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
