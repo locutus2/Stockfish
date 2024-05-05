@@ -50,7 +50,7 @@ namespace Stockfish {
 
 void initTune();
 
-const int N_PARAMS = 23;
+const int N_PARAMS = 28;
 const int N_CONDS = 3;
 int P[N_PARAMS];
 int P_SUM;
@@ -73,10 +73,14 @@ void initTune()
     int p = 0;
     for(int i = 0; i < N_PARAMS; ++i)
     {
-        P_SUM += std::abs(P[i]) + 1;
+        P_SUM += std::abs(P[i]);
         for (; p < P_SUM; ++p)
             Index.push_back(i);
     }
+
+    if (P_SUM == 0)
+        for(int i = 0; i < N_PARAMS; ++i)
+            Index.push_back(i), P_SUM++;
 }
 
 namespace TB = Tablebases;
@@ -1174,7 +1178,7 @@ moves_loop:  // When in check, search starts here
         bool CC = true;
         if (CC)
         {
-            int C[N_PARAMS] = {
+            bool C[N_PARAMS] = {
                 PvNode,
                 ss->ttPv,
                 cutNode,
@@ -1198,6 +1202,11 @@ moves_loop:  // When in check, search starts here
                 (ss-1)->inCheck,
                 (ss-1)->ttPv,
                 (ss-1)->ttHit,
+                bool((ss-1)->excludedMove),
+                bool(excludedMove),
+                ss->inCheck,
+                ttValue < ss->staticEval,
+                alpha < ss->staticEval,
             };
 
             for (int k = 0; k < N_CONDS && CC; ++k)
