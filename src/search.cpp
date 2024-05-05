@@ -733,18 +733,6 @@ Value Search::Worker::search(
                   unadjustedStaticEval, tt.generation());
     }
 
-    // Use static evaluation difference to improve quiet move ordering (~9 Elo)
-    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
-    {
-        int bonus = std::clamp(
-          (PvNode || cutNode ? -14 : -3) * int((ss - 1)->staticEval + ss->staticEval), -1644, 1384);
-        bonus = bonus > 0 ? 2 * bonus : bonus / 2;
-        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus;
-        if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
-            thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << bonus / 2;
-    }
-
     // Set up the improving flag, which is true if current static evaluation is
     // bigger than the previous static evaluation at our turn (if we were in
     // check at our previous move we look at static evaluation at move prior to it
@@ -753,6 +741,18 @@ Value Search::Worker::search(
     improving = (ss - 2)->staticEval != VALUE_NONE
                 ? ss->staticEval > (ss - 2)->staticEval
                 : (ss - 4)->staticEval != VALUE_NONE && ss->staticEval > (ss - 4)->staticEval;
+
+    // Use static evaluation difference to improve quiet move ordering (~9 Elo)
+    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
+    {
+        int bonus = std::clamp((-13 - 2 * improving) * int((ss - 1)->staticEval + ss->staticEval),
+                               -1644, 1384);
+        bonus     = bonus > 0 ? 2 * bonus : bonus / 2;
+        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus;
+        if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
+            thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
+              << bonus / 2;
+    }
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
