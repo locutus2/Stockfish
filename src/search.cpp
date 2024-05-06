@@ -50,8 +50,8 @@ namespace Stockfish {
 
 void initTune();
 
-const int N_PARAMS = 28;
-const int N_CONDS = 3;
+const int N_PARAMS = 23;
+const int N_CONDS = 5;
 int P[N_PARAMS];
 int P_SUM;
 std::vector<int> Index;
@@ -1096,6 +1096,50 @@ moves_loop:  // When in check, search starts here
                               + (value < singularBeta - tripleMargin)
                               + (value < singularBeta - quadMargin);
 
+                    bool CC = true;
+                    if (CC)
+                    {
+                        bool C[N_PARAMS] = {
+                            PvNode,
+                            ss->ttPv,
+                            cutNode,
+                            improving,
+                            priorCapture,
+                            ttCapture,
+                            capture,
+                            givesCheck,
+                            ((ss + 1)->cutoffCnt > 3),
+                            type_of(movedPiece) == PAWN,
+                            type_of(movedPiece) == KING,
+                            (ss - 1)->currentMove == Move::null(),
+                            //move == ttMove,
+                            move == ss->killers[0],
+                            move == ss->killers[1],
+                            move == countermove,
+                            //extension > 0,
+                            //extension < 0,
+                            ttValue <= alpha,
+                            //ss->ttHit,
+                            (ss-1)->inCheck,
+                            (ss-1)->ttPv,
+                            (ss-1)->ttHit,
+                            bool((ss-1)->excludedMove),
+                            //bool(excludedMove),
+                            ss->inCheck,
+                            ttValue < ss->staticEval,
+                            alpha < ss->staticEval,
+                        };
+
+                        for (int k = 0; k < N_CONDS && CC; ++k)
+                        {
+                            int i = Index[(nodes + rand()) % P_SUM];
+                            CC = CC && (P[i] > 0 ? C[i] : !C[i]);
+                        }
+
+                        if (CC)
+                            extension++;
+                    }
+
                     depth += ((!PvNode) && (depth < 14));
                 }
 
@@ -1174,50 +1218,6 @@ moves_loop:  // When in check, search starts here
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
         if (PvNode)
             r--;
-
-        bool CC = true;
-        if (CC)
-        {
-            bool C[N_PARAMS] = {
-                PvNode,
-                ss->ttPv,
-                cutNode,
-                improving,
-                priorCapture,
-                ttCapture,
-                capture,
-                givesCheck,
-                ((ss + 1)->cutoffCnt > 3),
-                type_of(movedPiece) == PAWN,
-                type_of(movedPiece) == KING,
-                (ss - 1)->currentMove == Move::null(),
-                move == ttMove,
-                move == ss->killers[0],
-                move == ss->killers[1],
-                move == countermove,
-                extension > 0,
-                extension < 0,
-                ttValue <= alpha,
-                ss->ttHit,
-                (ss-1)->inCheck,
-                (ss-1)->ttPv,
-                (ss-1)->ttHit,
-                bool((ss-1)->excludedMove),
-                bool(excludedMove),
-                ss->inCheck,
-                ttValue < ss->staticEval,
-                alpha < ss->staticEval,
-            };
-
-            for (int k = 0; k < N_CONDS && CC; ++k)
-            {
-                int i = Index[(nodes + rand()) % P_SUM];
-                CC = CC && (P[i] > 0 ? C[i] : !C[i]);
-            }
-
-            if (CC)
-                r++;
-        }
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
