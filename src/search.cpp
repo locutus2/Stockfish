@@ -1139,7 +1139,7 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
-        if (!ss->ttHit && type_of(movedPiece) != PAWN)
+        if (!ss->ttHit && ss->ttPv && type_of(movedPiece) != PAWN)
             r++;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
