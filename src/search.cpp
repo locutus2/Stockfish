@@ -1136,7 +1136,7 @@ moves_loop:  // When in check, search starts here
             r++;
 
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
-        if (PvNode)
+        if (PvNode && type_of(movedPiece) == PAWN)
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
