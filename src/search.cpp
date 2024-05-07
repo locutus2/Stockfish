@@ -1122,7 +1122,7 @@ moves_loop:  // When in check, search starts here
 
         // Decrease reduction if position is or has been on the PV (~7 Elo)
         if (ss->ttPv)
-            r -= 1 + (ttValue > alpha) + (tte->depth() >= depth);
+            r -= (type_of(movedPiece) == PAWN) + (ttValue > alpha) + (tte->depth() >= depth);
 
         else if (cutNode && move != ttMove && move != ss->killers[0])
             r++;
@@ -1136,7 +1136,7 @@ moves_loop:  // When in check, search starts here
             r++;
 
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
-        if (PvNode && (ss->ttHit || type_of(movedPiece) == PAWN))
+        if (PvNode)
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
