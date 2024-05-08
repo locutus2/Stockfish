@@ -50,7 +50,7 @@ namespace Stockfish {
 
 void initTune();
 
-const int N_PARAMS = 23;
+const int N_PARAMS = 26;
 const int N_CONDS = 5;
 int P[N_PARAMS];
 int P_SUM;
@@ -1128,6 +1128,9 @@ moves_loop:  // When in check, search starts here
                             ss->inCheck,
                             ttValue < ss->staticEval,
                             alpha < ss->staticEval,
+                            extension < 2,
+                            extension < 3,
+                            extension < 4,
                         };
 
                         for (int k = 0; k < N_CONDS && CC; ++k)
