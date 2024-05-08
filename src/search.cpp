@@ -1060,8 +1060,8 @@ moves_loop:  // When in check, search starts here
                               + (value < singularBeta - tripleMargin)
                               + (value < singularBeta - quadMargin);
 
-                    if (extension < 4 && move == ss->killers[0] && !(ss - 1)->ttHit && priorCapture
-                        && !(ss - 1)->ttPv && (ss + 1)->cutoffCnt <= 3)
+                    if (extension < 4 && move == ss->killers[0] && !(ss - 1)->ttPv
+                        && (ss + 1)->cutoffCnt <= 3 && !(ss - 1)->ttHit)
                         extension++;
 
                     depth += ((!PvNode) && (depth < 14));
