@@ -1133,7 +1133,7 @@ moves_loop:  // When in check, search starts here
             r++;
 
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
-        if (PvNode || move == singularBestMove)
+        if (PvNode || (ss->ttPv && move == singularBestMove))
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
