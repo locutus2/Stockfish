@@ -966,27 +966,7 @@ moves_loop:  // When in check, search starts here
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r;
 
-            if (capture || givesCheck)
-            {
-                Piece capturedPiece = pos.piece_on(move.to_sq());
-                int   captHist =
-                  thisThread->captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
-
-                // Futility pruning for captures (~2 Elo)
-                if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
-                {
-                    Value futilityValue = ss->staticEval + 295 + 280 * lmrDepth
-                                        + PieceValue[capturedPiece] + captHist / 7;
-                    if (futilityValue <= alpha)
-                        continue;
-                }
-
-                // SEE based pruning for captures and checks (~11 Elo)
-                int seeHist = std::clamp(captHist / 32, -197 * depth, 196 * depth);
-                if (!pos.see_ge(move, -186 * depth - seeHist))
-                    continue;
-            }
-            else if (ss->ttPv || move != singularBestMove)
+            if (!capture && !givesCheck)
             {
                 int history =
                   (*contHist[0])[movedPiece][move.to_sq()]
@@ -1017,6 +997,26 @@ moves_loop:  // When in check, search starts here
 
                 // Prune moves with negative SEE (~4 Elo)
                 if (!pos.see_ge(move, -28 * lmrDepth * lmrDepth))
+                    continue;
+            }
+            else if (move != singularBestMove)
+            {
+                Piece capturedPiece = pos.piece_on(move.to_sq());
+                int   captHist =
+                  thisThread->captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
+
+                // Futility pruning for captures (~2 Elo)
+                if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
+                {
+                    Value futilityValue = ss->staticEval + 295 + 280 * lmrDepth
+                                        + PieceValue[capturedPiece] + captHist / 7;
+                    if (futilityValue <= alpha)
+                        continue;
+                }
+
+                // SEE based pruning for captures and checks (~11 Elo)
+                int seeHist = std::clamp(captHist / 32, -197 * depth, 196 * depth);
+                if (!pos.see_ge(move, -186 * depth - seeHist))
                     continue;
             }
         }
