@@ -1060,7 +1060,7 @@ moves_loop:  // When in check, search starts here
 
                     if (extension < 4)
                         extension += ttValue <= alpha && move == countermove && move == ss->killers[1] && ss->inCheck && !(ss-1)->inCheck
-                            && type_of(movedPiece) == KING;
+                            && type_of(movedPiece) == KING && ((ss + 1)->cutoffCnt > 3);
 
                     depth += ((!PvNode) && (depth < 14));
                 }
