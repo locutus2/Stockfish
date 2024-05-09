@@ -543,7 +543,7 @@ Value Search::Worker::search(
 
     TTEntry* tte;
     Key      posKey;
-    Move     ttMove, move, excludedMove, bestMove;
+    Move     ttMove, move, excludedMove, bestMove, singularCounterMove;
     Depth    extension, newDepth;
     Value    bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool     givesCheck, improving, priorCapture, opponentWorsening;
@@ -559,6 +559,7 @@ Value Search::Worker::search(
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     bestValue                                             = -VALUE_INFINITE;
     maxValue                                              = VALUE_INFINITE;
+    singularCounterMove                                   = Move::none();
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -1020,6 +1021,7 @@ moves_loop:  // When in check, search starts here
             }
         }
 
+
         // Step 15. Extensions (~100 Elo)
         // We take care to not overdo to avoid search getting stuck.
         if (ss->ply < thisThread->rootDepth * 2)
@@ -1045,7 +1047,8 @@ moves_loop:  // When in check, search starts here
                 ss->excludedMove = move;
                 value =
                   search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
-                ss->excludedMove = Move::none();
+                ss->excludedMove    = Move::none();
+                singularCounterMove = (ss + 1)->currentMove;
 
                 if (value < singularBeta)
                 {
@@ -1131,6 +1134,9 @@ moves_loop:  // When in check, search starts here
 
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
         if (PvNode)
+            r--;
+
+        if (move == singularCounterMove)
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
