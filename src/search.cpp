@@ -543,7 +543,7 @@ Value Search::Worker::search(
 
     TTEntry* tte;
     Key      posKey;
-    Move     ttMove, move, excludedMove, bestMove, singularCounterMove;
+    Move     ttMove, move, excludedMove, bestMove, singularBestMove;
     Depth    extension, newDepth;
     Value    bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool     givesCheck, improving, priorCapture, opponentWorsening;
@@ -559,7 +559,7 @@ Value Search::Worker::search(
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     bestValue                                             = -VALUE_INFINITE;
     maxValue                                              = VALUE_INFINITE;
-    singularCounterMove                                   = Move::none();
+    singularBestMove                                      = Move::none();
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -958,7 +958,8 @@ moves_loop:  // When in check, search starts here
 
         // Step 14. Pruning at shallow depth (~120 Elo).
         // Depth conditions are important for mate finding.
-        if (!rootNode && pos.non_pawn_material(us) && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
+        if (!rootNode && pos.non_pawn_material(us) && bestValue > VALUE_TB_LOSS_IN_MAX_PLY
+            && move != singularBestMove)
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~8 Elo)
             moveCountPruning = moveCount >= futility_move_count(improving, depth);
@@ -1047,8 +1048,8 @@ moves_loop:  // When in check, search starts here
                 ss->excludedMove = move;
                 value =
                   search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
-                ss->excludedMove    = Move::none();
-                singularCounterMove = (ss + 1)->currentMove;
+                ss->excludedMove = Move::none();
+                singularBestMove = (ss + 1)->currentMove;
 
                 if (value < singularBeta)
                 {
@@ -1134,9 +1135,6 @@ moves_loop:  // When in check, search starts here
 
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
         if (PvNode)
-            r--;
-
-        if (move == singularCounterMove)
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
