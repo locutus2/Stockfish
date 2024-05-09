@@ -1136,9 +1136,6 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
-        else if (move == singularBestMove)
-            r -= 2;
-
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
             r++;
@@ -1156,7 +1153,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore / (17662 - std::min(depth, 16) * 105);
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
-        if (depth >= 2 && moveCount > 1 + rootNode)
+        if (depth >= 2 && moveCount > 1 + rootNode && (PvNode || move != singularBestMove))
         {
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
