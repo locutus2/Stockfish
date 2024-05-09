@@ -1124,6 +1124,9 @@ moves_loop:  // When in check, search starts here
         else if (cutNode && move != ttMove && move != ss->killers[0])
             r++;
 
+        if (!ss->ttPv && move == singularBestMove)
+            r--;
+
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
             r += 2 - (tte->depth() >= depth && ss->ttPv);
@@ -1133,7 +1136,7 @@ moves_loop:  // When in check, search starts here
             r++;
 
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
-        if (PvNode || (ss->ttPv && move == singularBestMove))
+        if (PvNode)
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
