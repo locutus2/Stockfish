@@ -1124,7 +1124,7 @@ moves_loop:  // When in check, search starts here
         else if (cutNode && move != ttMove && move != ss->killers[0])
             r++;
 
-        if (!ss->ttPv && move == singularBestMove)
+        if (!ss->ttPv && !(ss-1)->ttPv && move == singularBestMove)
             r--;
 
         // Increase reduction for cut nodes (~4 Elo)
