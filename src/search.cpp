@@ -999,7 +999,7 @@ moves_loop:  // When in check, search starts here
                 if (!pos.see_ge(move, -28 * lmrDepth * lmrDepth))
                     continue;
             }
-            else if (PvNode || move != singularBestMove)
+            else if (ss->ttPv || move != singularBestMove)
             {
                 Piece capturedPiece = pos.piece_on(move.to_sq());
                 int   captHist =
