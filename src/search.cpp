@@ -1059,7 +1059,7 @@ moves_loop:  // When in check, search starts here
                               + (value < singularBeta - quadMargin);
 
                     if (extension < 4)
-                        extension += ttValue <= alpha && move == countermove && move == ss->killers[1] && ss->inCheck;
+                        extension += ttValue <= alpha && move == countermove && move == ss->killers[1];
 
                     depth += ((!PvNode) && (depth < 14));
                 }
