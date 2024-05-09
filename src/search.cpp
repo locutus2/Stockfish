@@ -986,7 +986,7 @@ moves_loop:  // When in check, search starts here
                 if (!pos.see_ge(move, -186 * depth - seeHist))
                     continue;
             }
-            else if (move != singularBestMove)
+            else if (PvNode || move != singularBestMove)
             {
                 int history =
                   (*contHist[0])[movedPiece][move.to_sq()]
