@@ -1049,6 +1049,7 @@ moves_loop:  // When in check, search starts here
                 value =
                   search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
                 ss->excludedMove = Move::none();
+                singularBestMove = ss->currentMove;
 
                 if (value < singularBeta)
                 {
@@ -1063,37 +1064,33 @@ moves_loop:  // When in check, search starts here
 
                     depth += ((!PvNode) && (depth < 14));
                 }
-                else
+
+                // Multi-cut pruning
+                // Our ttMove is assumed to fail high based on the bound of the TT entry,
+                // and if after excluding the ttMove with a reduced search we fail high over the original beta,
+                // we assume this expected cut-node is not singular (multiple moves fail high),
+                // and we can prune the whole subtree by returning a softbound.
+                else if (singularBeta >= beta)
                 {
-                    singularBestMove = (ss + 1)->currentMove;
+                    if (!ttCapture)
+                        update_quiet_histories(pos, ss, *this, ttMove, -stat_malus(depth));
 
-                    // Multi-cut pruning
-                    // Our ttMove is assumed to fail high based on the bound of the TT entry,
-                    // and if after excluding the ttMove with a reduced search we fail high over the original beta,
-                    // we assume this expected cut-node is not singular (multiple moves fail high),
-                    // and we can prune the whole subtree by returning a softbound.
-                    if (singularBeta >= beta)
-                    {
-                        if (!ttCapture)
-                            update_quiet_histories(pos, ss, *this, ttMove, -stat_malus(depth));
-
-                        return singularBeta;
-                    }
-
-                    // Negative extensions
-                    // If other moves failed high over (ttValue - margin) without the ttMove on a reduced search,
-                    // but we cannot do multi-cut because (ttValue - margin) is lower than the original beta,
-                    // we do not know if the ttMove is singular or can do a multi-cut,
-                    // so we reduce the ttMove in favor of other moves based on some conditions:
-
-                    // If the ttMove is assumed to fail high over current beta (~7 Elo)
-                    else if (ttValue >= beta)
-                        extension = -3;
-
-                    // If we are on a cutNode but the ttMove is not assumed to fail high over current beta (~1 Elo)
-                    else if (cutNode)
-                        extension = -2;
+                    return singularBeta;
                 }
+
+                // Negative extensions
+                // If other moves failed high over (ttValue - margin) without the ttMove on a reduced search,
+                // but we cannot do multi-cut because (ttValue - margin) is lower than the original beta,
+                // we do not know if the ttMove is singular or can do a multi-cut,
+                // so we reduce the ttMove in favor of other moves based on some conditions:
+
+                // If the ttMove is assumed to fail high over current beta (~7 Elo)
+                else if (ttValue >= beta)
+                    extension = -3;
+
+                // If we are on a cutNode but the ttMove is not assumed to fail high over current beta (~1 Elo)
+                else if (cutNode)
+                    extension = -2;
             }
 
             // Extension for capturing the previous moved piece (~0 Elo on STC, ~1 Elo on LTC)
