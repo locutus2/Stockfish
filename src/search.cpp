@@ -1061,7 +1061,7 @@ moves_loop:  // When in check, search starts here
                               + (value < singularBeta - quadMargin);
 
                     depth += ((!PvNode) && (depth < 14));
-                    singularMCThreshold = ss->moveCount - 4;
+                    singularMCThreshold = ss->moveCount - ss->moveCount / 16;
                 }
 
                 // Multi-cut pruning
