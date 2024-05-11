@@ -547,9 +547,9 @@ Value Search::Worker::search(
     Depth    extension, newDepth;
     Value    bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool     givesCheck, improving, priorCapture, opponentWorsening;
-    bool     capture, moveCountPruning, ttCapture, singularExtensionNode;
+    bool     capture, moveCountPruning, ttCapture;
     Piece    movedPiece;
-    int      moveCount, captureCount, quietCount;
+    int      moveCount, captureCount, quietCount, singularMCThreshold;
 
     // Step 1. Initialize node
     Worker* thisThread = this;
@@ -600,10 +600,10 @@ Value Search::Worker::search(
     ss->statScore = 0;
 
     // Step 4. Transposition table lookup.
-    excludedMove          = ss->excludedMove;
-    singularExtensionNode = false;
-    posKey                = pos.key();
-    tte                   = tt.probe(posKey, ss->ttHit);
+    excludedMove        = ss->excludedMove;
+    singularMCThreshold = MAX_MOVES;
+    posKey              = pos.key();
+    tte                 = tt.probe(posKey, ss->ttHit);
     ttValue   = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove    = rootNode  ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
               : ss->ttHit ? tte->move()
@@ -959,7 +959,7 @@ moves_loop:  // When in check, search starts here
         // Step 14. Pruning at shallow depth (~120 Elo).
         // Depth conditions are important for mate finding.
         if (!rootNode && pos.non_pawn_material(us) && bestValue > VALUE_TB_LOSS_IN_MAX_PLY
-            && (PvNode || !singularExtensionNode || moveCount < 23))
+            && (PvNode || moveCount <= singularMCThreshold))
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~8 Elo)
             moveCountPruning = moveCount >= futility_move_count(improving, depth);
@@ -1061,7 +1061,7 @@ moves_loop:  // When in check, search starts here
                               + (value < singularBeta - quadMargin);
 
                     depth += ((!PvNode) && (depth < 14));
-                    singularExtensionNode = true;
+                    singularMCThreshold = ss->moveCount - 8;
                 }
 
                 // Multi-cut pruning
