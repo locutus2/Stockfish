@@ -1048,7 +1048,6 @@ moves_loop:  // When in check, search starts here
                 value =
                   search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
                 ss->excludedMove = Move::none();
-                singularBestMove = ss->currentMove;
 
                 if (value < singularBeta)
                 {
@@ -1084,12 +1083,17 @@ moves_loop:  // When in check, search starts here
                 // so we reduce the ttMove in favor of other moves based on some conditions:
 
                 // If the ttMove is assumed to fail high over current beta (~7 Elo)
-                else if (ttValue >= beta)
-                    extension = -3;
+                else
+                {
+                    singularBestMove = ss->currentMove;
 
-                // If we are on a cutNode but the ttMove is not assumed to fail high over current beta (~1 Elo)
-                else if (cutNode)
-                    extension = -2;
+                    if (ttValue >= beta)
+                        extension = -3;
+
+                    // If we are on a cutNode but the ttMove is not assumed to fail high over current beta (~1 Elo)
+                    else if (cutNode)
+                        extension = -2;
+                }
             }
 
             // Extension for capturing the previous moved piece (~0 Elo on STC, ~1 Elo on LTC)
