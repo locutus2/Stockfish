@@ -1142,7 +1142,8 @@ moves_loop:  // When in check, search starts here
         else if (move == ttMove)
             r = 0;
 
-        else if (improving && type_of(movedPiece) != KING && ttValue <= alpha && type_of(movedPiece) != PAWN)
+        else if (improving && type_of(movedPiece) != KING && ttValue <= alpha && type_of(movedPiece) != PAWN
+                 && move != ss->killers[1])
             r++;
 
 
