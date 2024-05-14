@@ -1133,7 +1133,7 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
-        if (improving && type_of(movedPiece) != KING && ttValue <= alpha)
+        if (improving && type_of(movedPiece) != KING)
             r++;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
