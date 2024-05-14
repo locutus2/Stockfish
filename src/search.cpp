@@ -1133,7 +1133,8 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
-        if (!ss->inCheck && ss->staticEval <= alpha && extension >= 0 && !cutNode && (ss + 1)->cutoffCnt > 3)
+        if (!ss->inCheck && ss->staticEval <= alpha && extension >= 0 && !cutNode && (ss + 1)->cutoffCnt > 3
+            && (ss - 1)->currentMove != Move::null())
             r++;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
