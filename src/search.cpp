@@ -1137,7 +1137,7 @@ moves_loop:  // When in check, search starts here
         if ((ss + 1)->cutoffCnt > 3)
             r++;
 
-        if (!ss->inCheck && ss->staticEval <= alpha && extension >= 0)
+        if (improving && type_of(movedPiece) != KING && ttValue <= alpha)
             r++;
 
         // Set reduction to 0 for first picked move (ttMove) (~2 Elo)
