@@ -1145,7 +1145,7 @@ moves_loop:  // When in check, search starts here
         else if (move == ttMove)
             r = 0;
 
-        else if (move == ss->killers[0] && !excludedMove)
+        else if (!cutNode && !excludedMove)
             r++;
 
         ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
