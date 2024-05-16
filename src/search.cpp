@@ -1137,7 +1137,7 @@ moves_loop:  // When in check, search starts here
         if (improving && ttValue <= alpha && move != ttMove)
             r++;
 
-        if (move == ss->killers[0] && !cutNode)
+        if ((ss - 1)->ttPv && move == countermove && extension > 0)
             r++;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
