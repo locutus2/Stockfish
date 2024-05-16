@@ -1134,9 +1134,6 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
-        if (improving && ttValue <= alpha && move != ttMove)
-            r++;
-
         if ((ss - 1)->ttPv && move == countermove && extension > 0)
             r++;
 
