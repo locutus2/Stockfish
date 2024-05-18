@@ -1777,8 +1777,6 @@ void update_all_stats(const Position& pos,
 // by moves at ply -1, -2, -3, -4, and -6 with current move.
 void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
-    bonus = bonus * (112 * ss->ply + 136) / (159 * ss->ply + 124);
-
     for (int i : {1, 2, 3, 4, 6})
     {
         // Only update the first 2 continuation histories if we are in check
@@ -1811,7 +1809,7 @@ void update_quiet_histories(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
-    workerThread.mainHistory[us][move.from_to()] << bonus;
+    workerThread.mainHistory[us][move.from_to()] << bonus * (140 * ss->ply + 138) / (127 * ss->ply + 137);
 
     update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus);
 
