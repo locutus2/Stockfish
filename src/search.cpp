@@ -47,6 +47,13 @@
 
 namespace Stockfish {
 
+int M[4] = { 128, 128, 128, 128 };
+int P[4] = { 128, 128, 128, 128 };
+int CP[4] = { 128, 128, 128, 128 };
+int CO[4] = { 128, 128, 128, 128 };
+
+TUNE(SetRange(1,256),M,P,CP,CO);
+
 namespace TB = Tablebases;
 
 using Eval::evaluate;
@@ -1752,7 +1759,7 @@ void update_all_stats(const Position& pos,
     {
         // Increase stats for the best move in case it was a capture move
         captured = type_of(pos.piece_on(bestMove.to_sq()));
-        captureHistory[moved_piece][bestMove.to_sq()][captured] << quietMoveBonus;
+        captureHistory[moved_piece][bestMove.to_sq()][captured] << quietMoveBonus * (CP[0] * ss->ply + CP[1]) / (CP[2] * ss->ply + CP[3]);
     }
 
     // Extra penalty for a quiet early move that was not a TT move or
@@ -1768,7 +1775,7 @@ void update_all_stats(const Position& pos,
     {
         moved_piece = pos.moved_piece(capturesSearched[i]);
         captured    = type_of(pos.piece_on(capturesSearched[i].to_sq()));
-        captureHistory[moved_piece][capturesSearched[i].to_sq()][captured] << -quietMoveMalus;
+        captureHistory[moved_piece][capturesSearched[i].to_sq()][captured] << -quietMoveMalus * (CP[0] * ss->ply + CP[1]) / (CP[2] * ss->ply + CP[3]);
     }
 }
 
@@ -1776,6 +1783,8 @@ void update_all_stats(const Position& pos,
 // Updates histories of the move pairs formed
 // by moves at ply -1, -2, -3, -4, and -6 with current move.
 void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
+
+    bonus = bonus * (CO[0] * ss->ply + CO[1]) / (CO[2] * ss->ply + CO[3]);
 
     for (int i : {1, 2, 3, 4, 6})
     {
@@ -1809,12 +1818,12 @@ void update_quiet_histories(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
-    workerThread.mainHistory[us][move.from_to()] << bonus * (2 * ss->ply + 3) / (2 * ss->ply + 2);
+    workerThread.mainHistory[us][move.from_to()] << bonus * (M[0] * ss->ply + M[1]) / (M[2] * ss->ply + M[3]);
 
     update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus);
 
     int pIndex = pawn_structure_index(pos);
-    workerThread.pawnHistory[pIndex][pos.moved_piece(move)][move.to_sq()] << bonus;
+    workerThread.pawnHistory[pIndex][pos.moved_piece(move)][move.to_sq()] << bonus * (P[0] * ss->ply + P[1]) / (P[2] * ss->ply + P[3]);
 }
 
 // Updates move sorting heuristics
