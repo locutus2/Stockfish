@@ -1809,7 +1809,7 @@ void update_quiet_histories(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
-    workerThread.mainHistory[us][move.from_to()] << bonus * (ss->ply + 4) / (ss->ply + 2);
+    workerThread.mainHistory[us][move.from_to()] << bonus * (3 * ss->ply + 4) / (3 * ss->ply + 2);
 
     update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus);
 
