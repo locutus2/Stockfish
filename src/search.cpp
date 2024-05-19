@@ -1754,7 +1754,7 @@ void update_all_stats(const Position& pos,
     {
         // Increase stats for the best move in case it was a capture move
         captured = type_of(pos.piece_on(bestMove.to_sq()));
-        captureHistory[moved_piece][bestMove.to_sq()][captured] << quietMoveBonus;
+        captureHistory[moved_piece][bestMove.to_sq()][captured] << quietMoveBonus * (130 * ss->ply + 137) / (120 * ss->ply + 134);
     }
 
     // Extra penalty for a quiet early move that was not a TT move or
@@ -1770,7 +1770,7 @@ void update_all_stats(const Position& pos,
     {
         moved_piece = pos.moved_piece(capturesSearched[i]);
         captured    = type_of(pos.piece_on(capturesSearched[i].to_sq()));
-        captureHistory[moved_piece][capturesSearched[i].to_sq()][captured] << -quietMoveMalus;
+        captureHistory[moved_piece][capturesSearched[i].to_sq()][captured] << -quietMoveMalus * (130 * ss->ply + 137) / (120 * ss->ply + 134);
     }
 }
 
@@ -1813,7 +1813,7 @@ void update_quiet_histories(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
-    workerThread.mainHistory[us][move.from_to()] << bonus * (140 * ss->ply + 138) / (127 * ss->ply + 137);
+    workerThread.mainHistory[us][move.from_to()] << bonus;
 
     update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus);
 
