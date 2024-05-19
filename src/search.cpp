@@ -1754,7 +1754,7 @@ void update_all_stats(const Position& pos,
     {
         // Increase stats for the best move in case it was a capture move
         captured = type_of(pos.piece_on(bestMove.to_sq()));
-        captureHistory[moved_piece][bestMove.to_sq()][captured] << quietMoveBonus * (130 * ss->ply + 137) / (120 * ss->ply + 134);
+        captureHistory[moved_piece][bestMove.to_sq()][captured] << quietMoveBonus;
     }
 
     // Extra penalty for a quiet early move that was not a TT move or
@@ -1770,7 +1770,7 @@ void update_all_stats(const Position& pos,
     {
         moved_piece = pos.moved_piece(capturesSearched[i]);
         captured    = type_of(pos.piece_on(capturesSearched[i].to_sq()));
-        captureHistory[moved_piece][capturesSearched[i].to_sq()][captured] << -quietMoveMalus * (130 * ss->ply + 137) / (120 * ss->ply + 134);
+        captureHistory[moved_piece][capturesSearched[i].to_sq()][captured] << -quietMoveMalus;
     }
 }
 
@@ -1779,7 +1779,7 @@ void update_all_stats(const Position& pos,
 // by moves at ply -1, -2, -3, -4, and -6 with current move.
 void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
-    bonus = bonus * (112 * ss->ply + 136) / (159 * ss->ply + 124);
+    bonus = bonus * 45 / 64;
 
     for (int i : {1, 2, 3, 4, 6})
     {
