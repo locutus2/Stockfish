@@ -36,7 +36,7 @@ void TTEntry::save(
   Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, uint8_t generation8) {
 
     // Overwrite less valuable entries (cheapest checks first)
-    if (b == BOUND_EXACT || d - DEPTH_OFFSET + 2 * pv + 4 * (uint16_t(k) != key16) > depth8 - 4
+    if (b == BOUND_EXACT || d - DEPTH_OFFSET + 2 * pv + 5 * (uint16_t(k) != key16) > depth8 - 4
         || relative_age(generation8))
     {
         assert(d > DEPTH_OFFSET);
@@ -52,6 +52,9 @@ void TTEntry::save(
         value16   = int16_t(v);
         eval16    = int16_t(ev);
     }
+
+    else if (m && uint16_t(k) == key16)
+        move16 = m;
 }
 
 
