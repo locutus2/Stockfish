@@ -1136,8 +1136,8 @@ moves_loop:  // When in check, search starts here
             if (cutNode && move != ttMove && move != ss->killers[0])
                 r++;
 
-            if ((ss - 1)->inCheck && ttValue < ss->staticEval && move != ss->killers[1])
-                r--;
+            if (ttValue >= ss->staticEval && !excludedMove && !givesCheck)
+                r++;
         }
 
         // Increase reduction for cut nodes (~4 Elo)
