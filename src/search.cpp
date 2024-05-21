@@ -1136,7 +1136,7 @@ moves_loop:  // When in check, search starts here
             if (cutNode && move != ttMove && move != ss->killers[0])
                 r++;
 
-            if (ttValue >= ss->staticEval && !excludedMove && !givesCheck)
+            if (move == countermove && ttValue >= ss->staticEval && !excludedMove && !givesCheck)
                 r++;
         }
 
