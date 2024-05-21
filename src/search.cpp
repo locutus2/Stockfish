@@ -1131,8 +1131,14 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r -= 1 + (ttValue > alpha) + (tte->depth() >= depth);
 
-        else if (cutNode && move != ttMove && move != ss->killers[0])
-            r++;
+        else
+        {
+            if (cutNode && move != ttMove && move != ss->killers[0])
+                r++;
+
+            if (ttCapture && capture && !(ss - 1)->inCheck)
+                r++;
+        }
 
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
