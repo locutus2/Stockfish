@@ -51,7 +51,7 @@ namespace Stockfish {
 
 void initTune();
 
-const int N_PARAMS = 28;
+const int N_PARAMS = 26;
 const int N_CONDS  = 3;
 
 int              P[N_PARAMS];
@@ -1184,12 +1184,12 @@ moves_loop:  // When in check, search starts here
         if (improving && ttValue <= alpha && move != ttMove)
             r++;
 
-        bool CC = true;
+        bool CC = !ss->ttPv;
         if (CC)
         {
             bool C[N_PARAMS] = {
-              PvNode,
-              ss->ttPv,
+              //PvNode,
+              //ss->ttPv,
               cutNode,
               improving,
               priorCapture,
@@ -1225,7 +1225,7 @@ moves_loop:  // When in check, search starts here
             }
 
             if (CC)
-                r--;
+                r++;
         }
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
