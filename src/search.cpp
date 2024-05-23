@@ -51,8 +51,8 @@ namespace Stockfish {
 
 void initTune();
 
-const int N_PARAMS = 26;
-const int N_CONDS  = 3;
+const int N_PARAMS = 30;
+const int N_CONDS  = 4;
 
 int              P[N_PARAMS];
 int              P_SUM;
@@ -1195,6 +1195,10 @@ moves_loop:  // When in check, search starts here
               givesCheck,
               ((ss + 1)->cutoffCnt > 3),
               type_of(movedPiece) == PAWN,
+              type_of(movedPiece) == KNIGHT,
+              type_of(movedPiece) == BISHOP,
+              type_of(movedPiece) == ROOK,
+              type_of(movedPiece) == QUEEN,
               type_of(movedPiece) == KING,
               (ss - 1)->currentMove == Move::null(),
               move == ttMove,
@@ -1203,16 +1207,16 @@ moves_loop:  // When in check, search starts here
               move == countermove,
               extension > 0,
               extension < 0,
-              ttValue <= alpha,
-              ss->ttHit,
-              (ss - 1)->inCheck,
               (ss - 1)->ttPv,
+              ss->inCheck,
+              (ss - 1)->inCheck,
+              ss->ttHit,
               (ss - 1)->ttHit,
               bool((ss - 1)->excludedMove),
               bool(excludedMove),
-              ss->inCheck,
+              ttValue <= alpha,
               ttValue < ss->staticEval,
-              alpha < ss->staticEval,
+              alpha <= ss->staticEval,
             };
 
             for (int k = 0; k < N_CONDS && CC; ++k)
