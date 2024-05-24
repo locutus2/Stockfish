@@ -51,6 +51,7 @@ namespace Stockfish {
 
 void initTune();
 
+
 const int N_PARAMS = 30;
 const int N_CONDS  = 3;
 
