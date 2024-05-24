@@ -1146,7 +1146,7 @@ moves_loop:  // When in check, search starts here
         if (ttCapture)
             r++;
 
-        if (!ss->ttPv && (ss - 1)->currentMove == Move::null() && (ss + 1)->cutoffCnt <= 3 &&  move == ss->killers[1] /*&& alpha <= ss->staticEval*/ && !(ss - 1)->ttPv)
+        if (!ss->ttPv && (ss - 1)->currentMove == Move::null() && (ss + 1)->cutoffCnt <= 3 /*&&  move == ss->killers[1]*/ && alpha <= ss->staticEval && !(ss - 1)->ttPv)
             r++;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
