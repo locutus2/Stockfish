@@ -1149,6 +1149,12 @@ moves_loop:  // When in check, search starts here
         if (ttCapture)
             r++;
 
+        if (!capture && (ss - 2)->currentMove.is_ok()
+            && (*contHist[1])[movedPiece][move.to_sq()]
+                 <= (*ss->continuationHistory)[(ss - 2)->currentMovedPiece]
+                                              [(ss - 2)->currentMove.to_sq()])
+            r++;
+
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
             r++;
