@@ -790,6 +790,7 @@ Value Search::Worker::search(
         Depth R = std::min(int(eval - beta) / 177, 6) + depth / 3 + 5;
 
         ss->currentMove         = Move::null();
+        ss->currentMovedPiece   = NO_PIECE;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
 
         pos.do_null_move(st, tt);
@@ -867,7 +868,8 @@ Value Search::Worker::search(
                 // Prefetch the TT entry for the resulting position
                 prefetch(tt.first_entry(pos.key_after(move)));
 
-                ss->currentMove = move;
+                ss->currentMove       = move;
+                ss->currentMovedPiece = pos.moved_piece(move);
                 ss->continuationHistory =
                   &this
                      ->continuationHistory[ss->inCheck][true][pos.moved_piece(move)][move.to_sq()];
@@ -1112,7 +1114,8 @@ moves_loop:  // When in check, search starts here
         prefetch(tt.first_entry(pos.key_after(move)));
 
         // Update the current move (this must be done after singular extension search)
-        ss->currentMove = move;
+        ss->currentMove       = move;
+        ss->currentMovedPiece = movedPiece;
         ss->continuationHistory =
           &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
 
@@ -1597,7 +1600,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
         prefetch(tt.first_entry(pos.key_after(move)));
 
         // Update the current move
-        ss->currentMove = move;
+        ss->currentMove       = move;
+        ss->currentMovedPiece = pos.moved_piece(move);
         ss->continuationHistory =
           &thisThread
              ->continuationHistory[ss->inCheck][capture][pos.moved_piece(move)][move.to_sq()];
