@@ -1141,7 +1141,7 @@ moves_loop:  // When in check, search starts here
             r += 2 - (tte->depth() >= depth && ss->ttPv)
                + (!ss->ttPv && move != ttMove && move != ss->killers[0])
                - (!ss->ttPv && move == ttMove && move == ss->killers[0] && move == countermove
-                  && !capture && !givesCheck);
+                  && extension < 0 && !capture && !givesCheck);
 
         // Increase reduction if ttMove is a capture (~3 Elo)
         if (ttCapture)
