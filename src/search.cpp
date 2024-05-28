@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <initializer_list>
+#include <random>
 #include <string>
 #include <utility>
 
@@ -47,6 +48,41 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+
+void initTune();
+
+
+const int N_PARAMS = 48;
+const int N_CONDS  = 1;
+
+int              P[N_PARAMS];
+int              P_SUM;
+std::vector<int> Index;
+
+TUNE(SetRange(-100, 100), P, initTune);
+
+int rand();
+
+int rand() {
+    static std::minstd_rand RNG(123456);
+    return RNG();
+}
+
+void initTune() {
+    Index.clear();
+    P_SUM = 0;
+    int p = 0;
+    for (int i = 0; i < N_PARAMS; ++i)
+    {
+        P_SUM += std::abs(P[i]);
+        for (; p < P_SUM; ++p)
+            Index.push_back(i);
+    }
+
+    if (P_SUM == 0)
+        for (int i = 0; i < N_PARAMS; ++i)
+            Index.push_back(i), P_SUM++;
+}
 
 namespace TB = Tablebases;
 
@@ -1147,8 +1183,70 @@ moves_loop:  // When in check, search starts here
         if (ttCapture)
             r++;
 
+        bool CC = true;
+        if (CC)
+        {
+            bool C[N_PARAMS] = {
+              //((ss + 1)->cutoffCnt > 3),
+              PvNode,
+              ss->ttPv,
+              cutNode,
+              improving,
+              priorCapture,
+              ttCapture,
+              capture,
+              givesCheck,
+              type_of(movedPiece) == PAWN,
+              type_of(movedPiece) == KNIGHT,
+              type_of(movedPiece) == BISHOP,
+              type_of(movedPiece) == ROOK,
+              type_of(movedPiece) == QUEEN,
+              type_of(movedPiece) == KING,
+              (ss - 1)->currentMove == Move::null(),
+              (ss - 2)->currentMove == Move::null(),
+              move == ttMove,
+              move == ss->killers[0],
+              move == ss->killers[1],
+              move == countermove,
+              extension > 0,
+              extension == 0,
+              extension < 0,
+              (ss - 1)->ttPv,
+              (ss - 2)->ttPv,
+              ss->inCheck,
+              (ss - 1)->inCheck,
+              (ss - 2)->inCheck,
+              ss->ttHit,
+              (ss - 1)->ttHit,
+              (ss - 2)->ttHit,
+              bool(excludedMove),
+              bool((ss - 1)->excludedMove),
+              bool((ss - 2)->excludedMove),
+              ttValue <= alpha,
+              ttValue < ss->staticEval,
+              alpha <= ss->staticEval,
+              depth <= 4,
+              depth <= 8,
+              depth <= 12,
+              depth <= 16,
+              depth <= ss->ply,
+              bool(nodes & 1),
+              moveCount <= 8,
+              moveCount <= 16,
+              moveCount <= 24,
+              moveCount <= 32,
+              moveCount <= 40,
+            };
+
+            for (int k = 0; k < N_CONDS && CC; ++k)
+            {
+                int i = Index[(nodes + rand()) % P_SUM];
+                CC    = CC && (P[i] > 0 ? C[i] : !C[i]);
+            }
+        }
+
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
-        if ((ss + 1)->cutoffCnt > 3)
+        if ((ss + 1)->cutoffCnt > 3 - CC)
             r++;
 
         // Set reduction to 0 for first picked move (ttMove) (~2 Elo)
