@@ -1143,7 +1143,7 @@ moves_loop:  // When in check, search starts here
             r += 2 - (tte->depth() >= depth && ss->ttPv)
                + (!ss->ttPv && move != ttMove && move != ss->killers[0]);
 
-        else if (!(nodes & 7) && !ss->ttPv && !capture && !givesCheck && !ss->inCheck && !extension
+        else if (nodes & 1 && !ss->ttPv && !capture && !givesCheck && !ss->inCheck && !extension
                  && move != ttMove && move != ss->killers[0] && move != countermove)
             r++;
 
