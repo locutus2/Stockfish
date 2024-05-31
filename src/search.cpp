@@ -1092,7 +1092,7 @@ moves_loop:  // When in check, search starts here
                     extension = -3;
 
                 // If we are on a cutNode but the ttMove is not assumed to fail high over current beta (~1 Elo)
-                else if (cutNode && (ss - 1)->ttPv)
+                else if (cutNode)
                     extension = -2;
             }
 
@@ -1144,6 +1144,9 @@ moves_loop:  // When in check, search starts here
         // Increase reduction if ttMove is a capture (~3 Elo)
         if (ttCapture)
             r++;
+
+        if (extension < 0 && !(ss - 1)->ttPv)
+            r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
