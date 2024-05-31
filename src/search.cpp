@@ -1089,11 +1089,11 @@ moves_loop:  // When in check, search starts here
 
                 // If the ttMove is assumed to fail high over current beta (~7 Elo)
                 else if (ttValue >= beta)
-                    extension = -2 - (ss - 1)->ttPv;
+                    extension = -3;
 
                 // If we are on a cutNode but the ttMove is not assumed to fail high over current beta (~1 Elo)
                 else if (cutNode)
-                    extension = -2;
+                    extension = -1 - (ss - 1)->ttPv;
             }
 
             // Extension for capturing the previous moved piece (~0 Elo on STC, ~1 Elo on LTC)
