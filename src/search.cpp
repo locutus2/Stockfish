@@ -552,15 +552,15 @@ Value Search::Worker::search(
     Move     ttMove, move, excludedMove, bestMove;
     Depth    extension, newDepth;
     Value    bestValue, value, ttValue, eval, maxValue, probCutBeta;
-    bool     givesCheck, improving, opponentWorsening;
-    bool     capture, moveCountPruning, ttCapture;
+    bool     givesCheck, opponentWorsening;
+    bool     capture, moveCountPruning, priorCapture, ttCapture;
     Piece    movedPiece;
     int      moveCount, captureCount, quietCount;
 
     // Step 1. Initialize node
     Worker* thisThread = this;
     ss->inCheck        = pos.checkers();
-    ss->priorCapture       = pos.captured_piece();
+    priorCapture       = pos.captured_piece();
     Color us           = pos.side_to_move();
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     bestValue                                             = -VALUE_INFINITE;
@@ -632,7 +632,7 @@ Value Search::Worker::search(
 
             // Extra penalty for early quiet moves of
             // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
-            if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !ss->priorCapture)
+            if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture)
                 update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                               -stat_malus(depth + 1));
         }
@@ -702,7 +702,7 @@ Value Search::Worker::search(
     {
         // Skip early pruning when in check
         ss->staticEval = eval = VALUE_NONE;
-        improving             = false;
+        ss->improving         = false;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -740,11 +740,11 @@ Value Search::Worker::search(
     }
 
     // Use static evaluation difference to improve quiet move ordering (~9 Elo)
-    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !ss->priorCapture)
+    if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-11 * int((ss - 1)->staticEval + ss->staticEval), -1592, 1390);
         bonus     = bonus > 0 ? 2 * bonus : bonus / 2;
-        mainHistory[(ss - 1)->priorCapture][~us][((ss - 1)->currentMove).from_to()] << bonus;
+        mainHistory[(ss - 1)->improving][~us][((ss - 1)->currentMove).from_to()] << bonus;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
               << bonus / 2;
@@ -754,8 +754,8 @@ Value Search::Worker::search(
     // bigger than the previous static evaluation at our turn (if we were in
     // check at our previous move we look at static evaluation at move prior to it
     // and if we were in check at move prior to it flag is set to true) and is
-    // false otherwise. The improving flag is used in various pruning heuristics.
-    improving = (ss - 2)->staticEval != VALUE_NONE
+    // false otherwise. The ss->improving flag is used in various pruning heuristics.
+    ss->improving = (ss - 2)->staticEval != VALUE_NONE
                 ? ss->staticEval > (ss - 2)->staticEval
                 : (ss - 4)->staticEval != VALUE_NONE && ss->staticEval > (ss - 4)->staticEval;
 
@@ -774,7 +774,7 @@ Value Search::Worker::search(
     // Step 8. Futility pruning: child node (~40 Elo)
     // The depth condition is important for mate finding.
     if (!ss->ttPv && depth < 12
-        && eval - futility_margin(depth, cutNode && !ss->ttHit, improving, opponentWorsening)
+        && eval - futility_margin(depth, cutNode && !ss->ttHit, ss->improving, opponentWorsening)
                - (ss - 1)->statScore / 248
              >= beta
         && eval >= beta && eval < VALUE_TB_WIN_IN_MAX_PLY && (!ttMove || ttCapture))
@@ -847,7 +847,7 @@ Value Search::Worker::search(
     // Step 11. ProbCut (~10 Elo)
     // If we have a good enough capture (or queen promotion) and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 185 - 60 * improving;
+    probCutBeta = beta + 185 - 60 * ss->improving;
     if (
       !PvNode && depth > 3
       && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
@@ -919,7 +919,7 @@ moves_loop:  // When in check, search starts here
     Move countermove =
       prevSq != SQ_NONE ? thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] : Move::none();
 
-    MovePicker mp(pos, ttMove, depth, &mainHistory[ss->priorCapture], &thisThread->captureHistory,
+    MovePicker mp(pos, ttMove, depth, &mainHistory[ss->improving], &thisThread->captureHistory,
                   contHist, &thisThread->pawnHistory, countermove, ss->killers);
 
     value            = bestValue;
@@ -966,14 +966,14 @@ moves_loop:  // When in check, search starts here
 
         int delta = beta - alpha;
 
-        Depth r = reduction(improving, depth, moveCount, delta);
+        Depth r = reduction(ss->improving, depth, moveCount, delta);
 
         // Step 14. Pruning at shallow depth (~120 Elo).
         // Depth conditions are important for mate finding.
         if (!rootNode && pos.non_pawn_material(us) && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~8 Elo)
-            moveCountPruning = moveCount >= futility_move_count(improving, depth);
+            moveCountPruning = moveCount >= futility_move_count(ss->improving, depth);
 
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r;
@@ -1009,7 +1009,7 @@ moves_loop:  // When in check, search starts here
                 if (lmrDepth < 6 && history < -4427 * depth)
                     continue;
 
-                history += 2 * mainHistory[ss->priorCapture][us][move.from_to()];
+                history += 2 * mainHistory[ss->improving][us][move.from_to()];
 
                 lmrDepth += history / 3670;
 
@@ -1155,7 +1155,7 @@ moves_loop:  // When in check, search starts here
         else if (move == ttMove)
             r = 0;
 
-        ss->statScore = 2 * mainHistory[ss->priorCapture][us][move.from_to()]
+        ss->statScore = 2 * mainHistory[ss->improving][us][move.from_to()]
                       + (*contHist[0])[movedPiece][move.to_sq()]
                       + (*contHist[1])[movedPiece][move.to_sq()] - 5169;
 
@@ -1338,7 +1338,7 @@ moves_loop:  // When in check, search starts here
                          quietCount, capturesSearched, captureCount, depth);
 
     // Bonus for prior countermove that caused the fail low
-    else if (!ss->priorCapture && prevSq != SQ_NONE)
+    else if (!priorCapture && prevSq != SQ_NONE)
     {
         int bonus = (116 * (depth > 5) + 115 * (PvNode || cutNode)
                      + 186 * ((ss - 1)->statScore < -14144) + 121 * ((ss - 1)->moveCount > 9)
@@ -1346,7 +1346,7 @@ moves_loop:  // When in check, search starts here
                      + 137 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 81));
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                       stat_bonus(depth) * bonus / 100);
-        mainHistory[(ss - 1)->priorCapture][~us][((ss - 1)->currentMove).from_to()]
+        mainHistory[(ss - 1)->improving][~us][((ss - 1)->currentMove).from_to()]
           << stat_bonus(depth) * bonus / 200;
 
 
@@ -1436,7 +1436,6 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
     Worker* thisThread = this;
     bestMove           = Move::none();
     ss->inCheck        = pos.checkers();
-    ss->priorCapture   = pos.captured_piece();
     moveCount          = 0;
 
     // Used to send selDepth info to GUI (selDepth counts from 1, ply from 0)
@@ -1472,7 +1471,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
     if (ss->inCheck)
+    {
         bestValue = futilityBase = -VALUE_INFINITE;
+        ss->staticEval           = VALUE_NONE;
+        ss->improving            = false;
+    }
     else
     {
         if (ss->ttHit)
@@ -1517,6 +1520,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
             alpha = bestValue;
 
         futilityBase = ss->staticEval + 279;
+
+        ss->improving = (ss - 2)->staticEval != VALUE_NONE
+                        ? ss->staticEval > (ss - 2)->staticEval
+                        : (ss - 4)->staticEval != VALUE_NONE && ss->staticEval > (ss - 4)->staticEval;
     }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
@@ -1528,7 +1535,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
     // (Presently, having the checks stage is worth only 1 Elo, and may be removable in the near future,
     // which would result in only a single stage of QS movegen.)
     Square     prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
-    MovePicker mp(pos, ttMove, depth, &mainHistory[ss->priorCapture], &thisThread->captureHistory,
+    MovePicker mp(pos, ttMove, depth, &mainHistory[ss->improving], &thisThread->captureHistory,
                   contHist, &thisThread->pawnHistory);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta cutoff occurs.
@@ -1833,7 +1840,7 @@ void update_quiet_histories(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
-    workerThread.mainHistory[ss->priorCapture][us][move.from_to()] << bonus;
+    workerThread.mainHistory[ss->improving][us][move.from_to()] << bonus;
 
     update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus);
 
