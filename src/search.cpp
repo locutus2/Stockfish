@@ -1156,7 +1156,7 @@ moves_loop:  // When in check, search starts here
         if (ttCapture)
             r++;
 
-        if (extension < 0 && (!(ss - 1)->ttPv || !(ss - 2)->ttPv))
+        if (extension < 0 && !(ss - 3)->ttPv)
             r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
