@@ -744,6 +744,8 @@ Value Search::Worker::search(
     {
         int bonus = std::clamp(-11 * int((ss - 1)->staticEval + ss->staticEval), -1592, 1390);
         bonus     = bonus > 0 ? 2 * bonus : bonus / 2;
+        mainHistory[0][~us][((ss - 1)->currentMove).from_to()] << bonus;
+        mainHistory[1][~us][((ss - 1)->currentMove).from_to()] << bonus;
         mainHistory[(ss - 1)->improving][~us][((ss - 1)->currentMove).from_to()] << bonus;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
@@ -1346,6 +1348,10 @@ moves_loop:  // When in check, search starts here
                      + 137 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 81));
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                       stat_bonus(depth) * bonus / 100);
+        mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
+          << stat_bonus(depth) * bonus / 200;
+        mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
+          << stat_bonus(depth) * bonus / 200;
         mainHistory[(ss - 1)->improving][~us][((ss - 1)->currentMove).from_to()]
           << stat_bonus(depth) * bonus / 200;
 
@@ -1840,6 +1846,8 @@ void update_quiet_histories(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
+    workerThread.mainHistory[0][us][move.from_to()] << bonus;
+    workerThread.mainHistory[1][us][move.from_to()] << bonus;
     workerThread.mainHistory[ss->improving][us][move.from_to()] << bonus;
 
     update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus);
