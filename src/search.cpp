@@ -1145,8 +1145,8 @@ moves_loop:  // When in check, search starts here
         if (ttCapture)
             r++;
 
-        if (extension < 0 && !(ss - 1)->ttPv)
-            r -= 2 - cutNode;
+        if (extension < 0 && !(ss - 1)->ttPv && !(ss - 2)->ttPv)
+            r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
