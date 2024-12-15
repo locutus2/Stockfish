@@ -160,8 +160,8 @@ void MovePicker::score() {
             m.value += 2 * (*pawnHistory)[pawn_structure_index(pos)][pc][to];
             m.value += (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
-            m.value += (*continuationHistory[2])[pc][to] * (64 + X) / 64;
-            m.value += (*continuationHistory[3])[pc][to];
+            m.value += (*continuationHistory[2])[pc][to];
+            m.value += (*continuationHistory[3])[pc][to] * (64 + X) / 64;
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
