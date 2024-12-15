@@ -429,6 +429,8 @@ class Move {
     std::uint16_t data;
 };
 
+extern int X;
+
 }  // namespace Stockfish
 
 #endif  // #ifndef TYPES_H_INCLUDED

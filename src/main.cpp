@@ -25,7 +25,12 @@
 #include "uci.h"
 #include "tune.h"
 
+namespace Stockfish {
+int X = 0;
+}
+
 using namespace Stockfish;
+
 
 int main(int argc, char* argv[]) {
 
