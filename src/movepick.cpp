@@ -144,6 +144,7 @@ void MovePicker::score() {
 
     for (auto& m : *this)
         if constexpr (Type == CAPTURES)
+             //dbg_mean_of(7 * int(PieceValue[pos.piece_on(m.to_sq())])); // Mean #0: Total 72341115 Mean 3294.77
             m.value =
               7 * int(PieceValue[pos.piece_on(m.to_sq())]) * (64 + X) / 64
               + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
@@ -239,7 +240,7 @@ top:
     case GOOD_CAPTURE :
         if (select([&]() {
                 // Move losing capture to endBadCaptures to be tried later
-                return pos.see_ge(*cur, -cur->value / 18) ? true
+                return pos.see_ge(*cur, -(cur->value - 3295 * X / 64) / 18) ? true
                                                           : (*endBadCaptures++ = *cur, false);
             }))
             return *(cur - 1);
