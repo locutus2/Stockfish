@@ -100,7 +100,7 @@ Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos, St
 }
 
 // History and stats update bonus, based on depth
-int stat_bonus(Depth d) { return std::min(168 * d - 100, 1718); }
+int stat_bonus(Depth d) { return d < 11 ? 168 * d - 100 : d + 1707; }
 
 // History and stats update malus, based on depth
 int stat_malus(Depth d) { return std::min(768 * d - 257, 2351); }
