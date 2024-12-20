@@ -144,10 +144,20 @@ void MovePicker::score() {
 
     for (auto& m : *this)
         if constexpr (Type == CAPTURES)
+        {
              //dbg_mean_of(7 * int(PieceValue[pos.piece_on(m.to_sq())])); // Mean #0: Total 72341115 Mean 3294.77
+             //dbg_mean_of((*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))]); // Mean #0: Total 72341115 Mean 1298.46
+             // 4593.23 = 3294.77 *  (64+X)/64 + 1298.46 * Y / 64
+             //int Y = (4593.23 - 3294.77 * (64 + X) / 64) * 64 / 1298.46;
+             int Y = (4593.23 - 3294.77 * (57 + X) / 57) * 57 / 1298.46;
             m.value =
-              7 * int(PieceValue[pos.piece_on(m.to_sq())]) * (64 + X) / 64
-              + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
+              //7 * int(PieceValue[pos.piece_on(m.to_sq())]) * (64 + X) / 64
+              //+ (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))] * Y / 64;
+              7 * int(PieceValue[pos.piece_on(m.to_sq())]) * (57 + X) / 57
+              + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))] * Y / 57;
+             //dbg_mean_of(m.value);
+             //X=0: Mean #0: Total 72341115 Mean 4593.23
+        }
 
         else if constexpr (Type == QUIETS)
         {
@@ -240,7 +250,7 @@ top:
     case GOOD_CAPTURE :
         if (select([&]() {
                 // Move losing capture to endBadCaptures to be tried later
-                return pos.see_ge(*cur, -(cur->value - 3295 * X / 64) / 18) ? true
+                return pos.see_ge(*cur, -(cur->value/* - 3295 * X / 64*/) / 18) ? true
                                                           : (*endBadCaptures++ = *cur, false);
             }))
             return *(cur - 1);
