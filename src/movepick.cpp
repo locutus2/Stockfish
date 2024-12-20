@@ -150,6 +150,9 @@ void MovePicker::score() {
              // 4593.23 = 3294.77 *  (64+X)/64 + 1298.46 * Y / 64
              //int Y = (4593.23 - 3294.77 * (64 + X) / 64) * 64 / 1298.46;
              int Y = (4593.23 - 3294.77 * (57 + X) / 57) * 57 / 1298.46;
+             //dbg_mean_of(X, 0);
+            // dbg_mean_of(Y, 1);
+             // x=-12 => Y=87
             m.value =
               //7 * int(PieceValue[pos.piece_on(m.to_sq())]) * (64 + X) / 64
               //+ (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))] * Y / 64;
