@@ -144,9 +144,10 @@ void MovePicker::score() {
 
     for (auto& m : *this)
         if constexpr (Type == CAPTURES)
-            m.value =
-              7 * int(PieceValue[pos.piece_on(m.to_sq())])
-              + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
+            m.value = 315 * int(PieceValue[pos.piece_on(m.to_sq())])
+                    + 87
+                        * (*captureHistory)[pos.moved_piece(m)][m.to_sq()]
+                                           [type_of(pos.piece_on(m.to_sq()))];
 
         else if constexpr (Type == QUIETS)
         {
@@ -239,8 +240,8 @@ top:
     case GOOD_CAPTURE :
         if (select([&]() {
                 // Move losing capture to endBadCaptures to be tried later
-                return pos.see_ge(*cur, -cur->value / 18) ? true
-                                                          : (*endBadCaptures++ = *cur, false);
+                return pos.see_ge(*cur, -cur->value / 1024) ? true
+                                                            : (*endBadCaptures++ = *cur, false);
             }))
             return *(cur - 1);
 
