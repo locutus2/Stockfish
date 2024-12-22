@@ -246,8 +246,6 @@ void Search::Worker::iterative_deepening() {
     {
         (ss - i)->continuationHistory =
           &this->continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
-        (ss - i)->fullContinuationHistory =
-          &this->continuationHistory[0][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &this->continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
     }
@@ -809,7 +807,6 @@ Value Search::Worker::search(
 
         ss->currentMove                   = Move::null();
         ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
-        ss->fullContinuationHistory       = &thisThread->continuationHistory[0][0];
         ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
 
         pos.do_null_move(st, tt);
@@ -892,7 +889,6 @@ Value Search::Worker::search(
             ss->currentMove = move;
             ss->continuationHistory =
               &this->continuationHistory[ss->inCheck][true][pos.moved_piece(move)][move.to_sq()];
-            ss->fullContinuationHistory       = &thisThread->continuationHistory[ss->inCheck][true];
             ss->continuationCorrectionHistory =
               &this->continuationCorrectionHistory[pos.moved_piece(move)][move.to_sq()];
 
@@ -1140,7 +1136,6 @@ moves_loop:  // When in check, search starts here
         ss->currentMove = move;
         ss->continuationHistory =
           &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
-        ss->fullContinuationHistory       = &thisThread->continuationHistory[ss->inCheck][capture];
         ss->continuationCorrectionHistory =
           &thisThread->continuationCorrectionHistory[movedPiece][move.to_sq()];
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
@@ -1661,7 +1656,6 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         ss->continuationHistory =
           &thisThread
              ->continuationHistory[ss->inCheck][capture][pos.moved_piece(move)][move.to_sq()];
-        ss->fullContinuationHistory       = &thisThread->continuationHistory[ss->inCheck][capture];
         ss->continuationCorrectionHistory =
           &thisThread->continuationCorrectionHistory[pos.moved_piece(move)][move.to_sq()];
 
@@ -1858,9 +1852,11 @@ void update_continuation_histories(Stack* ss, Piece pc, Square from, Square to, 
         if (ss->inCheck && i > 2)
             break;
         if (((ss - i)->currentMove).is_ok())
+        {
             (*(ss - i)->continuationHistory)[pc][to] << bonus * weight / 1024;
-        if (bonus > 0 && i % 2 == 0)
-            (*&(*(ss - i)->fullContinuationHistory)[pc][from])[pc][to] << bonus * weight / 1024;
+            if (bonus > 0)
+                (*(ss - i)->continuationHistory)[pc][from] << bonus * weight / 1024;
+        }
     }
 }
 
