@@ -109,13 +109,14 @@ Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
 Value value_to_tt(Value v, int ply);
 Value value_from_tt(Value v, int ply, int r50c);
 void  update_pv(Move* pv, Move move, const Move* childPv);
-void  update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
+void  update_continuation_histories(Stack* ss, Piece pc, Square from, Square to, int bonus);
 void  update_quiet_histories(
    const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus);
 void update_all_stats(const Position&      pos,
                       Stack*               ss,
                       Search::Worker&      workerThread,
                       Move                 bestMove,
+                      Square               prevFromSq,
                       Square               prevSq,
                       ValueList<Move, 32>& quietsSearched,
                       ValueList<Move, 32>& capturesSearched,
@@ -245,6 +246,8 @@ void Search::Worker::iterative_deepening() {
     {
         (ss - i)->continuationHistory =
           &this->continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
+        (ss - i)->fullContinuationHistory =
+          &this->continuationHistory[0][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &this->continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
     }
@@ -614,6 +617,7 @@ Value Search::Worker::search(
     bestMove            = Move::none();
     (ss + 2)->cutoffCnt = 0;
     Square prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
+    Square prevFromSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).from_sq() : SQ_NONE;
     ss->statScore = 0;
 
     // Step 4. Transposition table lookup
@@ -648,7 +652,7 @@ Value Search::Worker::search(
             // Extra penalty for early quiet moves of
             // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
             if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture)
-                update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
+                update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevFromSq, prevSq,
                                               -stat_malus(depth + 1) * 1091 / 1024);
         }
 
@@ -805,6 +809,7 @@ Value Search::Worker::search(
 
         ss->currentMove                   = Move::null();
         ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+        ss->fullContinuationHistory       = &thisThread->continuationHistory[0][0];
         ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
 
         pos.do_null_move(st, tt);
@@ -887,6 +892,7 @@ Value Search::Worker::search(
             ss->currentMove = move;
             ss->continuationHistory =
               &this->continuationHistory[ss->inCheck][true][pos.moved_piece(move)][move.to_sq()];
+            ss->fullContinuationHistory       = &thisThread->continuationHistory[ss->inCheck][true];
             ss->continuationCorrectionHistory =
               &this->continuationCorrectionHistory[pos.moved_piece(move)][move.to_sq()];
 
@@ -1134,6 +1140,7 @@ moves_loop:  // When in check, search starts here
         ss->currentMove = move;
         ss->continuationHistory =
           &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
+        ss->fullContinuationHistory       = &thisThread->continuationHistory[ss->inCheck][capture];
         ss->continuationCorrectionHistory =
           &thisThread->continuationCorrectionHistory[movedPiece][move.to_sq()];
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
@@ -1217,7 +1224,7 @@ moves_loop:  // When in check, search starts here
 
                 // Post LMR continuation history updates (~1 Elo)
                 int bonus = (value >= beta) * stat_bonus(newDepth);
-                update_continuation_histories(ss, movedPiece, move.to_sq(), bonus * 1427 / 1024);
+                update_continuation_histories(ss, movedPiece, move.from_sq(), move.to_sq(), bonus * 1427 / 1024);
             }
         }
 
@@ -1374,7 +1381,7 @@ moves_loop:  // When in check, search starts here
     // If there is a move that produces search value greater than alpha,
     // we update the stats of searched moves.
     else if (bestMove)
-        update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth);
+        update_all_stats(pos, ss, *this, bestMove, prevFromSq, prevSq, quietsSearched, capturesSearched, depth);
 
     // Bonus for prior countermove that caused the fail low
     else if (!priorCapture && prevSq != SQ_NONE)
@@ -1390,7 +1397,7 @@ moves_loop:  // When in check, search starts here
 
         const int scaledBonus = stat_bonus(depth) * bonusScale / 32;
 
-        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
+        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevFromSq, prevSq,
                                       scaledBonus * 416 / 1024);
 
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << scaledBonus * 212 / 1024;
@@ -1654,6 +1661,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         ss->continuationHistory =
           &thisThread
              ->continuationHistory[ss->inCheck][capture][pos.moved_piece(move)][move.to_sq()];
+        ss->fullContinuationHistory       = &thisThread->continuationHistory[ss->inCheck][capture];
         ss->continuationCorrectionHistory =
           &thisThread->continuationCorrectionHistory[pos.moved_piece(move)][move.to_sq()];
 
@@ -1795,6 +1803,7 @@ void update_all_stats(const Position&      pos,
                       Stack*               ss,
                       Search::Worker&      workerThread,
                       Move                 bestMove,
+                      Square               prevFromSq,
                       Square               prevSq,
                       ValueList<Move, 32>& quietsSearched,
                       ValueList<Move, 32>& capturesSearched,
@@ -1825,7 +1834,7 @@ void update_all_stats(const Position&      pos,
     // Extra penalty for a quiet early move that was not a TT move in
     // previous ply when it gets refuted.
     if (prevSq != SQ_NONE && ((ss - 1)->moveCount == 1 + (ss - 1)->ttHit) && !pos.captured_piece())
-        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, -malus * 919 / 1024);
+        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevFromSq, prevSq, -malus * 919 / 1024);
 
     // Decrease stats for all non-best capture moves
     for (Move move : capturesSearched)
@@ -1839,7 +1848,7 @@ void update_all_stats(const Position&      pos,
 
 // Updates histories of the move pairs formed by moves
 // at ply -1, -2, -3, -4, and -6 with current move.
-void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
+void update_continuation_histories(Stack* ss, Piece pc, Square from, Square to, int bonus) {
     static constexpr std::array<ConthistBonus, 5> conthist_bonuses = {
       {{1, 1024}, {2, 571}, {3, 339}, {4, 500}, {6, 592}}};
 
@@ -1850,6 +1859,8 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
             break;
         if (((ss - i)->currentMove).is_ok())
             (*(ss - i)->continuationHistory)[pc][to] << bonus * weight / 1024;
+        if (bonus > 0 && i % 2 == 0)
+            (*&(*(ss - i)->fullContinuationHistory)[pc][from])[pc][to] << bonus * weight / 1024;
     }
 }
 
@@ -1864,7 +1875,7 @@ void update_quiet_histories(
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
         workerThread.lowPlyHistory[ss->ply][move.from_to()] << bonus * 874 / 1024;
 
-    update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus * 853 / 1024);
+    update_continuation_histories(ss, pos.moved_piece(move), move.from_sq(), move.to_sq(), bonus * 853 / 1024);
 
     int pIndex = pawn_structure_index(pos);
     workerThread.pawnHistory[pIndex][pos.moved_piece(move)][move.to_sq()] << bonus * 628 / 1024;
