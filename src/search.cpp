@@ -1858,11 +1858,9 @@ void update_continuation_histories(Stack* ss, Piece pc, Square from, Square to, 
         if (ss->inCheck && i > 2)
             break;
         if (((ss - i)->currentMove).is_ok())
-        {
             (*(ss - i)->continuationHistory)[pc][to] << bonus * weight / 1024;
-            if (bonus > 0 && i % 2 == 0)
-                (*&(*(ss - i)->fullContinuationHistory)[pc][from])[pc][to] << bonus * weight / 1024;
-        }
+        else if (bonus > 0 && i % 2 == 0)
+            (*&(*(ss - i)->fullContinuationHistory)[pc][from])[pc][to] << bonus * weight / 1024;
     }
 }
 
