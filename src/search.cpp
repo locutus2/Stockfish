@@ -1848,7 +1848,7 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
         // Only update the first 2 continuation histories if we are in check
         if (ss->inCheck && i > 2)
             break;
-        (*(ss - i)->continuationHistory)[pc][to] << bonus * weight / ((ss - i)->currentMove.is_ok() ? 1024 : 16384);
+        (*(ss - i)->continuationHistory)[pc][to] << bonus * weight / ((ss - i)->currentMove.is_ok() ? 1024 : 2048);
     }
 }
 
