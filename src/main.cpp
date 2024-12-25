@@ -26,7 +26,7 @@
 #include "tune.h"
 
 namespace Stockfish {
-int X = 0;
+    std::vector<int> X;
 }
 
 using namespace Stockfish;

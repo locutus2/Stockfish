@@ -25,7 +25,7 @@
 
 namespace Stockfish::Benchmark {
 
-std::vector<std::string> setup_bench(const std::string&, std::istream&, int& X);
+std::vector<std::string> setup_bench(const std::string&, std::istream&, std::vector<int>& X);
 
 struct BenchmarkSetup {
     int                      ttSize;

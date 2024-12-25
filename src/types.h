@@ -38,6 +38,7 @@
 
     #include <cassert>
     #include <cstdint>
+    #include <vector>
 
     #if defined(_MSC_VER)
         // Disable some silly and noisy warnings from MSVC compiler
@@ -429,7 +430,7 @@ class Move {
     std::uint16_t data;
 };
 
-extern int X;
+extern std::vector<int> X;
 
 }  // namespace Stockfish
 
