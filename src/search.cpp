@@ -1177,10 +1177,10 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 1879;
 
-        if (!PvNode && ss->ply == 2 && !priorCapture && rootMoves[pvIdx].pv.size() >= 3
+        if (!PvNode && ss->ply == 2 && rootMoves[pvIdx].pv.size() >= 3
             && rootMoves[pvIdx].pv[0] == move && rootMoves[pvIdx].pv[1] == (ss - 1)->currentMove
             && rootMoves[pvIdx].pv[2] == (ss - 2)->currentMove)
-            r += 1024;
+            r += 256;
 
         if (capture)
             ss->statScore =
