@@ -983,14 +983,7 @@ moves_loop:  // When in check, search starts here
 
         Depth r = reduction(improving, depth, moveCount, delta);
 
-        // These reduction adjustments have proven non-linear scaling.
-        // They are optimized to time controls of 180 + 1.8 and longer,
-        // so changing them or adding conditions that are similar requires
-        // tests at these types of time controls.
-
-        // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
-        if (PvNode)
-            r -= 1024;
+        r -= std::min(std::abs(correctionValue) / 32768, 2048);
 
         // Step 14. Pruning at shallow depth (~120 Elo).
         // Depth conditions are important for mate finding.
@@ -1160,11 +1153,13 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r -= 1024 + (ttData.value > alpha) * 1024 + (ttData.depth >= depth) * 1024;
 
+        // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
+        if (PvNode)
+            r -= 1024;
+
         // These reduction adjustments have no proven non-linear scaling
 
         r += 330;
-
-        r -= std::min(std::abs(correctionValue) / 32768, 2048);
 
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
