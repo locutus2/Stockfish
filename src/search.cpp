@@ -1180,7 +1180,7 @@ moves_loop:  // When in check, search starts here
         if (!PvNode && ss->ply == 2 && rootMoves[pvIdx].pv.size() >= 3
             && rootMoves[pvIdx].pv[0] == move && rootMoves[pvIdx].pv[1] == (ss - 1)->currentMove
             && rootMoves[pvIdx].pv[2] == (ss - 2)->currentMove)
-            r += 256;
+            r += 512;
 
         if (capture)
             ss->statScore =
