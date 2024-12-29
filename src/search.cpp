@@ -1149,7 +1149,7 @@ moves_loop:  // When in check, search starts here
 
         // Decrease reduction if position is or has been on the PV (~7 Elo)
         if (ss->ttPv)
-            r -= !allNode * 1024 + (ttData.value > alpha) * 1024 + (ttData.depth >= depth) * 1024;
+            r -= 1024 + (ttData.value > alpha) * 1024 + (ttData.depth >= depth) * 1024;
 
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
         if (PvNode)
@@ -1226,7 +1226,7 @@ moves_loop:  // When in check, search starts here
         {
             // Increase reduction if ttMove is not present (~6 Elo)
             if (!ttData.move)
-                r += 2037;
+                r += 2037 - allNode * 1024;
 
             // Note that if expected reduction is high, we reduce search depth by 1 here (~9 Elo)
             value =
