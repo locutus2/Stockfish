@@ -1161,6 +1161,9 @@ moves_loop:  // When in check, search starts here
 
         r -= std::min(std::abs(correctionValue) / 32768, 2048);
 
+        if (allNode)
+            r += 1024;
+
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
             r += 2518 - (ttData.depth >= depth && ss->ttPv) * 991;
@@ -1226,7 +1229,7 @@ moves_loop:  // When in check, search starts here
         {
             // Increase reduction if ttMove is not present (~6 Elo)
             if (!ttData.move)
-                r += 2037 - allNode * 1024;
+                r += 2037;
 
             // Note that if expected reduction is high, we reduce search depth by 1 here (~9 Elo)
             value =
