@@ -1171,7 +1171,7 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
-            r += 938 + allNode * 960 - PvNode * 1024;
+            r += 938 + allNode * 960;
 
         // For first picked move (ttMove) reduce reduction (~3 Elo)
         else if (move == ttData.move)
@@ -1227,6 +1227,9 @@ moves_loop:  // When in check, search starts here
             // Increase reduction if ttMove is not present (~6 Elo)
             if (!ttData.move)
                 r += 2037;
+
+            if (allNode)
+                r += 1024;
 
             // Note that if expected reduction is high, we reduce search depth by 1 here (~9 Elo)
             value =
