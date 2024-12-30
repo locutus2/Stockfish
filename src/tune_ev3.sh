@@ -1,9 +1,9 @@
 #!/bin/bash
 
 CMD=./sf_ev3
-H=16
+H=64
 T=1
-D=16
+D=20
 F=pos1000.fen
 
 S=0
