@@ -52,21 +52,19 @@
 
 namespace Stockfish {
 
-int ALLNODE[7][2];
-int CUTNODE[7][2];
-int PVNODE[7][2];
+int ALLNODE[7];
+int CUTNODE[7];
+int PVNODE[7];
 
-TUNE(SetRange(-100,100), ALLNODE, CUTNODE, PVNODE);
+int RND[20];
 
-#define RED(n) (1024 * (\
-                           ( \
-                              allNode * (ALLNODE[(n)][1] > 0) + PvNode * (PVNODE[(n)][1] > 0) + cutNode * (CUTNODE[(n)][1] > 0) \
-                           ) \
-                           - \
-                           ( \
-                              allNode * (ALLNODE[(n)][0] > 0) + PvNode * (PVNODE[(n)][0] > 0) + cutNode * (CUTNODE[(n)][0] > 0) \
-                           ) \
-                ))
+constexpr int X = 1024;
+
+TUNE(SetRange(-X, X), ALLNODE, PVNODE, CUTNODE, RND);
+
+#define RED(n) (\
+                      allNode * ALLNODE[(n)] + PvNode * PVNODE[(n)] + cutNode * CUTNODE[(n)] \
+                )
 
 namespace TB = Tablebases;
 
@@ -1165,7 +1163,7 @@ moves_loop:  // When in check, search starts here
 
         // Decrease reduction if position is or has been on the PV (~7 Elo)
         if (ss->ttPv)
-            r -= -RED(0) + 1024 + (ttData.value > alpha) * 1024 + (ttData.depth >= depth) * 1024;
+            r -= 1024 + (ttData.value > alpha) * 1024 + (ttData.depth >= depth) * 1024;
 
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
         if (PvNode)
@@ -1183,15 +1181,15 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction if ttMove is a capture but the current move is not a capture (~3 Elo)
         if (ttCapture && !capture)
-            r += RED(1) + 1043 + (depth < 8) * 999;
+            r += RED(0) + 1043 + (depth < 8) * 999;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
-            r += RED(2) + 938 + allNode * 960;
+            r += RED(1) + 938 + allNode * 960;
 
         // For first picked move (ttMove) reduce reduction (~3 Elo)
         else if (move == ttData.move)
-            r -= -RED(3) + 1879;
+            r -= -RED(2) + 1879;
 
         if (capture)
             ss->statScore =
@@ -1206,11 +1204,13 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore * 1287 / 16384;
 
-        r += RED(4);
+        r += RED(3);
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
         {
+            r += RED(4);
+
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
