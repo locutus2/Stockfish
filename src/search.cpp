@@ -1163,7 +1163,7 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
-            r += 1494 - (ttData.depth >= depth && ss->ttPv) * 991;
+            r += 2518 - (ttData.depth >= depth && ss->ttPv) * 991;
 
         // Increase reduction if ttMove is a capture but the current move is not a capture (~3 Elo)
         if (ttCapture && !capture)
@@ -1171,7 +1171,7 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
-            r += 938 + allNode * 960;
+            r += 938 + allNode * 960 - PvNode * 1024;
 
         // For first picked move (ttMove) reduce reduction (~3 Elo)
         else if (move == ttData.move)
