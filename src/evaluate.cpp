@@ -89,11 +89,6 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
                      int                            optimism) {
 
     assert(!pos.checkers());
-    static bool initialized = false;
-    if (!initialized) {
-        initialize_coeff_table();
-        initialized = true;
-    }
 
     bool smallNet           = use_smallnet(pos);
     auto [psqt, positional] = smallNet ? networks.small.evaluate(pos, &caches.small)
