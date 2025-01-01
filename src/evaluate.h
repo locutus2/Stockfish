@@ -61,6 +61,8 @@ Value evaluate(const NNUE::Networks&          networks,
                const Position&                pos,
                Eval::NNUE::AccumulatorCaches& caches,
                int                            optimism);
+void initialize_coeff_table();
+EvalRange get_range(int value);
 }  // namespace Eval
 
 }  // namespace Stockfish
