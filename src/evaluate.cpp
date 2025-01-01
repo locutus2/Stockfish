@@ -65,6 +65,7 @@ namespace Eval {
             }
         }
     }
+TUNE(coeff_table);
 }
 
 // Returns a static, purely materialistic evaluation of the position from
@@ -106,7 +107,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     int* coeffs = coeff_table[psqt_range][positional_range];
 
     // Calculate nnue using the retrieved coefficients
-    Value nnue = (coeffs[0] * psqt + coeffs[1] * positional) / 128;
+    Value nnue = (coeffs[0] * psqt + coeffs[1] * positional) / 1024;
 
     // Re-evaluate the position when higher eval accuracy is worth the time spent
     if (smallNet && (std::abs(nnue) < 236))
@@ -115,7 +116,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
         psqt_range = get_range(psqt);
         positional_range = get_range(positional);
         coeffs = coeff_table[psqt_range][positional_range];
-        nnue                       = (coeffs[0] * psqt + coeffs[1] * positional) / 128;
+        nnue                       = (coeffs[0] * psqt + coeffs[1] * positional) / 1024;
         smallNet                   = false;
     }
 
