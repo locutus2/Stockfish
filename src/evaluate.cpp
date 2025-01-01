@@ -64,8 +64,8 @@ namespace Eval {
                 coeff_table[i][j][1] = 1048;
             }
         }
-      TUNE(coeff_table);
     }
+      TUNE(coeff_table);
 }
 
 // Returns a static, purely materialistic evaluation of the position from
