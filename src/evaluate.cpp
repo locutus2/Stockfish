@@ -65,9 +65,8 @@ namespace Eval {
             }
         }
     }
-TUNE(coeff_table);
 }
-
+TUNE(coeff_table);
 // Returns a static, purely materialistic evaluation of the position from
 // the point of view of the given color. It can be divided by PawnValue to get
 // an approximation of the material advantage on the board in terms of pawns.
