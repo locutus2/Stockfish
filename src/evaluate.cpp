@@ -39,7 +39,7 @@ namespace Stockfish {
 
 // 2D table to store coefficients for each combination of ranges
 // Now uses a simple int[2] instead of the Coefficients struct
-int coeff_table[NUM_EVAL_RANGES][NUM_EVAL_RANGES][2];
+int Eval::coeff_table[NUM_EVAL_RANGES][NUM_EVAL_RANGES][2];
 
 // Helper function to determine the range for a given value
 EvalRange get_range(int value) {
@@ -55,11 +55,11 @@ EvalRange get_range(int value) {
 }
 
 // Function to initialize the coefficient table
-void initialize_coeff_table() {
+void Eval::initialize_coeff_table() {
     for (int i = 0; i < NUM_EVAL_RANGES; i++) {
         for (int j = 0; j < NUM_EVAL_RANGES; j++) {
-            coeff_table[i][j][0] = 1000; // xx1
-            coeff_table[i][j][1] = 1048; // xx2
+            coeff_table[i][j][0] = 1000;
+            coeff_table[i][j][1] = 1048;
         }
     }
 }
