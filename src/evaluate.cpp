@@ -56,88 +56,12 @@ EvalRange get_range(int value) {
 
 // Function to initialize the coefficient table
 void initialize_coeff_table() {
-    // Example initialization - you need to tune these values based on your engine's
-    // evaluation requirements and testing
-
-// All combinations for LT_NEG_4000
-coeff_table[LT_NEG_4000][LT_NEG_4000][0] = 1000; coeff_table[LT_NEG_4000][LT_NEG_4000][1] = 1048;
-coeff_table[LT_NEG_4000][LT_NEG_3000][0] = 1000; coeff_table[LT_NEG_4000][LT_NEG_3000][1] = 1048;
-coeff_table[LT_NEG_4000][LT_NEG_2000][0] = 1000; coeff_table[LT_NEG_4000][LT_NEG_2000][1] = 1048;
-coeff_table[LT_NEG_4000][LT_NEG_1000][0] = 1000; coeff_table[LT_NEG_4000][LT_NEG_1000][1] = 1048;
-coeff_table[LT_NEG_4000][GT_1000][0] = 1000; coeff_table[LT_NEG_4000][GT_1000][1] = 1048;
-coeff_table[LT_NEG_4000][GT_2000][0] = 1000; coeff_table[LT_NEG_4000][GT_2000][1] = 1048;
-coeff_table[LT_NEG_4000][GT_3000][0] = 1000; coeff_table[LT_NEG_4000][GT_3000][1] = 1048;
-coeff_table[LT_NEG_4000][GT_4000][0] = 1000; coeff_table[LT_NEG_4000][GT_4000][1] = 1048;
-
-// All combinations for LT_NEG_3000
-coeff_table[LT_NEG_3000][LT_NEG_4000][0] = 1000; coeff_table[LT_NEG_3000][LT_NEG_4000][1] = 1048;
-coeff_table[LT_NEG_3000][LT_NEG_3000][0] = 1000; coeff_table[LT_NEG_3000][LT_NEG_3000][1] = 1048;
-coeff_table[LT_NEG_3000][LT_NEG_2000][0] = 1000; coeff_table[LT_NEG_3000][LT_NEG_2000][1] = 1048;
-coeff_table[LT_NEG_3000][LT_NEG_1000][0] = 1000; coeff_table[LT_NEG_3000][LT_NEG_1000][1] = 1048;
-coeff_table[LT_NEG_3000][GT_1000][0] = 1000; coeff_table[LT_NEG_3000][GT_1000][1] = 1048;
-coeff_table[LT_NEG_3000][GT_2000][0] = 1000; coeff_table[LT_NEG_3000][GT_2000][1] = 1048;
-coeff_table[LT_NEG_3000][GT_3000][0] = 1000; coeff_table[LT_NEG_3000][GT_3000][1] = 1048;
-coeff_table[LT_NEG_3000][GT_4000][0] = 1000; coeff_table[LT_NEG_3000][GT_4000][1] = 1048;
-
-// All combinations for LT_NEG_2000
-coeff_table[LT_NEG_2000][LT_NEG_4000][0] = 1000; coeff_table[LT_NEG_2000][LT_NEG_4000][1] = 1048;
-coeff_table[LT_NEG_2000][LT_NEG_3000][0] = 1000; coeff_table[LT_NEG_2000][LT_NEG_3000][1] = 1048;
-coeff_table[LT_NEG_2000][LT_NEG_2000][0] = 1000; coeff_table[LT_NEG_2000][LT_NEG_2000][1] = 1048;
-coeff_table[LT_NEG_2000][LT_NEG_1000][0] = 1000; coeff_table[LT_NEG_2000][LT_NEG_1000][1] = 1048;
-coeff_table[LT_NEG_2000][GT_1000][0] = 1000; coeff_table[LT_NEG_2000][GT_1000][1] = 1048;
-coeff_table[LT_NEG_2000][GT_2000][0] = 1000; coeff_table[LT_NEG_2000][GT_2000][1] = 1048;
-coeff_table[LT_NEG_2000][GT_3000][0] = 1000; coeff_table[LT_NEG_2000][GT_3000][1] = 1048;
-coeff_table[LT_NEG_2000][GT_4000][0] = 1000; coeff_table[LT_NEG_2000][GT_4000][1] = 1048;
-
-// All combinations for LT_NEG_1000
-coeff_table[LT_NEG_1000][LT_NEG_4000][0] = 1000; coeff_table[LT_NEG_1000][LT_NEG_4000][1] = 1048;
-coeff_table[LT_NEG_1000][LT_NEG_3000][0] = 1000; coeff_table[LT_NEG_1000][LT_NEG_3000][1] = 1048;
-coeff_table[LT_NEG_1000][LT_NEG_2000][0] = 1000; coeff_table[LT_NEG_1000][LT_NEG_2000][1] = 1048;
-coeff_table[LT_NEG_1000][LT_NEG_1000][0] = 1000; coeff_table[LT_NEG_1000][LT_NEG_1000][1] = 1048;
-coeff_table[LT_NEG_1000][GT_1000][0] = 1000; coeff_table[LT_NEG_1000][GT_1000][1] = 1048;
-coeff_table[LT_NEG_1000][GT_2000][0] = 1000; coeff_table[LT_NEG_1000][GT_2000][1] = 1048;
-coeff_table[LT_NEG_1000][GT_3000][0] = 1000; coeff_table[LT_NEG_1000][GT_3000][1] = 1048;
-coeff_table[LT_NEG_1000][GT_4000][0] = 1000; coeff_table[LT_NEG_1000][GT_4000][1] = 1048;
-
-// All combinations for GT_1000
-coeff_table[GT_1000][LT_NEG_4000][0] = 1000; coeff_table[GT_1000][LT_NEG_4000][1] = 1048;
-coeff_table[GT_1000][LT_NEG_3000][0] = 1000; coeff_table[GT_1000][LT_NEG_3000][1] = 1048;
-coeff_table[GT_1000][LT_NEG_2000][0] = 1000; coeff_table[GT_1000][LT_NEG_2000][1] = 1048;
-coeff_table[GT_1000][LT_NEG_1000][0] = 1000; coeff_table[GT_1000][LT_NEG_1000][1] = 1048;
-coeff_table[GT_1000][GT_1000][0] = 1000; coeff_table[GT_1000][GT_1000][1] = 1048;
-coeff_table[GT_1000][GT_2000][0] = 1000; coeff_table[GT_1000][GT_2000][1] = 1048;
-coeff_table[GT_1000][GT_3000][0] = 1000; coeff_table[GT_1000][GT_3000][1] = 1048;
-coeff_table[GT_1000][GT_4000][0] = 1000; coeff_table[GT_1000][GT_4000][1] = 1048;
-
-// All combinations for GT_2000
-coeff_table[GT_2000][LT_NEG_4000][0] = 1000; coeff_table[GT_2000][LT_NEG_4000][1] = 1048;
-coeff_table[GT_2000][LT_NEG_3000][0] = 1000; coeff_table[GT_2000][LT_NEG_3000][1] = 1048;
-coeff_table[GT_2000][LT_NEG_2000][0] = 1000; coeff_table[GT_2000][LT_NEG_2000][1] = 1048;
-coeff_table[GT_2000][LT_NEG_1000][0] = 1000; coeff_table[GT_2000][LT_NEG_1000][1] = 1048;
-coeff_table[GT_2000][GT_1000][0] = 1000; coeff_table[GT_2000][GT_1000][1] = 1048;
-coeff_table[GT_2000][GT_2000][0] = 1000; coeff_table[GT_2000][GT_2000][1] = 1048;
-coeff_table[GT_2000][GT_3000][0] = 1000; coeff_table[GT_2000][GT_3000][1] = 1048;
-coeff_table[GT_2000][GT_4000][0] = 1000; coeff_table[GT_2000][GT_4000][1] = 1048;
-
-// All combinations for GT_3000
-coeff_table[GT_3000][LT_NEG_4000][0] = 1000; coeff_table[GT_3000][LT_NEG_4000][1] = 1048;
-coeff_table[GT_3000][LT_NEG_3000][0] = 1000; coeff_table[GT_3000][LT_NEG_3000][1] = 1048;
-coeff_table[GT_3000][LT_NEG_2000][0] = 1000; coeff_table[GT_3000][LT_NEG_2000][1] = 1048;
-coeff_table[GT_3000][LT_NEG_1000][0] = 1000; coeff_table[GT_3000][LT_NEG_1000][1] = 1048;
-coeff_table[GT_3000][GT_1000][0] = 1000; coeff_table[GT_3000][GT_1000][1] = 1048;
-coeff_table[GT_3000][GT_2000][0] = 1000; coeff_table[GT_3000][GT_2000][1] = 1048;
-coeff_table[GT_3000][GT_3000][0] = 1000; coeff_table[GT_3000][GT_3000][1] = 1048;
-coeff_table[GT_3000][GT_4000][0] = 1000; coeff_table[GT_3000][GT_4000][1] = 1048;
-
-// All combinations for GT_4000
-coeff_table[GT_4000][LT_NEG_4000][0] = 1000; coeff_table[GT_4000][LT_NEG_4000][1] = 1048;
-coeff_table[GT_4000][LT_NEG_3000][0] = 1000; coeff_table[GT_4000][LT_NEG_3000][1] = 1048;
-coeff_table[GT_4000][LT_NEG_2000][0] = 1000; coeff_table[GT_4000][LT_NEG_2000][1] = 1048;
-coeff_table[GT_4000][LT_NEG_1000][0] = 1000; coeff_table[GT_4000][LT_NEG_1000][1] = 1048;
-coeff_table[GT_4000][GT_1000][0] = 1000; coeff_table[GT_4000][GT_1000][1] = 1048;
-coeff_table[GT_4000][GT_2000][0] = 1000; coeff_table[GT_4000][GT_2000][1] = 1048;
-coeff_table[GT_4000][GT_3000][0] = 1000; coeff_table[GT_4000][GT_3000][1] = 1048;
-coeff_table[GT_4000][GT_4000][0] = 1000; coeff_table[GT_4000][GT_4000][1] = 1048;
+    for (int i = 0; i < NUM_EVAL_RANGES; i++) {
+        for (int j = 0; j < NUM_EVAL_RANGES; j++) {
+            coeff_table[i][j][0] = 1000; // xx1
+            coeff_table[i][j][1] = 1048; // xx2
+        }
+    }
 }
 
 // Returns a static, purely materialistic evaluation of the position from
@@ -179,7 +103,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     int* coeffs = coeff_table[psqt_range][positional_range];
 
     // Calculate nnue using the retrieved coefficients
-    Value nnue = (coeffs[0] * psqt + coeffs[1] * positional) / 1024;
+    Value nnue = (coeffs[0] /*xx1*/ * psqt + coeffs[1] /*xx2*/ * positional) / 128;
 
     // Re-evaluate the position when higher eval accuracy is worth the time spent
     if (smallNet && (std::abs(nnue) < 236))
@@ -188,7 +112,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
         psqt_range = get_range(psqt);
         positional_range = get_range(positional);
         coeffs = coeff_table[psqt_range][positional_range];
-        nnue                       = (coeffs[0] * psqt + coeffs[1] * positional) / 1024;
+        nnue                       = (coeffs[0] /*xx1*/ * psqt + coeffs[1] /*xx2*/ * positional) / 128;
         smallNet                   = false;
     }
 
