@@ -37,29 +37,32 @@
 
 namespace Stockfish {
 
-// 2D table to store coefficients for each combination of ranges
-// Now uses a simple int[2] instead of the Coefficients struct
-int Eval::coeff_table[NUM_EVAL_RANGES][NUM_EVAL_RANGES][2];
-
-// Helper function to determine the range for a given value
-EvalRange get_range(int value) {
-    if (value < -4000) return LT_NEG_4000;
-    if (value < -3000) return LT_NEG_3000;
-    if (value < -2000) return LT_NEG_2000;
-    if (value < -1000) return LT_NEG_1000;
-    if (value >  4000) return GT_4000;
-    if (value >  3000) return GT_3000;
-    if (value >  2000) return GT_2000;
-    if (value >  1000) return GT_1000;
-    return LT_NEG_1000; // Default case (between -1000 and 1000 inclusive)
-}
-
-// Function to initialize the coefficient table
-void Eval::initialize_coeff_table() {
-    for (int i = 0; i < NUM_EVAL_RANGES; i++) {
-        for (int j = 0; j < NUM_EVAL_RANGES; j++) {
-            coeff_table[i][j][0] = 1000;
-            coeff_table[i][j][1] = 1048;
+namespace Eval {
+    
+    // 2D table to store coefficients for each combination of ranges
+    // Now uses a simple int[2] instead of the Coefficients struct
+    int coeff_table[NUM_EVAL_RANGES][NUM_EVAL_RANGES][2];
+    
+    // Helper function to determine the range for a given value
+    EvalRange get_range(int value) {
+        if (value < -4000) return LT_NEG_4000;
+        if (value < -3000) return LT_NEG_3000;
+        if (value < -2000) return LT_NEG_2000;
+        if (value < -1000) return LT_NEG_1000;
+        if (value >  4000) return GT_4000;
+        if (value >  3000) return GT_3000;
+        if (value >  2000) return GT_2000;
+        if (value >  1000) return GT_1000;
+        return LT_NEG_1000; // Default case (between -1000 and 1000 inclusive)
+    }
+    
+    // Function to initialize the coefficient table
+    void initialize_coeff_table() {
+        for (int i = 0; i < NUM_EVAL_RANGES; i++) {
+            for (int j = 0; j < NUM_EVAL_RANGES; j++) {
+                coeff_table[i][j][0] = 1000;
+                coeff_table[i][j][1] = 1048;
+            }
         }
     }
 }
@@ -103,7 +106,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     int* coeffs = coeff_table[psqt_range][positional_range];
 
     // Calculate nnue using the retrieved coefficients
-    Value nnue = (coeffs[0] /*xx1*/ * psqt + coeffs[1] /*xx2*/ * positional) / 128;
+    Value nnue = (coeffs[0] * psqt + coeffs[1] * positional) / 128;
 
     // Re-evaluate the position when higher eval accuracy is worth the time spent
     if (smallNet && (std::abs(nnue) < 236))
@@ -112,7 +115,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
         psqt_range = get_range(psqt);
         positional_range = get_range(positional);
         coeffs = coeff_table[psqt_range][positional_range];
-        nnue                       = (coeffs[0] /*xx1*/ * psqt + coeffs[1] /*xx2*/ * positional) / 128;
+        nnue                       = (coeffs[0] * psqt + coeffs[1] * positional) / 128;
         smallNet                   = false;
     }
 
