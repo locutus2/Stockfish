@@ -155,6 +155,7 @@ coeff_table[GT_4000][GT_2000]     = { 1000, 1048 };
 coeff_table[GT_4000][GT_3000]     = { 1000, 1048 };
 coeff_table[GT_4000][GT_4000]     = { 1000, 1048 };
 }
+TUNE(coeff_table);
 
 // Returns a static, purely materialistic evaluation of the position from
 // the point of view of the given color. It can be divided by PawnValue to get
