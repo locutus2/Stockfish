@@ -37,6 +37,125 @@
 
 namespace Stockfish {
 
+// Define ranges for psqt and positional
+enum EvalRange {
+    LT_NEG_4000,
+    LT_NEG_3000,
+    LT_NEG_2000,
+    LT_NEG_1000,
+    GT_1000,
+    GT_2000,
+    GT_3000,
+    GT_4000,
+    NUM_EVAL_RANGES // Keep this at the end for easy iteration
+};
+
+// Structure to hold coefficients
+struct Coefficients {
+    int xx1;
+    int xx2;
+};
+
+// 2D table to store coefficients for each combination of ranges
+Coefficients coeff_table[NUM_EVAL_RANGES][NUM_EVAL_RANGES];
+
+// Helper function to determine the range for a given value
+EvalRange get_range(int value) {
+    if (value < -4000) return LT_NEG_4000;
+    if (value < -3000) return LT_NEG_3000;
+    if (value < -2000) return LT_NEG_2000;
+    if (value < -1000) return LT_NEG_1000;
+    if (value >  4000) return GT_4000;
+    if (value >  3000) return GT_3000;
+    if (value >  2000) return GT_2000;
+    if (value >  1000) return GT_1000;
+    return LT_NEG_1000; // Default case (between -1000 and 1000 inclusive)
+}
+
+// Function to initialize the coefficient table
+void initialize_coeff_table() {
+
+// All combinations for LT_NEG_4000
+coeff_table[LT_NEG_4000][LT_NEG_4000] = { 1000, 1048 };
+coeff_table[LT_NEG_4000][LT_NEG_3000] = { 1000, 1048 };
+coeff_table[LT_NEG_4000][LT_NEG_2000] = { 1000, 1048 };
+coeff_table[LT_NEG_4000][LT_NEG_1000] = { 1000, 1048 };
+coeff_table[LT_NEG_4000][GT_1000]     = { 1000, 1048 };
+coeff_table[LT_NEG_4000][GT_2000]     = { 1000, 1048 };
+coeff_table[LT_NEG_4000][GT_3000]     = { 1000, 1048 };
+coeff_table[LT_NEG_4000][GT_4000]     = { 1000, 1048 };
+
+// All combinations for LT_NEG_3000
+coeff_table[LT_NEG_3000][LT_NEG_4000] = { 1000, 1048 };
+coeff_table[LT_NEG_3000][LT_NEG_3000] = { 1000, 1048 };
+coeff_table[LT_NEG_3000][LT_NEG_2000] = { 1000, 1048 };
+coeff_table[LT_NEG_3000][LT_NEG_1000] = { 1000, 1048 };
+coeff_table[LT_NEG_3000][GT_1000]     = { 1000, 1048 };
+coeff_table[LT_NEG_3000][GT_2000]     = { 1000, 1048 };
+coeff_table[LT_NEG_3000][GT_3000]     = { 1000, 1048 };
+coeff_table[LT_NEG_3000][GT_4000]     = { 1000, 1048 };
+
+// All combinations for LT_NEG_2000
+coeff_table[LT_NEG_2000][LT_NEG_4000] = { 1000, 1048 };
+coeff_table[LT_NEG_2000][LT_NEG_3000] = { 1000, 1048 };
+coeff_table[LT_NEG_2000][LT_NEG_2000] = { 1000, 1048 };
+coeff_table[LT_NEG_2000][LT_NEG_1000] = { 1000, 1048 };
+coeff_table[LT_NEG_2000][GT_1000]     = { 1000, 1048 };
+coeff_table[LT_NEG_2000][GT_2000]     = { 1000, 1048 };
+coeff_table[LT_NEG_2000][GT_3000]     = { 1000, 1048 };
+coeff_table[LT_NEG_2000][GT_4000]     = { 1000, 1048 };
+
+// All combinations for LT_NEG_1000
+coeff_table[LT_NEG_1000][LT_NEG_4000] = { 1000, 1048 };
+coeff_table[LT_NEG_1000][LT_NEG_3000] = { 1000, 1048 };
+coeff_table[LT_NEG_1000][LT_NEG_2000] = { 1000, 1048 };
+coeff_table[LT_NEG_1000][LT_NEG_1000] = { 1000, 1048 };
+coeff_table[LT_NEG_1000][GT_1000]     = { 1000, 1048 };
+coeff_table[LT_NEG_1000][GT_2000]     = { 1000, 1048 };
+coeff_table[LT_NEG_1000][GT_3000]     = { 1000, 1048 };
+coeff_table[LT_NEG_1000][GT_4000]     = { 1000, 1048 };
+
+// All combinations for GT_1000
+coeff_table[GT_1000][LT_NEG_4000] = { 1000, 1048 };
+coeff_table[GT_1000][LT_NEG_3000] = { 1000, 1048 };
+coeff_table[GT_1000][LT_NEG_2000] = { 1000, 1048 };
+coeff_table[GT_1000][LT_NEG_1000] = { 1000, 1048 };
+coeff_table[GT_1000][GT_1000]     = { 1000, 1048 };
+coeff_table[GT_1000][GT_2000]     = { 1000, 1048 };
+coeff_table[GT_1000][GT_3000]     = { 1000, 1048 };
+coeff_table[GT_1000][GT_4000]     = { 1000, 1048 };
+
+// All combinations for GT_2000
+coeff_table[GT_2000][LT_NEG_4000] = { 1000, 1048 };
+coeff_table[GT_2000][LT_NEG_3000] = { 1000, 1048 };
+coeff_table[GT_2000][LT_NEG_2000] = { 1000, 1048 };
+coeff_table[GT_2000][LT_NEG_1000] = { 1000, 1048 };
+coeff_table[GT_2000][GT_1000]     = { 1000, 1048 };
+coeff_table[GT_2000][GT_2000]     = { 1000, 1048 };
+coeff_table[GT_2000][GT_3000]     = { 1000, 1048 };
+coeff_table[GT_2000][GT_4000]     = { 1000, 1048 };
+
+// All combinations for GT_3000
+coeff_table[GT_3000][LT_NEG_4000] = { 1000, 1048 };
+coeff_table[GT_3000][LT_NEG_3000] = { 1000, 1048 };
+coeff_table[GT_3000][LT_NEG_2000] = { 1000, 1048 };
+coeff_table[GT_3000][LT_NEG_1000] = { 1000, 1048 };
+coeff_table[GT_3000][GT_1000]     = { 1000, 1048 };
+coeff_table[GT_3000][GT_2000]     = { 1000, 1048 };
+coeff_table[GT_3000][GT_3000]     = { 1000, 1048 };
+coeff_table[GT_3000][GT_4000]     = { 1000, 1048 };
+
+// All combinations for GT_4000
+coeff_table[GT_4000][LT_NEG_4000] = { 1000, 1048 };
+coeff_table[GT_4000][LT_NEG_3000] = { 1000, 1048 };
+coeff_table[GT_4000][LT_NEG_2000] = { 1000, 1048 };
+coeff_table[GT_4000][LT_NEG_1000] = { 1000, 1048 };
+coeff_table[GT_4000][GT_1000]     = { 1000, 1048 };
+coeff_table[GT_4000][GT_2000]     = { 1000, 1048 };
+coeff_table[GT_4000][GT_3000]     = { 1000, 1048 };
+coeff_table[GT_4000][GT_4000]     = { 1000, 1048 };
+}
+
 // Returns a static, purely materialistic evaluation of the position from
 // the point of view of the given color. It can be divided by PawnValue to get
 // an approximation of the material advantage on the board in terms of pawns.
@@ -58,18 +177,34 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
                      int                            optimism) {
 
     assert(!pos.checkers());
+    static bool initialized = false;
+    if (!initialized) {
+        initialize_coeff_table();
+        initialized = true;
+    }
 
     bool smallNet           = use_smallnet(pos);
     auto [psqt, positional] = smallNet ? networks.small.evaluate(pos, &caches.small)
                                        : networks.big.evaluate(pos, &caches.big);
 
-    Value nnue = (125 * psqt + 131 * positional) / 128;
+    // Determine ranges for psqt and positional
+    EvalRange psqt_range = get_range(psqt);
+    EvalRange positional_range = get_range(positional);
+
+    // Retrieve coefficients from the table
+    Coefficients coeffs = coeff_table[psqt_range][positional_range];
+
+    // Calculate nnue using the retrieved coefficients
+    Value nnue = (coeffs.xx1 * psqt + coeffs.xx2 * positional) / 1024;
 
     // Re-evaluate the position when higher eval accuracy is worth the time spent
     if (smallNet && (std::abs(nnue) < 236))
     {
         std::tie(psqt, positional) = networks.big.evaluate(pos, &caches.big);
-        nnue                       = (125 * psqt + 131 * positional) / 128;
+        psqt_range = get_range(psqt);
+        positional_range = get_range(positional);
+        coeffs = coeff_table[psqt_range][positional_range];
+        nnue                       = (coeffs.xx1 * psqt + coeffs.xx2 * positional) / 1024;
         smallNet                   = false;
     }
 
