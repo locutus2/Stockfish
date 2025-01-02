@@ -1184,8 +1184,8 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 1879;
 
-        if (!PvNode && ss->ply < int(rootMoves[pvIdx].pv.size())
-            && pos.key() == rootMoves[pvIdx].pvKey[ss->ply] && move != rootMoves[pvIdx].pv[ss->ply])
+        if (!PvNode && ss->ply % 2 == 0 && ss->ply < int(rootMoves[pvIdx].pv.size())
+            && pos.key() == rootMoves[pvIdx].pvKey[ss->ply])
             r += 1024;
 
         if (capture)
