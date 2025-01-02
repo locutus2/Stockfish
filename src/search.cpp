@@ -1185,7 +1185,7 @@ moves_loop:  // When in check, search starts here
             r -= 1879;
 
         if (!PvNode && ss->ply < int(rootMoves[pvIdx].pv.size())
-            && pos.key() == rootMoves[pvIdx].pvKey[ss->ply])
+            && pos.key() == rootMoves[pvIdx].pvKey[ss->ply] && move != rootMoves[pvIdx].pv[ss->ply])
             r += 1024;
 
         if (capture)
