@@ -62,6 +62,7 @@ namespace Search {
 // its own array of Stack objects, indexed by the current ply.
 struct Stack {
     Move*                       pv;
+    Key*                        pvKey;
     PieceToHistory*             continuationHistory;
     CorrectionHistory<PieceTo>* continuationCorrectionHistory;
     int                         ply;
@@ -103,6 +104,7 @@ struct RootMove {
     int               tbRank           = 0;
     Value             tbScore;
     std::vector<Move> pv;
+    std::vector<Key>  pvKey;  // the position key after a move
 };
 
 using RootMoves = std::vector<RootMove>;
