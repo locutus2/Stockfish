@@ -52,9 +52,10 @@
 
 namespace Stockfish {
 
-constexpr int ALLNODE[7] = {24, -2, 36, 81, 93, -38, -4};
-constexpr int PVNODE[7]  = {14, -5, 39, -37, -38, -29, 87};
-constexpr int CUTNODE[7] = {87, -3, -31, 8, -27, 76, 33};
+constexpr int A = 2;
+constexpr int ALLNODE[7] = {24*A, -2*A, 36*A, 81*A, 93*A, -38*A, -4*A};
+constexpr int PVNODE[7]  = {14*A, -5*A, 39*A, -37*A, -38*A, -29*A, 87*A};
+constexpr int CUTNODE[7] = {87*A, -3*A, -31*A, 8*A, -27*A, 76*A, 33*A};
 
 
 #define RED(n) (allNode * ALLNODE[(n)] + PvNode * PVNODE[(n)] + cutNode * CUTNODE[(n)])
