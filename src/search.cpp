@@ -1162,7 +1162,7 @@ moves_loop:  // When in check, search starts here
         r -= std::min(std::abs(correctionValue) / 32768, 2048);
 
         if (allNode)
-            r += 81;
+            r += 2 * 81;
 
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
