@@ -52,19 +52,12 @@
 
 namespace Stockfish {
 
-int ALLNODE[7];
-int CUTNODE[7];
-int PVNODE[7];
+constexpr int ALLNODE[7] = {24, -2, 36, 81, 93, -38, -4};
+constexpr int PVNODE[7]  = {14, -5, 39, -37, -38, -29, 87};
+constexpr int CUTNODE[7] = {87, -3, -31, 8, -27, 76, 33};
 
-int RND[20];
 
-constexpr int X = 1024;
-
-TUNE(SetRange(-X, X), ALLNODE, PVNODE, CUTNODE, RND);
-
-#define RED(n) (\
-                      allNode * ALLNODE[(n)] + PvNode * PVNODE[(n)] + cutNode * CUTNODE[(n)] \
-                )
+#define RED(n) (allNode * ALLNODE[(n)] + PvNode * PVNODE[(n)] + cutNode * CUTNODE[(n)])
 
 namespace TB = Tablebases;
 
