@@ -1149,6 +1149,12 @@ moves_loop:  // When in check, search starts here
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
         pos.do_move(move, st, givesCheck);
 
+        Key currentKey = pos.key();
+
+        if (!PvNode && ss->ply < int(rootMoves[pvIdx].pv.size())
+            && currentKey == rootMoves[pvIdx].pvKey[ss->ply])
+            newDepth--;
+
         // These reduction adjustments have proven non-linear scaling.
         // They are optimized to time controls of 180 + 1.8 and longer,
         // so changing them or adding conditions that are similar requires
@@ -1183,10 +1189,6 @@ moves_loop:  // When in check, search starts here
         // For first picked move (ttMove) reduce reduction (~3 Elo)
         else if (move == ttData.move)
             r -= 1879;
-
-        if (!PvNode && ss->ply < int(rootMoves[pvIdx].pv.size())
-            && pos.key() == rootMoves[pvIdx].pvKey[ss->ply])
-            r += 1024;
 
         if (capture)
             ss->statScore =
@@ -1257,8 +1259,6 @@ moves_loop:  // When in check, search starts here
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
-
-        Key currentKey = pos.key();
 
         // Step 19. Undo move
         pos.undo_move(move);
