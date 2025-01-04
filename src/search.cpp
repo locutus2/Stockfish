@@ -1153,7 +1153,11 @@ moves_loop:  // When in check, search starts here
 
         if (!PvNode && ss->ply < int(rootMoves[pvIdx].pv.size())
             && currentKey == rootMoves[pvIdx].pvKey[ss->ply])
+        {
             newDepth--;
+            if (depth > 1)
+                depth--;
+        }
 
         // These reduction adjustments have proven non-linear scaling.
         // They are optimized to time controls of 180 + 1.8 and longer,
