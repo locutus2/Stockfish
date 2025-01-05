@@ -1152,11 +1152,10 @@ moves_loop:  // When in check, search starts here
         Key currentKey = pos.key();
 
         if (!PvNode && ss->ply < int(rootMoves[pvIdx].pv.size())
-            && currentKey == rootMoves[pvIdx].pvKey[ss->ply])
+            && currentKey == rootMoves[pvIdx].pvKey[ss->ply] && !is_loss(bestValue))
         {
-            newDepth--;
-            if (depth > 1)
-                depth--;
+            pos.undo_move(move);
+            continue;
         }
 
         // These reduction adjustments have proven non-linear scaling.
