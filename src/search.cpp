@@ -1155,9 +1155,8 @@ moves_loop:  // When in check, search starts here
         if (!PvNode && ss->ply < int(rootMoves[pvIdx].pv.size())
             && currentKey == rootMoves[pvIdx].pvKey[ss->ply])
         {
-            newDepth--;
-            if (depth > 1)
-                depth--;
+            newDepth -= 2;
+            depth = std::max(depth - 2, 1);
         }
 
         // These reduction adjustments have proven non-linear scaling.
