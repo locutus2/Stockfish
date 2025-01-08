@@ -52,19 +52,14 @@
 
 namespace Stockfish {
 
-int ALLNODE[7];
-int CUTNODE[7];
-int PVNODE[7];
+int IMP[8];
+int NOTIMP[8];
 
 int RND[20];
 
-constexpr int X = 1024;
+TUNE(SetRange(-1024, 1024), IMP, NOTIMP, RND);
 
-TUNE(SetRange(-X, X), ALLNODE, PVNODE, CUTNODE, RND);
-
-#define RED(n) (\
-                      allNode * ALLNODE[(n)] + PvNode * PVNODE[(n)] + cutNode * CUTNODE[(n)] \
-                )
+#define RED(n) (improving * IMP[(n)] + !improving * NOTIMP[(n)])
 
 namespace TB = Tablebases;
 
@@ -1178,19 +1173,19 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
-            r += 2518 - (ttData.depth >= depth && ss->ttPv) * 991;
+            r += RED(0) + 2518 - (ttData.depth >= depth && ss->ttPv) * 991;
 
         // Increase reduction if ttMove is a capture but the current move is not a capture (~3 Elo)
         if (ttCapture && !capture)
-            r += RED(0) + 1043 + (depth < 8) * 999;
+            r += RED(1) + 1043 + (depth < 8) * 999;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
-            r += RED(1) + 938 + allNode * 960;
+            r += RED(2) + 938 + allNode * 960;
 
         // For first picked move (ttMove) reduce reduction (~3 Elo)
         else if (move == ttData.move)
-            r -= -RED(2) + 1879;
+            r -= -RED(3) + 1879;
 
         if (capture)
             ss->statScore =
@@ -1205,12 +1200,12 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore * 1287 / 16384;
 
-        r += RED(3);
+        r += RED(4);
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
         {
-            r += RED(4);
+            r += RED(5);
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
@@ -1246,9 +1241,9 @@ moves_loop:  // When in check, search starts here
         {
             // Increase reduction if ttMove is not present (~6 Elo)
             if (!ttData.move)
-                r += RED(5) + 2037;
+                r += RED(6) + 2037;
 
-            r += RED(6);
+            r += RED(7);
 
             // Note that if expected reduction is high, we reduce search depth by 1 here (~9 Elo)
             value =
