@@ -1158,16 +1158,16 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 330;
+        r += 293;
 
         r -= std::abs(correctionValue) / 32768;
 
         if (allNode)
-            r += 2 * 81;
+            r += 118;
 
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
-            r += 2518 - (ttData.depth >= depth && ss->ttPv) * 991;
+            r += 2563 - (ttData.depth >= depth && ss->ttPv) * 991;
 
         // Increase reduction if ttMove is a capture but the current move is not a capture (~3 Elo)
         if (ttCapture && !capture)
