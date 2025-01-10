@@ -1162,9 +1162,6 @@ moves_loop:  // When in check, search starts here
 
         r -= std::abs(correctionValue) / 32768;
 
-        if (allNode)
-            r += 3 * 81;
-
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
             r += 2518 - (ttData.depth >= depth && ss->ttPv) * 991;
@@ -1197,6 +1194,14 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
         {
+            r -= 29;
+
+            if (allNode)
+                r -= 67;
+
+            if (cutNode)
+                r += 105;
+
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
