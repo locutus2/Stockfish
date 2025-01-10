@@ -1194,10 +1194,7 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
         {
-            r -= 29;
-
-            if (allNode)
-                r -= 67;
+            r -= 34;
 
             if (cutNode)
                 r += 105;
