@@ -102,7 +102,7 @@ Value to_corrected_static_eval(Value v, const int cv) {
 int stat_bonus(Depth d) { return std::min(168 * d - 100, 1718); }
 
 // History and stats update malus, based on depth
-int stat_malus(Depth d) { return std::min(768 * d - 257, 2351) * (3 * d + 7) / (2 * d + 8); }
+int stat_malus(Depth d) { return std::min(768 * d - 257, 2351) * 5 * d / (4 * d + 1); }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
 Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
