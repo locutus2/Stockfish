@@ -1194,11 +1194,6 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
         {
-            r -= 34;
-
-            if (cutNode)
-                r += 105;
-
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
@@ -1233,7 +1228,7 @@ moves_loop:  // When in check, search starts here
         {
             // Increase reduction if ttMove is not present (~6 Elo)
             if (!ttData.move)
-                r += 2037;
+                r += 2003 + cutNode * 105;
 
             // Note that if expected reduction is high, we reduce search depth by 1 here (~9 Elo)
             value =
