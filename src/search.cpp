@@ -52,8 +52,8 @@
 
 namespace Stockfish {
 
-int IMP[8] = { -298, 104, 146, -418, 42, 53, 129, 98 };
-int NOTIMP[8] = { -130, -24, -204, -60, 43, -55, 35, -145 };
+int IMP[8] = { -28, -427, 175, 308, 115, 137, -128, 326 };
+int NOTIMP[8] = { -185, 50, -271, 172, -271, 77, 155, -85 };
 
 #define RED(n) (improving * IMP[(n)] + !improving * NOTIMP[(n)])
 
