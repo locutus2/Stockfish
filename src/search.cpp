@@ -99,7 +99,7 @@ Value to_corrected_static_eval(Value v, const int cv) {
 }
 
 // History and stats update bonus, based on depth
-int stat_bonus(Depth d) { return std::min(168 * d - 100, 1718) * d / (d + 1); }
+int stat_bonus(Depth d) { return std::min(168 * d - 100, 1718) * (d + 2) / (d + 3); }
 
 // History and stats update malus, based on depth
 int stat_malus(Depth d) { return std::min(768 * d - 257, 2351); }
