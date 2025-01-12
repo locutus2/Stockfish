@@ -1158,16 +1158,13 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 404;
+        r += 307;
 
         r -= std::abs(correctionValue) / 34112;
 
-        if (allNode)
-            r -= 139;
-
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
-            r += 2021 - (ttData.depth >= depth && ss->ttPv) * 1141;
+            r += 2355 - (ttData.depth >= depth && ss->ttPv) * 1141;
 
         // Increase reduction if ttMove is a capture but the current move is not a capture (~3 Elo)
         if (ttCapture && !capture)
@@ -1233,9 +1230,15 @@ moves_loop:  // When in check, search starts here
             if (!ttData.move)
                 r += 2111;
 
+            if (allNode)
+                r -= 43;
+
+            if (cutNode)
+                r += 252;
+
             // Note that if expected reduction is high, we reduce search depth by 1 here (~9 Elo)
             value =
-              -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth - (r > 3444), !cutNode);
+              -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth - (r > 3458), !cutNode);
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
