@@ -64,7 +64,7 @@ using namespace Search;
 
 namespace {
 
-int ReductionPerThreadGroup[2][18] = {
+constexpr int ReductionPerThreadGroup[2][18] = {
     { 1037, 965, 960,
       1018, 
       307,
@@ -77,21 +77,21 @@ int ReductionPerThreadGroup[2][18] = {
       1451,
       2111,
       3444 },
-    { 1037, 965, 960,
-      1018, 
-      307,
-      34112,
-      2355, 1141, 
-      1087, 990,
-      940, 887,
-      1960,
-      4666, 3874,
-      1451,
-      2111,
-      3444 }
+    { 981, 979, 993,
+      991,
+      286,
+      35730,
+      2232, 1108,
+      1033, 1043,
+      968, 840,
+      1827,
+      4557, 3679,
+      1511,
+      2121,
+      3347 }
 };
 
-TUNE(ReductionPerThreadGroup);
+//TUNE(ReductionPerThreadGroup);
 
 // Futility margin
 Value futility_margin(Depth d, bool noTtCutNode, bool improving, bool oppWorsening) {
