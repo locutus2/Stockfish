@@ -277,6 +277,8 @@ class Worker {
 
     void ensure_network_replicated();
 
+    int thread_group() const { return threadIdx % 2; }
+
     // Public because they need to be updatable by the stats
     ButterflyHistory mainHistory;
     LowPlyHistory    lowPlyHistory;

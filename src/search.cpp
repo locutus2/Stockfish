@@ -64,6 +64,35 @@ using namespace Search;
 
 namespace {
 
+int ReductionPerThreadGroup[2][18] = {
+    { 1037, 965, 960,
+      1018, 
+      307,
+      34112,
+      2355, 1141, 
+      1087, 990,
+      940, 887,
+      1960,
+      4666, 3874,
+      1451,
+      2111,
+      3444 },
+    { 1037, 965, 960,
+      1018, 
+      307,
+      34112,
+      2355, 1141, 
+      1087, 990,
+      940, 887,
+      1960,
+      4666, 3874,
+      1451,
+      2111,
+      3444 }
+};
+
+TUNE(ReductionPerThreadGroup);
+
 // Futility margin
 Value futility_margin(Depth d, bool noTtCutNode, bool improving, bool oppWorsening) {
     Value futilityMult       = 112 - 26 * noTtCutNode;
@@ -1143,6 +1172,8 @@ moves_loop:  // When in check, search starts here
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
         pos.do_move(move, st, givesCheck);
 
+        auto reduction = ReductionPerThreadGroup[thread_group()];
+
         // These reduction adjustments have proven non-linear scaling.
         // They are optimized to time controls of 180 + 1.8 and longer,
         // so changing them or adding conditions that are similar requires
@@ -1150,46 +1181,46 @@ moves_loop:  // When in check, search starts here
 
         // Decrease reduction if position is or has been on the PV (~7 Elo)
         if (ss->ttPv)
-            r -= 1037 + (ttData.value > alpha) * 965 + (ttData.depth >= depth) * 960;
+            r -= reduction[0] + (ttData.value > alpha) * reduction[1] + (ttData.depth >= depth) * reduction[2];
 
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
         if (PvNode)
-            r -= 1018;
+            r -= reduction[3];
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 307;
+        r += reduction[4];
 
-        r -= std::abs(correctionValue) / 34112;
+        r -= std::abs(correctionValue) / reduction[5];
 
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
-            r += 2355 - (ttData.depth >= depth && ss->ttPv) * 1141;
+            r += reduction[6] - (ttData.depth >= depth && ss->ttPv) * reduction[7];
 
         // Increase reduction if ttMove is a capture but the current move is not a capture (~3 Elo)
         if (ttCapture && !capture)
-            r += 1087 + (depth < 8) * 990;
+            r += reduction[8] + (depth < 8) * reduction[9];
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
-            r += 940 + allNode * 887;
+            r += reduction[10] + allNode * reduction[11];
 
         // For first picked move (ttMove) reduce reduction (~3 Elo)
         else if (move == ttData.move)
-            r -= 1960;
+            r -= reduction[12];
 
         if (capture)
             ss->statScore =
               7 * int(PieceValue[pos.captured_piece()])
               + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
-              - 4666;
+              - reduction[13];
         else
             ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
                           + (*contHist[0])[movedPiece][move.to_sq()]
-                          + (*contHist[1])[movedPiece][move.to_sq()] - 3874;
+                          + (*contHist[1])[movedPiece][move.to_sq()] - reduction[14];
 
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
-        r -= ss->statScore * 1451 / 16384;
+        r -= ss->statScore * reduction[15] / 16384;
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
@@ -1228,11 +1259,11 @@ moves_loop:  // When in check, search starts here
         {
             // Increase reduction if ttMove is not present (~6 Elo)
             if (!ttData.move)
-                r += 2111;
+                r += reduction[16];
 
             // Note that if expected reduction is high, we reduce search depth by 1 here (~9 Elo)
             value =
-              -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth - (r > 3444), !cutNode);
+              -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth - (r > reduction[17]), !cutNode);
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
