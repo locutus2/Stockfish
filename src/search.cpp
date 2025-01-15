@@ -99,7 +99,7 @@ Value to_corrected_static_eval(Value v, const int cv) {
 }
 
 // History and stats update bonus, based on depth
-int stat_bonus(Depth d) { return std::min(154 * d - 102, 1661); }
+int stat_bonus(Depth d, int mc) { return std::min(154 * d - 102, 1661) + mc; }
 
 // History and stats update malus, based on depth
 int stat_malus(Depth d) { return std::min(831 * d - 269, 2666); }
@@ -119,7 +119,8 @@ void update_all_stats(const Position&      pos,
                       Square               prevSq,
                       ValueList<Move, 32>& quietsSearched,
                       ValueList<Move, 32>& capturesSearched,
-                      Depth                depth);
+                      Depth                depth,
+                      int                  bestMoveCount);
 
 }  // namespace
 
@@ -643,7 +644,8 @@ Value Search::Worker::search(
         {
             // Bonus for a quiet ttMove that fails high (~2 Elo)
             if (!ttCapture)
-                update_quiet_histories(pos, ss, *this, ttData.move, stat_bonus(depth) * 746 / 1024);
+                update_quiet_histories(pos, ss, *this, ttData.move,
+                                       stat_bonus(depth, 1) * 746 / 1024);
 
             // Extra penalty for early quiet moves of
             // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
@@ -927,7 +929,8 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int moveCount = 0;
+    int moveCount     = 0;
+    int bestMoveCount = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1317,7 +1320,8 @@ moves_loop:  // When in check, search starts here
 
             if (value + inc > alpha)
             {
-                bestMove = move;
+                bestMove      = move;
+                bestMoveCount = moveCount;
 
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     update_pv(ss->pv, move, (ss + 1)->pv);
@@ -1369,7 +1373,8 @@ moves_loop:  // When in check, search starts here
     // If there is a move that produces search value greater than alpha,
     // we update the stats of searched moves.
     else if (bestMove)
-        update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth);
+        update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth,
+                         bestMoveCount);
 
     // Bonus for prior countermove that caused the fail low
     else if (!priorCapture && prevSq != SQ_NONE)
@@ -1383,7 +1388,7 @@ moves_loop:  // When in check, search starts here
 
         bonusScale = std::max(bonusScale, 0);
 
-        const int scaledBonus = stat_bonus(depth) * bonusScale / 32;
+        const int scaledBonus = stat_bonus(depth, (ss - 1)->moveCount) * bonusScale / 32;
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                       scaledBonus * 436 / 1024);
@@ -1401,7 +1406,7 @@ moves_loop:  // When in check, search starts here
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
         thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)]
-          << stat_bonus(depth) * 2;
+          << stat_bonus(depth, (ss - 1)->moveCount) * 2;
     }
 
     if (PvNode)
@@ -1789,13 +1794,14 @@ void update_all_stats(const Position&      pos,
                       Square               prevSq,
                       ValueList<Move, 32>& quietsSearched,
                       ValueList<Move, 32>& capturesSearched,
-                      Depth                depth) {
+                      Depth                depth,
+                      int                  bestMoveCount) {
 
     CapturePieceToHistory& captureHistory = workerThread.captureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
 
-    int bonus = stat_bonus(depth);
+    int bonus = stat_bonus(depth, bestMoveCount);
     int malus = stat_malus(depth);
 
     if (!pos.capture_stage(bestMove))
