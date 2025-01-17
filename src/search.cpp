@@ -99,10 +99,10 @@ Value to_corrected_static_eval(Value v, const int cv) {
 }
 
 // History and stats update bonus, based on depth
-int stat_bonus(Depth d, int mc) { return std::min((152 + mc) * d - 102, 1661); }
+int stat_bonus(Depth d) { return std::min(154 * d - 102, 1661); }
 
 // History and stats update malus, based on depth
-int stat_malus(Depth d) { return std::min(831 * d - 269, 2666); }
+int stat_malus(Depth d, int mc) { return std::min((830 + mc) * d - 269, 2666); }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
 Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
@@ -644,14 +644,13 @@ Value Search::Worker::search(
         {
             // Bonus for a quiet ttMove that fails high (~2 Elo)
             if (!ttCapture)
-                update_quiet_histories(pos, ss, *this, ttData.move,
-                                       stat_bonus(depth, 1) * 746 / 1024);
+                update_quiet_histories(pos, ss, *this, ttData.move, stat_bonus(depth) * 746 / 1024);
 
             // Extra penalty for early quiet moves of
             // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
             if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture)
                 update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                              -stat_malus(depth + 1) * 1042 / 1024);
+                                              -stat_malus(depth + 1, 1) * 1042 / 1024);
         }
 
         // Partial workaround for the graph history interaction problem
@@ -1388,7 +1387,7 @@ moves_loop:  // When in check, search starts here
 
         bonusScale = std::max(bonusScale, 0);
 
-        const int scaledBonus = stat_bonus(depth, (ss - 1)->moveCount) * bonusScale / 32;
+        const int scaledBonus = stat_bonus(depth) * bonusScale / 32;
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                       scaledBonus * 436 / 1024);
@@ -1406,7 +1405,7 @@ moves_loop:  // When in check, search starts here
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
         thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)]
-          << stat_bonus(depth, (ss - 1)->moveCount) * 2;
+          << stat_bonus(depth) * 2;
     }
 
     if (PvNode)
@@ -1801,8 +1800,8 @@ void update_all_stats(const Position&      pos,
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
 
-    int bonus = stat_bonus(depth, bestMoveCount);
-    int malus = stat_malus(depth);
+    int bonus = stat_bonus(depth);
+    int malus = stat_malus(depth, bestMoveCount);
 
     if (!pos.capture_stage(bestMove))
     {
