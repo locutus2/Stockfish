@@ -308,7 +308,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+constexpr int MaxDebugSlots = 3200;
 
 namespace {
 
@@ -337,6 +337,7 @@ struct DebugExtremes: public DebugInfo<3> {
 
 std::array<DebugInfo<2>, MaxDebugSlots>  hit;
 std::array<DebugInfo<2>, MaxDebugSlots>  mean;
+std::array<double, MaxDebugSlots>  sum;
 std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
 std::array<DebugInfo<6>, MaxDebugSlots>  correl;
 std::array<DebugExtremes, MaxDebugSlots> extremes;
@@ -361,6 +362,12 @@ i64 dbg_mean_of(i64 value, int slot) {
 }
 
 i64 dbg_stdev_of(i64 value, int slot) {
+
+    sum[slot] += value;
+}
+
+void dbg_stdev_of(int64_t value, int slot) {
+>>>>>>> cd8d3554 (lmr adaboost)
 
     ++stdev.at(slot)[0];
     stdev.at(slot)[1] += value;
@@ -408,6 +415,12 @@ void dbg_print() {
         if ((n = mean[i][0]))
         {
             std::cerr << "Mean #" << i << ": Total " << n << " Mean " << E(mean[i][1]) << std::endl;
+        }
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        if (sum[i] > 0)
+        {
+            std::cerr << "Sum #" << i << ": " << sum[i] << std::endl;
         }
 
     for (int i = 0; i < MaxDebugSlots; ++i)
