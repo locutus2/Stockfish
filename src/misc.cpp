@@ -281,15 +281,15 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+constexpr int MaxDebugSlots = 3200;
 
 namespace {
 
-template<size_t N>
+template<size_t N, typename T = int64_t>
 struct DebugInfo {
-    std::atomic<int64_t> data[N] = {0};
+    std::atomic<T> data[N] = {0};
 
-    [[nodiscard]] constexpr std::atomic<int64_t>& operator[](size_t index) {
+    [[nodiscard]] constexpr std::atomic<T>& operator[](size_t index) {
         assert(index < N);
         return data[index];
     }
@@ -304,6 +304,7 @@ struct DebugExtremes: public DebugInfo<3> {
 
 std::array<DebugInfo<2>, MaxDebugSlots>  hit;
 std::array<DebugInfo<2>, MaxDebugSlots>  mean;
+std::array<double, MaxDebugSlots>  sum;
 std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
 std::array<DebugInfo<6>, MaxDebugSlots>  correl;
 std::array<DebugExtremes, MaxDebugSlots> extremes;
@@ -321,6 +322,11 @@ void dbg_mean_of(int64_t value, int slot) {
 
     ++mean.at(slot)[0];
     mean.at(slot)[1] += value;
+}
+
+void dbg_sum_of(double value, int slot) {
+
+    sum[slot] += value;
 }
 
 void dbg_stdev_of(int64_t value, int slot) {
@@ -367,6 +373,12 @@ void dbg_print() {
         if ((n = mean[i][0]))
         {
             std::cerr << "Mean #" << i << ": Total " << n << " Mean " << E(mean[i][1]) << std::endl;
+        }
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        if (sum[i] > 0)
+        {
+            std::cerr << "Sum #" << i << ": " << sum[i] << std::endl;
         }
 
     for (int i = 0; i < MaxDebugSlots; ++i)
