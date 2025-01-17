@@ -44,6 +44,15 @@
 
 namespace Stockfish {
 
+// learning
+void adaboost_init();
+void adaboost_init_step();
+void adaboost_learn(bool T, const std::vector<bool>& C, const double W[]);
+void adaboost_add_learner();
+double adaboost_predict_margin(const std::vector<bool>& C);
+bool adaboost_predict_class(const std::vector<bool>& C);
+void adaboost_print_model(std::ostream& out = std::cerr);
+
 // Different node types, used as a template parameter
 enum NodeType {
     NonPV,
