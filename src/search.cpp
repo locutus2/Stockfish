@@ -102,7 +102,7 @@ Value to_corrected_static_eval(Value v, const int cv) {
 int stat_bonus(Depth d, int mc) { return std::min((152 + mc) * d - 102, 1661); }
 
 // History and stats update malus, based on depth
-int stat_malus(Depth d) { return std::min(831 * d - 269, 2666); }
+int stat_malus(Depth d, int mc) { return std::min((830 + mc) * d - 269, 2666); }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
 Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
@@ -651,7 +651,7 @@ Value Search::Worker::search(
             // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
             if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture)
                 update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                              -stat_malus(depth + 1) * 1042 / 1024);
+                                              -stat_malus(depth + 1, 1) * 1042 / 1024);
         }
 
         // Partial workaround for the graph history interaction problem
@@ -1802,7 +1802,7 @@ void update_all_stats(const Position&      pos,
     PieceType              captured;
 
     int bonus = stat_bonus(depth, bestMoveCount);
-    int malus = stat_malus(depth);
+    int malus = stat_malus(depth, bestMoveCount);
 
     if (!pos.capture_stage(bestMove))
     {
