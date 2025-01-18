@@ -130,25 +130,32 @@ void adaboost_learn(bool T, const std::vector<bool>& C, const double W[])
        //                        //}
 }
 
-void adaboost_add_learner()
+bool adaboost_add_learner()
 {
-    int bestLearner = 0;
+    int bestLearner = -1;
+    double bestValue = -1;
 
     //std::cerr << "C[" << 0 << "] = " << weak_learner_stats[0][0] << " | " << weak_learner_stats[0][1] << std::endl;
-    for (int i = 1; i < int(weak_learner_stats.size()); i++)
+    for (int i = 0; i < int(weak_learner_stats.size()); i++)
     {
         //std::cerr << "C[" << i << "] = " << weak_learner_stats[i][0] << " | " << weak_learner_stats[i][1] << std::endl;
-        if (weak_learner_stats[i][0] < weak_learner_stats[bestLearner][0])
+        if (weak_learner_stats[i][0] > 0 && (bestValue < 0 || weak_learner_stats[i][0] < bestValue))
             bestLearner = i;
     }
     //std::cerr << "select " << bestLearner << std::endl;
 
-    double error = weak_learner_stats[bestLearner][0] / (weak_learner_stats[bestLearner][0] + weak_learner_stats[bestLearner][1]);
-    double alpha = 0.5 * std::log((1 - error) / error);
+    if(bestLearner >= 0)
+    {
+        double error = weak_learner_stats[bestLearner][0] / (weak_learner_stats[bestLearner][0] + weak_learner_stats[bestLearner][1]);
+        double alpha = 0.5 * std::log((1 - error) / error);
 
-    learner_index.push_back(bestLearner);
-    learner_error.push_back(error);
-    learner_weight.push_back(alpha);
+        learner_index.push_back(bestLearner);
+        learner_error.push_back(error);
+        learner_weight.push_back(alpha);
+        return true;
+    }
+    else
+        return false;
 }
 
 void adaboost_collect_stats(bool T, const std::vector<bool>& C)
