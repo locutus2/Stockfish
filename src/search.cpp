@@ -64,32 +64,11 @@ using namespace Search;
 
 namespace {
 
-constexpr int ReductionPerThreadGroup[2][18] = {
-    { 1037, 965, 960,
-      1018, 
-      307,
-      34112,
-      2355, 1141, 
-      1087, 990,
-      940, 887,
-      1960,
-      4666, 3874,
-      1451,
-      2111,
-      3444 },
-    { 981, 979, 993,
-      991,
-      286,
-      35730,
-      2232, 1108,
-      1033, 1043,
-      968, 840,
-      1827,
-      4557, 3679,
-      1511,
-      2121,
-      3347 }
-};
+constexpr int ReductionPerThreadGroup[2][18] = {{1037, 965, 960, 1018, 307, 34112, 2355, 1141, 1087,
+                                                 990, 940, 887, 1960, 4666, 3874, 1451, 2111, 3444},
+                                                {981, 979, 993, 991, 286, 35730, 2232, 1108, 1033,
+                                                 1043, 968, 840, 1827, 4557, 3679, 1511, 2121,
+                                                 3347}};
 
 //TUNE(ReductionPerThreadGroup);
 
@@ -1174,7 +1153,8 @@ moves_loop:  // When in check, search starts here
 
         // Decrease reduction if position is or has been on the PV (~7 Elo)
         if (ss->ttPv)
-            r -= reduction[0] + (ttData.value > alpha) * reduction[1] + (ttData.depth >= depth) * reduction[2];
+            r -= reduction[0] + (ttData.value > alpha) * reduction[1]
+               + (ttData.depth >= depth) * reduction[2];
 
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
         if (PvNode)
@@ -1255,8 +1235,8 @@ moves_loop:  // When in check, search starts here
                 r += reduction[16];
 
             // Note that if expected reduction is high, we reduce search depth by 1 here (~9 Elo)
-            value =
-              -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth - (r > reduction[17]), !cutNode);
+            value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
+                                   newDepth - (r > reduction[17]), !cutNode);
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
