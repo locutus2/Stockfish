@@ -139,7 +139,9 @@ bool adaboost_add_learner()
     for (int i = 0; i < int(weak_learner_stats.size()); i++)
     {
         //std::cerr << "C[" << i << "] = " << weak_learner_stats[i][0] << " | " << weak_learner_stats[i][1] << std::endl;
-        if (weak_learner_stats[i][0] > 0 && (bestValue < 0 || weak_learner_stats[i][0] < bestValue))
+        if (weak_learner_stats[i][0] > 0
+            && weak_learner_stats[i][0] < weak_learner_stats[i][1]
+            && (bestValue < 0 || weak_learner_stats[i][0] < bestValue))
             bestLearner = i;
     }
     //std::cerr << "select " << bestLearner << std::endl;
