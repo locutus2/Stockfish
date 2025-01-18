@@ -134,9 +134,14 @@ void adaboost_add_learner()
 {
     int bestLearner = 0;
 
+    //std::cerr << "C[" << 0 << "] = " << weak_learner_stats[0][0] << " | " << weak_learner_stats[0][1] << std::endl;
     for (int i = 1; i < int(weak_learner_stats.size()); i++)
+    {
+        //std::cerr << "C[" << i << "] = " << weak_learner_stats[i][0] << " | " << weak_learner_stats[i][1] << std::endl;
         if (weak_learner_stats[i][0] < weak_learner_stats[bestLearner][0])
             bestLearner = i;
+    }
+    //std::cerr << "select " << bestLearner << std::endl;
 
     double error = weak_learner_stats[bestLearner][0] / (weak_learner_stats[bestLearner][0] + weak_learner_stats[bestLearner][1]);
     double alpha = 0.5 * std::log((1 - error) / error);
@@ -158,12 +163,13 @@ void adaboost_collect_stats(bool T, const std::vector<bool>& C)
 
 void adaboost_print_stats(std::ostream& out)
 {
-    out << "=> false positive rate: " << 100. * nConf[0][1] / (nConf[0][1] + nConf[1][1]) << "%" << std::endl;
-    out << "n: " << nStats << std::endl;
-    out << "n(false positive): " << nConf[0][1] << std::endl;
-    out << "Conf true x predicted:" << std::endl;
-    out << nConf[0][0] << "\t" << nConf[0][1] << std::endl;
-    out << nConf[1][0] << "\t" << nConf[1][1] << std::endl;
+    out << "=> false positive rate: " << 100. * nConf[0][1] / (nConf[0][1] + nConf[0][0]) << "%" << std::endl;
+    out << "=> frequency: " << 100. * (nConf[0][1] + nConf[1][1]) / nStats << "%" << std::endl;
+    //out << "n: " << nStats << std::endl;
+    //out << "n(false positive): " << nConf[0][1] << std::endl;
+    //out << "Conf true x predicted:" << std::endl;
+    //out << nConf[0][0] << "\t" << nConf[0][1] << std::endl;
+    //out << nConf[1][0] << "\t" << nConf[1][1] << std::endl;
 }
 
 void adaboost_print_model(std::ostream& out)
@@ -197,10 +203,24 @@ void adaboost_print_model(std::ostream& out)
             }
         }
 
+        out << "Original: ";
         for(int i = 0; i < int(l.size()); i++)
         {
             if(i>0) out << " + ";
             out << w[i] << " * " << (l[i] < int(names.size()) ? names[l[i]] : std::string("C[") + std::to_string(l[i]) + "]");
+        }
+        out << " > " << sum/2 << std::endl;
+
+        double m = *std::min_element(w.begin(), w.end());
+        for(int S = 1; S <= 64; S *= 2)
+        {
+            out << "Rounded S=" << S << ": ";
+            for(int i = 0; i < int(l.size()); i++)
+            {
+                if(i>0) out << " + ";
+                out << int(std::floor(w[i]/m*S + 0.5)) << " * " << (l[i] < int(names.size()) ? names[l[i]] : std::string("C[") + std::to_string(l[i]) + "]");
+            }
+            out << " > " << int(std::floor(sum/2/m*S + 0.5)) << std::endl;
         }
     }
     else
@@ -211,8 +231,8 @@ void adaboost_print_model(std::ostream& out)
             if(i>0) out << " + ";
             out << learner_weight[i] << " * " << (learner_index[i] < int(names.size()) ? names[learner_index[i]] : std::string("C[") + std::to_string(learner_index[i]) + "]");
         }
+        out << " > " << sum/2 << std::endl;
     }
-    out << " > " << sum/2 << std::endl;
 }
 
 //---------------------------------------------------
@@ -1365,6 +1385,7 @@ moves_loop:  // When in check, search starts here
             bool CC = true;
             if(CC)
             {
+                bool T = value <= alpha;
                 std::vector<bool> C = {
                     allNode, PvNode, cutNode, // 0 1 2
                     improving, !improving, // 3 4
@@ -1375,10 +1396,10 @@ moves_loop:  // When in check, search starts here
                     ss->ttPv, !ss->ttPv, // 13 14
                     ss->statScore>0, ss->statScore<=0, // 15 16
                     extension==0,extension>0 // 17 18
+                        //, bool(T)// ^ !(nodes&0xff))
                 };
 
                 bool P = true;//nodes&1;
-                bool T = value <= alpha;
 
                 if(P)
                 {
