@@ -247,7 +247,7 @@ void UCIEngine::learn(std::istream& args) {
 
     adaboost_init();
 
-    for(int it = 0; it < 10; it++)
+    for(int it = 0; it < 1000; it++)
     {
 
         TimePoint elapsed = now();
@@ -292,7 +292,10 @@ void UCIEngine::learn(std::istream& args) {
             }
         }
 
-        if(it > 0) adaboost_print_stats();
+        if(it > 0)
+        {
+            if(!adaboost_print_stats()) break;
+        }
    
         if(!adaboost_add_learner()) break;
 

@@ -51,7 +51,7 @@ void adaboost_learn(bool T, const std::vector<bool>& C, const double W[]);
 bool adaboost_add_learner();
 double adaboost_predict_margin(const std::vector<bool>& C);
 bool adaboost_predict_class(const std::vector<bool>& C);
-void adaboost_print_stats(std::ostream& out = std::cerr);
+bool adaboost_print_stats(std::ostream& out = std::cerr);
 void adaboost_print_model(std::ostream& out = std::cerr);
 void adaboost_collect_stats(bool T, const std::vector<bool>& C);
 

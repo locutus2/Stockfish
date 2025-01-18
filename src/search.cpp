@@ -142,7 +142,10 @@ bool adaboost_add_learner()
         if (weak_learner_stats[i][0] > 0
             && weak_learner_stats[i][0] < weak_learner_stats[i][1]
             && (bestValue < 0 || weak_learner_stats[i][0] < bestValue))
+        {
             bestLearner = i;
+            bestValue = weak_learner_stats[i][0];
+        }
     }
     //std::cerr << "select " << bestLearner << std::endl;
 
@@ -170,7 +173,7 @@ void adaboost_collect_stats(bool T, const std::vector<bool>& C)
     nConf[T][P]++;
 }
 
-void adaboost_print_stats(std::ostream& out)
+bool adaboost_print_stats(std::ostream& out)
 {
     out << "=> false positive rate: " << 100. * nConf[0][1] / (nConf[0][1] + nConf[0][0]) << "%" << std::endl;
     out << "=> frequency: " << 100. * (nConf[0][1] + nConf[1][1]) / nStats << "%" << std::endl;
@@ -179,6 +182,7 @@ void adaboost_print_stats(std::ostream& out)
     //out << "Conf true x predicted:" << std::endl;
     //out << nConf[0][0] << "\t" << nConf[0][1] << std::endl;
     //out << nConf[1][0] << "\t" << nConf[1][1] << std::endl;
+    return nPrediction[1] > 0;
 }
 
 void adaboost_print_model(std::ostream& out)
