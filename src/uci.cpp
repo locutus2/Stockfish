@@ -249,6 +249,7 @@ void UCIEngine::learn(std::istream& args) {
 
     for(int it = 0; it < 10; it++)
     {
+
         TimePoint elapsed = now();
 
         adaboost_init_step();
@@ -291,11 +292,13 @@ void UCIEngine::learn(std::istream& args) {
             }
         }
 
+        if(it > 0) adaboost_print_stats();
+   
         adaboost_add_learner();
         elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
 
         std::cerr << "=== Iteration " << it+1 << " Total time (ms) : " << elapsed << std::endl;
-        adaboost_print_model(std::cerr);
+        adaboost_print_model();
 
     }
 

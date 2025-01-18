@@ -69,6 +69,11 @@ std::vector<int> learner_index;
 std::vector<double> learner_weight;
 std::vector<double> learner_error;
 
+int64_t nStats;
+int64_t nClass[2];
+int64_t nPrediction[2];
+int64_t nConf[2][2];
+
 void adaboost_init()
 {
     learner_index.clear();
@@ -79,6 +84,12 @@ void adaboost_init()
 void adaboost_init_step()
 {
     weak_learner_stats.clear();
+
+    nStats = 0;
+    nClass[0] = nClass[1] = 0;
+    nPrediction[0] = nPrediction[1] = 0;
+    nConf[0][0] = nConf[0][1] = 0;
+    nConf[1][0] = nConf[1][1] = 0;
 }
 
 double adaboost_predict_margin(const std::vector<bool>& C)
@@ -133,6 +144,26 @@ void adaboost_add_learner()
     learner_index.push_back(bestLearner);
     learner_error.push_back(error);
     learner_weight.push_back(alpha);
+}
+
+void adaboost_collect_stats(bool T, const std::vector<bool>& C)
+{
+    bool P = adaboost_predict_class(C);
+
+    nStats++;
+    nClass[T]++;
+    nPrediction[P]++;
+    nConf[T][P]++;
+}
+
+void adaboost_print_stats(std::ostream& out)
+{
+    out << "=> false positive rate: " << 100. * nConf[0][1] / (nConf[0][1] + nConf[1][1]) << "%" << std::endl;
+    out << "n: " << nStats << std::endl;
+    out << "n(false positive): " << nConf[0][1] << std::endl;
+    out << "Conf true x predicted:" << std::endl;
+    out << nConf[0][0] << "\t" << nConf[0][1] << std::endl;
+    out << nConf[1][0] << "\t" << nConf[1][1] << std::endl;
 }
 
 void adaboost_print_model(std::ostream& out)
@@ -1354,6 +1385,7 @@ moves_loop:  // When in check, search starts here
                     //constexpr double W[2] = {0.932544, 0.067456}; // balanced classes
                     constexpr double W[2] = {1,0}; // Only !T
 
+                    adaboost_collect_stats(T, C);
                     adaboost_learn(T, C, W);
 
                     //dbg_hit_on(T, 0);
