@@ -294,7 +294,8 @@ void UCIEngine::learn(std::istream& args) {
 
         if(it > 0) adaboost_print_stats();
    
-        adaboost_add_learner();
+        if(!adaboost_add_learner()) break;
+
         elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
 
         std::cerr << "=== Iteration " << it+1 << " Total time (ms) : " << elapsed << std::endl;

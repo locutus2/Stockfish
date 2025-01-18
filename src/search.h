@@ -48,7 +48,7 @@ namespace Stockfish {
 void adaboost_init();
 void adaboost_init_step();
 void adaboost_learn(bool T, const std::vector<bool>& C, const double W[]);
-void adaboost_add_learner();
+bool adaboost_add_learner();
 double adaboost_predict_margin(const std::vector<bool>& C);
 bool adaboost_predict_class(const std::vector<bool>& C);
 void adaboost_print_stats(std::ostream& out = std::cerr);
