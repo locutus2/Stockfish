@@ -61,7 +61,21 @@ std::vector<std::string> names = {
     "priorCapture", "!priorCapture", // 11 12
     "ss->ttPv", "!ss->ttPv", // 13 14
     "ss->statScore>0", "ss->statScore<=0", // 15 16
-     "extension==0","extension>0" // 17 18
+    "extension<0", "extension==0","extension>0", // 17 18
+    "ttCapture", "ttCapture",
+    "bool(excludedMove)", "!excludedMove",
+    "ss->reduction>0", "ss->reduction<=0",
+    "(ss-1)->currentMove==Move::null()", "(ss-1)->currentMove!=Move::null()",
+    "depth<3", "depth>=3",
+    "depth<4", "depth>=4",
+    "depth<5", "depth>=5",
+    "depth<6", "depth>=6",
+    "depth<7", "depth>=7",
+    "depth<8", "depth>=8",
+    "depth<9", "depth>=9",
+    "depth<10", "depth>=10",
+    "depth<11", "depth>=11",
+    "depth<12", "depth>=12",
 };
 
 std::vector<std::vector<double>> weak_learner_stats;
@@ -1418,8 +1432,21 @@ moves_loop:  // When in check, search starts here
                     priorCapture, !priorCapture, // 11 12
                     ss->ttPv, !ss->ttPv, // 13 14
                     ss->statScore>0, ss->statScore<=0, // 15 16
-                    extension==0,extension>0 // 17 18
-                        //, bool(T)// ^ !(nodes&0xff))
+                    extension<0,extension==0,extension>0,// 17 18
+                    ttCapture,!ttCapture,
+                    bool(excludedMove), !excludedMove,
+                    ss->reduction>0, ss->reduction<=0,
+                    (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
+                    depth<3,depth>=3,
+                    depth<4,depth>=4,
+                    depth<5,depth>=5,
+                    depth<6,depth>=6,
+                    depth<7,depth>=7,
+                    depth<8,depth>=8,
+                    depth<9,depth>=9,
+                    depth<10,depth>=10,
+                    depth<11,depth>=11,
+                    depth<12,depth>=12,
                 };
 
                 bool P = true;//nodes&1;
