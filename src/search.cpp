@@ -1605,75 +1605,95 @@ moves_loop:  // When in check, search starts here
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth. To avoid search explosion, extensions
             // are not allowed deep, relative to rootDepth, in the search tree.
-            Depth d =
-              std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
+            //Depth d =
+            //  std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
+            // beyond the first move depth.
+            // To prevent problems when the max value is less than the min value,
+            // std::clamp has been replaced by a more robust implementation.
 
-            ss->reduction = newDepth - d;
-            value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
-            ss->reduction = 0;
 
-            bool CC = !ss->ttPv;
-            if(CC)
+            //Depth d = std::max(
+            //  1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
+
+            //(ss + 1)->reduction = newDepth - d;
+
+            //value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+            //(ss + 1)->reduction = 0;
+
+            //ss->reduction = newDepth - d;
+            //value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+            //ss->reduction = 0;
+
+            const bool CC = !ss->ttPv;
+            const bool P = true;//nodes&1;
+            if(CC && P)
             {
-                bool T = value <= alpha;
-                std::vector<bool> C = {
-                    allNode, PvNode, cutNode, // 0 1 2
-                    improving, !improving, // 3 4
-                    capture, !capture, // 5 6
-                    givesCheck, !givesCheck, // 7 8
-                    ss->inCheck, !ss->inCheck, // 9 10
-                    priorCapture, !priorCapture, // 11 12
-                    ss->ttPv, !ss->ttPv, // 13 14
-                    ss->statScore>0, ss->statScore<=0, // 15 16
-                    extension<0,extension==0,extension>0,// 17 18
-                    ttCapture,!ttCapture,
-                    bool(excludedMove), !excludedMove,
-                    ss->reduction>0, ss->reduction<=0,
-                    (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
-                    depth<3,depth>=3,
-                    depth<4,depth>=4,
-                    depth<5,depth>=5,
-                    depth<6,depth>=6,
-                    depth<7,depth>=7,
-                    depth<8,depth>=8,
-                    depth<9,depth>=9,
-                    depth<10,depth>=10,
-                    depth<11,depth>=11,
-                    depth<12,depth>=12,
-                };
+                constexpr int rDelta = 1024;
 
-                bool P = true;//nodes&1;
+                // reduced LMR
+                Depth d1 = std::max(1, newDepth + std::min(-(r + rDelta) / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
 
-                if(P)
+                (ss + 1)->reduction = newDepth - d1;
+
+                value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d1, true);
+                (ss + 1)->reduction = 0;
+
+                Value value1 = value;
+
+                // standard LMR
+                Depth d = std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
+
+                if (d != d1)
                 {
+                    (ss + 1)->reduction = newDepth - d;
+
+                    value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+                    (ss + 1)->reduction = 0;
+
+                    bool T = value <= alpha && value1 <= alpha;
+
+                    std::vector<bool> C = {
+                        allNode, PvNode, cutNode, // 0 1 2
+                        improving, !improving, // 3 4
+                        capture, !capture, // 5 6
+                        givesCheck, !givesCheck, // 7 8
+                        ss->inCheck, !ss->inCheck, // 9 10
+                        priorCapture, !priorCapture, // 11 12
+                        ss->ttPv, !ss->ttPv, // 13 14
+                        ss->statScore>0, ss->statScore<=0, // 15 16
+                        extension<0,extension==0,extension>0,// 17 18
+                        ttCapture,!ttCapture,
+                        bool(excludedMove), !excludedMove,
+                        ss->reduction>0, ss->reduction<=0,
+                        (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
+                        depth<3,depth>=3,
+                        depth<4,depth>=4,
+                        depth<5,depth>=5,
+                        depth<6,depth>=6,
+                        depth<7,depth>=7,
+                        depth<8,depth>=8,
+                        depth<9,depth>=9,
+                        depth<10,depth>=10,
+                        depth<11,depth>=11,
+                        depth<12,depth>=12,
+                    };
+
+
                     //constexpr double W[2] = {0.932544, 0.067456}; // balanced classes
                     constexpr double W[2] = {1,0}; // Only !T
 
                     adaboost_collect_stats(T, C);
                     adaboost_learn(T, C, W[T]);
-
-                    //dbg_hit_on(T, 0);
-                    //dbg_hit_on(F > 0, 10);
-                    //if(F > 0) dbg_hit_on(T, 11);
-                    //if(!T) dbg_hit_on(F <= 0, 12);
-
-                    //for(int i = 0; i < int(C.size()); i++)
-                    //{
-                     //   double val = W[T] * std::exp(-(2*T-1)*F);
-                      //  dbg_sum_of(val, 10*i+(T == C[i]));
-                    //}
                 }
-                else
-                {
-                    //dbg_hit_on(F > 0, 20);
-                    //if(F > 0) dbg_hit_on(T, 21);
-                    //if(!T) dbg_hit_on(F <= 0, 22);
-                }
+            }
+            else
+            {
+                Depth d = std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
 
-                // wrong = 0
-                // correct = 1
-                // best ist which minimize sum_wrong
-                // weight alpha = 1/2 * ln(sum_correct/sum_wrong)
+                (ss + 1)->reduction = newDepth - d;
+
+                value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+                (ss + 1)->reduction = 0;
             }
 
 
