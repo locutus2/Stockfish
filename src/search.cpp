@@ -224,7 +224,7 @@ void adaboost_print_model(std::ostream& out)
         }
         out << " > " << sum/2 << std::endl;
 
-        double m = *std::min_element(w.begin(), w.end());
+        double m = std::min(sum/2, *std::min_element(w.begin(), w.end()));
         for(int S = 1; S <= 64; S *= 2)
         {
             out << "Rounded S=" << S << ": ";
@@ -1598,7 +1598,7 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-            bool CC = true;
+            bool CC = !PvNode;
             if(CC)
             {
                 bool T = value <= alpha;
