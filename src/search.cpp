@@ -121,12 +121,12 @@ bool adaboost_predict_class(const std::vector<bool>& C)
     return adaboost_predict_margin(C) > 0;
 }
 
-void adaboost_learn(bool T, const std::vector<bool>& C, const double W[])
+void adaboost_learn(bool T, const std::vector<bool>& C, double W)
 {
        weak_learner_stats.resize(C.size(), {0,0});
 
        double F = adaboost_predict_margin(C);
-       double weight = W[T] * std::exp(-(2 * T - 1) * F);
+       double weight = W * std::exp(-(2 * T - 1) * F);
        for (int i = 0; i < int(C.size()); i++)
        {
            weak_learner_stats[i][T == C[i]] += weight;
@@ -1457,7 +1457,7 @@ moves_loop:  // When in check, search starts here
                     constexpr double W[2] = {1,0}; // Only !T
 
                     adaboost_collect_stats(T, C);
-                    adaboost_learn(T, C, W);
+                    adaboost_learn(T, C, W[T]);
 
                     //dbg_hit_on(T, 0);
                     //dbg_hit_on(F > 0, 10);
