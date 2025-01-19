@@ -1421,6 +1421,10 @@ moves_loop:  // When in check, search starts here
 
             const bool CC = !ss->ttPv;
             const bool P = true;//nodes&1;
+
+            Depth d = std::max(
+                  1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
+
             if(CC && P)
             {
                 constexpr int rDelta = 1024;
@@ -1434,20 +1438,17 @@ moves_loop:  // When in check, search starts here
                 value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d1, true);
                 (ss + 1)->reduction = 0;
 
-                Value value1 = value;
-
-                // standard LMR
-                Depth d = std::max(
-                  1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
-
                 if (d != d1)
                 {
+                    Value value1 = value;
+
+                    // standard LMR
                     (ss + 1)->reduction = newDepth - d;
 
                     value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
                     (ss + 1)->reduction = 0;
 
-                    bool T = value <= alpha && value1 <= alpha;
+                    bool T = (value <= alpha) == (value1 <= alpha);
 
                     std::vector<bool> C = {
                         allNode, PvNode, cutNode, // 0 1 2
@@ -1485,9 +1486,6 @@ moves_loop:  // When in check, search starts here
             }
             else
             {
-                Depth d = std::max(
-                  1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
-
                 (ss + 1)->reduction = newDepth - d;
 
                 value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
