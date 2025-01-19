@@ -1626,6 +1626,7 @@ moves_loop:  // When in check, search starts here
 
             const bool CC = !ss->ttPv;
             const bool P = true;//nodes&1;
+
             if(CC && P)
             {
                 constexpr int rDelta = 1024;
@@ -1645,12 +1646,15 @@ moves_loop:  // When in check, search starts here
 
                 if (d != d1)
                 {
+                    Value value1 = value;
+
+                    // standard LMR
                     (ss + 1)->reduction = newDepth - d;
 
                     value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
                     (ss + 1)->reduction = 0;
 
-                    bool T = value <= alpha && value1 <= alpha;
+                    bool T = (value <= alpha) == (value1 <= alpha);
 
                     std::vector<bool> C = {
                         allNode, PvNode, cutNode, // 0 1 2
