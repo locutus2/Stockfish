@@ -1191,7 +1191,7 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
         {
-            if (!ss->ttPv && (ss - 1)->currentMove == Move::null())
+            if ((ss - 1)->currentMove == Move::null())
                 r += 1024;
 
             // In general we want to cap the LMR depth search at newDepth, but when
