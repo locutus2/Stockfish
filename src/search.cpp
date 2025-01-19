@@ -1175,6 +1175,9 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 1960;
 
+        if ((ss - 1)->currentMove == Move::null())
+            r -= moveCount * 32;
+
         if (capture)
             ss->statScore =
               7 * int(PieceValue[pos.captured_piece()])
