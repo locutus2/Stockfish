@@ -1421,7 +1421,8 @@ moves_loop:  // When in check, search starts here
     // If no good move is found and the previous position was ttPv, then the previous
     // opponent move is probably good and the new position is added to the search tree. (~7 Elo)
     if (bestValue <= alpha)
-        ss->ttPv = ss->ttPv || ((ss - 1)->ttPv && depth > 3);
+        ss->ttPv =
+          ss->ttPv || ((ss - 1)->ttPv && depth > 3 && (ss - 1)->currentMove != Move::null());
 
     // Write gathered information in transposition table. Note that the
     // static evaluation is saved as it was before correction history.
