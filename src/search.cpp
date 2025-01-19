@@ -52,7 +52,7 @@
 
 namespace Stockfish {
 
-constexpr double LEARN_MIN_FREQ = 0.01;
+constexpr double LEARN_MIN_FREQ = 0.001;
 
 std::vector<std::string> names = {
     "allNode", "!allNode", 
@@ -214,6 +214,7 @@ bool adaboost_print_stats(std::ostream& out)
         learner_index.pop_back();
         learner_error.pop_back();
         learner_weight.pop_back();
+        out << "=> SKIP last weak learner" << std::endl;
     }
 
     return nPrediction[1] > 0;
