@@ -1405,7 +1405,7 @@ moves_loop:  // When in check, search starts here
             (ss + 1)->reduction = 0;
 
 
-            bool CC = !PvNode;
+            bool CC = !ss->ttPv;
             if(CC)
             {
                 bool T = value <= alpha;
