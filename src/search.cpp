@@ -52,6 +52,8 @@
 
 namespace Stockfish {
 
+constexpr double LEARN_MIN_FREQ = 0.01;
+
 std::vector<std::string> names = {
     "allNode", "PvNode", "cutNode",
     "improving", "!improving", // 3 4
@@ -66,6 +68,7 @@ std::vector<std::string> names = {
     "bool(excludedMove)", "!excludedMove",
     "ss->reduction>0", "ss->reduction<=0",
     "(ss-1)->currentMove==Move::null()", "(ss-1)->currentMove!=Move::null()",
+    "ss->ttHit", "!ss->ttHit",
     "depth<3", "depth>=3",
     "depth<4", "depth>=4",
     "depth<5", "depth>=5",
@@ -77,6 +80,8 @@ std::vector<std::string> names = {
     "depth<11", "depth>=11",
     "depth<12", "depth>=12",
 };
+
+std::vector<bool> weak_learner_enabled;
 
 std::vector<std::vector<double>> weak_learner_stats;
 std::vector<int> learner_index;
@@ -124,6 +129,7 @@ bool adaboost_predict_class(const std::vector<bool>& C)
 void adaboost_learn(bool T, const std::vector<bool>& C, double W)
 {
        weak_learner_stats.resize(C.size(), {0,0});
+       weak_learner_enabled.resize(C.size(), true);
 
        double F = adaboost_predict_margin(C);
        double weight = W * std::exp(-(2 * T - 1) * F);
@@ -153,7 +159,8 @@ bool adaboost_add_learner()
     for (int i = 0; i < int(weak_learner_stats.size()); i++)
     {
         //std::cerr << "C[" << i << "] = " << weak_learner_stats[i][0] << " | " << weak_learner_stats[i][1] << std::endl;
-        if (weak_learner_stats[i][0] > 0
+        if (weak_learner_enabled[i]
+            && weak_learner_stats[i][0] > 0
             && weak_learner_stats[i][0] < weak_learner_stats[i][1]
             && (bestValue < 0 || weak_learner_stats[i][0] < bestValue))
         {
@@ -189,13 +196,24 @@ void adaboost_collect_stats(bool T, const std::vector<bool>& C)
 
 bool adaboost_print_stats(std::ostream& out)
 {
+    double freq = double(nConf[0][1] + nConf[1][1]) / nStats;
+
     out << "=> false positive rate: " << 100. * nConf[0][1] / (nConf[0][1] + nConf[0][0]) << "%" << std::endl;
-    out << "=> frequency: " << 100. * (nConf[0][1] + nConf[1][1]) / nStats << "%" << std::endl;
+    out << "=> frequency: " << 100. * freq << "%" << std::endl;
     //out << "n: " << nStats << std::endl;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
     //out << "Conf true x predicted:" << std::endl;
     //out << nConf[0][0] << "\t" << nConf[0][1] << std::endl;
     //out << nConf[1][0] << "\t" << nConf[1][1] << std::endl;
+    //
+    if(freq < LEARN_MIN_FREQ && !learner_index.empty())
+    {
+        weak_learner_enabled[learner_index[int(learner_index.size())-1]] = false;
+        learner_index.pop_back();
+        learner_error.pop_back();
+        learner_weight.pop_back();
+    }
+
     return nPrediction[1] > 0;
 }
 
@@ -1464,6 +1482,7 @@ moves_loop:  // When in check, search starts here
                         bool(excludedMove), !excludedMove,
                         ss->reduction>0, ss->reduction<=0,
                         (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
+                        ss->ttHit, !ss->ttHit, // 9 10
                         depth<3,depth>=3,
                         depth<4,depth>=4,
                         depth<5,depth>=5,
