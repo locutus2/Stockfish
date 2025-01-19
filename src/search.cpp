@@ -55,7 +55,9 @@ namespace Stockfish {
 constexpr double LEARN_MIN_FREQ = 0.01;
 
 std::vector<std::string> names = {
-    "allNode", "PvNode", "cutNode",
+    "allNode", "!allNode", 
+    "PvNode", "!PvNode",
+    "cutNode", "!cutNode",
     "improving", "!improving", // 3 4
     "capture", "!capture", // 5 6
     "givesCheck", "!givesCheck", // 7 8
@@ -1437,7 +1439,8 @@ moves_loop:  // When in check, search starts here
             //(ss + 1)->reduction = 0;
 
 
-            const bool CC = !ss->ttPv;
+            //const bool CC = !ss->ttPv;
+            const bool CC = true;
             const bool P = true;//nodes&1;
 
             Depth d = std::max(
@@ -1469,13 +1472,15 @@ moves_loop:  // When in check, search starts here
                     bool T = (value <= alpha) == (value1 <= alpha);
 
                     std::vector<bool> C = {
-                        allNode, PvNode, cutNode, // 0 1 2
+                        allNode, !allNode, // 0 1 2
+                        false&&PvNode, !PvNode, // 0 1 2
+                        cutNode, !cutNode, // 0 1 2
                         improving, !improving, // 3 4
                         capture, !capture, // 5 6
                         givesCheck, !givesCheck, // 7 8
                         ss->inCheck, !ss->inCheck, // 9 10
                         priorCapture, !priorCapture, // 11 12
-                        ss->ttPv, !ss->ttPv, // 13 14
+                        false&&ss->ttPv, !ss->ttPv, // 13 14
                         ss->statScore>0, ss->statScore<=0, // 15 16
                         extension<0,extension==0,extension>0,// 17 18
                         ttCapture,!ttCapture,
