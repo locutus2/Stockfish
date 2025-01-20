@@ -1035,7 +1035,7 @@ Value Search::Worker::search(
     improving |= ss->staticEval >= beta + 97;
 
     // Step 9. Null move search with verification search (~35 Elo)
-    if (cutNode && (ss - 1)->currentMove != Move::null() && eval >= beta
+    if ((cutNode || allNode) && (ss - 1)->currentMove != Move::null() && eval >= beta
         && ss->staticEval >= beta - 20 * depth + 440 && !excludedMove && pos.non_pawn_material(us)
         && ss->ply >= thisThread->nmpMinPly && !is_loss(beta))
     {
@@ -1051,6 +1051,43 @@ Value Search::Worker::search(
         pos.do_null_move(st, tt);
 
         Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false);
+            const bool CC = allNode;
+            const bool P = true;//nodes&1;
+
+                    std::vector<bool> C = {
+                        allNode, !allNode, // 0 1 2
+                        false&&PvNode, !PvNode, // 0 1 2
+                        cutNode, !cutNode, // 0 1 2
+                        improving, !improving, // 3 4
+                        //capture, !capture, // 5 6
+                        false, true,
+                        //givesCheck, !givesCheck, // 7 8
+                        false, true,
+                        ss->inCheck, !ss->inCheck, // 9 10
+                        priorCapture, !priorCapture, // 11 12
+                        false&&ss->ttPv, !ss->ttPv, // 13 14
+                        //ss->statScore>0, ss->statScore<=0, // 15 16
+                        false, false,
+                        //extension<0,extension==0,extension>0,// 17 18
+                        false, false, false,
+                        ttCapture,!ttCapture,
+                        bool(excludedMove), !excludedMove,
+                        ss->reduction>0, ss->reduction<=0,
+                        (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
+                        ss->ttHit, !ss->ttHit, // 9 10
+                        depth<3,depth>=3,
+                        depth<4,depth>=4,
+                        depth<5,depth>=5,
+                        depth<6,depth>=6,
+                        depth<7,depth>=7,
+                        depth<8,depth>=8,
+                        depth<9,depth>=9,
+                        depth<10,depth>=10,
+                        depth<11,depth>=11,
+                        depth<12,depth>=12,
+                    };
+
+
 
         pos.undo_null_move();
 
@@ -1058,7 +1095,18 @@ Value Search::Worker::search(
         if (nullValue >= beta && !is_win(nullValue))
         {
             if (thisThread->nmpMinPly || depth < 16)
+            {
+                if(CC && P)
+                {
+                    bool T = true;
+                    //constexpr double W[2] = {0.932544, 0.067456}; // balanced classes
+                    constexpr double W[2] = {1,0}; // Only !T
+
+                    adaboost_collect_stats(T, C);
+                    adaboost_learn(T, C, W[T]);
+                }
                 return nullValue;
+            }
 
             assert(!thisThread->nmpMinPly);  // Recursive verification is not allowed
 
@@ -1070,6 +1118,15 @@ Value Search::Worker::search(
 
             thisThread->nmpMinPly = 0;
 
+                if(CC && P)
+                {
+                    bool T = v >= beta;
+                    //constexpr double W[2] = {0.932544, 0.067456}; // balanced classes
+                    constexpr double W[2] = {1,0}; // Only !T
+
+                    adaboost_collect_stats(T, C);
+                    adaboost_learn(T, C, W[T]);
+                }
             if (v >= beta)
                 return nullValue;
         }
