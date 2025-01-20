@@ -1440,13 +1440,14 @@ moves_loop:  // When in check, search starts here
             //(ss + 1)->reduction = 0;
 
 
-            //const bool CC = !ss->ttPv;
-            const bool CC = true;
-            const bool P = true;//nodes&1;
 
             Depth d = std::max(
                   1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
 
+            /*
+            //const bool CC = !ss->ttPv;
+            const bool CC = true;
+            const bool P = true;//nodes&1;
             if(CC && P)
             {
                 constexpr int rDelta = 1024;
@@ -1510,6 +1511,7 @@ moves_loop:  // When in check, search starts here
                 }
             }
             else
+            */
             {
                 (ss + 1)->reduction = newDepth - d;
 
