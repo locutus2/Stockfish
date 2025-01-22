@@ -52,31 +52,11 @@
 
 namespace Stockfish {
 
-constexpr int S = 64;
-
-int A[64] = {
-    0, S, S, S, S, S, S, S,
-    S, S, S, S, S, S, S, S,
-    S, S, S, S, S, S, S, S,
-    S, S, S, S, S, S, S, S,
-    S, S, S, S, S, S, S, S,
-    S, S, S, S, S, S, S, S,
-    S, S, S, S, S, S, S, S,
-    S, S, S, S, S, S, S, S
-};
-
-int mcReduction[64];
-
-constexpr int DELTA = 64;
-
-void init_params()
-{
-    mcReduction[0] = A[0];
-    for(int i = 1; i < 64; i++)
-        mcReduction[i] = mcReduction[i-1] + A[i];
-}
-
-TUNE(SetRange(0, 2*S), A, init_params);
+constexpr int mcReduction[64] = {
+  0,    60,   125,  187,  255,  327,  385,  446,  514,  576,  650,  709,  777,  837,  906,  967,
+  1030, 1102, 1167, 1227, 1291, 1354, 1419, 1482, 1547, 1611, 1682, 1741, 1799, 1863, 1926, 1990,
+  2051, 2119, 2185, 2250, 2315, 2388, 2452, 2514, 2579, 2644, 2705, 2774, 2833, 2899, 2971, 3037,
+  3111, 3168, 3223, 3287, 3353, 3423, 3482, 3534, 3595, 3659, 3716, 3779, 3840, 3906, 3968, 4035};
 
 namespace TB = Tablebases;
 
@@ -1182,7 +1162,7 @@ moves_loop:  // When in check, search starts here
         // These reduction adjustments have no proven non-linear scaling
 
         r += 307;
-       
+
         r -= mcReduction[std::min(moveCount, 63)];
 
         r -= std::abs(correctionValue) / 34112;
