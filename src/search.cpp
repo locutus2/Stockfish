@@ -67,8 +67,6 @@ int A[64] = {
 
 int mcReduction[64];
 
-constexpr int DELTA = 64;
-
 void init_params()
 {
     mcReduction[0] = A[0];
@@ -76,7 +74,7 @@ void init_params()
         mcReduction[i] = mcReduction[i-1] + A[i];
 }
 
-TUNE(SetRange(0, 2*S), A, init_params);
+TUNE(SetRange(0, 8*S), A, init_params);
 
 namespace TB = Tablebases;
 
