@@ -1155,7 +1155,9 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 303 - moveCount * 257 / 4;
+        r += 307;
+
+        r -= moveCount * 64 + std::clamp(140 - moveCount * 10, -120, 20);
 
         r -= std::abs(correctionValue) / 34112;
 
