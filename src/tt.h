@@ -59,7 +59,7 @@ struct TTData {
         eval(ev),
         depth(d),
         bound(b),
-        is_pv(pv) {};
+        is_pv(pv){};
 };
 
 
