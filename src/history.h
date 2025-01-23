@@ -37,7 +37,7 @@ constexpr int PAWN_HISTORY_SIZE        = 512;    // has to be a power of 2
 constexpr int CORRECTION_HISTORY_SIZE  = 32768;  // has to be a power of 2
 constexpr int CORRECTION_HISTORY_LIMIT = 1024;
 constexpr int LOW_PLY_HISTORY_SIZE     = 4;
-constexpr int CONDITION_HISTORY_SIZE   = 3 * 2 * 2 * 2;
+constexpr int CONDITION_HISTORY_SIZE   = 2 * 2;
 
 static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
               "PAWN_HISTORY_SIZE has to be a power of 2");
@@ -46,8 +46,8 @@ static_assert((CORRECTION_HISTORY_SIZE & (CORRECTION_HISTORY_SIZE - 1)) == 0,
               "CORRECTION_HISTORY_SIZE has to be a power of 2");
 
 inline int
-condition_index(bool cutNode, bool allNode, bool inCheck, bool priorCapture, bool excludedMove) {
-    return (cutNode + 2 * allNode) * 8 + inCheck * 4 + priorCapture * 2 + excludedMove;
+condition_index(bool c1, bool c2) {
+    return c1 + c2 * 2;
 }
 
 enum PawnHistoryType {
