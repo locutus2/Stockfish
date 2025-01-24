@@ -51,7 +51,7 @@ enum PawnHistoryType {
 
 template<PawnHistoryType T = Normal>
 inline int pawn_structure_index(const Position& pos) {
-    return pos.pawn_key() & ((T == Normal ? PAWN_HISTORY_SIZE : CORRECTION_HISTORY_SIZE) - 1);
+    return (pos.pawn_key() ^ pos.count<PAWN>()) & ((T == Normal ? PAWN_HISTORY_SIZE : CORRECTION_HISTORY_SIZE) - 1);
 }
 
 inline int major_piece_index(const Position& pos) {
