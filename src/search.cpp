@@ -649,7 +649,9 @@ Value Search::Worker::search(
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
 
-    int conditionIndex = condition_index(PvNode, ttHit);
+    int conditionIndex = condition_index((ss-1)->currentMove == Move::null(), false);
+    for(int i = 1; i <= 20; i++)
+        dbg_hit_on((ss-1)->moveCount < i, i);
 
     // At non-PV nodes we check for an early TT cutoff
     if (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
@@ -1341,6 +1343,7 @@ moves_loop:  // When in check, search starts here
             if (value + inc > alpha)
             {
                 bestMove = move;
+                dbg_mean_of(moveCount);
 
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     update_pv(ss->pv, move, (ss + 1)->pv);
