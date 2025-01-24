@@ -649,9 +649,12 @@ Value Search::Worker::search(
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
 
-    int conditionIndex = condition_index((ss-1)->currentMove == Move::null(), false);
-    for(int i = 1; i <= 20; i++)
-        dbg_hit_on((ss-1)->moveCount < i, i);
+    //int conditionIndex = condition_index(false, false);
+    //int conditionIndex = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK)) * 8
+    //                    + distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
+    int conditionIndex = depth > 1;
+    //for(int i = 1; i <= 20; i++)
+    //    dbg_hit_on(ss->ply * i < (ss-1)->moveCount, i);
 
     // At non-PV nodes we check for an early TT cutoff
     if (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)

@@ -37,7 +37,7 @@ constexpr int PAWN_HISTORY_SIZE        = 512;    // has to be a power of 2
 constexpr int CORRECTION_HISTORY_SIZE  = 32768;  // has to be a power of 2
 constexpr int CORRECTION_HISTORY_LIMIT = 1024;
 constexpr int LOW_PLY_HISTORY_SIZE     = 4;
-constexpr int CONDITION_HISTORY_SIZE   = 2 * 2;
+constexpr int CONDITION_HISTORY_SIZE   = 16*16;//8 * 8; //2 * 2;
 
 static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
               "PAWN_HISTORY_SIZE has to be a power of 2");
