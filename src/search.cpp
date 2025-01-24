@@ -652,7 +652,7 @@ Value Search::Worker::search(
     //int conditionIndex = condition_index(false, false);
     //int conditionIndex = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK)) * 8
     //                    + distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
-    int conditionIndex = ss->ply < 11;
+    int conditionIndex = ss->ply < 13;
     //for(int i = 1; i <= 20; i++)
     //    dbg_hit_on(ss->ply * i < (ss-1)->moveCount, i);
 
