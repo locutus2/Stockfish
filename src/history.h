@@ -46,7 +46,7 @@ static_assert((CORRECTION_HISTORY_SIZE & (CORRECTION_HISTORY_SIZE - 1)) == 0,
               "CORRECTION_HISTORY_SIZE has to be a power of 2");
 
 inline int king_index(const Position& pos) {
-    return pos.square<KING>(pos.side_to_move());
+    return pos.square<KING>(~pos.side_to_move());
 }
 
 enum PawnHistoryType {
