@@ -37,7 +37,7 @@ constexpr int PAWN_HISTORY_SIZE        = 512;    // has to be a power of 2
 constexpr int CORRECTION_HISTORY_SIZE  = 32768;  // has to be a power of 2
 constexpr int CORRECTION_HISTORY_LIMIT = 1024;
 constexpr int LOW_PLY_HISTORY_SIZE     = 4;
-constexpr int KING_HISTORY_SIZE        = SQUARE_NB * SQUARE_NB;
+constexpr int KING_HISTORY_SIZE        = 64;
 
 static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
               "PAWN_HISTORY_SIZE has to be a power of 2");
@@ -46,7 +46,7 @@ static_assert((CORRECTION_HISTORY_SIZE & (CORRECTION_HISTORY_SIZE - 1)) == 0,
               "CORRECTION_HISTORY_SIZE has to be a power of 2");
 
 inline int king_index(const Position& pos) {
-    return pos.square<KING>(BLACK) + pos.square<KING>(WHITE) * SQUARE_NB;
+    return file_of(pos.square<KING>(BLACK)) + file_of(pos.square<KING>(WHITE)) * 8;
 }
 
 enum PawnHistoryType {
