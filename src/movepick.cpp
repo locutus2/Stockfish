@@ -78,23 +78,23 @@ void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 // good moves first, and how important move ordering is at the current node.
 
 // MovePicker constructor for the main search and for the quiescence search
-MovePicker::MovePicker(const Position&                p,
-                       Move                           ttm,
-                       Depth                          d,
-                       const ButterflyHistory*        mh,
-                       const LowPlyHistory*           lph,
-                       const CapturePieceToHistory*   cph,
-                       const PieceToHistory**         ch,
-                       const PawnHistory*             ph,
-                       const ConditionPieceToHistory* coh,
-                       int                            pl) :
+MovePicker::MovePicker(const Position&              p,
+                       Move                         ttm,
+                       Depth                        d,
+                       const ButterflyHistory*      mh,
+                       const LowPlyHistory*         lph,
+                       const CapturePieceToHistory* cph,
+                       const PieceToHistory**       ch,
+                       const PawnHistory*           ph,
+                       const KingPieceToHistory*    kh,
+                       int                          pl) :
     pos(p),
     mainHistory(mh),
     lowPlyHistory(lph),
     captureHistory(cph),
     continuationHistory(ch),
     pawnHistory(ph),
-    conditionHistory(coh),
+    kingHistory(kh),
     ttMove(ttm),
     depth(d),
     ply(pl) {
@@ -160,7 +160,7 @@ void MovePicker::score() {
             // histories
             m.value = 2 * (*mainHistory)[pos.side_to_move()][m.from_to()];
             m.value += 2 * (*pawnHistory)[pawn_structure_index(pos)][pc][to];
-            m.value += (*conditionHistory)[pc][to];
+            m.value += (*kingHistory)[pc][to];
             m.value += (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to];

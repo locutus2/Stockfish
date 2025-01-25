@@ -37,7 +37,7 @@ constexpr int PAWN_HISTORY_SIZE        = 512;    // has to be a power of 2
 constexpr int CORRECTION_HISTORY_SIZE  = 32768;  // has to be a power of 2
 constexpr int CORRECTION_HISTORY_LIMIT = 1024;
 constexpr int LOW_PLY_HISTORY_SIZE     = 4;
-constexpr int CONDITION_HISTORY_SIZE   = 2 * 2;
+constexpr int KING_HISTORY_SIZE        = SQUARE_NB * SQUARE_NB;
 
 static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
               "PAWN_HISTORY_SIZE has to be a power of 2");
@@ -45,9 +45,8 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
 static_assert((CORRECTION_HISTORY_SIZE & (CORRECTION_HISTORY_SIZE - 1)) == 0,
               "CORRECTION_HISTORY_SIZE has to be a power of 2");
 
-inline int
-condition_index(bool c1, bool c2) {
-    return c1 + c2 * 2;
+inline int king_index(const Position& pos) {
+    return pos.square<KING>(BLACK) + pos.square<KING>(WHITE) * SQUARE_NB;
 }
 
 enum PawnHistoryType {
@@ -136,8 +135,8 @@ using ContinuationHistory = MultiArray<PieceToHistory, PIECE_NB, SQUARE_NB>;
 // PawnHistory is addressed by the pawn structure and a move's [piece][to]
 using PawnHistory = Stats<std::int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
 
-using ConditionPieceToHistory = Stats<std::int16_t, 8192, PIECE_NB, SQUARE_NB>;
-using ConditionHistory        = MultiArray<ConditionPieceToHistory, CONDITION_HISTORY_SIZE>;
+using KingPieceToHistory = Stats<std::int16_t, 30000, PIECE_NB, SQUARE_NB>;
+using KingHistory        = MultiArray<KingPieceToHistory, KING_HISTORY_SIZE>;
 
 // Correction histories record differences between the static evaluation of
 // positions and their search score. It is used to improve the static evaluation
