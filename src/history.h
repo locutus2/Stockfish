@@ -135,7 +135,7 @@ using ContinuationHistory = MultiArray<PieceToHistory, PIECE_NB, SQUARE_NB>;
 // PawnHistory is addressed by the pawn structure and a move's [piece][to]
 using PawnHistory = Stats<std::int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
 
-using KingPieceToHistory = Stats<std::int16_t, 10000, PIECE_NB, SQUARE_NB>;
+using KingPieceToHistory = Stats<std::int16_t, 8192, PIECE_NB, SQUARE_NB>;
 using KingHistory        = MultiArray<KingPieceToHistory, KING_HISTORY_SIZE>;
 
 // Correction histories record differences between the static evaluation of
