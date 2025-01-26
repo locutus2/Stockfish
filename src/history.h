@@ -50,7 +50,7 @@ enum PawnHistoryType {
 };
 
 inline int king_index(const Position& pos) {
-    return pos.square<KING>(WHITE) * 64 + pos.square<KING>(BLACK);
+    return file_of(pos.square<KING>(WHITE)) * FILE_NB + file_of(pos.square<KING>(BLACK));
 }
 
 template<PawnHistoryType T = Normal>
@@ -157,7 +157,7 @@ struct CorrHistTypedef {
 
 template<>
 struct CorrHistTypedef<King> {
-    using type = Stats<std::int16_t, CORRECTION_HISTORY_LIMIT, COLOR_NB, SQUARE_NB * SQUARE_NB>;
+    using type = Stats<std::int16_t, CORRECTION_HISTORY_LIMIT, COLOR_NB, FILE_NB * FILE_NB>;
 };
 
 template<>
