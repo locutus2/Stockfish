@@ -49,6 +49,8 @@ enum PawnHistoryType {
     Correction
 };
 
+inline int node_type_index(bool PvNode, bool cutNode) { return 2 * PvNode + cutNode; }
+
 template<PawnHistoryType T = Normal>
 inline int pawn_structure_index(const Position& pos) {
     return pos.pawn_key() & ((T == Normal ? PAWN_HISTORY_SIZE : CORRECTION_HISTORY_SIZE) - 1);
@@ -135,6 +137,7 @@ using PawnHistory = Stats<std::int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUAR
 // used by some search heuristics.
 // see https://www.chessprogramming.org/Static_Evaluation_Correction_History
 enum CorrHistType {
+    Nodetype,      // By color and node type[0=ALL,1=CUT,2=PV]
     Pawn,          // By color and pawn structure
     Major,         // By color and positions of major pieces (Queen, Rook) and King
     Minor,         // By color and positions of minor pieces (Knight, Bishop) and King
@@ -148,6 +151,11 @@ namespace Detail {
 template<CorrHistType _>
 struct CorrHistTypedef {
     using type = Stats<std::int16_t, CORRECTION_HISTORY_LIMIT, COLOR_NB, CORRECTION_HISTORY_SIZE>;
+};
+
+template<>
+struct CorrHistTypedef<Nodetype> {
+    using type = Stats<std::int16_t, CORRECTION_HISTORY_LIMIT, COLOR_NB, 3>;
 };
 
 template<>

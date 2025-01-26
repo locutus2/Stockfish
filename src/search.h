@@ -287,6 +287,7 @@ class Worker {
     ContinuationHistory   continuationHistory[2][2];
     PawnHistory           pawnHistory;
 
+    CorrectionHistory<Nodetype>     nodeTypeCorrectionHistory;
     CorrectionHistory<Pawn>         pawnCorrectionHistory;
     CorrectionHistory<Major>        majorPieceCorrectionHistory;
     CorrectionHistory<Minor>        minorPieceCorrectionHistory;
