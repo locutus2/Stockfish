@@ -97,7 +97,7 @@ int correction_value(
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return (512 * ntcv + 6922 * pcv + 3837 * macv + 6238 * micv + 7490 * (wnpcv + bnpcv)
+    return (1024 * ntcv + 6922 * pcv + 3837 * macv + 6238 * micv + 7490 * (wnpcv + bnpcv)
             + 6270 * cntcv);
 }
 
@@ -1440,7 +1440,7 @@ moves_loop:  // When in check, search starts here
         constexpr int nonPawnWeight = 165;
         auto          bonus         = std::clamp(int(bestValue - ss->staticEval) * depth / 8,
                                                  -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
-        thisThread->nodeTypeCorrectionHistory[us][node_type_index(PvNode, cutNode)] << bonus;
+        thisThread->nodeTypeCorrectionHistory[us][node_type_index(PvNode, cutNode)] << bonus / 2;
         thisThread->pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)]
           << bonus * 114 / 128;
         thisThread->majorPieceCorrectionHistory[us][major_piece_index(pos)] << bonus * 163 / 128;
