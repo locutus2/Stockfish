@@ -97,7 +97,7 @@ int correction_value(
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return (1024 * ntcv + 6922 * pcv + 3837 * macv + 6238 * micv + 7490 * (wnpcv + bnpcv)
+    return (512 * ntcv + 6922 * pcv + 3837 * macv + 6238 * micv + 7490 * (wnpcv + bnpcv)
             + 6270 * cntcv);
 }
 
