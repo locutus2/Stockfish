@@ -96,7 +96,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* ss) {
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return (512 * kcv + 6922 * pcv + 3837 * macv + 6238 * micv + 7490 * (wnpcv + bnpcv)
+    return (2048 * kcv + 6922 * pcv + 3837 * macv + 6238 * micv + 7490 * (wnpcv + bnpcv)
             + 6270 * cntcv);
 }
 
