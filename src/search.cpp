@@ -1435,9 +1435,9 @@ moves_loop:  // When in check, search starts here
         const auto    m             = (ss - 1)->currentMove;
         constexpr int nonPawnWeight = 165;
 
-        auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth / 8,
-                                -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4)
-                   * (1 + (PvNode && bestMove && bestValue < beta));
+        auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth
+                                  * (1 + (PvNode && bestMove && bestValue < beta)) / 8,
+                                -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         thisThread->pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)]
           << bonus * 114 / 128;
         thisThread->majorPieceCorrectionHistory[us][major_piece_index(pos)] << bonus * 163 / 128;
