@@ -83,11 +83,10 @@ constexpr int futility_move_count(bool improving, Depth depth) {
     return (3 + depth * depth) / (2 - improving);
 }
 
-int correction_value(
-  const Worker& w, const Position& pos, const Stack* ss, bool PvNode, bool cutNode) {
+int correction_value(const Worker& w, const Position& pos, const Stack* ss) {
     const Color us    = pos.side_to_move();
     const auto  m     = (ss - 1)->currentMove;
-    const auto  ntcv  = w.nodeTypeCorrectionHistory[us][node_type_index(PvNode, cutNode)];
+    const auto  kcv   = w.kingCorrectionHistory[us][king_index(pos)];
     const auto  pcv   = w.pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)];
     const auto  macv  = w.majorPieceCorrectionHistory[us][major_piece_index(pos)];
     const auto  micv  = w.minorPieceCorrectionHistory[us][minor_piece_index(pos)];
@@ -97,7 +96,7 @@ int correction_value(
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return (1024 * ntcv + 6922 * pcv + 3837 * macv + 6238 * micv + 7490 * (wnpcv + bnpcv)
+    return (1024 * kcv + 6922 * pcv + 3837 * macv + 6238 * micv + 7490 * (wnpcv + bnpcv)
             + 6270 * cntcv);
 }
 
@@ -518,7 +517,7 @@ void Search::Worker::clear() {
     lowPlyHistory.fill(108);
     captureHistory.fill(-631);
     pawnHistory.fill(-1210);
-    nodeTypeCorrectionHistory.fill(0);
+    kingCorrectionHistory.fill(0);
     pawnCorrectionHistory.fill(0);
     majorPieceCorrectionHistory.fill(0);
     minorPieceCorrectionHistory.fill(0);
@@ -731,7 +730,7 @@ Value Search::Worker::search(
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = correction_value(*thisThread, pos, ss, PvNode, cutNode);
+    const auto correctionValue      = correction_value(*thisThread, pos, ss);
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -1440,7 +1439,7 @@ moves_loop:  // When in check, search starts here
         constexpr int nonPawnWeight = 165;
         auto          bonus         = std::clamp(int(bestValue - ss->staticEval) * depth / 8,
                                                  -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
-        thisThread->nodeTypeCorrectionHistory[us][node_type_index(PvNode, cutNode)] << bonus / 2;
+        thisThread->kingCorrectionHistory[us][king_index(pos)] << bonus;
         thisThread->pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)]
           << bonus * 114 / 128;
         thisThread->majorPieceCorrectionHistory[us][major_piece_index(pos)] << bonus * 163 / 128;
@@ -1533,7 +1532,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Step 4. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = correction_value(*thisThread, pos, ss, PvNode, false);
+    const auto correctionValue      = correction_value(*thisThread, pos, ss);
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
