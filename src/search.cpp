@@ -749,7 +749,10 @@ Value Search::Worker::search(
         else if (PvNode)
             Eval::NNUE::hint_common_parent_position(pos, networks[numaAccessToken], refreshTable);
 
-        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        if (!(ttData.move && pos.capture(ttData.move)))
+            ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        else
+            ss->staticEval = eval = unadjustedStaticEval;
 
         // ttValue can be used as a better position evaluation
         if (is_valid(ttData.value)
@@ -1536,8 +1539,12 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             unadjustedStaticEval = ttData.eval;
             if (!is_valid(unadjustedStaticEval))
                 unadjustedStaticEval = evaluate(pos);
-            ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+
+            if (!(ttData.move && pos.capture(ttData.move)))
+                ss->staticEval = bestValue =
+                  to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+            else
+                ss->staticEval = bestValue = unadjustedStaticEval;
 
             // ttValue can be used as a better position evaluation
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
