@@ -1425,7 +1425,7 @@ moves_loop:  // When in check, search starts here
                        depth, bestMove, unadjustedStaticEval, tt.generation());
 
     // Adjust correction history
-    if (!ss->inCheck && !(bestMove && (pos.capture(bestMove) || pos.gives_check(bestMove)))
+    if (!ss->inCheck && !(bestMove && (pos.capture(bestMove) || pos.gives_double_check(bestMove)))
         && ((bestValue < ss->staticEval && bestValue < beta)  // negative correction & no fail high
             || (bestValue > ss->staticEval && bestMove)))     // positive correction & no fail low
     {

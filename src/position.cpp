@@ -634,6 +634,22 @@ bool Position::pseudo_legal(const Move m) const {
 }
 
 
+// Tests whether a pseudo-legal move gives a double check
+bool Position::gives_double_check(Move m) const {
+
+    assert(m.is_ok());
+    assert(color_of(moved_piece(m)) == sideToMove);
+
+    Square from = m.from_sq();
+    Square to   = m.to_sq();
+
+    return (check_squares(type_of(piece_on(from))) & to)  // Is there a direct check ...
+        && (blockers_for_king(~sideToMove) & from)
+        && (!aligned(from, to, square<KING>(~sideToMove))
+            || m.type_of() == CASTLING);  // ... and also a discovered check?
+}
+
+
 // Tests whether a pseudo-legal move gives a check
 bool Position::gives_check(Move m) const {
 
