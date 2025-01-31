@@ -52,6 +52,12 @@
 
 namespace Stockfish {
 
+int CV[5] = { 7000, 0, 6300, 7550, 6320 };
+int CW[5] = { 114, 128, 146, 165, 128 };
+
+TUNE(SetRange(0, 14000), CV);
+TUNE(SetRange(0, 256), CW);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -95,7 +101,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* ss) {
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return (7000 * pcv + 7000 * macv + 6300 * micv + 7550 * (wnpcv + bnpcv) + 6320 * cntcv);
+    return (CV[0] * pcv + CV[1] * macv + CV[2] * micv + CV[3] * (wnpcv + bnpcv) + CV[4] * cntcv);
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -1432,22 +1438,22 @@ moves_loop:  // When in check, search starts here
             || (bestValue > ss->staticEval && bestMove)))     // positive correction & no fail low
     {
         const auto    m             = (ss - 1)->currentMove;
-        constexpr int nonPawnWeight = 165;
+        const int nonPawnWeight = CW[3];
 
         auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth / 8,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         thisThread->pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)]
-          << bonus * 114 / 128;
+          << bonus * CW[0] / 128;
         thisThread->materialCorrectionHistory[us][material_index(pos)]
-          << bonus * 114 / 128;
-        thisThread->minorPieceCorrectionHistory[us][minor_piece_index(pos)] << bonus * 146 / 128;
+          << bonus * CW[1] / 128;
+        thisThread->minorPieceCorrectionHistory[us][minor_piece_index(pos)] << bonus * CW[2] / 128;
         thisThread->nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us]
           << bonus * nonPawnWeight / 128;
         thisThread->nonPawnCorrectionHistory[BLACK][non_pawn_index<BLACK>(pos)][us]
           << bonus * nonPawnWeight / 128;
 
         if (m.is_ok())
-            (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()] << bonus;
+            (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()] << bonus * CW[4] / 128;
     }
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
