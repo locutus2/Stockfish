@@ -95,13 +95,13 @@ int correction_value(const Worker& w, const Position& pos, const Stack* ss) {
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return (7000 * pcv + 7000 * macv + 6300 * micv + 7550 * (wnpcv + bnpcv) + 6320 * cntcv);
+    return (5826 * pcv + 5826 * macv + 5243 * micv + 6283 * (wnpcv + bnpcv) + 5260 * cntcv);
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
 // does not hit the tablebase range.
 Value to_corrected_static_eval(Value v, const int cv) {
-    return std::clamp(v + cv / 157498, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+    return std::clamp(v + cv / 131072, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 }
 
 // History and stats update bonus, based on depth
