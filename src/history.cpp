@@ -43,9 +43,10 @@ int getUpdate(int entry, int bonus, int D) {
     //assert(std::abs(entry) <= UPDATE_POWER_SIZE);
     //assert(std::abs(clampedBonus) >= 0);
     //assert(std::abs(clampedBonus) <= UPDATE_POWER_SIZE);
-    return (clampedBonus - entry * std::abs(clampedBonus) / D) * UpdatePower[std::abs(entry)]
+    entry += (clampedBonus - entry * std::abs(clampedBonus) / D) * UpdatePower[std::abs(entry)]
          * UPDATE_POWER_EXPONENT_NOMINATOR
          / (UPDATE_POWER_EXPONENT_DENOMINATOR * UpdatePower[std::abs(clampedBonus)]);
+    return std::clamp(entry, -D, D);
 }
 
 void init() {

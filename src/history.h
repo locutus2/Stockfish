@@ -91,7 +91,7 @@ class StatsEntry {
     operator const T&() const { return entry; }
 
     void operator<<(int bonus) {
-        entry += History::getUpdate(entry, bonus, D);
+        entry = History::getUpdate(entry, bonus, D);
 
         assert(std::abs(entry) <= D);
     }
