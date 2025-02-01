@@ -33,6 +33,13 @@
 
 namespace Stockfish {
 
+namespace History {
+
+int  getUpdate(int entry, int bonus, int D);
+void init();
+
+}
+
 constexpr int PAWN_HISTORY_SIZE        = 512;    // has to be a power of 2
 constexpr int CORRECTION_HISTORY_SIZE  = 32768;  // has to be a power of 2
 constexpr int CORRECTION_HISTORY_LIMIT = 1024;
@@ -84,9 +91,7 @@ class StatsEntry {
     operator const T&() const { return entry; }
 
     void operator<<(int bonus) {
-        // Make sure that bonus is in range [-D / 2, D / 2]
-        int clampedBonus = std::clamp(bonus, -D / 2, D / 2);
-        entry += clampedBonus - entry * std::abs(clampedBonus) / D;
+        entry += History::getUpdate(entry, bonus, D);
 
         assert(std::abs(entry) <= D);
     }

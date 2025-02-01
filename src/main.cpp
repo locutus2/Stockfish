@@ -19,6 +19,7 @@
 #include <iostream>
 
 #include "bitboard.h"
+#include "history.h"
 #include "misc.h"
 #include "position.h"
 #include "types.h"
@@ -33,6 +34,7 @@ int main(int argc, char* argv[]) {
 
     Bitboards::init();
     Position::init();
+    History::init();
 
     UCIEngine uci(argc, argv);
 
