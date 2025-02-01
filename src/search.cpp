@@ -1193,7 +1193,7 @@ moves_loop:  // When in check, search starts here
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
 
-            int inc = PvNode && d < newDepth;
+            int inc = !PvNode && ss->ttPv && d < newDepth;
             (ss + 1)->reduction = newDepth - d;
 
             value               = -search<NonPV>(pos, ss + 1, -(alpha + 1) + inc, -alpha + inc, d, true);
