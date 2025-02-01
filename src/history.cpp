@@ -24,7 +24,7 @@ namespace {
 
 constexpr int UPDATE_POWER_SIZE = 30000;  // Have to be >= then the maximum history table divisior D
 constexpr int UPDATE_POWER_SCALE                = 1024;
-constexpr int UPDATE_POWER_EXPONENT_NOMINATOR   = 255;
+constexpr int UPDATE_POWER_EXPONENT_NOMINATOR   = 257;
 constexpr int UPDATE_POWER_EXPONENT_DENOMINATOR = 256;
 
 int UpdatePower[UPDATE_POWER_SIZE + 1];
