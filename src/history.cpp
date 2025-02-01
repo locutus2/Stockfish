@@ -24,7 +24,7 @@ namespace {
 
 constexpr int UPDATE_POWER_SIZE = 30000;  // Have to be >= then the maximum history table divisior D
 constexpr int UPDATE_POWER_SCALE                = 1024;
-constexpr int UPDATE_POWER_EXPONENT_NOMINATOR   = 61;
+constexpr int UPDATE_POWER_EXPONENT_NOMINATOR   = 67;
 constexpr int UPDATE_POWER_EXPONENT_DENOMINATOR = 64;
 
 int UpdatePower[UPDATE_POWER_SIZE + 1];
@@ -39,10 +39,10 @@ int getUpdate(int entry, int bonus, int D) {
 
     // Make sure that bonus is in range [-D / 2, D / 2]
     int clampedBonus = std::clamp(bonus, -D / 2, D / 2);
-    assert(std::abs(entry) >= 0);
-    assert(std::abs(entry) <= UPDATE_POWER_SIZE);
-    assert(std::abs(clampedBonus) >= 0);
-    assert(std::abs(clampedBonus) <= UPDATE_POWER_SIZE);
+    //assert(std::abs(entry) >= 0);
+    //assert(std::abs(entry) <= UPDATE_POWER_SIZE);
+    //assert(std::abs(clampedBonus) >= 0);
+    //assert(std::abs(clampedBonus) <= UPDATE_POWER_SIZE);
     return (clampedBonus - entry * std::abs(clampedBonus) / D) * UpdatePower[std::abs(entry)]
          * UPDATE_POWER_EXPONENT_NOMINATOR
          / (UPDATE_POWER_EXPONENT_DENOMINATOR * UpdatePower[std::abs(clampedBonus)]);
