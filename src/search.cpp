@@ -52,14 +52,14 @@
 
 namespace Stockfish {
 
-int RBP = 1024;
-int RBM = 1024;
-int RCV[4] = { 7037, 6671, 7631, 6362 };
-int RCW[4] = { 104, 145, 159, 146 };
+int RBP    = 1024;
+int RBM    = 1024;
+int RCV[4] = {7037, 6671, 7631, 6362};
+int RCW[4] = {104, 145, 159, 146};
 
-TUNE(SetRange(0,2048), RBP, RBM);
-TUNE(SetRange(0,14000), RCV);
-TUNE(SetRange(0,256), RCW);
+TUNE(SetRange(0, 2048), RBP, RBM);
+TUNE(SetRange(0, 14000), RCV);
+TUNE(SetRange(0, 256), RCW);
 
 namespace TB = Tablebases;
 
@@ -1294,11 +1294,6 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-            int bonus = std::clamp((value > alpha ? -RBM : RBP) * d / 8,
-                                   -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
-                                   REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
-            update_reduction_correction_history(pos, ss, *thisThread, bonus);
-
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
             {
@@ -1310,10 +1305,18 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
+                    int bonus = std::clamp((value > alpha ? RBP : -RBM) * d / 8,
+                                           -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
+                                           REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
+                    update_reduction_correction_history(pos, ss, *thisThread, bonus);
+                }
+
+
                 // Post LMR continuation history updates
-                bonus = (value >= beta) * 2048;
+                int bonus = (value >= beta) * 2048;
                 update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
         }
