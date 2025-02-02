@@ -1275,6 +1275,8 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1451 / 16384;
 
+        int reductionBonus = 0;
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1308,10 +1310,9 @@ moves_loop:  // When in check, search starts here
                 {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
-                    int bonus = std::clamp((value > alpha ? RBP : -RBM) * d / 8,
-                                           -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
-                                           REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
-                    update_reduction_correction_history(pos, ss, *thisThread, bonus);
+                    reductionBonus = std::clamp((value > alpha ? RBP : -RBM) * d / 8,
+                                                -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
+                                                REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
                 }
 
 
@@ -1351,6 +1352,9 @@ moves_loop:  // When in check, search starts here
         pos.undo_move(move);
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
+
+        if (reductionBonus)
+            update_reduction_correction_history(pos, ss, *thisThread, reductionBonus);
 
         // Step 20. Check for a new best move
         // Finished searching the move. If a stop occurred, the return value of
