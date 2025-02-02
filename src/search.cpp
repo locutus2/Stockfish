@@ -52,14 +52,14 @@
 
 namespace Stockfish {
 
-int RBP = 1024;
-int RBM = 1024;
-int RCV[4] = { 7037, 6671, 7631, 6362 };
-int RCW[4] = { 104, 145, 159, 146 };
+int RBP    = 1024;
+int RBM    = 1024;
+int RCV[4] = {7037, 6671, 7631, 6362};
+int RCW[4] = {104, 145, 159, 146};
 
-TUNE(SetRange(0,2048), RBP, RBM);
-TUNE(SetRange(0,14000), RCV);
-TUNE(SetRange(0,256), RCW);
+TUNE(SetRange(0, 2048), RBP, RBM);
+TUNE(SetRange(0, 14000), RCV);
+TUNE(SetRange(0, 256), RCW);
 
 namespace TB = Tablebases;
 
@@ -1276,6 +1276,8 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1451 / 16384;
 
+        int reductionBonus = 0;
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1308,15 +1310,15 @@ moves_loop:  // When in check, search starts here
                 if (newDepth > d)
                 {
                     bool failLowLMR = value <= alpha;
+
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
-                    if (failLowLMR || value <= alpha)
-                    {
-                        int bonus = std::clamp((value > alpha ? -RBM : RBP) * d / 8,
-                                               -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
-                                               REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
-                        update_reduction_correction_history(pos, ss, *thisThread, bonus);
-                    }
+                    bool failLowResearch = value <= alpha;
+
+                    reductionBonus =
+                      std::clamp((failLowLMR == failLowResearch ? RBP : -RBM) * d / 8,
+                                 -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
+                                 REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
                 }
 
                 // Post LMR continuation history updates
@@ -1355,6 +1357,9 @@ moves_loop:  // When in check, search starts here
         pos.undo_move(move);
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
+
+        if (reductionBonus)
+            update_reduction_correction_history(pos, ss, *thisThread, reductionBonus);
 
         // Step 20. Check for a new best move
         // Finished searching the move. If a stop occurred, the return value of
