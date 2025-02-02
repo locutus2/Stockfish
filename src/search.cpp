@@ -1285,11 +1285,6 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-            int bonus = std::clamp((value > alpha ? -1024 : 1024) * d / 8,
-                                   -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
-                                   REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
-            update_reduction_correction_history(pos, ss, *thisThread, bonus);
-
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
             {
@@ -1301,10 +1296,18 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
+                    int bonus = std::clamp((value > alpha ? 1024 : -1024) * d / 8,
+                                           -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
+                                           REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
+                    update_reduction_correction_history(pos, ss, *thisThread, bonus);
+                }
+
+
                 // Post LMR continuation history updates
-                bonus = (value >= beta) * 2048;
+                int bonus = (value >= beta) * 2048;
                 update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
         }
