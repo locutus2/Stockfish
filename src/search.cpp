@@ -1301,7 +1301,7 @@ moves_loop:  // When in check, search starts here
                     bool failLowLMR = value <= alpha;
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
-                    if ((failLowLMR && value > alpha) || (!failLowLMR && value <= alpha))
+                    if (failLowLMR || value <= alpha)
                     {
                         int bonus = std::clamp((value > alpha ? -1024 : 1024) * d / 8,
                                                -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
