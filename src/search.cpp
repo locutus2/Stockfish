@@ -1007,6 +1007,17 @@ moves_loop:  // When in check, search starts here
     int   moveCount           = 0;
     Depth reductionCorrection = reduction_correction_value(*thisThread, pos, ss);
 
+    /*
+    dbg_mean_of(reductionCorrection, 0);
+    dbg_mean_of(std::abs(reductionCorrection), 1);
+    dbg_stdev_of(reductionCorrection, 0);
+
+    bench 16 1 16 pos1000.fen
+    Mean #0: Total 80969070 Mean 69.0078
+    Mean #1: Total 80969070 Mean 151.732
+    Stdev #0: Total 80969070 Stdev 158.445
+    */
+
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move()) != Move::none())
