@@ -1012,6 +1012,12 @@ moves_loop:  // When in check, search starts here
     dbg_mean_of(std::abs(reductionCorrection), 1);
     dbg_stdev_of(reductionCorrection, 0);
 
+    after STC tuning
+    Mean #0: Total 80300217 Mean 68.7461
+    Mean #1: Total 80300217 Mean 149.549
+    Stdev #0: Total 80300217 Stdev 155.928
+
+    initial version
     bench 16 1 16 pos1000.fen
     Mean #0: Total 80969070 Mean 69.0078
     Mean #1: Total 80969070 Mean 151.732
