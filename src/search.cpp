@@ -139,7 +139,7 @@ int reduction_correction_value(const Worker& w, const Position& pos, const Stack
         ? (*(ss - 2)->continuationReductionCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         : 0;
 
-    return (7037 * pcv + 6671 * micv + 7631 * (wnpcv + bnpcv) + 6362 * cntcv) / 131072;
+    return (7092 * pcv + 6875 * micv + 6570 * (wnpcv + bnpcv) + 6463 * cntcv) / 131072;
 }
 
 void update_reduction_correction_history(const Position& pos,
@@ -149,12 +149,12 @@ void update_reduction_correction_history(const Position& pos,
     const Move  m  = (ss - 1)->currentMove;
     const Color us = pos.side_to_move();
 
-    static constexpr int nonPawnWeight = 159;
+    static constexpr int nonPawnWeight = 154;
 
     workerThread.pawnReductionCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
-      << bonus * 104 / 128;
+      << bonus * 100 / 128;
     workerThread.minorPieceReductionCorrectionHistory[minor_piece_index<Reduction>(pos)][us]
-      << bonus * 145 / 128;
+      << bonus * 147 / 128;
     workerThread.nonPawnReductionCorrectionHistory[WHITE][non_pawn_index<WHITE, Reduction>(pos)][us]
       << bonus * nonPawnWeight / 128;
     workerThread.nonPawnReductionCorrectionHistory[BLACK][non_pawn_index<BLACK, Reduction>(pos)][us]
@@ -162,7 +162,7 @@ void update_reduction_correction_history(const Position& pos,
 
     if (m.is_ok())
         (*(ss - 2)->continuationReductionCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-          << bonus * 146 / 128;
+          << bonus * 145 / 128;
 }
 
 // History and stats update bonus, based on depth
@@ -1303,7 +1303,7 @@ moves_loop:  // When in check, search starts here
 
                     if (failLowLMR || value <= alpha)
                     {
-                        int bonus = std::clamp((value > alpha ? -1024 : 1024) * d / 8,
+                        int bonus = std::clamp((value > alpha ? -1010 : 986) * d / 8,
                                                -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
                                                REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
                         update_reduction_correction_history(pos, ss, *thisThread, bonus);
