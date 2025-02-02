@@ -1012,6 +1012,7 @@ moves_loop:  // When in check, search starts here
     dbg_mean_of(std::abs(reductionCorrection), 1);
     dbg_stdev_of(reductionCorrection, 0);
 
+     * initial weights from correction history
     bench 16 1 16 pos1000.fen
     Mean #0: Total 80969070 Mean 69.0078
     Mean #1: Total 80969070 Mean 151.732
@@ -1300,7 +1301,7 @@ moves_loop:  // When in check, search starts here
                     bool failLowLMR = value <= alpha;
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
-                    if ((failLowLMR && value > alpha) && (!failLowLMR && value <= alpha))
+                    if ((failLowLMR && value > alpha) || (!failLowLMR && value <= alpha))
                     {
                         int bonus = std::clamp((value > alpha ? -1024 : 1024) * d / 8,
                                                -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
