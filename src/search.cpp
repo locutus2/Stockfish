@@ -1014,7 +1014,6 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int   moveCount           = 0;
-    Depth reductionCorrection = reduction_correction_value(*thisThread, pos, ss);
 
     /*
     dbg_mean_of(reductionCorrection, 0);
@@ -1215,6 +1214,9 @@ moves_loop:  // When in check, search starts here
                           > 4126)
                 extension = 1;
         }
+
+        Depth reductionCorrection =
+          (depth >= 2 && moveCount > 1 ? reduction_correction_value(*thisThread, pos, ss) : 0);
 
         // Step 16. Make the move
         pos.do_move(move, st, givesCheck, &tt);
