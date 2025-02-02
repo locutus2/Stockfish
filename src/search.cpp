@@ -1224,8 +1224,6 @@ moves_loop:  // When in check, search starts here
           &thisThread->continuationReductionCorrectionHistory[movedPiece][move.to_sq()];
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
 
-        r += reductionCorrection;
-
         // Decrease reduction for PvNodes (*Scaler)
         if (ss->ttPv)
             r -= 2061 + (ttData.value > alpha) * 965 + (ttData.depth >= depth) * 960;
@@ -1277,6 +1275,7 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
+            r += reductionCorrection;
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
@@ -1286,6 +1285,10 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
+            int bonus = std::clamp((value > alpha ? -1024 : 1024) * newDepth / 8,
+                                   -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
+                                   REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
+            update_reduction_correction_history(pos, ss, *thisThread, bonus);
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
@@ -1301,7 +1304,7 @@ moves_loop:  // When in check, search starts here
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
                 // Post LMR continuation history updates
-                int bonus = (value >= beta) * 2048;
+                bonus = (value >= beta) * 2048;
                 update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
         }
@@ -1343,11 +1346,6 @@ moves_loop:  // When in check, search starts here
         // best move, principal variation nor transposition table.
         if (threads.stop.load(std::memory_order_relaxed))
             return VALUE_ZERO;
-
-        auto bonus = std::clamp((value > alpha ? -1024 : 1024) * newDepth / 8,
-                                -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
-                                REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
-        update_reduction_correction_history(pos, ss, *thisThread, bonus);
 
         if (rootNode)
         {
