@@ -175,16 +175,8 @@ using CorrectionHistory = typename Detail::CorrHistTypedef<T>::type;
 
 namespace Detail {
 
-template<CorrHistType _>
+template<CorrHistType>
 struct RedCorrHistTypedef {
-    using type = Stats<std::int16_t,
-                       REDUCTION_CORRECTION_HISTORY_LIMIT,
-                       COLOR_NB,
-                       REDUCTION_CORRECTION_HISTORY_SIZE>;
-};
-
-template<>
-struct RedCorrHistTypedef<NonPawn> {
     using type = Stats<std::int16_t,
                        REDUCTION_CORRECTION_HISTORY_LIMIT,
                        REDUCTION_CORRECTION_HISTORY_SIZE,

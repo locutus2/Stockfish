@@ -97,46 +97,6 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     return 7037 * pcv + 6671 * micv + 7631 * (wnpcv + bnpcv) + 6362 * cntcv;
 }
 
-int reduction_correction_value(const Worker& w, const Position& pos, const Stack* ss) {
-    const Color us  = pos.side_to_move();
-    const auto  m   = (ss - 1)->currentMove;
-    const auto  pcv = w.pawnReductionCorrectionHistory[us][pawn_structure_index<Reduction>(pos)];
-    const auto micv = w.minorPieceReductionCorrectionHistory[us][minor_piece_index<Reduction>(pos)];
-    const auto wnpcv =
-      w.nonPawnReductionCorrectionHistory[WHITE][non_pawn_index<WHITE, Reduction>(pos)][us];
-    const auto bnpcv =
-      w.nonPawnReductionCorrectionHistory[BLACK][non_pawn_index<BLACK, Reduction>(pos)][us];
-    const auto cntcv =
-      m.is_ok()
-        ? (*(ss - 2)->continuationReductionCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-        : 0;
-
-    return (7037 * pcv + 6671 * micv + 7631 * (wnpcv + bnpcv) + 6362 * cntcv) / 131072;
-}
-
-void reduction_correction_update(
-  Worker& w, const Position& pos, const Stack* ss, Depth depth, Value value, Value alpha) {
-    const auto    us            = pos.side_to_move();
-    const auto    m             = (ss - 1)->currentMove;
-    constexpr int nonPawnWeight = 159;
-    int           bonus         = (value > alpha ? -1024 : 1024);
-
-    bonus = std::clamp(bonus * depth / 8, -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
-                       REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
-    w.pawnReductionCorrectionHistory[us][pawn_structure_index<Correction>(pos)]
-      << bonus * 104 / 128;
-    w.minorPieceReductionCorrectionHistory[us][minor_piece_index<Reduction>(pos)]
-      << bonus * 145 / 128;
-    w.nonPawnReductionCorrectionHistory[WHITE][non_pawn_index<WHITE, Reduction>(pos)][us]
-      << bonus * nonPawnWeight / 128;
-    w.nonPawnReductionCorrectionHistory[BLACK][non_pawn_index<BLACK, Reduction>(pos)][us]
-      << bonus * nonPawnWeight / 128;
-
-    if (m.is_ok())
-        (*(ss - 2)->continuationReductionCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-          << bonus * 146 / 128;
-}
-
 // Add correctionHistory value to raw staticEval and guarantee evaluation
 // does not hit the tablebase range.
 Value to_corrected_static_eval(const Value v, const int cv) {
@@ -162,6 +122,46 @@ void update_correction_history(const Position& pos,
 
     if (m.is_ok())
         (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+          << bonus * 146 / 128;
+}
+
+int reduction_correction_value(const Worker& w, const Position& pos, const Stack* ss) {
+    const Color us  = pos.side_to_move();
+    const auto  m   = (ss - 1)->currentMove;
+    const auto  pcv = w.pawnReductionCorrectionHistory[pawn_structure_index<Reduction>(pos)][us];
+    const auto micv = w.minorPieceReductionCorrectionHistory[minor_piece_index<Reduction>(pos)][us];
+    const auto wnpcv =
+      w.nonPawnReductionCorrectionHistory[WHITE][non_pawn_index<WHITE, Reduction>(pos)][us];
+    const auto bnpcv =
+      w.nonPawnReductionCorrectionHistory[BLACK][non_pawn_index<BLACK, Reduction>(pos)][us];
+    const auto cntcv =
+      m.is_ok()
+        ? (*(ss - 2)->continuationReductionCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        : 0;
+
+    return (7037 * pcv + 6671 * micv + 7631 * (wnpcv + bnpcv) + 6362 * cntcv) / 131072;
+}
+
+void update_reduction_correction_history(const Position& pos,
+                                         Stack* const    ss,
+                                         Search::Worker& workerThread,
+                                         const int       bonus) {
+    const Move  m  = (ss - 1)->currentMove;
+    const Color us = pos.side_to_move();
+
+    static constexpr int nonPawnWeight = 159;
+
+    workerThread.pawnReductionCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
+      << bonus * 104 / 128;
+    workerThread.minorPieceReductionCorrectionHistory[minor_piece_index<Reduction>(pos)][us]
+      << bonus * 145 / 128;
+    workerThread.nonPawnReductionCorrectionHistory[WHITE][non_pawn_index<WHITE, Reduction>(pos)][us]
+      << bonus * nonPawnWeight / 128;
+    workerThread.nonPawnReductionCorrectionHistory[BLACK][non_pawn_index<BLACK, Reduction>(pos)][us]
+      << bonus * nonPawnWeight / 128;
+
+    if (m.is_ok())
+        (*(ss - 2)->continuationReductionCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
           << bonus * 146 / 128;
 }
 
@@ -1333,7 +1333,10 @@ moves_loop:  // When in check, search starts here
         if (threads.stop.load(std::memory_order_relaxed))
             return VALUE_ZERO;
 
-        reduction_correction_update(*thisThread, pos, ss, newDepth, value, alpha);
+        auto bonus = std::clamp((value > alpha ? -1024 : 1024) * newDepth / 8,
+                                -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
+                                REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
+        update_reduction_correction_history(pos, ss, *thisThread, bonus);
 
         if (rootNode)
         {
