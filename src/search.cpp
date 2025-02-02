@@ -97,6 +97,46 @@ int correction_value(const Worker& w, const Position& pos, const Stack* ss) {
     return 7037 * pcv + 6671 * micv + 7631 * (wnpcv + bnpcv) + 6362 * cntcv;
 }
 
+int reduction_correction_value(const Worker& w, const Position& pos, const Stack* ss) {
+    const Color us  = pos.side_to_move();
+    const auto  m   = (ss - 1)->currentMove;
+    const auto  pcv = w.pawnReductionCorrectionHistory[us][pawn_structure_index<Reduction>(pos)];
+    const auto micv = w.minorPieceReductionCorrectionHistory[us][minor_piece_index<Reduction>(pos)];
+    const auto wnpcv =
+      w.nonPawnReductionCorrectionHistory[WHITE][non_pawn_index<WHITE, Reduction>(pos)][us];
+    const auto bnpcv =
+      w.nonPawnReductionCorrectionHistory[BLACK][non_pawn_index<BLACK, Reduction>(pos)][us];
+    const auto cntcv =
+      m.is_ok()
+        ? (*(ss - 2)->continuationReductionCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        : 0;
+
+    return (7037 * pcv + 6671 * micv + 7631 * (wnpcv + bnpcv) + 6362 * cntcv) / 131072;
+}
+
+void reduction_correction_update(
+  Worker& w, const Position& pos, const Stack* ss, Depth depth, Value value, Value alpha) {
+    const auto    us            = pos.side_to_move();
+    const auto    m             = (ss - 1)->currentMove;
+    constexpr int nonPawnWeight = 159;
+    int           bonus         = (value > alpha ? -1024 : 1024);
+
+    bonus = std::clamp(bonus * depth / 8, -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
+                       REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
+    w.pawnReductionCorrectionHistory[us][pawn_structure_index<Correction>(pos)]
+      << bonus * 104 / 128;
+    w.minorPieceReductionCorrectionHistory[us][minor_piece_index<Reduction>(pos)]
+      << bonus * 145 / 128;
+    w.nonPawnReductionCorrectionHistory[WHITE][non_pawn_index<WHITE, Reduction>(pos)][us]
+      << bonus * nonPawnWeight / 128;
+    w.nonPawnReductionCorrectionHistory[BLACK][non_pawn_index<BLACK, Reduction>(pos)][us]
+      << bonus * nonPawnWeight / 128;
+
+    if (m.is_ok())
+        (*(ss - 2)->continuationReductionCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+          << bonus * 146 / 128;
+}
+
 // Add correctionHistory value to raw staticEval and guarantee evaluation
 // does not hit the tablebase range.
 Value to_corrected_static_eval(Value v, const int cv) {
@@ -253,8 +293,10 @@ void Search::Worker::iterative_deepening() {
         (ss - i)->continuationHistory =
           &this->continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &this->continuationCorrectionHistory[NO_PIECE][0];
-        (ss - i)->staticEval                    = VALUE_NONE;
-        (ss - i)->reduction                     = 0;
+        (ss - i)->continuationReductionCorrectionHistory =
+          &this->continuationReductionCorrectionHistory[NO_PIECE][0];
+        (ss - i)->staticEval = VALUE_NONE;
+        (ss - i)->reduction  = 0;
     }
 
     for (int i = 0; i <= MAX_PLY + 2; ++i)
@@ -519,6 +561,10 @@ void Search::Worker::clear() {
     minorPieceCorrectionHistory.fill(0);
     nonPawnCorrectionHistory[WHITE].fill(0);
     nonPawnCorrectionHistory[BLACK].fill(0);
+    pawnReductionCorrectionHistory.fill(0);
+    minorPieceReductionCorrectionHistory.fill(0);
+    nonPawnReductionCorrectionHistory[WHITE].fill(0);
+    nonPawnReductionCorrectionHistory[BLACK].fill(0);
 
     for (auto& to : continuationCorrectionHistory)
         for (auto& h : to)
@@ -815,6 +861,8 @@ Value Search::Worker::search(
         ss->currentMove                   = Move::null();
         ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
         ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
+        ss->continuationReductionCorrectionHistory =
+          &thisThread->continuationReductionCorrectionHistory[NO_PIECE][0];
 
         pos.do_null_move(st, tt);
 
@@ -895,6 +943,8 @@ Value Search::Worker::search(
               &this->continuationHistory[ss->inCheck][true][movedPiece][move.to_sq()];
             ss->continuationCorrectionHistory =
               &this->continuationCorrectionHistory[movedPiece][move.to_sq()];
+            ss->continuationReductionCorrectionHistory =
+              &this->continuationReductionCorrectionHistory[movedPiece][move.to_sq()];
 
             // Perform a preliminary qsearch to verify that the move holds
             value = -qsearch<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1);
@@ -936,7 +986,8 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int moveCount = 0;
+    int   moveCount           = 0;
+    Depth reductionCorrection = reduction_correction_value(*thisThread, pos, ss);
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1137,7 +1188,11 @@ moves_loop:  // When in check, search starts here
           &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
         ss->continuationCorrectionHistory =
           &thisThread->continuationCorrectionHistory[movedPiece][move.to_sq()];
+        ss->continuationReductionCorrectionHistory =
+          &thisThread->continuationReductionCorrectionHistory[movedPiece][move.to_sq()];
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
+
+        r += reductionCorrection;
 
         // Decrease reduction for PvNodes (*Scaler)
         if (ss->ttPv)
@@ -1256,6 +1311,8 @@ moves_loop:  // When in check, search starts here
         // best move, principal variation nor transposition table.
         if (threads.stop.load(std::memory_order_relaxed))
             return VALUE_ZERO;
+
+        reduction_correction_update(*thisThread, pos, ss, newDepth, value, alpha);
 
         if (rootNode)
         {

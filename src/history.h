@@ -33,10 +33,12 @@
 
 namespace Stockfish {
 
-constexpr int PAWN_HISTORY_SIZE        = 512;    // has to be a power of 2
-constexpr int CORRECTION_HISTORY_SIZE  = 32768;  // has to be a power of 2
-constexpr int CORRECTION_HISTORY_LIMIT = 1024;
-constexpr int LOW_PLY_HISTORY_SIZE     = 4;
+constexpr int PAWN_HISTORY_SIZE                  = 512;    // has to be a power of 2
+constexpr int CORRECTION_HISTORY_SIZE            = 32768;  // has to be a power of 2
+constexpr int CORRECTION_HISTORY_LIMIT           = 1024;
+constexpr int REDUCTION_CORRECTION_HISTORY_SIZE  = 32768;  // has to be a power of 2
+constexpr int REDUCTION_CORRECTION_HISTORY_LIMIT = 1024;
+constexpr int LOW_PLY_HISTORY_SIZE               = 4;
 
 static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
               "PAWN_HISTORY_SIZE has to be a power of 2");
@@ -44,23 +46,34 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
 static_assert((CORRECTION_HISTORY_SIZE & (CORRECTION_HISTORY_SIZE - 1)) == 0,
               "CORRECTION_HISTORY_SIZE has to be a power of 2");
 
-enum PawnHistoryType {
+static_assert((REDUCTION_CORRECTION_HISTORY_SIZE & (REDUCTION_CORRECTION_HISTORY_SIZE - 1)) == 0,
+              "REDUCTION_CORRECTION_HISTORY_SIZE has to be a power of 2");
+
+enum HistoryType {
     Normal,
-    Correction
+    Correction,
+    Reduction,
 };
 
-template<PawnHistoryType T = Normal>
+template<HistoryType T = Normal>
 inline int pawn_structure_index(const Position& pos) {
-    return pos.pawn_key() & ((T == Normal ? PAWN_HISTORY_SIZE : CORRECTION_HISTORY_SIZE) - 1);
+    return pos.pawn_key()
+         & ((T == Normal      ? PAWN_HISTORY_SIZE
+             : T == Reduction ? REDUCTION_CORRECTION_HISTORY_SIZE
+                              : CORRECTION_HISTORY_SIZE)
+            - 1);
 }
 
+template<HistoryType T = Correction>
 inline int minor_piece_index(const Position& pos) {
-    return pos.minor_piece_key() & (CORRECTION_HISTORY_SIZE - 1);
+    return pos.minor_piece_key()
+         & (T == Reduction ? REDUCTION_CORRECTION_HISTORY_SIZE : CORRECTION_HISTORY_SIZE - 1);
 }
 
-template<Color c>
+template<Color c, HistoryType T = Correction>
 inline int non_pawn_index(const Position& pos) {
-    return pos.non_pawn_key(c) & (CORRECTION_HISTORY_SIZE - 1);
+    return pos.non_pawn_key(c)
+         & (T == Reduction ? REDUCTION_CORRECTION_HISTORY_SIZE : CORRECTION_HISTORY_SIZE - 1);
 }
 
 // StatsEntry is the container of various numerical statistics. We use a class
@@ -164,6 +177,39 @@ struct CorrHistTypedef<Continuation> {
 
 template<CorrHistType T>
 using CorrectionHistory = typename Detail::CorrHistTypedef<T>::type;
+
+namespace Detail {
+
+template<CorrHistType _>
+struct RedCorrHistTypedef {
+    using type = Stats<std::int16_t,
+                       REDUCTION_CORRECTION_HISTORY_LIMIT,
+                       COLOR_NB,
+                       REDUCTION_CORRECTION_HISTORY_SIZE>;
+};
+
+template<>
+struct RedCorrHistTypedef<NonPawn> {
+    using type = Stats<std::int16_t,
+                       REDUCTION_CORRECTION_HISTORY_LIMIT,
+                       REDUCTION_CORRECTION_HISTORY_SIZE,
+                       COLOR_NB>;
+};
+
+template<>
+struct RedCorrHistTypedef<PieceTo> {
+    using type = Stats<std::int16_t, REDUCTION_CORRECTION_HISTORY_LIMIT, PIECE_NB, SQUARE_NB>;
+};
+
+template<>
+struct RedCorrHistTypedef<Continuation> {
+    using type = MultiArray<RedCorrHistTypedef<PieceTo>::type, PIECE_NB, SQUARE_NB>;
+};
+
+}
+
+template<CorrHistType T>
+using ReductionCorrectionHistory = typename Detail::RedCorrHistTypedef<T>::type;
 
 }  // namespace Stockfish
 
