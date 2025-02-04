@@ -1214,6 +1214,7 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
+            bool C = ss->ttHit;
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
@@ -1238,12 +1239,299 @@ moves_loop:  // When in check, search starts here
                 {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
-                    bool C = givesCheck;
                     dbg_hit_on(value <= alpha, failedLMRResearch + 1000*C);
                     if (value <= alpha)
                         failedLMRResearch++;
 
                     /*
+                    bool C = ss->ttHit;
+                    Hit #0: Total 961734 Hits 197528 Hit Rate (%) 20.5387
+                    Hit #1: Total 68623 Hits 26538 Hit Rate (%) 38.6722
+                    Hit #2: Total 10981 Hits 5896 Hit Rate (%) 53.6927
+                    Hit #3: Total 2505 Hits 1599 Hit Rate (%) 63.8323
+                    Hit #4: Total 736 Hits 508 Hit Rate (%) 69.0217
+                    Hit #5: Total 216 Hits 143 Hit Rate (%) 66.2037
+                    Hit #6: Total 59 Hits 48 Hit Rate (%) 81.3559
+                    Hit #7: Total 15 Hits 13 Hit Rate (%) 86.6667
+                    Hit #8: Total 2 Hits 2 Hit Rate (%) 100
+                    Hit #9: Total 2 Hits 2 Hit Rate (%) 100
+                    Hit #1000: Total 3577398 Hits 888196 Hit Rate (%) 24.828
+                    Hit #1001: Total 276320 Hits 119958 Hit Rate (%) 43.4127
+                    Hit #1002: Total 43299 Hits 24825 Hit Rate (%) 57.3339
+                    Hit #1003: Total 9627 Hits 6329 Hit Rate (%) 65.7422
+                    Hit #1004: Total 2528 Hits 1803 Hit Rate (%) 71.3212
+                    Hit #1005: Total 759 Hits 580 Hit Rate (%) 76.4163
+                    Hit #1006: Total 237 Hits 185 Hit Rate (%) 78.0591
+                    Hit #1007: Total 76 Hits 63 Hit Rate (%) 82.8947
+                    Hit #1008: Total 30 Hits 27 Hit Rate (%) 90
+                    Hit #1009: Total 9 Hits 6 Hit Rate (%) 66.6667
+                    Hit #1010: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #1011: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1012: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1013: Total 1 Hits 1 Hit Rate (%) 100
+
+                    bool C = ss->statScore > 0;
+                    Hit #0: Total 2591040 Hits 750678 Hit Rate (%) 28.9721
+                    Hit #1: Total 265551 Hits 121827 Hit Rate (%) 45.8771
+                    Hit #2: Total 47341 Hits 27734 Hit Rate (%) 58.5835
+                    Hit #3: Total 11111 Hits 7372 Hit Rate (%) 66.3487
+                    Hit #4: Total 3093 Hits 2218 Hit Rate (%) 71.7103
+                    Hit #5: Total 936 Hits 699 Hit Rate (%) 74.6795
+                    Hit #6: Total 291 Hits 231 Hit Rate (%) 79.3814
+                    Hit #7: Total 87 Hits 74 Hit Rate (%) 85.0575
+                    Hit #8: Total 32 Hits 29 Hit Rate (%) 90.625
+                    Hit #9: Total 11 Hits 8 Hit Rate (%) 72.7273
+                    Hit #10: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #11: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #12: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #13: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1000: Total 1948092 Hits 335046 Hit Rate (%) 17.1987
+                    Hit #1001: Total 79392 Hits 24669 Hit Rate (%) 31.0724
+                    Hit #1002: Total 6939 Hits 2987 Hit Rate (%) 43.0465
+                    Hit #1003: Total 1021 Hits 556 Hit Rate (%) 54.4564
+                    Hit #1004: Total 171 Hits 93 Hit Rate (%) 54.386
+                    Hit #1005: Total 39 Hits 24 Hit Rate (%) 61.5385
+                    Hit #1006: Total 5 Hits 2 Hit Rate (%) 40
+                    Hit #1007: Total 4 Hits 2 Hit Rate (%) 50
+
+                    bool C = capture && givesCheck;
+                    Hit #0: Total 4489044 Hits 1079200 Hit Rate (%) 24.0408
+                    Hit #1: Total 343242 Hits 146081 Hit Rate (%) 42.5592
+                    Hit #2: Total 54131 Hits 30674 Hit Rate (%) 56.6662
+                    Hit #3: Total 12109 Hits 7918 Hit Rate (%) 65.3894
+                    Hit #4: Total 3261 Hits 2309 Hit Rate (%) 70.8065
+                    Hit #5: Total 974 Hits 722 Hit Rate (%) 74.1273
+                    Hit #6: Total 296 Hits 233 Hit Rate (%) 78.7162
+                    Hit #7: Total 91 Hits 76 Hit Rate (%) 83.5165
+                    Hit #8: Total 32 Hits 29 Hit Rate (%) 90.625
+                    Hit #9: Total 11 Hits 8 Hit Rate (%) 72.7273
+                    Hit #10: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #11: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #12: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #13: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1000: Total 50088 Hits 6524 Hit Rate (%) 13.0251
+                    Hit #1001: Total 1701 Hits 415 Hit Rate (%) 24.3974
+                    Hit #1002: Total 149 Hits 47 Hit Rate (%) 31.5436
+                    Hit #1003: Total 23 Hits 10 Hit Rate (%) 43.4783
+                    Hit #1004: Total 3 Hits 2 Hit Rate (%) 66.6667
+                    Hit #1005: Total 1 Hits 1 Hit Rate (%) 100
+
+                    bool C = PvNode && capture;
+                    Hit #0: Total 4538989 Hits 1085705 Hit Rate (%) 23.9195
+                    Hit #1: Total 344943 Hits 146496 Hit Rate (%) 42.4696
+                    Hit #2: Total 54280 Hits 30721 Hit Rate (%) 56.5973
+                    Hit #3: Total 12132 Hits 7928 Hit Rate (%) 65.3478
+                    Hit #4: Total 3264 Hits 2311 Hit Rate (%) 70.8027
+                    Hit #5: Total 975 Hits 723 Hit Rate (%) 74.1538
+                    Hit #6: Total 296 Hits 233 Hit Rate (%) 78.7162
+                    Hit #7: Total 91 Hits 76 Hit Rate (%) 83.5165
+                    Hit #8: Total 32 Hits 29 Hit Rate (%) 90.625
+                    Hit #9: Total 11 Hits 8 Hit Rate (%) 72.7273
+                    Hit #10: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #11: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #12: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #13: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1000: Total 143 Hits 19 Hit Rate (%) 13.2867
+
+                    bool C = (ss+1)->cutoffCnt > 0;
+                    Hit #0: Total 1072536 Hits 205696 Hit Rate (%) 19.1785
+                    Hit #1: Total 143 Hits 79 Hit Rate (%) 55.2448
+                    Hit #2: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #1000: Total 3466596 Hits 880028 Hit Rate (%) 25.3859
+                    Hit #1001: Total 344800 Hits 146417 Hit Rate (%) 42.4643
+                    Hit #1002: Total 54276 Hits 30718 Hit Rate (%) 56.5959
+                    Hit #1003: Total 12132 Hits 7928 Hit Rate (%) 65.3478
+                    Hit #1004: Total 3264 Hits 2311 Hit Rate (%) 70.8027
+                    Hit #1005: Total 975 Hits 723 Hit Rate (%) 74.1538
+                    Hit #1006: Total 296 Hits 233 Hit Rate (%) 78.7162
+                    Hit #1007: Total 91 Hits 76 Hit Rate (%) 83.5165
+                    Hit #1008: Total 32 Hits 29 Hit Rate (%) 90.625
+                    Hit #1009: Total 11 Hits 8 Hit Rate (%) 72.7273
+                    Hit #1010: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #1011: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1012: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1013: Total 1 Hits 1 Hit Rate (%) 100
+
+                    bool C = (ss-1)->currentMove == Move::null();
+                    Hit #0: Total 4521750 Hits 1081632 Hit Rate (%) 23.9207
+                    Hit #1: Total 344319 Hits 146228 Hit Rate (%) 42.4688
+                    Hit #2: Total 54239 Hits 30697 Hit Rate (%) 56.5958
+                    Hit #3: Total 12123 Hits 7921 Hit Rate (%) 65.3386
+                    Hit #4: Total 3264 Hits 2311 Hit Rate (%) 70.8027
+                    Hit #5: Total 975 Hits 723 Hit Rate (%) 74.1538
+                    Hit #6: Total 296 Hits 233 Hit Rate (%) 78.7162
+                    Hit #7: Total 91 Hits 76 Hit Rate (%) 83.5165
+                    Hit #8: Total 32 Hits 29 Hit Rate (%) 90.625
+                    Hit #9: Total 11 Hits 8 Hit Rate (%) 72.7273
+                    Hit #10: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #11: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #12: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #13: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1000: Total 17382 Hits 4092 Hit Rate (%) 23.5416
+                    Hit #1001: Total 624 Hits 268 Hit Rate (%) 42.9487
+                    Hit #1002: Total 41 Hits 24 Hit Rate (%) 58.5366
+                    Hit #1003: Total 9 Hits 7 Hit Rate (%) 77.7778
+
+                    bool C = (ss+1)->cutoffCnt > 1;
+                    Hit #0: Total 2676119 Hits 565757 Hit Rate (%) 21.141
+                    Hit #1: Total 42480 Hits 14449 Hit Rate (%) 34.0137
+                    Hit #2: Total 37 Hits 25 Hit Rate (%) 67.5676
+                    Hit #3: Total 3 Hits 3 Hit Rate (%) 100
+                    Hit #1000: Total 1863013 Hits 519967 Hit Rate (%) 27.91
+                    Hit #1001: Total 302463 Hits 132047 Hit Rate (%) 43.6572
+                    Hit #1002: Total 54243 Hits 30696 Hit Rate (%) 56.5898
+                    Hit #1003: Total 12129 Hits 7925 Hit Rate (%) 65.3393
+                    Hit #1004: Total 3264 Hits 2311 Hit Rate (%) 70.8027
+                    Hit #1005: Total 975 Hits 723 Hit Rate (%) 74.1538
+                    Hit #1006: Total 296 Hits 233 Hit Rate (%) 78.7162
+                    Hit #1007: Total 91 Hits 76 Hit Rate (%) 83.5165
+                    Hit #1008: Total 32 Hits 29 Hit Rate (%) 90.625
+                    Hit #1009: Total 11 Hits 8 Hit Rate (%) 72.7273
+                    Hit #1010: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #1011: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1012: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1013: Total 1 Hits 1 Hit Rate (%) 100
+
+                    bool C = capture || givesCheck;
+                    Hit #0: Total 3520003 Hits 876136 Hit Rate (%) 24.8902
+                    Hit #1: Total 297514 Hits 129043 Hit Rate (%) 43.3738
+                    Hit #2: Total 49017 Hits 28245 Hit Rate (%) 57.6229
+                    Hit #3: Total 11261 Hits 7470 Hit Rate (%) 66.3351
+                    Hit #4: Total 3103 Hits 2217 Hit Rate (%) 71.447
+                    Hit #5: Total 921 Hits 692 Hit Rate (%) 75.1357
+                    Hit #6: Total 284 Hits 225 Hit Rate (%) 79.2254
+                    Hit #7: Total 89 Hits 74 Hit Rate (%) 83.1461
+                    Hit #8: Total 31 Hits 28 Hit Rate (%) 90.3226
+                    Hit #9: Total 10 Hits 7 Hit Rate (%) 70
+                    Hit #10: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #11: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #12: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #13: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1000: Total 1019129 Hits 209588 Hit Rate (%) 20.5654
+                    Hit #1001: Total 47429 Hits 17453 Hit Rate (%) 36.7982
+                    Hit #1002: Total 5263 Hits 2476 Hit Rate (%) 47.0454
+                    Hit #1003: Total 871 Hits 458 Hit Rate (%) 52.5832
+                    Hit #1004: Total 161 Hits 94 Hit Rate (%) 58.3851
+                    Hit #1005: Total 54 Hits 31 Hit Rate (%) 57.4074
+                    Hit #1006: Total 12 Hits 8 Hit Rate (%) 66.6667
+                    Hit #1007: Total 2 Hits 2 Hit Rate (%) 100
+                    Hit #1008: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1009: Total 1 Hits 1 Hit Rate (%) 100
+
+                    bool C = (ss+1)->cutoffCnt > 2;
+                    Hit #0: Total 3378637 Hits 745013 Hit Rate (%) 22.0507
+                    Hit #1: Total 137342 Hits 51288 Hit Rate (%) 37.3433
+                    Hit #2: Total 3866 Hits 1824 Hit Rate (%) 47.1805
+                    Hit #3: Total 15 Hits 11 Hit Rate (%) 73.3333
+                    Hit #4: Total 2 Hits 2 Hit Rate (%) 100
+                    Hit #1000: Total 1160495 Hits 340711 Hit Rate (%) 29.3591
+                    Hit #1001: Total 207601 Hits 95208 Hit Rate (%) 45.8611
+                    Hit #1002: Total 50414 Hits 28897 Hit Rate (%) 57.3194
+                    Hit #1003: Total 12117 Hits 7917 Hit Rate (%) 65.338
+                    Hit #1004: Total 3262 Hits 2309 Hit Rate (%) 70.7848
+                    Hit #1005: Total 975 Hits 723 Hit Rate (%) 74.1538
+                    Hit #1006: Total 296 Hits 233 Hit Rate (%) 78.7162
+                    Hit #1007: Total 91 Hits 76 Hit Rate (%) 83.5165
+                    Hit #1008: Total 32 Hits 29 Hit Rate (%) 90.625
+                    Hit #1009: Total 11 Hits 8 Hit Rate (%) 72.7273
+                    Hit #1010: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #1011: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1012: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1013: Total 1 Hits 1 Hit Rate (%) 100
+
+                    bool C = (ss+1)->cutoffCnt > 3;
+                    Hit #0: Total 3748208 Hits 845539 Hit Rate (%) 22.5585
+                    Hit #1: Total 200565 Hits 77806 Hit Rate (%) 38.7934
+                    Hit #2: Total 15434 Hits 7978 Hit Rate (%) 51.6911
+                    Hit #3: Total 559 Hits 338 Hit Rate (%) 60.4651
+                    Hit #4: Total 5 Hits 5 Hit Rate (%) 100
+                    Hit #1000: Total 790924 Hits 240185 Hit Rate (%) 30.3676
+                    Hit #1001: Total 144378 Hits 68690 Hit Rate (%) 47.5765
+                    Hit #1002: Total 38846 Hits 22743 Hit Rate (%) 58.5466
+                    Hit #1003: Total 11573 Hits 7590 Hit Rate (%) 65.5837
+                    Hit #1004: Total 3259 Hits 2306 Hit Rate (%) 70.7579
+                    Hit #1005: Total 975 Hits 723 Hit Rate (%) 74.1538
+                    Hit #1006: Total 296 Hits 233 Hit Rate (%) 78.7162
+                    Hit #1007: Total 91 Hits 76 Hit Rate (%) 83.5165
+                    Hit #1008: Total 32 Hits 29 Hit Rate (%) 90.625
+                    Hit #1009: Total 11 Hits 8 Hit Rate (%) 72.7273
+                    Hit #1010: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #1011: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1012: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1013: Total 1 Hits 1 Hit Rate (%) 100
+
+                    bool C = PvNode || capture;
+                    Hit #0: Total 4084601 Hits 1011253 Hit Rate (%) 24.7577
+                    Hit #1: Total 330492 Hits 142272 Hit Rate (%) 43.0485
+                    Hit #2: Total 52870 Hits 30223 Hit Rate (%) 57.1647
+                    Hit #3: Total 11934 Hits 7849 Hit Rate (%) 65.7701
+                    Hit #4: Total 3231 Hits 2295 Hit Rate (%) 71.0306
+                    Hit #5: Total 972 Hits 722 Hit Rate (%) 74.2798
+                    Hit #6: Total 295 Hits 233 Hit Rate (%) 78.9831
+                    Hit #7: Total 91 Hits 76 Hit Rate (%) 83.5165
+                    Hit #8: Total 32 Hits 29 Hit Rate (%) 90.625
+                    Hit #9: Total 11 Hits 8 Hit Rate (%) 72.7273
+                    Hit #10: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #11: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #12: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #13: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1000: Total 454531 Hits 74471 Hit Rate (%) 16.3841
+                    Hit #1001: Total 14451 Hits 4224 Hit Rate (%) 29.2298
+                    Hit #1002: Total 1410 Hits 498 Hit Rate (%) 35.3191
+                    Hit #1003: Total 198 Hits 79 Hit Rate (%) 39.899
+                    Hit #1004: Total 33 Hits 16 Hit Rate (%) 48.4848
+                    Hit #1005: Total 3 Hits 1 Hit Rate (%) 33.3333
+                    Hit #1006: Total 1 Hits 0 Hit Rate (%) 0
+
+                    bool C = ss->ttPv;
+                    Hit #0: Total 4130588 Hits 952062 Hit Rate (%) 23.0491
+                    Hit #1: Total 315043 Hits 131435 Hit Rate (%) 41.7197
+                    Hit #2: Total 50305 Hits 28223 Hit Rate (%) 56.1038
+                    Hit #3: Total 11436 Hits 7458 Hit Rate (%) 65.2151
+                    Hit #4: Total 3122 Hits 2190 Hit Rate (%) 70.1473
+                    Hit #5: Total 932 Hits 687 Hit Rate (%) 73.7124
+                    Hit #6: Total 283 Hits 223 Hit Rate (%) 78.7986
+                    Hit #7: Total 89 Hits 74 Hit Rate (%) 83.1461
+                    Hit #8: Total 32 Hits 29 Hit Rate (%) 90.625
+                    Hit #9: Total 11 Hits 8 Hit Rate (%) 72.7273
+                    Hit #10: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #11: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #12: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #13: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1000: Total 408544 Hits 133662 Hit Rate (%) 32.7167
+                    Hit #1001: Total 29900 Hits 15061 Hit Rate (%) 50.3712
+                    Hit #1002: Total 3975 Hits 2498 Hit Rate (%) 62.8428
+                    Hit #1003: Total 696 Hits 470 Hit Rate (%) 67.5287
+                    Hit #1004: Total 142 Hits 121 Hit Rate (%) 85.2113
+                    Hit #1005: Total 43 Hits 36 Hit Rate (%) 83.7209
+                    Hit #1006: Total 13 Hits 10 Hit Rate (%) 76.9231
+                    Hit #1007: Total 2 Hits 2 Hit Rate (%) 100
+
+                    bool C = ttCapture;
+                    Hit #0: Total 4227753 Hits 1025377 Hit Rate (%) 24.2535
+                    Hit #1: Total 330030 Hits 140579 Hit Rate (%) 42.5958
+                    Hit #2: Total 52537 Hits 29752 Hit Rate (%) 56.6306
+                    Hit #3: Total 11758 Hits 7673 Hit Rate (%) 65.2577
+                    Hit #4: Total 3161 Hits 2231 Hit Rate (%) 70.5789
+                    Hit #5: Total 938 Hits 691 Hit Rate (%) 73.6674
+                    Hit #6: Total 284 Hits 223 Hit Rate (%) 78.5211
+                    Hit #7: Total 86 Hits 72 Hit Rate (%) 83.7209
+                    Hit #8: Total 30 Hits 27 Hit Rate (%) 90
+                    Hit #9: Total 11 Hits 8 Hit Rate (%) 72.7273
+                    Hit #10: Total 4 Hits 3 Hit Rate (%) 75
+                    Hit #11: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #12: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #13: Total 1 Hits 1 Hit Rate (%) 100
+                    Hit #1000: Total 311379 Hits 60347 Hit Rate (%) 19.3806
+                    Hit #1001: Total 14913 Hits 5917 Hit Rate (%) 39.6768
+                    Hit #1002: Total 1743 Hits 969 Hit Rate (%) 55.5938
+                    Hit #1003: Total 374 Hits 255 Hit Rate (%) 68.1818
+                    Hit #1004: Total 103 Hits 80 Hit Rate (%) 77.6699
+                    Hit #1005: Total 37 Hits 32 Hit Rate (%) 86.4865
+                    Hit #1006: Total 12 Hits 10 Hit Rate (%) 83.3333
+                    Hit #1007: Total 5 Hits 4 Hit Rate (%) 80
+                    Hit #1008: Total 2 Hits 2 Hit Rate (%) 100
+
                     bool C = givesCheck;
                     Hit #0: Total 3906913 Hits 939797 Hit Rate (%) 24.0547
                     Hit #1: Total 309567 Hits 132612 Hit Rate (%) 42.8379
