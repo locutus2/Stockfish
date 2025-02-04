@@ -337,7 +337,7 @@ class Worker {
     std::array<int, MAX_MOVES> reductions;  // [depth or moveNumber]
 
     // Reductions based on failed LMR researches
-    static constexpr std::array<int, 16> LMRresearchReduction =  // number of failed LMR researches
+    static constexpr std::array<int, 16> LMRresearchReduction =  // [number of failed LMR researches]
       {0, 499, 1032, 1518, 2005, 2493, 2968, 3436, 3956, 4460, 4976, 5477, 6025, 6554, 7042, 7589};
 
     // The main thread has a SearchManager, the others have a NullSearchManager
