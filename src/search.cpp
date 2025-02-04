@@ -52,6 +52,25 @@
 
 namespace Stockfish {
 
+int LMRresearchReduction[16];
+
+constexpr int S = 512;
+
+int D[15] = {
+    S, S, S, S, S, S, S, S,
+    S, S, S, S, S, S, S, 
+};
+
+void initReduction()
+{
+     LMRresearchReduction[0] = 0;
+     for(int i = 1; i <= 15; i++)
+         LMRresearchReduction[i] = LMRresearchReduction[i-1] + D[i-1];
+}
+
+TUNE(SetRange(0, 2*S), D, initReduction);
+
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1204,7 +1223,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 1451 / 16384;
 
         // Step 17. Late moves reduction / extension (LMR)
-        if (depth >= 2 && moveCount > 1 && failedLMRResearch < 7)
+        if (depth >= 2 && moveCount > 1)
         {
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
@@ -1212,6 +1231,7 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
+            r += LMRresearchReduction[std::min(failedLMRResearch, 15)];
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
