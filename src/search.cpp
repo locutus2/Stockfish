@@ -52,25 +52,6 @@
 
 namespace Stockfish {
 
-int LMRresearchReduction[16];
-
-constexpr int S = 512;
-
-int D[15] = {
-    S, S, S, S, S, S, S, S,
-    S, S, S, S, S, S, S, 
-};
-
-void initReduction()
-{
-     LMRresearchReduction[0] = 0;
-     for(int i = 1; i <= 15; i++)
-         LMRresearchReduction[i] = LMRresearchReduction[i-1] + D[i-1];
-}
-
-TUNE(SetRange(0, 2*S), D, initReduction);
-
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
