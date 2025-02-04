@@ -52,15 +52,6 @@
 
 namespace Stockfish {
 
-int RBP    = 1024;
-int RBM    = 1024;
-int RCV[4] = {7037, 6671, 7631, 6362};
-int RCW[4] = {104, 145, 159, 146};
-
-TUNE(SetRange(0, 2048), RBP, RBM);
-TUNE(SetRange(0, 14000), RCV);
-TUNE(SetRange(0, 256), RCW);
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -148,7 +139,7 @@ int reduction_correction_value(const Worker& w, const Position& pos, const Stack
         ? (*(ss - 2)->continuationReductionCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         : 0;
 
-    return (RCV[0] * pcv + RCV[1] * micv + RCV[2] * (wnpcv + bnpcv) + RCV[3] * cntcv) / 131072;
+    return (7333 * pcv + 7127 * micv + 7721 * (wnpcv + bnpcv) + 6482 * cntcv) / 131072;
 }
 
 void update_reduction_correction_history(const Position& pos,
@@ -158,12 +149,12 @@ void update_reduction_correction_history(const Position& pos,
     const Move  m  = (ss - 1)->currentMove;
     const Color us = pos.side_to_move();
 
-    static const int nonPawnWeight = RCW[2];
+    static constexpr int nonPawnWeight = 157;
 
     workerThread.pawnReductionCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
-      << bonus * RCW[0] / 128;
+      << bonus * 97 / 128;
     workerThread.minorPieceReductionCorrectionHistory[minor_piece_index<Reduction>(pos)][us]
-      << bonus * RCW[1] / 128;
+      << bonus * 144 / 128;
     workerThread.nonPawnReductionCorrectionHistory[WHITE][non_pawn_index<WHITE, Reduction>(pos)][us]
       << bonus * nonPawnWeight / 128;
     workerThread.nonPawnReductionCorrectionHistory[BLACK][non_pawn_index<BLACK, Reduction>(pos)][us]
@@ -171,7 +162,7 @@ void update_reduction_correction_history(const Position& pos,
 
     if (m.is_ok())
         (*(ss - 2)->continuationReductionCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-          << bonus * RCW[3] / 128;
+          << bonus * 145 / 128;
 }
 
 // History and stats update bonus, based on depth
@@ -1318,7 +1309,7 @@ moves_loop:  // When in check, search starts here
                     bool failLowResearch = value <= alpha;
 
                     reductionBonus =
-                      std::clamp((failLowLMR == failLowResearch ? RBP : -RBM) * d / 8,
+                      std::clamp((failLowLMR == failLowResearch ? 1038 : -893) * d / 8,
                                  -REDUCTION_CORRECTION_HISTORY_LIMIT / 4,
                                  REDUCTION_CORRECTION_HISTORY_LIMIT / 4);
                 }
