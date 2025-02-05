@@ -1576,9 +1576,9 @@ moves_loop:  // When in check, search starts here
                         };
 
                         //constexpr double W[2] = {0.932544, 0.067456}; // balanced classes
-                        //constexpr double W[2] = {1,0}; // Only !T
+                        constexpr double W[2] = {1,0}; // Only !T
                         //constexpr double W[2] = {0,1}; // Only T
-                        constexpr double W[2] = {1,1}; // equal weight
+                        //constexpr double W[2] = {1,1}; // equal weight
 
                         adaboost_collect_stats(T, C);
                         adaboost_learn(T, C, W[T]);
