@@ -1548,14 +1548,14 @@ moves_loop:  // When in check, search starts here
 
                         std::vector<bool> C = {
                             allNode, !allNode, // 0 1 2
-                            false&&PvNode, !PvNode, // 0 1 2
+                            PvNode, !PvNode, // 0 1 2
                             cutNode, !cutNode, // 0 1 2
                             improving, !improving, // 3 4
                             capture, !capture, // 5 6
                             givesCheck, !givesCheck, // 7 8
                             ss->inCheck, !ss->inCheck, // 9 10
                             priorCapture, !priorCapture, // 11 12
-                            false&&ss->ttPv, !ss->ttPv, // 13 14
+                            ss->ttPv, !ss->ttPv, // 13 14
                             ss->statScore>0, ss->statScore<=0, // 15 16
                             extension<0,extension==0,extension>0,// 17 18
                             ttCapture,!ttCapture,
@@ -1575,8 +1575,8 @@ moves_loop:  // When in check, search starts here
                             depth<12,depth>=12,
                         };
 
-                        constexpr double W[2] = {0.265531, 1-0.265531}; // balanced classes
-                        //constexpr double W[2] = {1,0}; // Only !T
+                        //constexpr double W[2] = {0.265531, 1-0.265531}; // balanced classes
+                        constexpr double W[2] = {1,0}; // Only !T
                         //constexpr double W[2] = {0,1}; // Only T
                         //constexpr double W[2] = {1,1}; // equal weight
 
