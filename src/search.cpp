@@ -1575,8 +1575,8 @@ moves_loop:  // When in check, search starts here
                             depth<12,depth>=12,
                         };
 
-                        //constexpr double W[2] = {0.932544, 0.067456}; // balanced classes
-                        constexpr double W[2] = {1,0}; // Only !T
+                        constexpr double W[2] = {0.265531, 1-0.265531}; // balanced classes
+                        //constexpr double W[2] = {1,0}; // Only !T
                         //constexpr double W[2] = {0,1}; // Only T
                         //constexpr double W[2] = {1,1}; // equal weight
 
