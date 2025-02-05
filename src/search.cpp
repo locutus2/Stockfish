@@ -1208,7 +1208,7 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            if (!ss->ttPv && ss->statScore <= 0)
+            if (PvNode && ss->statScore <= 0)
                 r += failedLMRResearch * 512;
 
             Depth d = std::max(
