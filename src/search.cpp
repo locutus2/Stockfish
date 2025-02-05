@@ -1209,7 +1209,7 @@ moves_loop:  // When in check, search starts here
             // std::clamp has been replaced by a more robust implementation.
 
             if (ss->statScore <= 0)
-                r += failedLMRResearch * 1024;
+                r += failedLMRResearch * 256;
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
