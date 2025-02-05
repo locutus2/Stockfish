@@ -1228,7 +1228,49 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+                    bool T = value <= alpha;
+                    //bool C = true; // Hit #0: Total 1183931 Hits 314370 Hit Rate (%) 26.5531
+                    //bool C = 0.162536 * (ss->statScore<=0) > 0.0812679; // Hit #2: Total 711256 Hits 225114 Hit Rate (%) 31.6502
+                    //bool C = 0.162536 * (ss->statScore<=0) 
+                    //         + 0.118064 * (depth>=5)
+                    //         + 0.0600347 * PvNode > 0.170317; // Hit #2: Total 424927 Hits 153953 Hit Rate (%) 36.2305 
+                    //bool C = 0.162536 * (ss->statScore<=0) 
+                    //         + 0.118064 * (depth>=5)
+                    //         + 0.0600347 * PvNode
+                    //         + 0.0495167 * (depth>=4) > 0.195076; // Hit #2: Total 571707 Hits 196420 Hit Rate (%) 34.3568
+                    //bool C = 0.162536 * (ss->statScore<=0) 
+                    //         + 0.118064 * (depth>=5)
+                    //         + 0.0600347 * PvNode
+                    //         + 0.0495167 * (depth>=4) 
+                    //         + 0.0303867 * improving 
+                    //         + 0.0388102 * ((ss-1)->currentMove==Move::null()) > 0.229674; // Hit #2: Total 519846 Hits 183266 Hit Rate (%) 35.2539
+                    //bool C = 0.162536 * (ss->statScore<=0) 
+                    //         + 0.118064 * (depth>=5)
+                    //         + 0.0600347 * PvNode
+                    //         + 0.0495167 * (depth>=4) 
+                    //         + 0.0303867 * improving 
+                    //         + 0.0388102 * ((ss-1)->currentMove==Move::null()) 
+                    //         + 0.0433033 * !capture > 0.251326; // Hit #2: Total 558346 Hits 193824 Hit Rate (%) 34.714 
+                    //bool C = 0.162536 * (ss->statScore<=0) 
+                    //         + 0.118064 * (depth>=5)
+                    //         + 0.0960265 * PvNode
+                    //         + 0.0495167 * (depth>=4) 
+                    //         + 0.0303867 * improving 
+                    //         + 0.0388102 * ((ss-1)->currentMove==Move::null()) 
+                    //         + 0.0433033 * !capture > 0.269322; // Hit #2: Total 512427 Hits 181557 Hit Rate (%) 35.4308
+                    bool C = 0.162536 * (ss->statScore<=0) 
+                             + 0.118064 * (depth>=5)
+                             + 0.0960265 * PvNode
+                             + 0.0495167 * (depth>=4) 
+                             + 0.0303867 * improving 
+                             + 0.0388102 * ((ss-1)->currentMove==Move::null()) 
+                             + 0.0731673 * !capture > 0.284254; // Hit #2: Total 558325 Hits 193818 Hit Rate (%) 34.7142
+                    dbg_hit_on(T, 0);
+                    dbg_hit_on(T, 1+C);
+                    dbg_hit_on(T, 10+newDepth);
+                }
 
                 // Post LMR continuation history updates
                 int bonus = (value >= beta) * 2010;
