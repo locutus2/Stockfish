@@ -1451,12 +1451,13 @@ moves_loop:  // When in check, search starts here
 
 
             //const bool CC = !ss->ttPv;
-            const bool CC = true;
-            const bool P = true;//nodes&1;
+            //const bool CC = true;
+            //const bool P = true;//nodes&1;
 
             Depth d = std::max(
                   1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
 
+            /*
             if(CC && P)
             {
                 constexpr int rDelta = 1024;
@@ -1519,13 +1520,11 @@ moves_loop:  // When in check, search starts here
                     adaboost_learn(T, C, W[T]);
                 }
             }
-            else
-            {
-                (ss + 1)->reduction = newDepth - d;
+            */
+            (ss + 1)->reduction = newDepth - d;
 
-                value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
-                (ss + 1)->reduction = 0;
-            }
+            value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+            (ss + 1)->reduction = 0;
 
 
             // Do a full-depth search when reduced LMR search fails high
@@ -1539,7 +1538,52 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+
+                    bool CC = true;
+                    if(CC)
+                    {
+                        bool T = value <= alpha;
+
+                        std::vector<bool> C = {
+                            allNode, !allNode, // 0 1 2
+                            false&&PvNode, !PvNode, // 0 1 2
+                            cutNode, !cutNode, // 0 1 2
+                            improving, !improving, // 3 4
+                            capture, !capture, // 5 6
+                            givesCheck, !givesCheck, // 7 8
+                            ss->inCheck, !ss->inCheck, // 9 10
+                            priorCapture, !priorCapture, // 11 12
+                            false&&ss->ttPv, !ss->ttPv, // 13 14
+                            ss->statScore>0, ss->statScore<=0, // 15 16
+                            extension<0,extension==0,extension>0,// 17 18
+                            ttCapture,!ttCapture,
+                            bool(excludedMove), !excludedMove,
+                            ss->reduction>0, ss->reduction<=0,
+                            (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
+                            ss->ttHit, !ss->ttHit, // 9 10
+                            depth<3,depth>=3,
+                            depth<4,depth>=4,
+                            depth<5,depth>=5,
+                            depth<6,depth>=6,
+                            depth<7,depth>=7,
+                            depth<8,depth>=8,
+                            depth<9,depth>=9,
+                            depth<10,depth>=10,
+                            depth<11,depth>=11,
+                            depth<12,depth>=12,
+                        };
+
+                        //constexpr double W[2] = {0.932544, 0.067456}; // balanced classes
+                        //constexpr double W[2] = {1,0}; // Only !T
+                        //constexpr double W[2] = {0,1}; // Only T
+                        constexpr double W[2] = {1,1}; // equal weight
+
+                        adaboost_collect_stats(T, C);
+                        adaboost_learn(T, C, W[T]);
+                    }
+                }
 
                 // Post LMR continuation history updates
                 int bonus = (value >= beta) * 2010;
