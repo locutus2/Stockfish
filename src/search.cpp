@@ -1269,7 +1269,8 @@ moves_loop:  // When in check, search starts here
                              + 0.0731673 * !capture > 0.284254; // Hit #2: Total 558325 Hits 193818 Hit Rate (%) 34.7142
                     dbg_hit_on(T, 0);
                     dbg_hit_on(T, 1+C);
-                    dbg_hit_on(T, 10+newDepth);
+                    dbg_hit_on(C, 10+T);
+                    //dbg_hit_on(T, 10+newDepth);
                 }
 
                 // Post LMR continuation history updates
