@@ -222,6 +222,11 @@ bool adaboost_print_stats(std::ostream& out)
         learner_weight.pop_back();
         out << "=> SKIP last weak learner" << std::endl;
     }
+    else
+    {
+        for(int i = 0; i < int(weak_learner_stats.size()); i++)
+            weak_learner_enabled[i] = true;
+    }
 
     return nPrediction[1] > 0;
 }
