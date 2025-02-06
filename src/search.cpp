@@ -93,6 +93,7 @@ std::vector<std::string> names = {
 std::vector<bool> weak_learner_enabled;
 
 std::vector<std::vector<double>> weak_learner_stats;
+std::vector<std::vector<double>> weak_learner_support;
 std::vector<int> learner_index;
 std::vector<double> learner_weight;
 std::vector<double> learner_error;
@@ -112,6 +113,7 @@ void adaboost_init()
 void adaboost_init_step()
 {
     weak_learner_stats.clear();
+    weak_learner_support.clear();
 
     nStats = 0;
     nClass[0] = nClass[1] = 0;
@@ -138,6 +140,7 @@ bool adaboost_predict_class(const std::vector<bool>& C)
 void adaboost_learn(bool T, const std::vector<bool>& C, double W)
 {
        weak_learner_stats.resize(C.size(), {0,0});
+       weak_learner_support.resize(C.size(), {0, 0});
        weak_learner_enabled.resize(C.size(), true);
 
        double F = adaboost_predict_margin(C);
@@ -145,6 +148,8 @@ void adaboost_learn(bool T, const std::vector<bool>& C, double W)
        for (int i = 0; i < int(C.size()); i++)
        {
            weak_learner_stats[i][T == C[i]] += weight;
+           weak_learner_support[i][0] += weight;
+           if(C[i]) weak_learner_support[i][1] += weight;
        } 
        
        //dbg_hit_on(T, 0);
@@ -171,6 +176,7 @@ bool adaboost_add_learner()
         if (weak_learner_enabled[i]
             && weak_learner_stats[i][0] > 0
             && weak_learner_stats[i][0] < weak_learner_stats[i][1]
+            && weak_learner_support[i][1] >= LEARN_MIN_SUPPORT * weak_learner_support[i][0]
             && (bestValue < 0 || weak_learner_stats[i][0] < bestValue))
         {
             bestLearner = i;
