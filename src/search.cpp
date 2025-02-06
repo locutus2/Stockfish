@@ -73,7 +73,8 @@ std::vector<std::string> names = {
     "(extension<0)", "(extension==0)","(extension>0)", // 17 18
     "ttCapture", "ttCapture",
     "bool(excludedMove)", "!excludedMove",
-    "(ss->reduction>0)", "(ss->reduction<=0)",
+    //"(ss->reduction>0)", "(ss->reduction<=0)",
+    "(priorReduction>0)", "(priorReduction<=0)",
     "((ss-1)->currentMove==Move::null())", "((ss-1)->currentMove!=Move::null())",
     "ss->ttHit", "!ss->ttHit",
     "(depth<3)", "(depth>=3)",
@@ -1589,7 +1590,8 @@ moves_loop:  // When in check, search starts here
                             extension<0,extension==0,extension>0,// 17 18
                             ttCapture,!ttCapture,
                             bool(excludedMove), !excludedMove,
-                            ss->reduction>0, ss->reduction<=0,
+                            //ss->reduction>0, ss->reduction<=0,
+                            priorReduction>0, priorReduction<=0,
                             (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
                             ss->ttHit, !ss->ttHit, // 9 10
                             depth<3,depth>=3,
