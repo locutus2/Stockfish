@@ -54,7 +54,7 @@ namespace Stockfish {
 
 constexpr bool LOSS_FALSE_POSITIVE = true;
 
-constexpr double LEARN_MIN_FREQ = 0.001;
+constexpr double LEARN_MIN_SUPPORT = 0.001; // 0.1%
 constexpr bool USE_PV_TTPV = false;
 
 std::vector<std::string> names = {
@@ -204,17 +204,20 @@ void adaboost_collect_stats(bool T, const std::vector<bool>& C)
 
 bool adaboost_print_stats(std::ostream& out)
 {
-    double freq = double(nConf[0][1] + nConf[1][1]) / nStats;
+    double support = double(nConf[0][1] + nConf[1][1]) / nStats;
+    double accuracy = double(nConf[0][0] + nConf[1][1]) / nStats;
+    double falsePositiveRate = nConf[0][1] / (nConf[0][1] + nConf[0][0]);
 
-    out << "=> false positive rate: " << 100. * nConf[0][1] / (nConf[0][1] + nConf[0][0]) << "%" << std::endl;
-    out << "=> frequency: " << 100. * freq << "%" << std::endl;
+    out << "=> false positive rate: " << 100. * falsePositiveRate << "%" << std::endl;
+    out << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
+    out << "=> support: " << 100. * support << "%" << std::endl;
     //out << "n: " << nStats << std::endl;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
     //out << "Conf true x predicted:" << std::endl;
     //out << nConf[0][0] << "\t" << nConf[0][1] << std::endl;
     //out << nConf[1][0] << "\t" << nConf[1][1] << std::endl;
     //
-    if(freq < LEARN_MIN_FREQ && !learner_index.empty())
+    if(support < LEARN_MIN_SUPPORT && !learner_index.empty())
     {
         weak_learner_enabled[learner_index[int(learner_index.size())-1]] = false;
         learner_index.pop_back();
