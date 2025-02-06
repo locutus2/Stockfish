@@ -59,6 +59,7 @@ constexpr double LEARN_MIN_SUPPORT = 0.001; // 0.1%
 constexpr bool USE_PV_TTPV = false;
 
 std::vector<std::string> names = {
+    "true", "false",
     "allNode", "!allNode", 
     (USE_PV_TTPV?"PvNode":"false"), "!PvNode",
     "cutNode", "!cutNode",
@@ -230,7 +231,7 @@ bool adaboost_print_stats(std::ostream& out)
         learner_index.pop_back();
         learner_error.pop_back();
         learner_weight.pop_back();
-        out << "=> SKIP last added weak learner because of support < " << 100* LEARN_MIN_SUPPORT << "%" << std::endl;
+        out << "=> REMOVE last added weak learner because of support < " << 100* LEARN_MIN_SUPPORT << "%" << std::endl;
     }
     else
     {
@@ -1571,6 +1572,7 @@ moves_loop:  // When in check, search starts here
                         bool T = value <= alpha;
 
                         std::vector<bool> C = {
+                            true, false,
                             allNode, !allNode, // 0 1 2
                             (USE_PV_TTPV?PvNode:false), !PvNode, // 0 1 2
                             cutNode, !cutNode, // 0 1 2
