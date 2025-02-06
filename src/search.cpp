@@ -954,7 +954,8 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int moveCount = 0;
+    int moveCount           = 0;
+    int failedLMRResearches = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1207,6 +1208,9 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
+            if (((ss - 1)->currentMove == Move::null()) + (depth >= 12) + (failedLMRResearches > 0)
+                >= 2)
+                r += 1024;
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
@@ -1228,7 +1232,12 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+
+                    if (value <= alpha)
+                        failedLMRResearches++;
+                }
 
                 // Post LMR continuation history updates
                 int bonus = (value >= beta) * 2010;
