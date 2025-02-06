@@ -224,7 +224,7 @@ bool adaboost_print_stats(std::ostream& out)
         learner_index.pop_back();
         learner_error.pop_back();
         learner_weight.pop_back();
-        out << "=> SKIP last weak learner" << std::endl;
+        out << "=> SKIP last added weak learner because of support < " << 100* LEARN_MIN_SUPPORT << "%" << std::endl;
     }
     else
     {
