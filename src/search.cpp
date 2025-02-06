@@ -1208,7 +1208,7 @@ moves_loop:  // When in check, search starts here
             // std::clamp has been replaced by a more robust implementation.
 
             if (depth >= 5 && ss->statScore <= 0)
-                r += 512;
+                r += 256;
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
