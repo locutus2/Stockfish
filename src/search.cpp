@@ -1549,10 +1549,10 @@ moves_loop:  // When in check, search starts here
                 }
             }
             */
-            (ss + 1)->reduction = newDepth - d;
+            ss->reduction = newDepth - d;
 
             value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
-            (ss + 1)->reduction = 0;
+            ss->reduction = 0;
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
