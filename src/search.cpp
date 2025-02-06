@@ -86,7 +86,7 @@ std::vector<std::string> names = {
     "(depth<11)", "(depth>=11)",
     "(depth<12)", "(depth>=12)",
     "(LMRResearches<=0)", "(LMRResearches>0)",
-    "(successfulLMRResearches<=0)", "(successfulLMRResearches>0)",
+//    "(successfulLMRResearches<=0)", "(successfulLMRResearches>0)",
     "(failedLMRResearches<=0)", "(failedLMRResearches>0)",
 };
 
@@ -1592,7 +1592,7 @@ moves_loop:  // When in check, search starts here
                             depth<11,depth>=11,
                             depth<12,depth>=12,
                             LMRResearches<=0, LMRResearches>0,
-                            successfulLMRResearches<=0, successfulLMRResearches>0,
+                         //   successfulLMRResearches<=0, successfulLMRResearches>0,
                             failedLMRResearches<=0, failedLMRResearches>0,
                         };
 
