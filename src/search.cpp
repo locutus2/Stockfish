@@ -53,34 +53,38 @@
 namespace Stockfish {
 
 constexpr double LEARN_MIN_FREQ = 0.001;
+constexpr bool USE_PV_TTPV = false;
 
 std::vector<std::string> names = {
     "allNode", "!allNode", 
-    "PvNode", "!PvNode",
+    (USE_PV_TTPV?"PvNode":"false"), "!PvNode",
     "cutNode", "!cutNode",
     "improving", "!improving", // 3 4
     "capture", "!capture", // 5 6
     "givesCheck", "!givesCheck", // 7 8
     "ss->inCheck", "!ss->inCheck", // 9 10
     "priorCapture", "!priorCapture", // 11 12
-    "ss->ttPv", "!ss->ttPv", // 13 14
-    "ss->statScore>0", "ss->statScore<=0", // 15 16
-    "extension<0", "extension==0","extension>0", // 17 18
+    (USE_PV_TTPV?"ss->ttPv":"false"), "!ss->ttPv", // 13 14
+    "(ss->statScore>0)", "(ss->statScore<=0)", // 15 16
+    "(extension<0)", "(extension==0)","(extension>0)", // 17 18
     "ttCapture", "ttCapture",
     "bool(excludedMove)", "!excludedMove",
-    "ss->reduction>0", "ss->reduction<=0",
-    "(ss-1)->currentMove==Move::null()", "(ss-1)->currentMove!=Move::null()",
+    "(ss->reduction>0)", "(ss->reduction<=0)",
+    "((ss-1)->currentMove==Move::null())", "((ss-1)->currentMove!=Move::null())",
     "ss->ttHit", "!ss->ttHit",
-    "depth<3", "depth>=3",
-    "depth<4", "depth>=4",
-    "depth<5", "depth>=5",
-    "depth<6", "depth>=6",
-    "depth<7", "depth>=7",
-    "depth<8", "depth>=8",
-    "depth<9", "depth>=9",
-    "depth<10", "depth>=10",
-    "depth<11", "depth>=11",
-    "depth<12", "depth>=12",
+    "(depth<3)", "(depth>=3)",
+    "(depth<4)", "(depth>=4)",
+    "(depth<5)", "(depth>=5)",
+    "(depth<6)", "(depth>=6)",
+    "(depth<7)", "(depth>=7)",
+    "(depth<8)", "(depth>=8)",
+    "(depth<9)", "(depth>=9)",
+    "(depth<10)", "(depth>=10)",
+    "(depth<11)", "(depth>=11)",
+    "(depth<12)", "(depth>=12)",
+    "(LMRResearches<=0)", "(LMRResearches>0)",
+    "(successfulLMRResearches<=0)", "(successfulLMRResearches>0)",
+    "(failedLMRResearches<=0)", "(failedLMRResearches>0)",
 };
 
 std::vector<bool> weak_learner_enabled;
@@ -1188,6 +1192,9 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    int LMRResearches = 0;
+    int failedLMRResearches = 0;
+    int successfulLMRResearches = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1526,7 +1533,6 @@ moves_loop:  // When in check, search starts here
             value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             (ss + 1)->reduction = 0;
 
-
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
             {
@@ -1539,23 +1545,24 @@ moves_loop:  // When in check, search starts here
 
                 if (newDepth > d)
                 {
+
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
-                    bool CC = !ss->ttPv;
+                    bool CC = true;
                     if(CC)
                     {
                         bool T = value <= alpha;
 
                         std::vector<bool> C = {
                             allNode, !allNode, // 0 1 2
-                            PvNode, !PvNode, // 0 1 2
+                            (USE_PV_TTPV?PvNode:false), !PvNode, // 0 1 2
                             cutNode, !cutNode, // 0 1 2
                             improving, !improving, // 3 4
                             capture, !capture, // 5 6
                             givesCheck, !givesCheck, // 7 8
                             ss->inCheck, !ss->inCheck, // 9 10
                             priorCapture, !priorCapture, // 11 12
-                            ss->ttPv, !ss->ttPv, // 13 14
+                            (USE_PV_TTPV?ss->ttPv:false), !ss->ttPv, // 13 14
                             ss->statScore>0, ss->statScore<=0, // 15 16
                             extension<0,extension==0,extension>0,// 17 18
                             ttCapture,!ttCapture,
@@ -1573,6 +1580,9 @@ moves_loop:  // When in check, search starts here
                             depth<10,depth>=10,
                             depth<11,depth>=11,
                             depth<12,depth>=12,
+                            LMRResearches<=0, LMRResearches>0,
+                            successfulLMRResearches<=0, successfulLMRResearches>0,
+                            failedLMRResearches<=0, failedLMRResearches>0,
                         };
 
                         //constexpr double W[2] = {0.265531, 1-0.265531}; // balanced classes
@@ -1583,6 +1593,12 @@ moves_loop:  // When in check, search starts here
                         adaboost_collect_stats(T, C);
                         adaboost_learn(T, C, W[T]);
                     }
+
+                    LMRResearches++;
+                    if(value > alpha)
+                        successfulLMRResearches++;
+                    else
+                        failedLMRResearches++;
                 }
 
                 // Post LMR continuation history updates
