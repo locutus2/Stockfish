@@ -95,6 +95,7 @@ std::vector<bool> weak_learner_enabled;
 
 std::vector<std::vector<double>> weak_learner_stats;
 std::vector<std::vector<double>> weak_learner_support;
+std::vector<std::vector<double>> weak_learner_rule_support;
 std::vector<int> learner_index;
 std::vector<double> learner_weight;
 std::vector<double> learner_error;
@@ -115,6 +116,7 @@ void adaboost_init_step()
 {
     weak_learner_stats.clear();
     weak_learner_support.clear();
+    weak_learner_rule_support.clear();
 
     nStats = 0;
     nClass[0] = nClass[1] = 0;
@@ -142,6 +144,7 @@ void adaboost_learn(bool T, const std::vector<bool>& C, double W)
 {
        weak_learner_stats.resize(C.size(), {0,0});
        weak_learner_support.resize(C.size(), {0, 0});
+       weak_learner_rule_support.resize(C.size(), {0, 0});
        weak_learner_enabled.resize(C.size(), true);
 
        double F = adaboost_predict_margin(C);
