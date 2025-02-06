@@ -53,6 +53,7 @@
 namespace Stockfish {
 
 constexpr bool LOSS_FALSE_POSITIVE = true;
+constexpr bool LOSS_ACCURACY_BALANCED = false;
 
 constexpr double LEARN_MIN_SUPPORT = 0.001; // 0.1%
 constexpr bool USE_PV_TTPV = false;
@@ -1599,10 +1600,13 @@ moves_loop:  // When in check, search starts here
                         //constexpr double W[2] = {1,0}; // Only !T
                         //constexpr double W[2] = {0,1}; // Only T
                         //constexpr double W[2] = {1,1}; // equal weight
+                        constexpr double PT = 0.265531;
                         std::array<double, 2> W;
                         if (LOSS_FALSE_POSITIVE)
                             W = {1,0}; // minimize false positive
-                        else
+                        else if (LOSS_ACCURACY_BALANCED)
+                            W = {PT,1-PT}; // minimize error rate on balanced classes
+                        else // accuracy
                             W = {1,1}; // minimize error rate
 
                         adaboost_collect_stats(T, C);
