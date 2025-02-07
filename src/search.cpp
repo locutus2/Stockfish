@@ -52,9 +52,10 @@
 
 namespace Stockfish {
 
-constexpr bool LOSS_FALSE_POSITIVE = true;
+constexpr bool LOSS_FALSE_POSITIVE = false;
 constexpr bool LOSS_ACCURACY_BALANCED = false;
 constexpr bool LOSS_FALSE_NEGATIVE = false;
+constexpr bool LOSS_PRECISION = false; // true is not supported
 
 constexpr bool PAIR_CONDITIONS = true;
 
@@ -286,12 +287,16 @@ bool adaboost_print_stats(std::ostream& out)
     double falsePositiveRate =  nn > 0 ? double(nConf[0][1]) / nn : -1.0;
     double falseNegativeRate =  np > 0 ? double(nConf[1][0]) / np : -1.0;
 
+    int nPrec = nConf[0][1] + nConf[1][1];
+    double precision =  nPrec > 0 ? double(nConf[1][1]) / nPrec : -1.0;
+
     out << "=> support: " << 100. * support << "%" << std::endl;
-    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE ? "*" : "") << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
+    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && !LOSS_PRECISION ? "*" : "") << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
     out << (!LOSS_FALSE_POSITIVE && LOSS_ACCURACY_BALANCED ? "*" : "") << "=> balanced accuracy: " << 100. * balancedAccuracy << "%" << std::endl;
     out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> false positive rate: " << (falsePositiveRate < 0 ? "-" : std::to_string(100. * falsePositiveRate)) << "%" << std::endl;
     out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> false negative rate: " << (falseNegativeRate < 0 ? "-" : std::to_string(100. * falseNegativeRate)) << "%" << std::endl;
-    //out << "n: " << nStats << std::endl;
+    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && LOSS_PRECISION ? "*" : "") << "=> precision: " << (precision < 0 ? "-" : std::to_string(100. * precision)) << "%" << std::endl;
+    //out << "n: " << nStats << std::endl!;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
     //out << "Conf true x predicted:" << std::endl;
     //out << nConf[0][0] << "\t" << nConf[0][1] << std::endl;
