@@ -52,9 +52,9 @@
 
 namespace Stockfish {
 
-constexpr bool LOSS_FALSE_POSITIVE = false;
+constexpr bool LOSS_FALSE_POSITIVE = true;
 constexpr bool LOSS_ACCURACY_BALANCED = false;
-constexpr bool LOSS_FALSE_NEGATIVE = true;
+constexpr bool LOSS_FALSE_NEGATIVE = false;
 
 constexpr double LEARN_MIN_SUPPORT_CONDITION = 0.001; // 0.1%
 constexpr double LEARN_MIN_SUPPORT_RULE = 0.001; // 0.1%
@@ -219,15 +219,22 @@ void adaboost_collect_stats(bool T, const std::vector<bool>& C)
 
 bool adaboost_print_stats(std::ostream& out)
 {
+    int np = nConf[1][1] + nConf[1][0];
+    int nn = nConf[0][1] + nConf[0][0];
+    double wp = 1.0/np;
+    double wn = 1.0/nn;
+    double nWStats = nn * wn + np * wp;
     double support = double(nConf[0][1] + nConf[1][1]) / nStats;
     double accuracy = double(nConf[0][0] + nConf[1][1]) / nStats;
-    double falsePositiveRate =  nConf[0][1] + nConf[0][0] > 0 ? double(nConf[0][1]) / (nConf[0][1] + nConf[0][0]) : 0;
-    double falseNegativeRate =  nConf[1][1] + nConf[1][0] > 0 ? double(nConf[1][0]) / (nConf[1][1] + nConf[1][0]) : 0.0;
+    double balancedAccuracy = double(nConf[0][0] * wn + nConf[1][1] * wp) / nWStats;
+    double falsePositiveRate =  nn > 0 ? double(nConf[0][1]) / nn : -1.0;
+    double falseNegativeRate =  np > 0 ? double(nConf[1][0]) / np : -1.0;
 
     out << "=> support: " << 100. * support << "%" << std::endl;
-    out << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
-    out << "=> false positive rate: " << 100. * falsePositiveRate << "%" << std::endl;
-    out << "=> false negative rate: " << 100. * falseNegativeRate << "%" << std::endl;
+    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE ? "*" : "") << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
+    out << (!LOSS_FALSE_POSITIVE && LOSS_ACCURACY_BALANCED ? "*" : "") << "=> balanced accuracy: " << 100. * balancedAccuracy << "%" << std::endl;
+    out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> false positive rate: " << (falsePositiveRate < 0 ? "-" : std::to_string(100. * falsePositiveRate)) << "%" << std::endl;
+    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> false negative rate: " << (falseNegativeRate < 0 ? "-" : std::to_string(100. * falseNegativeRate)) << "%" << std::endl;
     //out << "n: " << nStats << std::endl;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
     //out << "Conf true x predicted:" << std::endl;
