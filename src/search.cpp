@@ -221,10 +221,12 @@ bool adaboost_print_stats(std::ostream& out)
     double support = double(nConf[0][1] + nConf[1][1]) / nStats;
     double accuracy = double(nConf[0][0] + nConf[1][1]) / nStats;
     double falsePositiveRate = double(nConf[0][1]) / (nConf[0][1] + nConf[0][0]);
+    double falseNegativeRate =  nConf[1][1] + nConf[1][0] > 0 ? double(nConf[1][0]) / (nConf[1][1] + nConf[1][0]) : 0.0;
 
     out << "=> false positive rate: " << 100. * falsePositiveRate << "%" << std::endl;
     out << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
     out << "=> support: " << 100. * support << "%" << std::endl;
+    out << "=> false negative rate: " << 100. * falseNegativeRate << "%" << std::endl;
     //out << "n: " << nStats << std::endl;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
     //out << "Conf true x predicted:" << std::endl;
