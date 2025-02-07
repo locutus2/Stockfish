@@ -55,8 +55,10 @@ namespace Stockfish {
 constexpr bool LOSS_FALSE_POSITIVE = true;
 constexpr bool LOSS_ACCURACY_BALANCED = false;
 
-constexpr double LEARN_MIN_SUPPORT = 0.001; // 0.1%
+constexpr double LEARN_MIN_SUPPORT_CONDITION = 0.001; // 0.1%
+constexpr double LEARN_MIN_SUPPORT_RULE = 0.001; // 0.1%
 constexpr bool USE_PV_TTPV = false;
+constexpr bool RESET_DISABLED_WEAK_LEARNER = false;
 
 std::vector<std::string> names = {
     "true", "false",
@@ -181,7 +183,7 @@ bool adaboost_add_learner()
         if (weak_learner_enabled[i]
             && weak_learner_stats[i][0] > 0
             && weak_learner_stats[i][0] < weak_learner_stats[i][1]
-            && weak_learner_support[i][1] >= LEARN_MIN_SUPPORT * weak_learner_support[i][0]
+            && weak_learner_support[i][1] >= LEARN_MIN_SUPPORT_CONDITION * weak_learner_support[i][0]
             && (bestValue < 0 || weak_learner_stats[i][0] < bestValue))
         {
             bestLearner = i;
@@ -229,15 +231,15 @@ bool adaboost_print_stats(std::ostream& out)
     //out << nConf[0][0] << "\t" << nConf[0][1] << std::endl;
     //out << nConf[1][0] << "\t" << nConf[1][1] << std::endl;
     //
-    if(support < LEARN_MIN_SUPPORT && !learner_index.empty())
+    if(support < LEARN_MIN_SUPPORT_RULE && !learner_index.empty())
     {
         weak_learner_enabled[learner_index[int(learner_index.size())-1]] = false;
         learner_index.pop_back();
         learner_error.pop_back();
         learner_weight.pop_back();
-        out << "=> REMOVE last added weak learner because of support < " << 100* LEARN_MIN_SUPPORT << "%" << std::endl;
+        out << "=> REMOVE last added weak learner because of support < " << 100* LEARN_MIN_SUPPORT_RULE << "%" << std::endl;
     }
-    else
+    else if(RESET_DISABLED_WEAK_LEARNER)
     {
         for(int i = 0; i < int(weak_learner_stats.size()); i++)
             weak_learner_enabled[i] = true;
