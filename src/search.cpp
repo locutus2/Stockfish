@@ -1207,7 +1207,7 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            if ((ss - 1)->currentMove == Move::null())
+            if (depth >= 5 && (ss - 1)->currentMove == Move::null())
                 r += 512;
 
             Depth d = std::max(
