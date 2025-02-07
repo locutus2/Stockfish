@@ -244,8 +244,27 @@ bool adaboost_add_learner()
         return false;
 }
 
-void adaboost_collect_stats(bool T, const std::vector<bool>& C)
+void adaboost_collect_stats(bool T, const std::vector<bool>& C0)
 {
+   std::vector<bool> C;
+   if (PAIR_CONDITIONS)
+   {
+        for(int i = 0; i < int(C0.size()); i++)
+            for(int j = 0; j < int(C0.size()); j++)
+            {
+                if(i < j)
+                    C.push_back(C0[i] && C0[j]); 
+                else if (i > j)
+                    C.push_back(false); 
+                else
+                    C.push_back(C0[i]); 
+            }
+   }
+   else
+       C = C0;
+
+   assert(name.size() == C.size());
+
     bool P = adaboost_predict_class(C);
 
     nStats++;
