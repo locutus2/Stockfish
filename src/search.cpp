@@ -52,8 +52,9 @@
 
 namespace Stockfish {
 
-constexpr bool LOSS_FALSE_POSITIVE = true;
+constexpr bool LOSS_FALSE_POSITIVE = false;
 constexpr bool LOSS_ACCURACY_BALANCED = false;
+constexpr bool LOSS_FALSE_NEGATIVE = true;
 
 constexpr double LEARN_MIN_SUPPORT_CONDITION = 0.001; // 0.1%
 constexpr double LEARN_MIN_SUPPORT_RULE = 0.001; // 0.1%
@@ -220,12 +221,12 @@ bool adaboost_print_stats(std::ostream& out)
 {
     double support = double(nConf[0][1] + nConf[1][1]) / nStats;
     double accuracy = double(nConf[0][0] + nConf[1][1]) / nStats;
-    double falsePositiveRate = double(nConf[0][1]) / (nConf[0][1] + nConf[0][0]);
+    double falsePositiveRate =  nConf[0][1] + nConf[0][0] > 0 ? double(nConf[0][1]) / (nConf[0][1] + nConf[0][0]) : 0;
     double falseNegativeRate =  nConf[1][1] + nConf[1][0] > 0 ? double(nConf[1][0]) / (nConf[1][1] + nConf[1][0]) : 0.0;
 
-    out << "=> false positive rate: " << 100. * falsePositiveRate << "%" << std::endl;
-    out << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
     out << "=> support: " << 100. * support << "%" << std::endl;
+    out << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
+    out << "=> false positive rate: " << 100. * falsePositiveRate << "%" << std::endl;
     out << "=> false negative rate: " << 100. * falseNegativeRate << "%" << std::endl;
     //out << "n: " << nStats << std::endl;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
@@ -1623,6 +1624,8 @@ moves_loop:  // When in check, search starts here
                             W = {1,0}; // minimize false positive
                         else if (LOSS_ACCURACY_BALANCED)
                             W = {PT,1-PT}; // minimize error rate on balanced classes
+                        else if (LOSS_FALSE_NEGATIVE)
+                            W = {0,1}; // minimize false negative
                         else // accuracy
                             W = {1,1}; // minimize error rate
 
