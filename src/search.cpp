@@ -56,6 +56,8 @@ constexpr bool LOSS_FALSE_POSITIVE = true;
 constexpr bool LOSS_ACCURACY_BALANCED = false;
 constexpr bool LOSS_FALSE_NEGATIVE = false;
 
+constexpr bool PAIR_CONDITIONS = true;
+
 constexpr double LEARN_MIN_SUPPORT_CONDITION = 0.001; // 0.1%
 constexpr double LEARN_MIN_SUPPORT_RULE = 0.001; // 0.1%
 constexpr bool USE_PV_TTPV = false;
@@ -114,6 +116,22 @@ void adaboost_init()
     learner_index.clear();
     learner_weight.clear();
     learner_error.clear();
+
+    if (PAIR_CONDITIONS)
+    {
+        auto old_names = names;
+        names.clear();
+        for(int i = 0; i < int(old_names.size()); i++)
+            for(int j = 0; j < int(old_names.size()); j++)
+            {
+                if(i < j)
+                    names.push_back(std::string("(") + old_names[i] + "&&" + old_names[j] + ")"); 
+                else if (i > j)
+                    names.push_back("false"); 
+                else
+                    names.push_back(old_names[i]); 
+            }
+    }
 }
 
 void adaboost_init_step()
@@ -144,8 +162,27 @@ bool adaboost_predict_class(const std::vector<bool>& C)
     return adaboost_predict_margin(C) > 0;
 }
 
-void adaboost_learn(bool T, const std::vector<bool>& C, double W)
+void adaboost_learn(bool T, const std::vector<bool>& C0, double W)
 {
+       std::vector<bool> C;
+       if (PAIR_CONDITIONS)
+       {
+            for(int i = 0; i < int(C0.size()); i++)
+                for(int j = 0; j < int(C0.size()); j++)
+                {
+                    if(i < j)
+                        C.push_back(C0[i] && C0[j]); 
+                    else if (i > j)
+                        C.push_back(false); 
+                    else
+                        C.push_back(C0[i]); 
+                }
+       }
+       else
+           C = C0;
+
+       assert(name.size() == C.size());
+
        weak_learner_stats.resize(C.size(), {0,0});
        weak_learner_support.resize(C.size(), {0, 0});
        weak_learner_rule_support.resize(C.size(), {0, 0});
