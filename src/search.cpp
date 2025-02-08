@@ -1208,7 +1208,7 @@ moves_loop:  // When in check, search starts here
             // std::clamp has been replaced by a more robust implementation.
 
             if ((ss - 1)->currentMove == Move::null())
-                r += 161 + (depth >= 12) * 1727;
+                r += 127 + (depth >= 12) * 1795;
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
