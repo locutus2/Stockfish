@@ -244,11 +244,10 @@ bool adaboost_add_learner()
         for (int i = 0; i < int(weak_learner_stats.size()); i++)
         {
             //std::cerr << "C[" << i << "] = " << weak_learner_stats[i][0] << " | " << weak_learner_stats[i][1] << std::endl;
-            if (PRINT_ERROR_OF_ALL_LEARNERS && weak_learner_support[index[i]][0] > 0)
+            if (weak_learner_support[index[i]][1] > 0)
             {
                 std::cerr << "=> error=" <<  weak_learner_stats[index[i]][0] / (weak_learner_stats[index[i]][0] +  weak_learner_stats[index[i]][1])
-                 << " targetFunction=" <<  weak_learner_stats[index[i]][0]
-                    << " support=" << 100.0*weak_learner_support[index[i]][1] /weak_learner_support[index[i]][0]
+                    << " support=" << 100.0*weak_learner_support[index[i]][1] /weak_learner_support[index[i]][0] << "%"
                           << " " << (index[i] < int(names.size()) ? names[index[i]] : std::string("C[") + std::to_string(index[i]) + "]") << std::endl;
             }
         }
