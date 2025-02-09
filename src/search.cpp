@@ -239,7 +239,7 @@ bool adaboost_add_learner()
         std::vector<int> index;
         for (int i = 0; i < int(weak_learner_stats.size()); i++)
             index.push_back(i);
-        std::stable_sort(index.begin(), index.end(), [&](int a, int b) { return  weak_learner_stats[index[a]][0] < weak_learner_stats[index[b]][0]; });
+        std::stable_sort(index.begin(), index.end(), [&](int a, int b) { return  weak_learner_stats[a][0] < weak_learner_stats[b][0]; });
 
         for (int i = 0; i < int(weak_learner_stats.size()); i++)
         {
