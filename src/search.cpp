@@ -747,8 +747,8 @@ Value Search::Worker::search(
     }
 
     // Step 6. Static evaluation of the position
-    Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    Value unadjustedStaticEval = VALUE_NONE;
+    ss->correctionValue = (correction_value(*thisThread, pos, ss) + (ss - 2)->correctionValue) / 2;
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -771,7 +771,7 @@ Value Search::Worker::search(
         else if (PvNode)
             Eval::NNUE::hint_common_parent_position(pos, networks[numaAccessToken], refreshTable);
 
-        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, ss->correctionValue);
 
         // ttValue can be used as a better position evaluation
         if (is_valid(ttData.value)
@@ -781,7 +781,7 @@ Value Search::Worker::search(
     else
     {
         unadjustedStaticEval = evaluate(pos);
-        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, ss->correctionValue);
 
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
@@ -819,7 +819,7 @@ Value Search::Worker::search(
     // The depth condition is important for mate finding.
     if (!ss->ttPv && depth < 14
         && eval - futility_margin(depth, cutNode && !ss->ttHit, improving, opponentWorsening)
-               - (ss - 1)->statScore / 326 + 37 - std::abs(correctionValue) / 132821
+               - (ss - 1)->statScore / 326 + 37 - std::abs(ss->correctionValue) / 132821
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && !is_loss(beta) && !is_win(eval))
         return beta + (eval - beta) / 3;
@@ -1101,8 +1101,8 @@ moves_loop:  // When in check, search starts here
 
                 if (value < singularBeta)
                 {
-                    int corrValAdj1  = std::abs(correctionValue) / 265083;
-                    int corrValAdj2  = std::abs(correctionValue) / 253680;
+                    int corrValAdj1  = std::abs(ss->correctionValue) / 265083;
+                    int corrValAdj2  = std::abs(ss->correctionValue) / 253680;
                     int doubleMargin = 267 * PvNode - 181 * !ttCapture - corrValAdj1;
                     int tripleMargin =
                       96 + 282 * PvNode - 250 * !ttCapture + 103 * ss->ttPv - corrValAdj2;
@@ -1167,7 +1167,7 @@ moves_loop:  // When in check, search starts here
 
         r += 316 - moveCount * 32;
 
-        r -= std::abs(correctionValue) / 31568;
+        r -= std::abs(ss->correctionValue) / 31568;
 
         // Increase reduction for cut nodes
         if (cutNode)
@@ -1530,8 +1530,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         return ttData.value;
 
     // Step 4. Static evaluation of the position
-    Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    Value unadjustedStaticEval = VALUE_NONE;
+    ss->correctionValue = (correction_value(*thisThread, pos, ss) + (ss - 2)->correctionValue) / 2;
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
@@ -1543,7 +1543,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             if (!is_valid(unadjustedStaticEval))
                 unadjustedStaticEval = evaluate(pos);
             ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+              to_corrected_static_eval(unadjustedStaticEval, ss->correctionValue);
 
             // ttValue can be used as a better position evaluation
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
@@ -1556,7 +1556,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             unadjustedStaticEval =
               (ss - 1)->currentMove != Move::null() ? evaluate(pos) : -(ss - 1)->staticEval;
             ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+              to_corrected_static_eval(unadjustedStaticEval, ss->correctionValue);
         }
 
         // Stand pat. Return immediately if static value is at least beta
