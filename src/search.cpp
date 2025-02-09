@@ -749,8 +749,10 @@ Value Search::Worker::search(
     // Step 6. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
     ss->correctionValue        = correction_value(*thisThread, pos, ss);
-    const auto correctionValue =
-      ss->correctionValue + (ss->correctionValue + (ss - 1)->correctionValue) / 16;
+    const auto correctionValue = ss->correctionValue
+                               + (ss->correctionValue - (ss - 2)->correctionValue
+                                  - (ss - 1)->correctionValue + (ss - 3)->correctionValue)
+                                   / 16;
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -1534,8 +1536,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
     ss->correctionValue        = correction_value(*thisThread, pos, ss);
-    const auto correctionValue =
-      ss->correctionValue + (ss->correctionValue + (ss - 1)->correctionValue) / 16;
+    const auto correctionValue = ss->correctionValue
+                               + (ss->correctionValue - (ss - 2)->correctionValue
+                                  - (ss - 1)->correctionValue + (ss - 3)->correctionValue)
+                                   / 16;
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
