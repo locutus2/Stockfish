@@ -68,6 +68,7 @@ struct Stack {
     Move                        currentMove;
     Move                        excludedMove;
     Value                       staticEval;
+    int                         parentIndex;
     int                         statScore;
     int                         moveCount;
     bool                        inCheck;
@@ -290,6 +291,7 @@ class Worker {
     CorrectionHistory<Pawn>         pawnCorrectionHistory;
     CorrectionHistory<Minor>        minorPieceCorrectionHistory;
     CorrectionHistory<NonPawn>      nonPawnCorrectionHistory[COLOR_NB];
+    CorrectionHistory<Parent>       parentCorrectionHistory;
     CorrectionHistory<Continuation> continuationCorrectionHistory;
 
    private:
