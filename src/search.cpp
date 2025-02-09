@@ -52,7 +52,7 @@
 
 namespace Stockfish {
 
-constexpr bool LOSS_FALSE_POSITIVE = false;
+constexpr bool LOSS_FALSE_POSITIVE = true;
 constexpr bool LOSS_ACCURACY_BALANCED = false;
 constexpr bool LOSS_FALSE_NEGATIVE = false;
 constexpr bool LOSS_PRECISION = false; // true is not supported
@@ -63,6 +63,7 @@ constexpr double LEARN_MIN_SUPPORT_CONDITION = 0.001; // 0.1%
 constexpr double LEARN_MIN_SUPPORT_RULE = 0.001; // 0.1%
 constexpr bool USE_PV_TTPV = false;
 constexpr bool RESET_DISABLED_WEAK_LEARNER = false;
+constexpr bool PRINT_ROUNDED_FORM = false;
 
 std::vector<std::string> names = {
     "true", "false",
@@ -358,16 +359,19 @@ void adaboost_print_model(std::ostream& out)
         }
         out << " > " << sum/2 << std::endl;
 
-        double m = std::min(sum/2, *std::min_element(w.begin(), w.end()));
-        for(int S = 1; S <= 64; S *= 2)
+        if (PRINT_ROUNDED_FORM)
         {
-            out << "Rounded S=" << S << ": ";
-            for(int i = 0; i < int(l.size()); i++)
+            double m = std::min(sum/2, *std::min_element(w.begin(), w.end()));
+            for(int S = 1; S <= 64; S *= 2)
             {
-                if(i>0) out << " + ";
-                out << int(std::floor(w[i]/m*S + 0.5)) << " * " << (l[i] < int(names.size()) ? names[l[i]] : std::string("C[") + std::to_string(l[i]) + "]");
+                out << "Rounded S=" << S << ": ";
+                for(int i = 0; i < int(l.size()); i++)
+                {
+                    if(i>0) out << " + ";
+                    out << int(std::floor(w[i]/m*S + 0.5)) << " * " << (l[i] < int(names.size()) ? names[l[i]] : std::string("C[") + std::to_string(l[i]) + "]");
+                }
+                out << " > " << int(std::floor(sum/2/m*S + 0.5)) << std::endl;
             }
-            out << " > " << int(std::floor(sum/2/m*S + 0.5)) << std::endl;
         }
     }
     else
