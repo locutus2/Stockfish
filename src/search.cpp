@@ -750,7 +750,8 @@ Value Search::Worker::search(
     Value unadjustedStaticEval = VALUE_NONE;
     ss->correctionValue        = correction_value(*thisThread, pos, ss);
     const auto correctionValue =
-      ss->correctionValue + (ss->correctionValue - (ss - 2)->correctionValue) / 8;
+      ss->correctionValue
+      + ((ss - 1)->moveCount == 1 ? (ss->correctionValue - (ss - 2)->correctionValue) / 8 : 0);
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -1535,7 +1536,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     Value unadjustedStaticEval = VALUE_NONE;
     ss->correctionValue        = correction_value(*thisThread, pos, ss);
     const auto correctionValue =
-      ss->correctionValue + (ss->correctionValue - (ss - 2)->correctionValue) / 8;
+      ss->correctionValue
+      + ((ss - 1)->moveCount == 1 ? (ss->correctionValue - (ss - 2)->correctionValue) / 8 : 0);
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
