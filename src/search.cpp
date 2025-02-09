@@ -247,6 +247,7 @@ bool adaboost_add_learner()
             if (PRINT_ERROR_OF_ALL_LEARNERS && weak_learner_support[index[i]][0] > 0)
             {
                 std::cerr << "=> error=" <<  weak_learner_stats[index[i]][0] / (weak_learner_stats[index[i]][0] +  weak_learner_stats[index[i]][1])
+                 << " targetFunction=" <<  weak_learner_stats[index[i]][0]
                     << " support=" << 100.0*weak_learner_support[index[i]][1] /weak_learner_support[index[i]][0]
                           << " " << (index[i] < int(names.size()) ? names[index[i]] : std::string("C[") + std::to_string(index[i]) + "]") << std::endl;
             }
