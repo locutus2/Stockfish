@@ -52,7 +52,7 @@
 
 namespace Stockfish {
 
-constexpr bool LOSS_FALSE_POSITIVE = true;
+constexpr bool LOSS_FALSE_POSITIVE = false;
 constexpr bool LOSS_ACCURACY_BALANCED = false;
 constexpr bool LOSS_FALSE_NEGATIVE = false;
 constexpr bool LOSS_PRECISION = false; // true is not supported
@@ -63,7 +63,9 @@ constexpr double LEARN_MIN_SUPPORT_CONDITION = 0.001; // 0.1%
 constexpr double LEARN_MIN_SUPPORT_RULE = 0.001; // 0.1%
 constexpr bool USE_PV_TTPV = false;
 constexpr bool RESET_DISABLED_WEAK_LEARNER = false;
+
 constexpr bool PRINT_ROUNDED_FORM = false;
+constexpr bool PRINT_ERROR_OF_ALL_LEARNERS = true;
 
 std::vector<std::string> names = {
     "true", "false",
@@ -231,6 +233,25 @@ bool adaboost_add_learner()
         }
     }
     //std::cerr << "select " << bestLearner << std::endl;
+    
+    if (PRINT_ERROR_OF_ALL_LEARNERS)
+    {
+        std::vector<int> index;
+        for (int i = 0; i < int(weak_learner_stats.size()); i++)
+            index.push_back(i);
+        std::stable_sort(index.begin(), index.end(), [&](int a, int b) { return  weak_learner_stats[index[a]][0] < weak_learner_stats[index[b]][0]; });
+
+        for (int i = 0; i < int(weak_learner_stats.size()); i++)
+        {
+            //std::cerr << "C[" << i << "] = " << weak_learner_stats[i][0] << " | " << weak_learner_stats[i][1] << std::endl;
+            if (PRINT_ERROR_OF_ALL_LEARNERS && weak_learner_support[index[i]][0] > 0)
+            {
+                std::cerr << "=> error=" <<  weak_learner_stats[index[i]][0] / (weak_learner_stats[index[i]][0] +  weak_learner_stats[index[i]][1])
+                    << " support=" << 100.0*weak_learner_support[index[i]][1] /weak_learner_support[index[i]][0]
+                          << " " << (index[i] < int(names.size()) ? names[index[i]] : std::string("C[") + std::to_string(index[i]) + "]") << std::endl;
+            }
+        }
+    }
 
     if(bestLearner >= 0)
     {
