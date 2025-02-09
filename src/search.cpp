@@ -87,6 +87,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const Color us    = pos.side_to_move();
     const auto  m     = (ss - 1)->currentMove;
     const auto  pcv   = w.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us];
+    const auto  macv  = w.majorPieceCorrectionHistory[major_piece_index(pos)][us];
     const auto  micv  = w.minorPieceCorrectionHistory[minor_piece_index(pos)][us];
     const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us];
     const auto  bnpcv = w.nonPawnCorrectionHistory[BLACK][non_pawn_index<BLACK>(pos)][us];
@@ -94,7 +95,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
+    return 6995 * pcv + 3850 * macv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -114,6 +115,7 @@ void update_correction_history(const Position& pos,
 
     workerThread.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
       << bonus * 109 / 128;
+    workerThread.majorPieceCorrectionHistory[major_piece_index(pos)][us] << bonus * 163 / 128;
     workerThread.minorPieceCorrectionHistory[minor_piece_index(pos)][us] << bonus * 141 / 128;
     workerThread.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us]
       << bonus * nonPawnWeight / 128;
@@ -538,6 +540,7 @@ void Search::Worker::clear() {
     captureHistory.fill(-655);
     pawnHistory.fill(-1215);
     pawnCorrectionHistory.fill(4);
+    majorPieceCorrectionHistory.fill(0);
     minorPieceCorrectionHistory.fill(0);
     nonPawnCorrectionHistory[WHITE].fill(0);
     nonPawnCorrectionHistory[BLACK].fill(0);
