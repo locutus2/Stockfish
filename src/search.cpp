@@ -785,7 +785,7 @@ Value Search::Worker::search(
 
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
-                       unadjustedStaticEval, tt.generation());
+                       ss->staticEval, tt.generation());
     }
 
     // Use static evaluation difference to improve quiet move ordering
@@ -928,7 +928,7 @@ Value Search::Worker::search(
             {
                 // Save ProbCut data into transposition table
                 ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
-                               probCutDepth + 1, move, unadjustedStaticEval, tt.generation());
+                               probCutDepth + 1, move, ss->staticEval, tt.generation());
 
                 if (!is_decisive(value))
                     return value - (probCutBeta - beta);
@@ -1441,7 +1441,7 @@ moves_loop:  // When in check, search starts here
                        bestValue >= beta    ? BOUND_LOWER
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
-                       depth, bestMove, unadjustedStaticEval, tt.generation());
+                       depth, bestMove, ss->staticEval, tt.generation());
 
     // Adjust correction history
     if (!ss->inCheck && !(bestMove && pos.capture(bestMove))
@@ -1566,7 +1566,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 bestValue = (bestValue + beta) / 2;
             if (!ss->ttHit)
                 ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
-                               DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval,
+                               DEPTH_UNSEARCHED, Move::none(), ss->staticEval,
                                tt.generation());
             return bestValue;
         }
@@ -1699,7 +1699,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // is saved as it was before adjustment by correction history.
     ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), pvHit,
                    bestValue >= beta ? BOUND_LOWER : BOUND_UPPER, DEPTH_QS, bestMove,
-                   unadjustedStaticEval, tt.generation());
+                   ss->staticEval, tt.generation());
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
