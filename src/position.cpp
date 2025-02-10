@@ -1000,6 +1000,14 @@ void Position::do_castling(Color us, Square from, Square& to, Square& rfrom, Squ
     put_piece(make_piece(us, ROOK), Do ? rto : rfrom);
 }
 
+//Literally cheat and Take the checker out.
+void Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
+    assert (checkers() && !more_than_one(checkers()));
+    assert(&newSt != st);
+}
+
+
+
 
 // Used to do a "null move": it flips
 // the side to move without executing any move on the board.

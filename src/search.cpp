@@ -815,6 +815,8 @@ Value Search::Worker::search(
     if (!PvNode && eval < alpha - 446 - 303 * depth * depth)
         return qsearch<NonPV>(pos, ss, alpha, beta);
 
+
+
     // Step 8. Futility pruning: child node
     // The depth condition is important for mate finding.
     if (!ss->ttPv && depth < 14
@@ -937,6 +939,23 @@ Value Search::Worker::search(
     }
 
 moves_loop:  // When in check, search starts here
+
+    //Step 11.5: Cheat move pruning.
+    if (!PvNode && eval < alpha - 700 && ss->incheck && !more_than_one(pos.checkers())){
+        //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
+        Depth R = depth/3 - PieceValue[type_of(pos.piece_on(pop_lsb(pos.checkers())))]/256; //Depending on how much you cheated, reduce the depth by that amount.
+        pos.cheat(st,tt);
+
+        Value cheatValue = -search<NonPV>(pos, ss + 1, -alpha, -alpha + 1, R, false);
+
+        pos.undo_cheat();
+        if (cheatValue < alpha){
+            Value v = -search<NonPV>(pos, ss, beta - 1, beta, depth/3, false); //Verification search.
+            if (v<alpha){
+                return cheatValue;
+            }
+        }
+    }
 
     // Step 12. A small Probcut idea
     probCutBeta = beta + 413;
