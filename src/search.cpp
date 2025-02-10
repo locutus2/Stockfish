@@ -363,7 +363,7 @@ void Search::Worker::iterative_deepening() {
                 Depth adjustedDepth =
                   std::max(1, rootDepth - failedHighCnt - 3 * (searchAgainCounter + 1) / 4);
                 rootDelta = beta - alpha;
-                bestValue = search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false);
+                bestValue = search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false,true);
 
                 // Bring the best move to the front. It is critical that sorting
                 // is done with a stable algorithm because all the values but the
@@ -562,7 +562,7 @@ void Search::Worker::clear() {
 // Main search function for both PV and non-PV nodes
 template<NodeType nodeType>
 Value Search::Worker::search(
-  Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode) {
+  Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode, bool canCheat) {
 
     constexpr bool PvNode   = nodeType != NonPV;
     constexpr bool rootNode = nodeType == Root;
@@ -841,7 +841,7 @@ Value Search::Worker::search(
 
         pos.do_null_move(st, tt);
 
-        Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false);
+        Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false,true);
 
         pos.undo_null_move();
 
@@ -857,7 +857,7 @@ Value Search::Worker::search(
             // until ply exceeds nmpMinPly.
             thisThread->nmpMinPly = ss->ply + 3 * (depth - R) / 4;
 
-            Value v = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false);
+            Value v = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false,true);
 
             thisThread->nmpMinPly = 0;
 
@@ -921,7 +921,7 @@ Value Search::Worker::search(
             // If the qsearch held, perform the regular search
             if (value >= probCutBeta && probCutDepth > 0)
                 value = -search<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1, probCutDepth,
-                                       !cutNode);
+                                       !cutNode,true);
 
             pos.undo_move(move);
 
@@ -940,26 +940,25 @@ Value Search::Worker::search(
 moves_loop:  // When in check, search starts here
 
     //Step 11.5: Cheat move pruning.
-    if (!PvNode && eval < alpha - 700 && ss->inCheck && !more_than_one(pos.checkers())){
+    if (!PvNode && eval < alpha - 700 && ss->inCheck && !more_than_one(pos.checkers()) && canCheat){
         //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
         Bitboard Temp = pos.checkers();
         Square cheat_square = pop_lsb(Temp);
-        Depth R = depth/3 + PieceValue[type_of(pos.piece_on(cheat_square))]/256; //Depending on how much you cheated, reduce the depth by that amount.
+        Depth R = depth/3 + PieceValue[type_of(pos.piece_on(cheat_square))]/256 + 2; //Depending on how much you cheated, reduce the depth by that amount.
 
         ss->currentMove                   = Move::cheat();
         ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
         ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
         bool cheat_successful = pos.cheat(st,tt);
         Value cheatValue;
-        //std::cout<<"Cheat"<<std::endl;
         if (cheat_successful){
-            cheatValue = -search<NonPV>(pos, ss + 1, -alpha, -alpha + 1, depth-R, false);
+            cheatValue = -search<NonPV>(pos, ss + 1, -alpha, -alpha + 1, depth-R, false,false);
         }
 
         pos.undo_cheat_move(cheat_square);
         //You cheated and still bad?
         if (cheat_successful && cheatValue < alpha){
-            Value v = search<NonPV>(pos, ss, alpha, alpha+1, depth-R, false); //Verification search. Search deeper than the original position, but not as much as a full-depth search.
+            Value v = search<NonPV>(pos, ss, alpha, alpha+1, depth-R, false, false); //Verification search. Search deeper than the original position, but not as much as a full-depth search.
             if (v<alpha){
                 return cheatValue;
             }
@@ -1124,7 +1123,7 @@ moves_loop:  // When in check, search starts here
 
                 ss->excludedMove = move;
                 value =
-                  search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
+                  search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode,true);
                 ss->excludedMove = Move::none();
 
                 if (value < singularBeta)
@@ -1241,7 +1240,7 @@ moves_loop:  // When in check, search starts here
 
             ss->reduction = newDepth - d;
 
-            value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+            value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true,true);
             ss->reduction = 0;
 
 
@@ -1256,7 +1255,7 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
-                    value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+                    value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode,true);
 
                 // Post LMR continuation history updates
                 int bonus = (value >= beta) * 2010;
@@ -1273,7 +1272,7 @@ moves_loop:  // When in check, search starts here
 
             // Note that if expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
-                                   newDepth - (r > 3554) - (r > 5373 && newDepth > 2), !cutNode);
+                                   newDepth - (r > 3554) - (r > 5373 && newDepth > 2), !cutNode,true);
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
@@ -1287,7 +1286,7 @@ moves_loop:  // When in check, search starts here
             if (move == ttData.move && thisThread->rootDepth > 8)
                 newDepth = std::max(newDepth, 1);
 
-            value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
+            value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false,true);
         }
 
         // Step 19. Undo move
