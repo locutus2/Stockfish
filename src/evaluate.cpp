@@ -58,7 +58,6 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
                      int                            optimism) {
 
     assert(!pos.checkers());
-    std::cout<<"Evaluate reached"<<std::endl;
     bool smallNet           = use_smallnet(pos);
     auto [psqt, positional] = smallNet ? networks.small.evaluate(pos, &caches.small)
                                        : networks.big.evaluate(pos, &caches.big);
@@ -86,7 +85,6 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
-    std::cout<<"Evaluate ended"<<std::endl;
     return v;
 }
 

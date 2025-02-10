@@ -936,7 +936,6 @@ Value Search::Worker::search(
             }
         }
     }
-    std::cout<<"Step 11 passed"<<std::endl;
 
 moves_loop:  // When in check, search starts here
 
@@ -952,6 +951,7 @@ moves_loop:  // When in check, search starts here
         ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
         bool cheat_successful = pos.cheat(st,tt);
         Value cheatValue;
+
         if (cheat_successful){
             cheatValue = -search<NonPV>(pos, ss + 1, -alpha, -alpha + 1, R, false);
         }
@@ -1556,17 +1556,14 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
         return ttData.value;
     // Step 4. Static evaluation of the position
-    std::cout<<"Step 4 reached"<<std::endl;
     Value      unadjustedStaticEval = VALUE_NONE;
     const auto correctionValue      = correction_value(*thisThread, pos, ss);
-    std::cout<<"Step 4.1 reached"<<std::endl;
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
     {
         if (ss->ttHit)
         {
-            std::cout<<"Step 4.1.1 reached"<<std::endl;
             // Never assume anything about values stored in TT
             unadjustedStaticEval = ttData.eval;
             if (!is_valid(unadjustedStaticEval))
@@ -1581,7 +1578,6 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         }
         else
         {
-            std::cout<<"Step 4.1.2 reached"<<std::endl;
             // In case of null move search, use previous static eval with opposite sign
             unadjustedStaticEval =
               (ss - 1)->currentMove != Move::null() ? evaluate(pos) : -(ss - 1)->staticEval;
@@ -1621,7 +1617,6 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.
 
-    std::cout<<"Step 5 reached"<<std::endl;
     while ((move = mp.next_move()) != Move::none())
     {
         assert(move.is_ok());

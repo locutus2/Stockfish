@@ -525,7 +525,7 @@ class FeatureTransformer {
         }
         else
         {
-            assert(added.size() == 1 || added.size() == 2);
+            assert(added.size() == 0 || added.size() == 1 || added.size() == 2);
             assert(removed.size() == 1 || removed.size() == 2);
             assert(added.size() <= removed.size());
 
@@ -541,8 +541,15 @@ class FeatureTransformer {
 
             if (removed.size() == 1)
             {
-                for (IndexType i = 0; i < HalfDimensions * sizeof(WeightType) / sizeof(vec_t); ++i)
-                    accOut[i] = vec_add_16(vec_sub_16(accIn[i], columnR0[i]), columnA0[i]);
+                if (added.size() == 0)
+                {
+                    for (IndexType i = 0; i < HalfDimensions * sizeof(WeightType) / sizeof(vec_t); ++i)
+                        accOut[i] =vec_sub_16(accIn[i], columnR0[i]);
+                }
+                else{
+                    for (IndexType i = 0; i < HalfDimensions * sizeof(WeightType) / sizeof(vec_t); ++i)
+                        accOut[i] = vec_add_16(vec_sub_16(accIn[i], columnR0[i]), columnA0[i]);
+                }
             }
             else if (added.size() == 1)
             {
@@ -578,11 +585,23 @@ class FeatureTransformer {
 
             if (removed.size() == 1)
             {
+                if (added.size() == 0)
+                {
+                    for (IndexType i = 0; i < HalfDimensions * sizeof(WeightType) / sizeof(vec_t); ++i)
+                        accOut[i] =vec_sub_16(accIn[i], columnR0[i]);
+                }
+                else
+                {
+
+
+
                 for (std::size_t i = 0;
                      i < PSQTBuckets * sizeof(PSQTWeightType) / sizeof(psqt_vec_t); ++i)
                     accPsqtOut[i] = vec_add_psqt_32(vec_sub_psqt_32(accPsqtIn[i], columnPsqtR0[i]),
                                                     columnPsqtA0[i]);
+                }
             }
+
             else if (added.size() == 1)
             {
                 const IndexType offsetPsqtR1 = PSQTBuckets * removed[1];

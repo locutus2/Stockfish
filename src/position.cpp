@@ -1003,8 +1003,6 @@ void Position::do_castling(Color us, Square from, Square& to, Square& rfrom, Squ
 //Literally cheat and Take the checker out.
 //If still in check, your cheat is not applicable, fail the cheat.
 bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
-    std::cout<<"st: "<<st<<std::endl;
-    std::cout<<"newst: "<<&newSt<<std::endl;
     assert (checkers() && !more_than_one(checkers()));
     assert(&newSt != st);
     Bitboard Temp = checkers();
@@ -1037,7 +1035,6 @@ bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
     Color us = sideToMove;
     Color them = ~sideToMove;
 
-    std::cout<<type_of(captured)<<std::endl;
     if (type_of(captured) == PAWN){
         st->pawnKey ^= Zobrist::psq[captured][to];
     }
@@ -1068,24 +1065,24 @@ bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
 
 
     // Calculate checkers bitboard (if move gives check)
+
+
     st->checkersBB = attackers_to(square<KING>(them)) & pieces(us);
 
 
-    if (checkers()){
+    if (attackers_to(square<KING>(us)) & pieces(them)){
         sideToMove = ~sideToMove;
         set_check_info();
         return false;
     }
     sideToMove = ~sideToMove;
     set_check_info();
-    std::cout<<"Cheat happened here"<<std::endl;
     return true;
 
 }
 
 void Position::undo_cheat_move(Square cheatsquare) {
-    std::cout<<"Cheat undone here"<<std::endl;
-    assert(!checkers());
+    //assert(!checkers());
     assert(st->capturedPiece);
 
 
