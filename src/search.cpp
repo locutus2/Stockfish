@@ -951,7 +951,7 @@ moves_loop:  // When in check, search starts here
         ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
         bool cheat_successful = pos.cheat(st,tt);
         Value cheatValue;
-
+        //std::cout<<"Cheat"<<std::endl;
         if (cheat_successful){
             cheatValue = -search<NonPV>(pos, ss + 1, -alpha, -alpha + 1, R, false);
         }
