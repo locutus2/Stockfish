@@ -68,7 +68,7 @@ struct Stack {
     Move                        currentMove;
     Move                        excludedMove;
     Value                       staticEval;
-    int                         parentIndex;
+    int                         parentNonPawnIndex;
     int                         statScore;
     int                         moveCount;
     bool                        inCheck;
@@ -288,11 +288,11 @@ class Worker {
     ContinuationHistory   continuationHistory[2][2];
     PawnHistory           pawnHistory;
 
-    CorrectionHistory<Pawn>         pawnCorrectionHistory;
-    CorrectionHistory<Minor>        minorPieceCorrectionHistory;
-    CorrectionHistory<NonPawn>      nonPawnCorrectionHistory[COLOR_NB];
-    CorrectionHistory<Parent>       parentCorrectionHistory;
-    CorrectionHistory<Continuation> continuationCorrectionHistory;
+    CorrectionHistory<Pawn>          pawnCorrectionHistory;
+    CorrectionHistory<Minor>         minorPieceCorrectionHistory;
+    CorrectionHistory<NonPawn>       nonPawnCorrectionHistory[COLOR_NB];
+    CorrectionHistory<ParentNonPawn> parentNonPawnCorrectionHistory;
+    CorrectionHistory<Continuation>  continuationCorrectionHistory;
 
    private:
     void iterative_deepening();

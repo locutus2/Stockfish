@@ -86,7 +86,7 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
     const Color us    = pos.side_to_move();
     const auto  m     = (ss - 1)->currentMove;
-    const auto  pc    = w.parentCorrectionHistory[(ss - 1)->parentIndex][us];
+    const auto  pnpcv = w.parentNonPawnCorrectionHistory[(ss - 1)->parentNonPawnIndex][us];
     const auto  pcv   = w.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us];
     const auto  micv  = w.minorPieceCorrectionHistory[minor_piece_index(pos)][us];
     const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us];
@@ -95,7 +95,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return 5644 * pc + 6580 * pcv + 6202 * micv + 7293 * (wnpcv + bnpcv) + 5690 * cntcv;
+    return 5559 * pnpcv + 6481 * pcv + 6109 * micv + 7183 * (wnpcv + bnpcv) + 5605 * cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -113,7 +113,7 @@ void update_correction_history(const Position& pos,
 
     static constexpr int nonPawnWeight = 165;
 
-    workerThread.parentCorrectionHistory[(ss - 1)->parentIndex][us] << bonus;
+    workerThread.parentNonPawnCorrectionHistory[(ss - 1)->parentNonPawnIndex][us] << bonus;
     workerThread.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
       << bonus * 109 / 128;
     workerThread.minorPieceCorrectionHistory[minor_piece_index(pos)][us] << bonus * 141 / 128;
@@ -543,7 +543,7 @@ void Search::Worker::clear() {
     minorPieceCorrectionHistory.fill(0);
     nonPawnCorrectionHistory[WHITE].fill(0);
     nonPawnCorrectionHistory[BLACK].fill(0);
-    parentCorrectionHistory.fill(0);
+    parentNonPawnCorrectionHistory.fill(0);
 
     for (auto& to : continuationCorrectionHistory)
         for (auto& h : to)
@@ -749,7 +749,7 @@ Value Search::Worker::search(
         }
     }
 
-    ss->parentIndex = parent_index(pos);
+    ss->parentNonPawnIndex = parent_non_pawn_index(pos);
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
@@ -1534,7 +1534,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
         return ttData.value;
 
-    ss->parentIndex = parent_index(pos);
+    ss->parentNonPawnIndex = parent_non_pawn_index(pos);
 
     // Step 4. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
