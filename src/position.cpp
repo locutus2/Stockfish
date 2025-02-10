@@ -1001,9 +1001,100 @@ void Position::do_castling(Color us, Square from, Square& to, Square& rfrom, Squ
 }
 
 //Literally cheat and Take the checker out.
-void Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
+//If still in check, your cheat is not applicable, fail the cheat.
+bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
+    std::cout<<"st: "<<st<<std::endl;
+    std::cout<<"newst: "<<&newSt<<std::endl;
     assert (checkers() && !more_than_one(checkers()));
     assert(&newSt != st);
+    Bitboard Temp = checkers();
+    Square to = pop_lsb(Temp);
+
+
+    // Copy some fields of the old state to our new StateInfo object except the
+    // ones which are going to be recalculated from scratch anyway and then switch
+    // our state pointer to point to the new (ready to be updated) state.
+    std::memcpy(&newSt, st, offsetof(StateInfo, key));
+    newSt.previous = st;
+    st->next       = &newSt;
+    st             = &newSt;
+
+    ++gamePly;
+    st->rule50 = 0;
+    ++st->pliesFromNull;
+    st->repetition = 0;
+
+    if (st->epSquare != SQ_NONE)
+    {
+        st->key ^= Zobrist::enpassant[file_of(st->epSquare)];
+        st->epSquare = SQ_NONE;
+    }
+
+    st->key ^= Zobrist::side;
+
+    Piece captured = piece_on(to);
+
+    Color us = sideToMove;
+    Color them = ~sideToMove;
+
+    std::cout<<type_of(captured)<<std::endl;
+    if (type_of(captured) == PAWN){
+        st->pawnKey ^= Zobrist::psq[captured][to];
+    }
+    else{
+        st->nonPawnMaterial[them] -= PieceValue[captured];
+            st->nonPawnKey[them] ^= Zobrist::psq[captured][to];
+
+            if (type_of(captured) <= BISHOP)
+                st->minorPieceKey ^= Zobrist::psq[captured][to];
+    }
+
+
+    st->dirtyPiece.dirty_num               = 1;
+
+    st->accumulatorBig.computed[WHITE]     = st->accumulatorBig.computed[BLACK] =
+      st->accumulatorSmall.computed[WHITE] = st->accumulatorSmall.computed[BLACK] = false;
+    auto& dp     = st->dirtyPiece;
+
+
+    st->capturedPiece = dp.piece[0]  = captured;
+    dp.from[0]   = to;
+    dp.to[0]     = SQ_NONE;
+    remove_piece(to);
+
+    st->key ^= Zobrist::psq[captured][to];
+    st->materialKey ^= Zobrist::psq[captured][pieceCount[captured]];
+    prefetch(tt.first_entry(key()));
+
+
+    // Calculate checkers bitboard (if move gives check)
+    st->checkersBB = attackers_to(square<KING>(them)) & pieces(us);
+
+
+    if (checkers()){
+        sideToMove = ~sideToMove;
+        set_check_info();
+        return false;
+    }
+    sideToMove = ~sideToMove;
+    set_check_info();
+    std::cout<<"Cheat happened here"<<std::endl;
+    return true;
+
+}
+
+void Position::undo_cheat_move(Square cheatsquare) {
+    std::cout<<"Cheat undone here"<<std::endl;
+    assert(!checkers());
+    assert(st->capturedPiece);
+
+
+    sideToMove = ~sideToMove;
+    put_piece(st->capturedPiece, cheatsquare);  // Restore the captured piece
+
+    st = st->previous;
+    --gamePly;
+
 }
 
 

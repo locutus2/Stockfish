@@ -84,6 +84,7 @@ class StatsEntry {
     operator const T&() const { return entry; }
 
     void operator<<(int bonus) {
+        std::cout<<*this<<std::endl;
         // Make sure that bonus is in range [-D, D]
         int clampedBonus = std::clamp(bonus, -D, D);
         entry += clampedBonus - entry * std::abs(clampedBonus) / D;

@@ -692,7 +692,6 @@ Value Search::Worker::search(
         if (pos.rule50_count() < 90)
             return ttData.value;
     }
-
     // Step 5. Tablebases probe
     if (!rootNode && !excludedMove && tbConfig.cardinality)
     {
@@ -937,20 +936,30 @@ Value Search::Worker::search(
             }
         }
     }
+    std::cout<<"Step 11 passed"<<std::endl;
 
 moves_loop:  // When in check, search starts here
 
     //Step 11.5: Cheat move pruning.
-    if (!PvNode && eval < alpha - 700 && ss->incheck && !more_than_one(pos.checkers())){
+    if (!PvNode && eval < alpha - 700 && ss->inCheck && !more_than_one(pos.checkers())){
         //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
-        Depth R = depth/3 - PieceValue[type_of(pos.piece_on(pop_lsb(pos.checkers())))]/256; //Depending on how much you cheated, reduce the depth by that amount.
-        pos.cheat(st,tt);
+        Bitboard Temp = pos.checkers();
+        Square cheat_square = pop_lsb(Temp);
+        Depth R = depth/3 - PieceValue[type_of(pos.piece_on(cheat_square))]/256; //Depending on how much you cheated, reduce the depth by that amount.
 
-        Value cheatValue = -search<NonPV>(pos, ss + 1, -alpha, -alpha + 1, R, false);
+        ss->currentMove                   = Move::cheat();
+        ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+        ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
+        bool cheat_successful = pos.cheat(st,tt);
+        Value cheatValue;
+        if (cheat_successful){
+            cheatValue = -search<NonPV>(pos, ss + 1, -alpha, -alpha + 1, R, false);
+        }
 
-        pos.undo_cheat();
-        if (cheatValue < alpha){
-            Value v = -search<NonPV>(pos, ss, beta - 1, beta, depth/3, false); //Verification search.
+        pos.undo_cheat_move(cheat_square);
+        //You cheated and still bad?
+        if (cheat_successful && cheatValue < alpha){
+            Value v = search<NonPV>(pos, ss, alpha, alpha+1, depth/2, false); //Verification search. Search deeper than the original position, but not as much as a full-depth search.
             if (v<alpha){
                 return cheatValue;
             }
@@ -1541,22 +1550,23 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     ttData.move  = ttHit ? ttData.move : Move::none();
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     pvHit        = ttHit && ttData.is_pv;
-
     // At non-PV nodes we check for an early TT cutoff
     if (!PvNode && ttData.depth >= DEPTH_QS
         && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
         return ttData.value;
-
     // Step 4. Static evaluation of the position
+    std::cout<<"Step 4 reached"<<std::endl;
     Value      unadjustedStaticEval = VALUE_NONE;
     const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    std::cout<<"Step 4.1 reached"<<std::endl;
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
     {
         if (ss->ttHit)
         {
+            std::cout<<"Step 4.1.1 reached"<<std::endl;
             // Never assume anything about values stored in TT
             unadjustedStaticEval = ttData.eval;
             if (!is_valid(unadjustedStaticEval))
@@ -1571,6 +1581,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         }
         else
         {
+            std::cout<<"Step 4.1.2 reached"<<std::endl;
             // In case of null move search, use previous static eval with opposite sign
             unadjustedStaticEval =
               (ss - 1)->currentMove != Move::null() ? evaluate(pos) : -(ss - 1)->staticEval;
@@ -1609,6 +1620,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.
+
+    std::cout<<"Step 5 reached"<<std::endl;
     while ((move = mp.next_move()) != Move::none())
     {
         assert(move.is_ok());
