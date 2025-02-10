@@ -1012,7 +1012,7 @@ bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
     // Copy some fields of the old state to our new StateInfo object except the
     // ones which are going to be recalculated from scratch anyway and then switch
     // our state pointer to point to the new (ready to be updated) state.
-    std::memcpy(&newSt, st, offsetof(StateInfo, key));
+    std::memcpy(&newSt, st, offsetof(StateInfo, accumulatorBig));
     newSt.previous = st;
     st->next       = &newSt;
     st             = &newSt;
@@ -1058,9 +1058,10 @@ bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
     dp.from[0]   = to;
     dp.to[0]     = SQ_NONE;
     remove_piece(to);
-
+    //std::cout<<captured<<" captured "<<to<<std::endl;
     st->key ^= Zobrist::psq[captured][to];
     st->materialKey ^= Zobrist::psq[captured][pieceCount[captured]];
+    assert(key() != 0);
     prefetch(tt.first_entry(key()));
 
 
@@ -1091,7 +1092,6 @@ void Position::undo_cheat_move(Square cheatsquare) {
 
     st = st->previous;
     --gamePly;
-
 }
 
 
