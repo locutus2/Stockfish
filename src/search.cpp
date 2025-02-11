@@ -125,7 +125,7 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
     const Color us    = pos.side_to_move();
     const auto  m     = (ss - 1)->currentMove;
-    const auto  tcv   = w.testCorrectionHistory[pos.special_key() & (CORRECTION_HISTORY_SIZE - 1)][us];
+    const auto  tcv   = w.testCorrectionHistory[test_index(pos)][us];
     const auto  pcv   = w.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us];
     const auto  micv  = w.minorPieceCorrectionHistory[minor_piece_index(pos)][us];
     const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us];
@@ -136,7 +136,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
 
     if (true)
     {
-        Key                            key = pos.special_key();
+        Key                            key = test_index(pos);
         static std::unordered_set<Key> found;
         if (found.find(key) == found.end())
         {
@@ -173,7 +173,7 @@ void update_correction_history(const Position& pos,
 
     static constexpr int nonPawnWeight = 165;
 
-    workerThread.testCorrectionHistory[pos.special_key() & (CORRECTION_HISTORY_SIZE - 1)][us]
+    workerThread.testCorrectionHistory[test_index(pos)][us]
       << bonus * nonPawnWeight / 128;
     workerThread.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
       << bonus * 109 / 128;

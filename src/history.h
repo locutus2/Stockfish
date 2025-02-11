@@ -49,6 +49,10 @@ enum PawnHistoryType {
     Correction
 };
 
+inline int test_index(const Position& pos) {
+    return (pos.material_key() ^ (pos.square<KING>(WHITE) * SQUARE_NB) ^ pos.square<KING>(WHITE)) & (CORRECTION_HISTORY_SIZE - 1);
+}
+
 template<PawnHistoryType T = Normal>
 inline int pawn_structure_index(const Position& pos) {
     return pos.pawn_key() & ((T == Normal ? PAWN_HISTORY_SIZE : CORRECTION_HISTORY_SIZE) - 1);
