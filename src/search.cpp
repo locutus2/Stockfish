@@ -128,7 +128,7 @@ void update_correction_history(const Position& pos,
         (*(ss - 2)->continuationCorrectionHistory)[0][pos.piece_on(m.to_sq())][m.to_sq()]
           << bonus * 138 / 128;
         (*(ss - 2)->continuationCorrectionHistory)[1][pos.piece_on(m.to_sq())][m.to_sq()]
-          << bonus * 69 / 128;
+          << bonus * 207 / 128;
     }
 }
 
