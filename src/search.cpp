@@ -955,11 +955,13 @@ moves_loop:  // When in check, search starts here
             bool cheat_successful = pos.cheat(st,tt);
             Value cheatValue = cheatAlpha; // Suppress warning.
             //std::cout<<"Cheat"<<std::endl;
+            std::cout<<"Cheat"<<std::endl;
             if (cheat_successful){
                 cheatValue = -search<NonPV>(pos, ss + 1, -cheatAlpha, -cheatAlpha + 1, depth-R, false);
             }
             assert(pos.piece_on(cheat_square) == NO_PIECE);
             pos.undo_cheat_move(cheat_square);
+            std::cout<<"Undo cheat"<<std::endl;
             assert(pos.piece_on(cheat_square) == debug_piece);
             //You cheated and still bad?
             if (cheat_successful && cheatValue < cheatAlpha && !is_loss(cheatValue)){

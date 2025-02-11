@@ -504,7 +504,8 @@ bool Position::attackers_to_exist(Square s, Bitboard occupied, Color c) const {
 
 // Tests whether a pseudo-legal move is legal
 bool Position::legal(Move m) const {
-
+    //std::cout<<m.raw()<<std::endl;
+    assert(pseudo_legal(m));
     assert(m.is_ok());
 
     Color  us   = sideToMove;
