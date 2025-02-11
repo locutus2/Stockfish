@@ -55,8 +55,8 @@ namespace Stockfish {
 int CV[5];
 int CW[5];
 
-TUNE(SetRange(-7000, 7000), CV);
-TUNE(SetRange(-128, 128), CW);
+TUNE(SetRange(-3500, 3500), CV);
+TUNE(SetRange(-64, 64), CW);
 
 namespace TB = Tablebases;
 
