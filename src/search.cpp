@@ -562,9 +562,9 @@ void Search::Worker::iterative_deepening() {
         iterIdx                        = (iterIdx + 1) & 3;
     }
 
-    dbg_mean_of(entropy(testCorrectionHistory), 0);
-    dbg_mean_of(entropy(pawnCorrectionHistory), 1);
-    dbg_mean_of(entropy(minorPieceCorrectionHistory), 2);
+    dbg_mean_of(1000*entropy(testCorrectionHistory), 0);
+    dbg_mean_of(1000*entropy(pawnCorrectionHistory), 1);
+    dbg_mean_of(1000*entropy(minorPieceCorrectionHistory), 2);
 
     if (!mainThread)
         return;
