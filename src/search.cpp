@@ -53,6 +53,24 @@
 
 namespace Stockfish {
 
+template <typename T>
+inline double entropy(const T& h)
+{
+    double value = 0;
+    int n = 0;
+    std::array<int, 2*CORRECTION_HISTORY_LIMIT+1> count  = {0};
+    for(int k = 0; k < CORRECTION_HISTORY_SIZE; k++)
+        for(int c = 0; c < COLOR_NB; c++)
+            n++,count[h[k][c] + CORRECTION_HISTORY_LIMIT]++;
+    for(int i = 0; i < 2*CORRECTION_HISTORY_LIMIT+1; i++)
+            if(count[i] > 0)
+            {
+                double p = count[i]/double(n);
+                value -= p * std::log(p);
+            }
+    return value / std::log(2) / std::log(2 * CORRECTION_HISTORY_LIMIT + 1);
+}
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -110,6 +128,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     }
 
     int v = 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
+    v /= 131072;
     dbg_correl_of(tcv, v, 0);
     dbg_correl_of(pcv, v, 1);
     dbg_correl_of(micv, v, 2);
@@ -542,6 +561,10 @@ void Search::Worker::iterative_deepening() {
         mainThread->iterValue[iterIdx] = bestValue;
         iterIdx                        = (iterIdx + 1) & 3;
     }
+
+    dbg_mean_of(entropy(testCorrectionHistory), 0);
+    dbg_mean_of(entropy(pawnCorrectionHistory), 1);
+    dbg_mean_of(entropy(minorPieceCorrectionHistory), 2);
 
     if (!mainThread)
         return;
