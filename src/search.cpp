@@ -941,7 +941,7 @@ moves_loop:  // When in check, search starts here
 
     //Step 11.5: Cheat move pruning.
 
-    if (!PvNode && ttData.value < alpha - 700 && ss->inCheck && !more_than_one(pos.checkers())){
+    if (!PvNode && ttData.value < alpha -700 && ss->inCheck && !more_than_one(pos.checkers()) && !is_win(alpha)){
         //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
         Bitboard Temp = pos.checkers();
         Square cheat_square = pop_lsb(Temp);
@@ -960,7 +960,7 @@ moves_loop:  // When in check, search starts here
 
             pos.undo_cheat_move(cheat_square);
             //You cheated and still bad?
-            if (cheat_successful && cheatValue < alpha){
+            if (cheat_successful && cheatValue < alpha && !is_loss(cheatValue)){
 
                 return cheatValue;
 

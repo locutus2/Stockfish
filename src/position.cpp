@@ -1092,6 +1092,7 @@ void Position::undo_cheat_move(Square cheatsquare) {
 
     st = st->previous;
     --gamePly;
+    assert(pos_is_ok());
 }
 
 
