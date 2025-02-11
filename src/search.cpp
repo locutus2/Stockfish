@@ -944,6 +944,7 @@ moves_loop:  // When in check, search starts here
         //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
         Bitboard Temp = pos.checkers();
         Square cheat_square = pop_lsb(Temp);
+        Piece debug_piece = pos.piece_on(cheat_square);
         Depth R = depth/3 + PieceValue[type_of(pos.piece_on(cheat_square))]/256 +2; //Depending on how much you cheated, reduce the depth by that amount.
         Value cheatAlpha = alpha + PieceValue[type_of(pos.piece_on(cheat_square))]*3/4;
         if (ttData.depth > DEPTH_UNSEARCHED)
@@ -952,13 +953,14 @@ moves_loop:  // When in check, search starts here
             ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
             ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
             bool cheat_successful = pos.cheat(st,tt);
-            Value cheatValue;
+            Value cheatValue = cheatAlpha; // Suppress warning.
             //std::cout<<"Cheat"<<std::endl;
             if (cheat_successful){
                 cheatValue = -search<NonPV>(pos, ss + 1, -cheatAlpha, -cheatAlpha + 1, depth-R, false);
             }
-
+            assert(pos.piece_on(cheat_square) == NO_PIECE);
             pos.undo_cheat_move(cheat_square);
+            assert(pos.piece_on(cheat_square) == debug_piece);
             //You cheated and still bad?
             if (cheat_successful && cheatValue < cheatAlpha && !is_loss(cheatValue)){
                 return alpha-1;

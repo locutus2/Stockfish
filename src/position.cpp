@@ -1089,8 +1089,9 @@ void Position::undo_cheat_move(Square cheatsquare) {
 
     sideToMove = ~sideToMove;
     put_piece(st->capturedPiece, cheatsquare);  // Restore the captured piece
-
     st = st->previous;
+    assert(checkers());
+    //set_check_info();
     --gamePly;
     assert(pos_is_ok());
 }
