@@ -1330,8 +1330,8 @@ bool Position::pos_is_ok() const {
 }
 
 Key Position::special_key() const {
-    return material_key() ^ minor_piece_key();
     return key();
+    return material_key() ^ minor_piece_key();
     Key tmp = 0;
     for (int i = 0; i < DIM; i++)
     {

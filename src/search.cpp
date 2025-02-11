@@ -63,6 +63,18 @@ int64_t collectHist(const T& h, std::array<int64_t, 2*CORRECTION_HISTORY_LIMIT+1
     return n;
 }
 
+template <>
+int64_t collectHist(const CorrectionHistory<Continuation>& h, std::array<int64_t, 2*CORRECTION_HISTORY_LIMIT+1>& count)
+{
+    int64_t n = 0;
+    for(int p1 = 0; p1 < PIECE_NB; p1++)
+        for(int s1 = 0; s1 < SQUARE_NB; s1++)
+            for(int p2 = 0; p2 < PIECE_NB; p2++)
+                for(int s2 = 0; s2 < SQUARE_NB; s2++)
+                    n++,count[h[p1][s1][p2][s2] + CORRECTION_HISTORY_LIMIT]++;
+    return n;
+}
+
 template <typename T>
 inline double entropy(const T& h)
 {
@@ -173,7 +185,7 @@ void update_correction_history(const Position& pos,
 
     if (m.is_ok())
         (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-          << bonus * 138 / 128;
+          << bonus * 2 * 138 / 128;
 }
 
 // History and stats update bonus, based on depth
@@ -576,6 +588,7 @@ void Search::Worker::iterative_deepening() {
     dbg_mean_of(S*entropy(minorPieceCorrectionHistory), 2);
     dbg_mean_of(S*entropy(nonPawnCorrectionHistory[WHITE]), 3);
     dbg_mean_of(S*entropy(nonPawnCorrectionHistory[BLACK]), 4);
+    dbg_mean_of(S*entropy(continuationCorrectionHistory),5);
 
     if (!mainThread)
         return;
