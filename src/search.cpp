@@ -86,7 +86,8 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
     const Color us    = pos.side_to_move();
     const auto  m     = (ss - 1)->currentMove;
-    const auto  pcv   = w.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us];
+    const auto  pcv0  = w.pawnCorrectionHistory[0][pawn_structure_index<Correction>(pos)][us];
+    const auto  pcv1  = w.pawnCorrectionHistory[1][pawn_structure_index<Correction>(pos)][us];
     const auto  micv  = w.minorPieceCorrectionHistory[minor_piece_index(pos)][us];
     const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us];
     const auto  bnpcv = w.nonPawnCorrectionHistory[BLACK][non_pawn_index<BLACK>(pos)][us];
@@ -94,7 +95,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
+    return 3498 * (pcv0 + pcv1) + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -112,8 +113,10 @@ void update_correction_history(const Position& pos,
 
     static constexpr int nonPawnWeight = 165;
 
-    workerThread.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
+    workerThread.pawnCorrectionHistory[0][pawn_structure_index<Correction>(pos)][us]
       << bonus * 109 / 128;
+    workerThread.pawnCorrectionHistory[1][pawn_structure_index<Correction>(pos)][us]
+      << bonus * 55 / 128;
     workerThread.minorPieceCorrectionHistory[minor_piece_index(pos)][us] << bonus * 141 / 128;
     workerThread.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us]
       << bonus * nonPawnWeight / 128;
@@ -537,7 +540,8 @@ void Search::Worker::clear() {
     lowPlyHistory.fill(107);
     captureHistory.fill(-655);
     pawnHistory.fill(-1215);
-    pawnCorrectionHistory.fill(4);
+    pawnCorrectionHistory[0].fill(4);
+    pawnCorrectionHistory[1].fill(4);
     minorPieceCorrectionHistory.fill(0);
     nonPawnCorrectionHistory[WHITE].fill(0);
     nonPawnCorrectionHistory[BLACK].fill(0);
