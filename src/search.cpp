@@ -940,28 +940,30 @@ Value Search::Worker::search(
 moves_loop:  // When in check, search starts here
 
     //Step 11.5: Cheat move pruning.
-    if (!PvNode && eval < alpha - 700 && ss->inCheck && !more_than_one(pos.checkers())){
+
+    if (!PvNode && ttData.value < alpha - 700 && ss->inCheck && !more_than_one(pos.checkers())){
         //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
         Bitboard Temp = pos.checkers();
         Square cheat_square = pop_lsb(Temp);
-        Depth R = depth/3 + PieceValue[type_of(pos.piece_on(cheat_square))]/256; //Depending on how much you cheated, reduce the depth by that amount.
+        Depth R = depth/3 + PieceValue[type_of(pos.piece_on(cheat_square))]/256 +2; //Depending on how much you cheated, reduce the depth by that amount.
+        if (ttData.depth >= depth-R)
+        {
+            ss->currentMove                   = Move::cheat();
+            ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+            ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
+            bool cheat_successful = pos.cheat(st,tt);
+            Value cheatValue;
+            //std::cout<<"Cheat"<<std::endl;
+            if (cheat_successful){
+                cheatValue = -search<NonPV>(pos, ss + 1, -alpha, -alpha + 1, depth-R, false);
+            }
 
-        ss->currentMove                   = Move::cheat();
-        ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
-        ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
-        bool cheat_successful = pos.cheat(st,tt);
-        Value cheatValue;
-        //std::cout<<"Cheat"<<std::endl;
-        if (cheat_successful){
-            cheatValue = -search<NonPV>(pos, ss + 1, -alpha, -alpha + 1, depth-R, false);
-        }
+            pos.undo_cheat_move(cheat_square);
+            //You cheated and still bad?
+            if (cheat_successful && cheatValue < alpha){
 
-        pos.undo_cheat_move(cheat_square);
-        //You cheated and still bad?
-        if (cheat_successful && cheatValue < alpha){
-            Value v = search<NonPV>(pos, ss, alpha, alpha+1, depth-R, false); //Verification search. Search deeper than the original position, but not as much as a full-depth search.
-            if (v<alpha){
                 return cheatValue;
+
             }
         }
     }
