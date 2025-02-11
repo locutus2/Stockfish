@@ -946,7 +946,7 @@ moves_loop:  // When in check, search starts here
         Bitboard Temp = pos.checkers();
         Square cheat_square = pop_lsb(Temp);
         Depth R = depth/3 + PieceValue[type_of(pos.piece_on(cheat_square))]/256 +2; //Depending on how much you cheated, reduce the depth by that amount.
-        if (ttData.depth >= depth-R)
+        if (ttData.depth >= depth-depth/3-2)
         {
             ss->currentMove                   = Move::cheat();
             ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
