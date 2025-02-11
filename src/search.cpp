@@ -574,6 +574,8 @@ void Search::Worker::iterative_deepening() {
     dbg_mean_of(S*entropy(testCorrectionHistory), 0);
     dbg_mean_of(S*entropy(pawnCorrectionHistory), 1);
     dbg_mean_of(S*entropy(minorPieceCorrectionHistory), 2);
+    dbg_mean_of(S*entropy(nonPawnCorrectionHistory[WHITE]), 3);
+    dbg_mean_of(S*entropy(nonPawnCorrectionHistory[BLACK]), 4);
 
     if (!mainThread)
         return;
