@@ -54,14 +54,22 @@
 namespace Stockfish {
 
 template <typename T>
-inline double entropy(const T& h)
+int64_t collectHist(const T& h, std::array<int64_t, 2*CORRECTION_HISTORY_LIMIT+1>& count)
 {
-    double value = 0;
-    int n = 0;
-    std::array<int, 2*CORRECTION_HISTORY_LIMIT+1> count  = {0};
+    int64_t n = 0;
     for(int k = 0; k < CORRECTION_HISTORY_SIZE; k++)
         for(int c = 0; c < COLOR_NB; c++)
             n++,count[h[k][c] + CORRECTION_HISTORY_LIMIT]++;
+    return n;
+}
+
+template <typename T>
+inline double entropy(const T& h)
+{
+    double value = 0;
+    std::array<int64_t, 2*CORRECTION_HISTORY_LIMIT+1> count  = {0};
+    int64_t n = collectHist(h, count);
+
     for(int i = 0; i < 2*CORRECTION_HISTORY_LIMIT+1; i++)
             if(count[i] > 0)
             {
@@ -562,9 +570,10 @@ void Search::Worker::iterative_deepening() {
         iterIdx                        = (iterIdx + 1) & 3;
     }
 
-    dbg_mean_of(1000*entropy(testCorrectionHistory), 0);
-    dbg_mean_of(1000*entropy(pawnCorrectionHistory), 1);
-    dbg_mean_of(1000*entropy(minorPieceCorrectionHistory), 2);
+    constexpr int S = 100;
+    dbg_mean_of(S*entropy(testCorrectionHistory), 0);
+    dbg_mean_of(S*entropy(pawnCorrectionHistory), 1);
+    dbg_mean_of(S*entropy(minorPieceCorrectionHistory), 2);
 
     if (!mainThread)
         return;
