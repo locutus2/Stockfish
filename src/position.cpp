@@ -43,7 +43,7 @@ using std::string;
 
 namespace Stockfish {
 
-constexpr int DIM = 10;
+constexpr int DIM = 22;
 
 namespace Zobrist {
 

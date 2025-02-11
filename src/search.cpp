@@ -87,6 +87,7 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
     const Color us    = pos.side_to_move();
     const auto  m     = (ss - 1)->currentMove;
+    const auto  tcv   = w.testCorrectionHistory[pos.special_key() & (CORRECTION_HISTORY_SIZE - 1)][us];
     const auto  pcv   = w.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us];
     const auto  micv  = w.minorPieceCorrectionHistory[minor_piece_index(pos)][us];
     const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us];
@@ -108,6 +109,13 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
             dbg_hit_on(false, 0);
     }
 
+    int v = 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
+    dbg_correl_of(tcv, v, 0);
+    dbg_correl_of(pcv, v, 1);
+    dbg_correl_of(micv, v, 2);
+    dbg_correl_of(wnpcv, v, 3);
+    dbg_correl_of(bnpcv, v, 4);
+    dbg_correl_of(cntcv, v, 5);
     return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
 }
 
@@ -126,6 +134,8 @@ void update_correction_history(const Position& pos,
 
     static constexpr int nonPawnWeight = 165;
 
+    workerThread.testCorrectionHistory[pos.special_key() & (CORRECTION_HISTORY_SIZE - 1)][us]
+      << bonus * nonPawnWeight / 128;
     workerThread.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
       << bonus * 109 / 128;
     workerThread.minorPieceCorrectionHistory[minor_piece_index(pos)][us] << bonus * 141 / 128;
@@ -552,6 +562,7 @@ void Search::Worker::clear() {
     captureHistory.fill(-655);
     pawnHistory.fill(-1215);
     pawnCorrectionHistory.fill(4);
+    testCorrectionHistory.fill(0);
     minorPieceCorrectionHistory.fill(0);
     nonPawnCorrectionHistory[WHITE].fill(0);
     nonPawnCorrectionHistory[BLACK].fill(0);

@@ -136,6 +136,7 @@ enum CorrHistType {
     NonPawn,       // By non-pawn material positions and color
     PieceTo,       // By [piece][to] move
     Continuation,  // Combined history of move pairs
+    Test,
 };
 
 namespace Detail {
