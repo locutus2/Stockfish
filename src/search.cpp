@@ -94,7 +94,8 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
+    return 7958 * pcv + 6612 * micv + 8170 * (us == WHITE ? wnpcv : bnpcv)
+         + 8284 * (us == WHITE ? bnpcv : wnpcv) + 6365 * cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -110,19 +111,20 @@ void update_correction_history(const Position& pos,
     const Move  m  = (ss - 1)->currentMove;
     const Color us = pos.side_to_move();
 
-    static constexpr int nonPawnWeight = 165;
+    static constexpr int stmNonPawnWeight    = 164;
+    static constexpr int nonStmNonPawnWeight = 167;
 
     workerThread.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
-      << bonus * 109 / 128;
-    workerThread.minorPieceCorrectionHistory[minor_piece_index(pos)][us] << bonus * 141 / 128;
+      << bonus * 110 / 128;
+    workerThread.minorPieceCorrectionHistory[minor_piece_index(pos)][us] << bonus * 142 / 128;
     workerThread.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us]
-      << bonus * nonPawnWeight / 128;
+      << bonus * (us == WHITE ? stmNonPawnWeight : nonStmNonPawnWeight) / 128;
     workerThread.nonPawnCorrectionHistory[BLACK][non_pawn_index<BLACK>(pos)][us]
-      << bonus * nonPawnWeight / 128;
+      << bonus * (us == BLACK ? stmNonPawnWeight : nonStmNonPawnWeight) / 128;
 
     if (m.is_ok())
         (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-          << bonus * 138 / 128;
+          << bonus * 150 / 128;
 }
 
 // History and stats update bonus, based on depth
