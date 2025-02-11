@@ -86,6 +86,7 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
     const Color us    = pos.side_to_move();
     const auto  m     = (ss - 1)->currentMove;
+    const auto  kcv   = w.kingCorrectionHistory[king_index(pos)][us];
     const auto  pcv   = w.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us];
     const auto  micv  = w.minorPieceCorrectionHistory[minor_piece_index(pos)][us];
     const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us];
@@ -94,7 +95,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
+    return 5408 * kcv + 6305 * pcv + 5942 * micv + 6988 * (wnpcv + bnpcv) + 5452 * cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -112,6 +113,7 @@ void update_correction_history(const Position& pos,
 
     static constexpr int nonPawnWeight = 165;
 
+    workerThread.kingCorrectionHistory[king_index(pos)][us] << bonus / 2;
     workerThread.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
       << bonus * 109 / 128;
     workerThread.minorPieceCorrectionHistory[minor_piece_index(pos)][us] << bonus * 141 / 128;
