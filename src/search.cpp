@@ -32,6 +32,7 @@
 #include <ratio>
 #include <string>
 #include <utility>
+#include <unordered_set>
 
 #include "evaluate.h"
 #include "history.h"
@@ -93,6 +94,19 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const auto  cntcv =
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
+
+    if (true)
+    {
+        Key                            key = pos.key();
+        static std::unordered_set<Key> found;
+        if (found.find(key) == found.end())
+        {
+            found.insert(key);
+            dbg_hit_on(true, 0);
+        }
+        else
+            dbg_hit_on(false, 0);
+    }
 
     return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
 }
