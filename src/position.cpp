@@ -43,12 +43,16 @@ using std::string;
 
 namespace Stockfish {
 
+constexpr int DIM = 10;
+
 namespace Zobrist {
 
 Key psq[PIECE_NB][SQUARE_NB];
 Key enpassant[FILE_NB];
 Key castling[CASTLING_RIGHT_NB];
 Key side, noPawns;
+
+Key MDown[DIM], MUp[64];
 }
 
 namespace {
@@ -128,6 +132,12 @@ void Position::init() {
 
     Zobrist::side    = rng.rand<Key>();
     Zobrist::noPawns = rng.rand<Key>();
+
+    for (int i = 0; i < DIM; i++)
+        Zobrist::MDown[i] = rng.rand<Key>();
+
+    for (int i = 0; i < 64; i++)
+        Zobrist::MUp[i] = rng.rand<Key>();
 
     // Prepare the cuckoo tables
     cuckoo.fill(0);
@@ -1317,6 +1327,28 @@ bool Position::pos_is_ok() const {
         }
 
     return true;
+}
+
+Key Position::special_key() const {
+    Key tmp = 0;
+    for (int i = 0; i < DIM; i++)
+    {
+        tmp <<= 1;
+        Key m = st->key & Zobrist::MDown[i];
+        for (int j = 0; j < 64; ++j)
+            tmp ^= (m >> j) & 1;
+    }
+
+    st->specialKey = 0;
+    for (int i = 0; i < 64; i++)
+    {
+        st->specialKey <<= 1;
+        Key m = tmp & Zobrist::MUp[i];
+        for (int j = 0; j < DIM; ++j)
+            st->specialKey ^= (m >> j) & 1;
+    }
+
+    return st->specialKey;
 }
 
 }  // namespace Stockfish

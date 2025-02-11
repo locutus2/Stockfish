@@ -97,7 +97,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
 
     if (true)
     {
-        Key                            key = pos.pawn_key();
+        Key                            key = pos.special_key();
         static std::unordered_set<Key> found;
         if (found.find(key) == found.end())
         {

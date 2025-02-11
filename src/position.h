@@ -53,6 +53,7 @@ struct StateInfo {
 
     // Not copied when making a move (will be recomputed anyhow)
     Key        key;
+    Key        specialKey;
     Bitboard   checkersBB;
     StateInfo* previous;
     StateInfo* next;
@@ -151,6 +152,7 @@ class Position {
 
     // Accessing hash keys
     Key key() const;
+    Key special_key() const;
     Key material_key() const;
     Key pawn_key() const;
     Key minor_piece_key() const;
