@@ -116,7 +116,7 @@ void update_correction_history(const Position& pos,
     workerThread.pawnCorrectionHistory[0][pawn_structure_index<Correction>(pos)][us]
       << bonus * 109 / 128;
     workerThread.pawnCorrectionHistory[1][pawn_structure_index<Correction>(pos)][us]
-      << bonus * 55 / 128;
+      << bonus * 164 / 128;
     workerThread.minorPieceCorrectionHistory[minor_piece_index(pos)][us] << bonus * 141 / 128;
     workerThread.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us]
       << bonus * nonPawnWeight / 128;
