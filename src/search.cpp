@@ -52,6 +52,12 @@
 
 namespace Stockfish {
 
+int CV[5];
+int CW[5];
+
+TUNE(SetRange(-7000, 7000), CV);
+TUNE(SetRange(-128, 128), CW);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -94,7 +100,9 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
+    return (6995 + CV[0]) * pcv + (6593 + CV[1]) * micv
+         + (7753 + CV[2]) * (us == WHITE ? wnpcv : bnpcv)
+         + (7753 + CV[3]) * (us == WHITE ? bnpcv : wnpcv) + (6049 + CV[4]) * cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -113,16 +121,17 @@ void update_correction_history(const Position& pos,
     static constexpr int nonPawnWeight = 165;
 
     workerThread.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
-      << bonus * 109 / 128;
-    workerThread.minorPieceCorrectionHistory[minor_piece_index(pos)][us] << bonus * 141 / 128;
+      << bonus * (109 + CW[0]) / 128;
+    workerThread.minorPieceCorrectionHistory[minor_piece_index(pos)][us]
+      << bonus * (141 + CW[1]) / 128;
     workerThread.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us]
-      << bonus * nonPawnWeight / 128;
+      << bonus * (nonPawnWeight + (us == WHITE ? CW[2] : CW[3])) / 128;
     workerThread.nonPawnCorrectionHistory[BLACK][non_pawn_index<BLACK>(pos)][us]
-      << bonus * nonPawnWeight / 128;
+      << bonus * (nonPawnWeight + (us == BLACK ? CW[2] : CW[3])) / 128;
 
     if (m.is_ok())
         (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-          << bonus * 138 / 128;
+          << bonus * (138 + CW[4]) / 128;
 }
 
 // History and stats update bonus, based on depth
