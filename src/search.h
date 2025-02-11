@@ -63,7 +63,7 @@ namespace Search {
 struct Stack {
     Move*                       pv;
     PieceToHistory*             continuationHistory;
-    CorrectionHistory<PieceTo>* continuationCorrectionHistory;
+    CorrectionHistory<PieceTo>* continuationCorrectionHistory[2];
     int                         ply;
     Move                        currentMove;
     Move                        excludedMove;
@@ -290,7 +290,7 @@ class Worker {
     CorrectionHistory<Pawn>         pawnCorrectionHistory;
     CorrectionHistory<Minor>        minorPieceCorrectionHistory;
     CorrectionHistory<NonPawn>      nonPawnCorrectionHistory[COLOR_NB];
-    CorrectionHistory<Continuation> continuationCorrectionHistory;
+    CorrectionHistory<Continuation> continuationCorrectionHistory[2];
 
    private:
     void iterative_deepening();

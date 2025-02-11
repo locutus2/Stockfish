@@ -90,11 +90,14 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const auto  micv  = w.minorPieceCorrectionHistory[minor_piece_index(pos)][us];
     const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us];
     const auto  bnpcv = w.nonPawnCorrectionHistory[BLACK][non_pawn_index<BLACK>(pos)][us];
-    const auto  cntcv =
-      m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+    const auto  cntcv0 =
+      m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[0][pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
+    const auto cntcv1 =
+      m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[1][pos.piece_on(m.to_sq())][m.to_sq()]
+                : 0;
 
-    return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
+    return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 3025 * (cntcv0 + cntcv1);
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -121,8 +124,12 @@ void update_correction_history(const Position& pos,
       << bonus * nonPawnWeight / 128;
 
     if (m.is_ok())
-        (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+    {
+        (*(ss - 2)->continuationCorrectionHistory)[0][pos.piece_on(m.to_sq())][m.to_sq()]
           << bonus * 138 / 128;
+        (*(ss - 2)->continuationCorrectionHistory)[1][pos.piece_on(m.to_sq())][m.to_sq()]
+          << bonus * 69 / 128;
+    }
 }
 
 // History and stats update bonus, based on depth
@@ -274,9 +281,12 @@ void Search::Worker::iterative_deepening() {
     {
         (ss - i)->continuationHistory =
           &this->continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
-        (ss - i)->continuationCorrectionHistory = &this->continuationCorrectionHistory[NO_PIECE][0];
-        (ss - i)->staticEval                    = VALUE_NONE;
-        (ss - i)->reduction                     = 0;
+        (ss - i)->continuationCorrectionHistory[0] =
+          &this->continuationCorrectionHistory[0][NO_PIECE][0];
+        (ss - i)->continuationCorrectionHistory[1] =
+          &this->continuationCorrectionHistory[1][NO_PIECE][0];
+        (ss - i)->staticEval = VALUE_NONE;
+        (ss - i)->reduction  = 0;
     }
 
     for (int i = 0; i <= MAX_PLY + 2; ++i)
@@ -542,9 +552,10 @@ void Search::Worker::clear() {
     nonPawnCorrectionHistory[WHITE].fill(0);
     nonPawnCorrectionHistory[BLACK].fill(0);
 
-    for (auto& to : continuationCorrectionHistory)
-        for (auto& h : to)
-            h.fill(0);
+    for (auto& cch : continuationCorrectionHistory)
+        for (auto& to : cch)
+            for (auto& h : to)
+                h.fill(0);
 
     for (bool inCheck : {false, true})
         for (StatsType c : {NoCaptures, Captures})
@@ -834,9 +845,12 @@ Value Search::Worker::search(
         // Null move dynamic reduction based on depth and eval
         Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
 
-        ss->currentMove                   = Move::null();
-        ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
-        ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
+        ss->currentMove         = Move::null();
+        ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+        ss->continuationCorrectionHistory[0] =
+          &thisThread->continuationCorrectionHistory[0][NO_PIECE][0];
+        ss->continuationCorrectionHistory[1] =
+          &thisThread->continuationCorrectionHistory[1][NO_PIECE][0];
 
         pos.do_null_move(st, tt);
 
@@ -911,8 +925,10 @@ Value Search::Worker::search(
             ss->isTTMove    = (move == ttData.move);
             ss->continuationHistory =
               &this->continuationHistory[ss->inCheck][true][movedPiece][move.to_sq()];
-            ss->continuationCorrectionHistory =
-              &this->continuationCorrectionHistory[movedPiece][move.to_sq()];
+            ss->continuationCorrectionHistory[0] =
+              &this->continuationCorrectionHistory[0][movedPiece][move.to_sq()];
+            ss->continuationCorrectionHistory[1] =
+              &this->continuationCorrectionHistory[1][movedPiece][move.to_sq()];
 
             // Perform a preliminary qsearch to verify that the move holds
             value = -qsearch<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1);
@@ -1152,8 +1168,10 @@ moves_loop:  // When in check, search starts here
         ss->isTTMove    = (move == ttData.move);
         ss->continuationHistory =
           &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
-        ss->continuationCorrectionHistory =
-          &thisThread->continuationCorrectionHistory[movedPiece][move.to_sq()];
+        ss->continuationCorrectionHistory[0] =
+          &thisThread->continuationCorrectionHistory[0][movedPiece][move.to_sq()];
+        ss->continuationCorrectionHistory[1] =
+          &thisThread->continuationCorrectionHistory[1][movedPiece][move.to_sq()];
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
 
         // Decrease reduction for PvNodes (*Scaler)
@@ -1655,8 +1673,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         ss->currentMove = move;
         ss->continuationHistory =
           &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
-        ss->continuationCorrectionHistory =
-          &thisThread->continuationCorrectionHistory[movedPiece][move.to_sq()];
+        ss->continuationCorrectionHistory[0] =
+          &thisThread->continuationCorrectionHistory[0][movedPiece][move.to_sq()];
+        ss->continuationCorrectionHistory[1] =
+          &thisThread->continuationCorrectionHistory[1][movedPiece][move.to_sq()];
 
         value = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha);
         pos.undo_move(move);
