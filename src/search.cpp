@@ -68,7 +68,7 @@ inline double entropy(const T& h)
                 double p = count[i]/double(n);
                 value -= p * std::log(p);
             }
-    return value / std::log(2) / std::log(2 * CORRECTION_HISTORY_LIMIT + 1);
+    return value /*/ std::log(2)*/ / std::log(2 * CORRECTION_HISTORY_LIMIT + 1);
 }
 
 namespace TB = Tablebases;
