@@ -939,6 +939,7 @@ Value Search::Worker::search(
 
 moves_loop:  // When in check, search starts here
     //Step 11.5: Cheat move pruning.
+    bool cheat_pruned = false;
     if (!PvNode && ttData.value < alpha -400 && ss->inCheck && !more_than_one(pos.checkers()) && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value)){
         //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
         Bitboard Temp = pos.checkers();
@@ -961,8 +962,7 @@ moves_loop:  // When in check, search starts here
             pos.undo_cheat_move(cheat_square);
             //You cheated and still bad?
             if (cheat_successful && cheatValue < cheatAlpha && !is_loss(cheatValue)){
-                //cheat_pruned = true;
-                return alpha-(alpha-ttData.value)/3;
+                cheat_pruned = true;
             }
         }
     }
@@ -1035,6 +1035,7 @@ moves_loop:  // When in check, search starts here
         // Bigger value is better for long time controls
         if (ss->ttPv)
             r += 1031;
+        r += 4096*cheat_pruned;
 
         // Step 14. Pruning at shallow depth.
         // Depth conditions are important for mate finding.
