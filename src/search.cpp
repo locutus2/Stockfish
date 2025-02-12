@@ -90,11 +90,14 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const auto  micv  = w.minorPieceCorrectionHistory[minor_piece_index(pos)][us];
     const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us];
     const auto  bnpcv = w.nonPawnCorrectionHistory[BLACK][non_pawn_index<BLACK>(pos)][us];
-    const auto  cntcv =
+    const auto  cntcv0 =
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
+    const auto cntcv1 =
+      m.is_ok() ? (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+                : 0;
 
-    return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
+    return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * (cntcv0 + cntcv1);
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -121,8 +124,12 @@ void update_correction_history(const Position& pos,
       << bonus * nonPawnWeight / 128;
 
     if (m.is_ok())
+    {
         (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
           << bonus * 138 / 128;
+        (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+          << bonus * 138 / 128;
+    }
 }
 
 // History and stats update bonus, based on depth
