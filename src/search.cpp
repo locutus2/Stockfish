@@ -938,7 +938,6 @@ Value Search::Worker::search(
     }
 
 moves_loop:  // When in check, search starts here
-
     //Step 11.5: Cheat move pruning.
     if (!PvNode && ttData.value < alpha -400 && ss->inCheck && !more_than_one(pos.checkers()) && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value)){
         //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
@@ -946,7 +945,7 @@ moves_loop:  // When in check, search starts here
         Square cheat_square = pop_lsb(Temp);
         Depth R = depth/3 + PieceValue[type_of(pos.piece_on(cheat_square))]/256 +2; //Depending on how much you cheated, reduce the depth by that amount.
         Value cheatAlpha = alpha + PieceValue[type_of(pos.piece_on(cheat_square))]*3/4;
-        if (ttData.depth > DEPTH_UNSEARCHED && ttData.move)
+        if (ttData.depth > DEPTH_UNSEARCHED)
         {
             ss->currentMove                   = Move::cheat();
             ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -962,7 +961,8 @@ moves_loop:  // When in check, search starts here
             pos.undo_cheat_move(cheat_square);
             //You cheated and still bad?
             if (cheat_successful && cheatValue < cheatAlpha && !is_loss(cheatValue)){
-                return alpha-1;
+                //cheat_pruned = true;
+                return alpha-(ttData.value-alpha)/3;
             }
         }
     }
@@ -1405,7 +1405,6 @@ moves_loop:  // When in check, search starts here
     // All legal moves have been searched and if there are no legal moves, it
     // must be a mate or a stalemate. If we are in a singular extension search then
     // return a fail low score.
-
 
     assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
 
