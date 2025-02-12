@@ -962,7 +962,7 @@ moves_loop:  // When in check, search starts here
             //You cheated and still bad?
             if (cheat_successful && cheatValue < cheatAlpha && !is_loss(cheatValue)){
                 //cheat_pruned = true;
-                return alpha-(ttData.value-alpha)/3;
+                return alpha-(alpha-ttData.value)/3;
             }
         }
     }
