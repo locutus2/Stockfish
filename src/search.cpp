@@ -83,7 +83,7 @@ constexpr int futility_move_count(bool improving, Depth depth) {
     return (3 + depth * depth) / (2 - improving);
 }
 
-int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
+std::tuple<int, int> correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
     const Color us    = pos.side_to_move();
     const auto  m     = (ss - 1)->currentMove;
     const auto  pcv   = w.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us];
@@ -94,8 +94,9 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return 7011 * pcv + 6595 * micv + 8276 * (us == WHITE ? wnpcv : bnpcv)
-         + 7086 * (us == WHITE ? bnpcv : wnpcv) + 6201 * cntcv;
+    return {6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv,
+            6952 * pcv + 6686 * micv + 8291 * (us == WHITE ? wnpcv : bnpcv)
+              + 7023 * (us == WHITE ? bnpcv : wnpcv) + 6217 * cntcv};
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -748,8 +749,8 @@ Value Search::Worker::search(
     }
 
     // Step 6. Static evaluation of the position
-    Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    Value unadjustedStaticEval                     = VALUE_NONE;
+    const auto [correctionValue, correctionValue2] = correction_value(*thisThread, pos, ss);
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -772,7 +773,7 @@ Value Search::Worker::search(
         else if (PvNode)
             Eval::NNUE::hint_common_parent_position(pos, networks[numaAccessToken], refreshTable);
 
-        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
 
         // ttValue can be used as a better position evaluation
         if (is_valid(ttData.value)
@@ -782,7 +783,7 @@ Value Search::Worker::search(
     else
     {
         unadjustedStaticEval = evaluate(pos);
-        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
 
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
@@ -1531,8 +1532,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         return ttData.value;
 
     // Step 4. Static evaluation of the position
-    Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    Value unadjustedStaticEval                     = VALUE_NONE;
+    const auto [correctionValue, correctionValue2] = correction_value(*thisThread, pos, ss);
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
@@ -1544,7 +1545,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             if (!is_valid(unadjustedStaticEval))
                 unadjustedStaticEval = evaluate(pos);
             ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+              to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
 
             // ttValue can be used as a better position evaluation
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
@@ -1557,7 +1558,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             unadjustedStaticEval =
               (ss - 1)->currentMove != Move::null() ? evaluate(pos) : -(ss - 1)->staticEval;
             ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+              to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
         }
 
         // Stand pat. Return immediately if static value is at least beta
