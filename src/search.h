@@ -367,6 +367,10 @@ struct ConthistBonus {
 
 }  // namespace Search
 
+void start_iteration();
+void print_iteration(std::ostream& out = std::cerr);
+
+
 }  // namespace Stockfish
 
 #endif  // #ifndef SEARCH_H_INCLUDED

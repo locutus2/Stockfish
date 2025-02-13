@@ -56,7 +56,7 @@ namespace Stockfish {
 //double W[WN] = { 7144.77 6751.67 8048.46 6172.16 };
 constexpr int WN = 5;
 // change onyl eval correction case
-//double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
+double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
 /* 1. itration
 Error=2680.67
     Weight-Error=3.5814
@@ -127,7 +127,7 @@ Error=2680.67
  * Total time (ms) : 321407
  * Nodes searched  : 188751747
  */
-double W[WN] = { 7045.87, 6787.32, 9963, 4659.13, 6812.01 }; // 5. iteration
+//double W[WN] = { 7045.87, 6787.32, 9963, 4659.13, 6812.01 }; // 5. iteration
 
 //------------------------
 //double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
@@ -186,9 +186,11 @@ constexpr int S = 131072;
 void printError(std::ostream& out = std::cerr)
 {
     out << "Error=" << std::sqrt(errorSum/errorN) << std::endl;
+    out << "Func-Error=" << std::sqrt((errorSum-weightErrorSum)/errorN) << std::endl;
     out << "Weight-Error=" << std::sqrt(weightErrorSum/errorN) << std::endl;
     out << "Weight-Error%=" << 100*std::sqrt(weightErrorSum/errorSum) << "%" << std::endl;
     out << "W: " << W[0] << ", " << W[1] << ", " << W[2] << ", " << W[3] << ", " << W[4] << std::endl;
+    out << "Result: " << std::sqrt(errorSum/errorN) << " " << W[0] << " " << W[1] << " " << W[2] << " " << W[3] << " " << W[4] << std::endl;
 }
 
 void learn(Value bestValue, Value unadjustedStaticEval, int correctionValue, Search::Stack* ss, Color us)
@@ -210,11 +212,23 @@ void learn(Value bestValue, Value unadjustedStaticEval, int correctionValue, Sea
     for(int i = 0; i < WN; i++)
     {
         //double gradError_i = -2 * diff * feature[i] / S + R * 2 * diffWeight;
-        dbg_mean_of(1000*std::abs(-2 * diff * feature[i] / S), 0);
-        dbg_mean_of(1000*std::abs(RR * 2 * diffWeight * M[i] / MM), 1);
+        //dbg_mean_of(1000*std::abs(-2 * diff * feature[i] / S), 0);
+        //dbg_mean_of(1000*std::abs(RR * 2 * diffWeight * M[i] / MM), 1);
         double gradError_i = -2 * diff * feature[i] / S + RR * 2 * diffWeight * M[i] / MM;
         W[i] -= ALPHA * gradError_i;
     }
+}
+
+void start_iteration()
+{
+    errorSum = 0;
+    weightErrorSum = 0;
+    errorN = 0;
+}
+
+void print_iteration(std::ostream& out)
+{
+    printError(out);
 }
 
 namespace TB = Tablebases;
@@ -413,7 +427,7 @@ void Search::Worker::start_searching() {
     auto bestmove = UCIEngine::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
     main_manager()->updates.onBestmove(bestmove, ponder);
 
-    printError();
+    //printError();
 }
 
 // Main iterative deepening loop. It calls search()
