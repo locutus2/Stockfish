@@ -84,7 +84,7 @@ Error=2680.67
  * Total time (ms) : 322208
  * Nodes searched  : 183123840
  * */
-double W[WN] = { 6979.65, 6711.74, 8797.96, 6325.18, 6380.72  }; // 2. iteration
+//double W[WN] = { 6979.65, 6711.74, 8797.96, 6325.18, 6380.72  }; // 2. iteration
 
 /*
  * 3. iteration
