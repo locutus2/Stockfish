@@ -200,7 +200,10 @@ void learn(Value bestValue, Value unadjustedStaticEval, int correctionValue, Sea
     //constexpr double MM = 6.67946e+6;
     //double diffWeight = W[0]+W[1]+W[2]+W[3]+W[4] - 6995-6593-7753-7753-6049;
 
-    double diffWeight = (M[0]*W[0] + M[1]*W[1] + M[2]*W[2] + M[3]*W[3] + M[4]*W[4]) / MM - 1;
+    double diffWeight = -1;
+    for(int i = 0; i < WN; i++)
+        diffWeight += M[i] * std::abs(W[i]) / MM;
+    //    (M[0]*W[0] + M[1]*W[1] + M[2]*W[2] + M[3]*W[3] + M[4]*W[4]) / MM - 1;
     const int feature[WN] = { ss->pcv, ss->micv, (us == WHITE ? ss->wnpcv : ss->bnpcv), (us == WHITE ? ss->bnpcv : ss->wnpcv), ss->cntcv };
     double diff = bestValue - unadjustedStaticEval - correctionValue / S;
     //double diff = feature[0] - correctionValue / S;
