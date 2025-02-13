@@ -82,9 +82,10 @@ void learn(Value bestValue, Value unadjustedStaticEval, int correctionValue, Sea
     constexpr double ALPHA = 0.0002;
     constexpr double R = 1;
     constexpr int S = 131072;
+    constexpr double MM = 6.67946e+6;
     //double diffWeight = W[0]+W[1]+W[2]+W[3]+W[4] - 6995-6593-7753-7753-6049;
     constexpr double M[5]= {324.357, 344.511, 334.594, 335.61, 282.568};
-    double diffWeight = M[0]*W[0] + M[1]*W[1] + M[2]*W[2] + M[3]*W[3] + M[4]*W[4] - 6.67946e+6;
+    double diffWeight = (M[0]*W[0] + M[1]*W[1] + M[2]*W[2] + M[3]*W[3] + M[4]*W[4]) / MM - 1;
     const int feature[WN] = { ss->pcv, ss->micv, (us == WHITE ? ss->wnpcv : ss->bnpcv), (us == WHITE ? ss->bnpcv : ss->wnpcv), ss->cntcv };
     double diff = bestValue - unadjustedStaticEval - correctionValue / S;
     double error = std::pow(diff, 2) + R * std::pow(diffWeight, 2);
@@ -95,7 +96,7 @@ void learn(Value bestValue, Value unadjustedStaticEval, int correctionValue, Sea
     for(int i = 0; i < WN; i++)
     {
         //double gradError_i = -2 * diff * feature[i] / S + R * 2 * diffWeight;
-        double gradError_i = -2 * diff * feature[i] / S + R * 2 * diffWeight * M[i];
+        double gradError_i = -2 * diff * feature[i] / S + R * 2 * diffWeight * M[i] / MM;
         W[i] -= ALPHA * gradError_i;
     }
 }
