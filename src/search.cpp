@@ -95,14 +95,14 @@ std::tuple<int, int> correction_value(const Worker& w, const Position& pos, cons
                  : 0;
 
     return {6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv,
-            7329 * pcv + 6861 * micv + 12384 * (us == WHITE ? wnpcv : bnpcv)
-              + 1131 * (us == WHITE ? bnpcv : wnpcv) + 7720 * cntcv};
+            8757 * pcv + 9031 * micv + 10238 * (us == WHITE ? wnpcv : bnpcv)
+              + 8675 * (us == WHITE ? bnpcv : wnpcv) + 8295 * cntcv};
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
 // does not hit the tablebase range.
 Value to_corrected_static_eval(const Value v, const int cv) {
-    return std::clamp(v + cv / 131072, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+    return std::clamp(v + cv / 32768, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 }
 
 void update_correction_history(const Position& pos,
