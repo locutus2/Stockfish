@@ -181,6 +181,7 @@ constexpr double MM = 6995*M[0] + 6593*M[1] + 7753*M[2] + 7753*M[3] + 6049*M[4];
 
 constexpr double ALPHA = 0.0002;
 constexpr double RR = 1e+9;
+//constexpr double RR = 0;
 constexpr int S = 131072;
 
 void printError(std::ostream& out = std::cerr)
@@ -202,6 +203,7 @@ void learn(Value bestValue, Value unadjustedStaticEval, int correctionValue, Sea
     double diffWeight = (M[0]*W[0] + M[1]*W[1] + M[2]*W[2] + M[3]*W[3] + M[4]*W[4]) / MM - 1;
     const int feature[WN] = { ss->pcv, ss->micv, (us == WHITE ? ss->wnpcv : ss->bnpcv), (us == WHITE ? ss->bnpcv : ss->wnpcv), ss->cntcv };
     double diff = bestValue - unadjustedStaticEval - correctionValue / S;
+    //double diff = feature[0] - correctionValue / S;
     double weightError = RR * std::pow(diffWeight, 2);
     double error = std::pow(diff, 2) + weightError;
     errorSum += error;
