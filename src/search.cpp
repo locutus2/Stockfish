@@ -56,7 +56,7 @@ namespace Stockfish {
 //double W[WN] = { 7144.77 6751.67 8048.46 6172.16 };
 constexpr int WN = 5;
 // change onyl eval correction case
-double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
+//double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
 /* 1. itration
 Error=2680.67
     Weight-Error=3.5814
