@@ -52,6 +52,48 @@
 
 namespace Stockfish {
 
+//double W[WN] = { 7072.89, 6674.74, 7906.12, 6112.17 };
+//double W[WN] = { 7144.77 6751.67 8048.46 6172.16 };
+constexpr int WN = 5;
+//double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
+//double W[WN] = { 7015.18, 7020.71, 8432.07, 7230.14, 5445.06 }; // Error=2715.16
+double W[WN] = { 7124.09, 7486.94, 9066.16, 6696.87, 4770.82 }; // Error=2711.42
+
+//double W[WN] = { 6995, 6593, 7753, 6049 }; // start
+//double W[WN] = { 6979.96, 6581.95, 7802.56, 6025.8 }; //Error=2362.53
+//double W[WN] = { 6964.65, 6572.1, 7855.23, 5998.26 }; //Error=2392.27
+//double W[WN] = { 6949.26, 6561.11, 7912.9, 5966.87 }; //Error=2456.95
+
+double errorSum = 0;
+int errorN = 0;
+
+void printError(std::ostream& out = std::cerr)
+{
+    out << "Error=" << std::sqrt(errorSum/errorN) << std::endl;
+    out << "W: " << W[0] << ", " << W[1] << ", " << W[2] << ", " << W[3] << ", " << W[4] << std::endl;
+}
+
+void learn(Value bestValue, Value unadjustedStaticEval, int correctionValue, Search::Stack* ss, Color us)
+{
+    //constexpr double ALPHA = 0.00001;
+    constexpr double ALPHA = 0.0002;
+    constexpr double R = 1;
+    constexpr int S = 131072;
+    double diffWeight = W[0]+W[1]+W[2]+W[3]+W[4] - 6995-6593-7753-7753-6049;
+    const int feature[WN] = { ss->pcv, ss->micv, (us == WHITE ? ss->wnpcv : ss->bnpcv), (us == WHITE ? ss->bnpcv : ss->wnpcv), ss->cntcv };
+    double diff = bestValue - unadjustedStaticEval - correctionValue / S;
+    double error = std::pow(diff, 2) + R * std::pow(diffWeight, 2);
+    errorSum += error;
+    errorN++;
+
+
+    for(int i = 0; i < WN; i++)
+    {
+        double gradError_i = -2 * diff * feature[i] / S + R * 2 * diffWeight;
+        W[i] -= ALPHA * gradError_i;
+    }
+}
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -83,18 +125,19 @@ constexpr int futility_move_count(bool improving, Depth depth) {
     return (3 + depth * depth) / (2 - improving);
 }
 
-int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
+int correction_value(const Worker& w, const Position& pos, Stack* ss) {
     const Color us    = pos.side_to_move();
     const auto  m     = (ss - 1)->currentMove;
-    const auto  pcv   = w.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us];
-    const auto  micv  = w.minorPieceCorrectionHistory[minor_piece_index(pos)][us];
-    const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us];
-    const auto  bnpcv = w.nonPawnCorrectionHistory[BLACK][non_pawn_index<BLACK>(pos)][us];
-    const auto  cntcv =
+    const auto  pcv   = ss->pcv = w.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us];
+    const auto  micv  = ss->micv = w.minorPieceCorrectionHistory[minor_piece_index(pos)][us];
+    const auto  wnpcv = ss->wnpcv = w.nonPawnCorrectionHistory[WHITE][non_pawn_index<WHITE>(pos)][us];
+    const auto  bnpcv = ss->bnpcv = w.nonPawnCorrectionHistory[BLACK][non_pawn_index<BLACK>(pos)][us];
+    const auto  cntcv = ss->cntcv =
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
+    return W[0] * pcv + W[1] * micv + W[2] * (us == WHITE ? wnpcv : bnpcv) + W[3] * (us == WHITE ? bnpcv : wnpcv) + W[4] * cntcv;
+    //return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -243,6 +286,8 @@ void Search::Worker::start_searching() {
 
     auto bestmove = UCIEngine::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
     main_manager()->updates.onBestmove(bestmove, ponder);
+
+    printError();
 }
 
 // Main iterative deepening loop. It calls search()
@@ -1448,6 +1493,7 @@ moves_loop:  // When in check, search starts here
         && ((bestValue < ss->staticEval && bestValue < beta)  // negative correction & no fail high
             || (bestValue > ss->staticEval && bestMove)))     // positive correction & no fail low
     {
+        learn(bestValue, unadjustedStaticEval, correctionValue, ss, us);
         auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth / 8,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *thisThread, bonus);

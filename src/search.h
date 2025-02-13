@@ -76,6 +76,12 @@ struct Stack {
     int                         cutoffCnt;
     int                         reduction;
     bool                        isTTMove;
+    int pcv;
+    int micv;
+    int wnpcv;
+    int bnpcv;
+    int cntcv;
+
 };
 
 
