@@ -55,10 +55,12 @@ namespace Stockfish {
 //double W[WN] = { 7072.89, 6674.74, 7906.12, 6112.17 };
 //double W[WN] = { 7144.77 6751.67 8048.46 6172.16 };
 constexpr int WN = 5;
+double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
+
 //double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
 //double W[WN] = { 7015.18, 7020.71, 8432.07, 7230.14, 5445.06 }; // Error=2715.16
 //double W[WN] = { 7124.09, 7486.94, 9066.16, 6696.87, 4770.82 }; // Error=2711.42
-double W[WN] = { 7115.5, 7813.01, 9746.91, 6239.79, 4228.85 }; // Error=2714.72
+//double W[WN] = { 7115.5, 7813.01, 9746.91, 6239.79, 4228.85 }; // Error=2714.72
 
 //double W[WN] = { 6995, 6593, 7753, 6049 }; // start
 //double W[WN] = { 6979.96, 6581.95, 7802.56, 6025.8 }; //Error=2362.53
@@ -80,7 +82,9 @@ void learn(Value bestValue, Value unadjustedStaticEval, int correctionValue, Sea
     constexpr double ALPHA = 0.0002;
     constexpr double R = 1;
     constexpr int S = 131072;
-    double diffWeight = W[0]+W[1]+W[2]+W[3]+W[4] - 6995-6593-7753-7753-6049;
+    //double diffWeight = W[0]+W[1]+W[2]+W[3]+W[4] - 6995-6593-7753-7753-6049;
+    constexpr double M[5]= {324.357, 344.511, 334.594, 335.61, 282.568};
+    double diffWeight = M[0]*W[0] + M[1]*W[1] + M[2]*W[2] + M[3]*W[3] + M[4]*W[4] - 6.67946e+6;
     const int feature[WN] = { ss->pcv, ss->micv, (us == WHITE ? ss->wnpcv : ss->bnpcv), (us == WHITE ? ss->bnpcv : ss->wnpcv), ss->cntcv };
     double diff = bestValue - unadjustedStaticEval - correctionValue / S;
     double error = std::pow(diff, 2) + R * std::pow(diffWeight, 2);
@@ -90,7 +94,8 @@ void learn(Value bestValue, Value unadjustedStaticEval, int correctionValue, Sea
 
     for(int i = 0; i < WN; i++)
     {
-        double gradError_i = -2 * diff * feature[i] / S + R * 2 * diffWeight;
+        //double gradError_i = -2 * diff * feature[i] / S + R * 2 * diffWeight;
+        double gradError_i = -2 * diff * feature[i] / S + R * 2 * diffWeight * M[i];
         W[i] -= ALPHA * gradError_i;
     }
 }
