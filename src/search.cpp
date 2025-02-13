@@ -57,6 +57,8 @@ namespace Stockfish {
 constexpr int WN = 5;
 //double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
 
+//constexpr double ALPHA = 0.0002;
+//constexpr double RR = 1e+9;
 /*Error=2726.04
 Weight-Error=3.39563
 Weight-Error%=0.124563%
@@ -68,7 +70,7 @@ Mean #1: Total 82427785 Mean 1885.22
 Total time (ms) : 312120
 Nodes searched  : 183536966
 */
-double W[WN] = { 7010.99, 6594.54, 8276.28, 7086.11, 6201.29 }; // 1. iteration
+//double W[WN] = { 7010.99, 6594.54, 8276.28, 7086.11, 6201.29 }; // 1. iteration
 
 /*
  * 2. iteration
