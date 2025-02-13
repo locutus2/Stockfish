@@ -95,8 +95,8 @@ std::tuple<int, int> correction_value(const Worker& w, const Position& pos, cons
                  : 0;
 
     return {6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv,
-            6952 * pcv + 6686 * micv + 8291 * (us == WHITE ? wnpcv : bnpcv)
-              + 7023 * (us == WHITE ? bnpcv : wnpcv) + 6217 * cntcv};
+            7092 * pcv + 6727 * micv + 9253 * (us == WHITE ? wnpcv : bnpcv)
+              + 5676 * (us == WHITE ? bnpcv : wnpcv) + 6466 * cntcv};
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
