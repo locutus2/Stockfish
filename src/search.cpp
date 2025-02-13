@@ -55,7 +55,20 @@ namespace Stockfish {
 //double W[WN] = { 7072.89, 6674.74, 7906.12, 6112.17 };
 //double W[WN] = { 7144.77 6751.67 8048.46 6172.16 };
 constexpr int WN = 5;
-double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
+//double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
+
+/*Error=2726.04
+Weight-Error=3.39563
+Weight-Error%=0.124563%
+W: 7010.99, 6594.54, 8276.28, 7086.11, 6201.29
+Mean #0: Total 82427785 Mean 2642.43
+Mean #1: Total 82427785 Mean 1885.22
+
+===========================
+Total time (ms) : 312120
+Nodes searched  : 183536966
+*/
+double W[WN] = { 7010.99, 6594.54, 8276.28, 7086.11, 6201.29 }; // 1. iteration
 
 //double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
 //double W[WN] = { 7015.18, 7020.71, 8432.07, 7230.14, 5445.06 }; // Error=2715.16
