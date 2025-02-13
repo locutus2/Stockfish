@@ -55,6 +55,24 @@ namespace Stockfish {
 //double W[WN] = { 7072.89, 6674.74, 7906.12, 6112.17 };
 //double W[WN] = { 7144.77 6751.67 8048.46 6172.16 };
 constexpr int WN = 5;
+// change onyl eval correction case
+double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
+/* 1. itration
+Error=2680.67
+    Weight-Error=3.5814
+    Weight-Error%=0.133601%
+    W: 6951.89, 6685.94, 8290.56, 7022.53, 6216.66
+    Mean #0: Total 83556145 Mean 2608.28
+    Mean #1: Total 83556145 Mean 1862.67
+
+    ===========================
+    Total time (ms) : 305712
+                      Nodes searched  : 185347318
+*/
+double W[WN] = { 6951.89, 6685.94, 8290.56, 7022.53, 6216.66  }; // 1. iteration
+
+
+//------------------------
 //double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
 
 //constexpr double ALPHA = 0.0002;
@@ -85,7 +103,7 @@ Mean #1: Total 83000385 Mean 2124.84
 Total time (ms) : 304820
 Nodes searched  : 181961398
  * */
-double W[WN] = { 7053.67, 6601.71, 8759.79, 6419.69, 6362.5 }; // 2. iteration
+//double W[WN] = { 7053.67, 6601.71, 8759.79, 6419.69, 6362.5 }; // 2. iteration
 
 //double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
 //double W[WN] = { 7015.18, 7020.71, 8432.07, 7230.14, 5445.06 }; // Error=2715.16
@@ -110,7 +128,6 @@ constexpr int S = 131072;
 
 void printError(std::ostream& out = std::cerr)
 {
-    double diffWeight = (M[0]*W[0] + M[1]*W[1] + M[2]*W[2] + M[3]*W[3] + M[4]*W[4]) / MM - 1;
     out << "Error=" << std::sqrt(errorSum/errorN) << std::endl;
     out << "Weight-Error=" << std::sqrt(weightErrorSum/errorN) << std::endl;
     out << "Weight-Error%=" << 100*std::sqrt(weightErrorSum/errorSum) << "%" << std::endl;
@@ -174,7 +191,7 @@ constexpr int futility_move_count(bool improving, Depth depth) {
     return (3 + depth * depth) / (2 - improving);
 }
 
-int correction_value(const Worker& w, const Position& pos, Stack* ss) {
+std::tuple<int, int> correction_value(const Worker& w, const Position& pos, Stack* ss) {
     const Color us    = pos.side_to_move();
     const auto  m     = (ss - 1)->currentMove;
     const auto  pcv   = ss->pcv = w.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us];
@@ -185,7 +202,10 @@ int correction_value(const Worker& w, const Position& pos, Stack* ss) {
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return W[0] * pcv + W[1] * micv + W[2] * (us == WHITE ? wnpcv : bnpcv) + W[3] * (us == WHITE ? bnpcv : wnpcv) + W[4] * cntcv;
+    return { 
+        6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv,
+        int(W[0] * pcv + W[1] * micv + W[2] * (us == WHITE ? wnpcv : bnpcv) + W[3] * (us == WHITE ? bnpcv : wnpcv) + W[4] * cntcv)
+    };
     //return 6995 * pcv + 6593 * micv + 7753 * (wnpcv + bnpcv) + 6049 * cntcv;
 }
 
@@ -842,7 +862,7 @@ Value Search::Worker::search(
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    const auto [correctionValue, correctionValue2]      = correction_value(*thisThread, pos, ss);
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -865,7 +885,7 @@ Value Search::Worker::search(
         else if (PvNode)
             Eval::NNUE::hint_common_parent_position(pos, networks[numaAccessToken], refreshTable);
 
-        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
 
         // ttValue can be used as a better position evaluation
         if (is_valid(ttData.value)
@@ -875,7 +895,7 @@ Value Search::Worker::search(
     else
     {
         unadjustedStaticEval = evaluate(pos);
-        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
 
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
@@ -1542,7 +1562,7 @@ moves_loop:  // When in check, search starts here
         && ((bestValue < ss->staticEval && bestValue < beta)  // negative correction & no fail high
             || (bestValue > ss->staticEval && bestMove)))     // positive correction & no fail low
     {
-        learn(bestValue, unadjustedStaticEval, correctionValue, ss, us);
+        learn(bestValue, unadjustedStaticEval, correctionValue2, ss, us);
         auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth / 8,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *thisThread, bonus);
@@ -1626,7 +1646,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Step 4. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    const auto [correctionValue, correctionValue2]      = correction_value(*thisThread, pos, ss);
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
@@ -1638,7 +1658,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             if (!is_valid(unadjustedStaticEval))
                 unadjustedStaticEval = evaluate(pos);
             ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+              to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
 
             // ttValue can be used as a better position evaluation
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
@@ -1651,7 +1671,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             unadjustedStaticEval =
               (ss - 1)->currentMove != Move::null() ? evaluate(pos) : -(ss - 1)->staticEval;
             ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+              to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
         }
 
         // Stand pat. Return immediately if static value is at least beta
