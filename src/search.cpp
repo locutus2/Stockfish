@@ -68,35 +68,47 @@ double W[WN] = { 6995, 6593, 7753, 7753, 6049 }; // start
 //double W[WN] = { 6949.26, 6561.11, 7912.9, 5966.87 }; //Error=2456.95
 
 double errorSum = 0;
+double weightErrorSum = 0;
 int errorN = 0;
+
+constexpr double M[5]= {324.357, 344.511, 334.594, 335.61, 282.568};
+constexpr double MM = 6995*M[0] + 6593*M[1] + 7753*M[2] + 7753*M[3] + 6049*M[4];
+
+constexpr double ALPHA = 0.0002;
+constexpr double RR = 1e+9;
+constexpr int S = 131072;
 
 void printError(std::ostream& out = std::cerr)
 {
+    double diffWeight = (M[0]*W[0] + M[1]*W[1] + M[2]*W[2] + M[3]*W[3] + M[4]*W[4]) / MM - 1;
     out << "Error=" << std::sqrt(errorSum/errorN) << std::endl;
+    out << "Weight-Error=" << std::sqrt(weightErrorSum/errorN) << std::endl;
+    out << "Weight-Error%=" << 100*std::sqrt(weightErrorSum/errorSum) << "%" << std::endl;
     out << "W: " << W[0] << ", " << W[1] << ", " << W[2] << ", " << W[3] << ", " << W[4] << std::endl;
 }
 
 void learn(Value bestValue, Value unadjustedStaticEval, int correctionValue, Search::Stack* ss, Color us)
 {
     //constexpr double ALPHA = 0.00001;
-    constexpr double ALPHA = 0.0002;
-    constexpr double R = 1;
-    constexpr int S = 131072;
-    constexpr double MM = 6.67946e+6;
+    //constexpr double MM = 6.67946e+6;
     //double diffWeight = W[0]+W[1]+W[2]+W[3]+W[4] - 6995-6593-7753-7753-6049;
-    constexpr double M[5]= {324.357, 344.511, 334.594, 335.61, 282.568};
+
     double diffWeight = (M[0]*W[0] + M[1]*W[1] + M[2]*W[2] + M[3]*W[3] + M[4]*W[4]) / MM - 1;
     const int feature[WN] = { ss->pcv, ss->micv, (us == WHITE ? ss->wnpcv : ss->bnpcv), (us == WHITE ? ss->bnpcv : ss->wnpcv), ss->cntcv };
     double diff = bestValue - unadjustedStaticEval - correctionValue / S;
-    double error = std::pow(diff, 2) + R * std::pow(diffWeight, 2);
+    double weightError = RR * std::pow(diffWeight, 2);
+    double error = std::pow(diff, 2) + weightError;
     errorSum += error;
+    weightErrorSum += weightError;
     errorN++;
 
 
     for(int i = 0; i < WN; i++)
     {
         //double gradError_i = -2 * diff * feature[i] / S + R * 2 * diffWeight;
-        double gradError_i = -2 * diff * feature[i] / S + R * 2 * diffWeight * M[i] / MM;
+        dbg_mean_of(1000*std::abs(-2 * diff * feature[i] / S), 0);
+        dbg_mean_of(1000*std::abs(RR * 2 * diffWeight * M[i] / MM), 1);
+        double gradError_i = -2 * diff * feature[i] / S + RR * 2 * diffWeight * M[i] / MM;
         W[i] -= ALPHA * gradError_i;
     }
 }
