@@ -940,12 +940,12 @@ Value Search::Worker::search(
 moves_loop:  // When in check, search starts here
     //Step 11.5: Cheat move pruning.
     bool cheat_pruned = false;
-    if (!PvNode && ttData.value < alpha -400 && ss->inCheck && !more_than_one(pos.checkers()) && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value)){
+    if (!PvNode && ttData.value < alpha -200 && ss->inCheck && !more_than_one(pos.checkers()) && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value)){
         //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
         Bitboard Temp = pos.checkers();
         Square cheat_square = pop_lsb(Temp);
-        Depth R = depth/3 + PieceValue[type_of(pos.piece_on(cheat_square))]/256 +2; //Depending on how much you cheated, reduce the depth by that amount.
-        Value cheatAlpha = alpha + PieceValue[type_of(pos.piece_on(cheat_square))]*3/4;
+        Depth R = depth/2 + PieceValue[type_of(pos.piece_on(cheat_square))]/256 +2; //Depending on how much you cheated, reduce the depth by that amount.
+        Value cheatAlpha = alpha + PieceValue[type_of(pos.piece_on(cheat_square))]*5/8;
         if (ttData.depth > DEPTH_UNSEARCHED)
         {
             ss->currentMove                   = Move::cheat();
@@ -1035,7 +1035,7 @@ moves_loop:  // When in check, search starts here
         // Bigger value is better for long time controls
         if (ss->ttPv)
             r += 1031;
-        r += 2304*cheat_pruned;
+        r += 2048*cheat_pruned;
 
         // Step 14. Pruning at shallow depth.
         // Depth conditions are important for mate finding.
@@ -1055,7 +1055,7 @@ moves_loop:  // When in check, search starts here
                   thisThread->captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
 
                 // Futility pruning for captures
-                if (!givesCheck && lmrDepth < 7 && (!ss->inCheck || cheat_pruned))
+                if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
                     Value futilityValue = ss->staticEval + 242 + 238 * lmrDepth
                                         + PieceValue[capturedPiece] + 95 * captHist / 700;
@@ -1086,7 +1086,7 @@ moves_loop:  // When in check, search starts here
                 Value futilityValue = ss->staticEval + (bestMove ? 49 : 135) + 150 * lmrDepth;
 
                 // Futility pruning: parent node
-                if ((!ss->inCheck || cheat_pruned) && lmrDepth < 12 && futilityValue <= alpha)
+                if (!ss->inCheck && lmrDepth < 12 && futilityValue <= alpha)
                 {
                     if (bestValue <= futilityValue && !is_decisive(bestValue)
                         && !is_win(futilityValue))
