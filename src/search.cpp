@@ -19,6 +19,7 @@
 #include "search.h"
 
 #include <algorithm>
+#include <bitset>
 #include <array>
 #include <atomic>
 #include <cassert>
@@ -32,6 +33,7 @@
 #include <ratio>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "evaluate.h"
 #include "history.h"
@@ -52,6 +54,88 @@
 
 namespace Stockfish {
 
+struct Expression
+{
+    int expr = 0;
+    int good = 0;
+    int support = 0;
+
+    inline double score() const { return support > 0 ? good/double(support) : 0.0; }
+};
+
+constexpr int NC = 12;
+
+std::vector<Expression> E(1 << NC), Enew;
+
+void searchExpression()
+{
+    std::cerr << "------------------------------" << std::endl;
+    std::cerr << "search expression" << std::endl;
+
+    for(int i = 0; i < int(E.size()); ++i)
+    {
+        E[i].expr = i;
+    } 
+
+    const auto Eorig = E;
+
+    std::sort(E.begin(), E.end(), [&](const auto& a, const auto& b) {
+            return a.score() > b.score() || (a.score() == b.score() && a.support > b.support);
+    });
+
+    constexpr bool DEBUG = false;
+
+    if(DEBUG)
+    for(int i = 0; i < int(E.size()); ++i)
+    {
+        if(E[i].support > 0)
+            std::cerr << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr) << " score=" << 100*E[i].score() << "% support=" << E[i].support
+                      << " good=" << E[i].good << std::endl;
+    }
+    std::cerr << std::endl;
+
+    for(int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
+    {
+        if(lastBest < 0 || E[i].support > E[lastBest].support)
+        {
+            best = i;
+        }
+
+        if(best >= 0)
+        {
+            std::cerr << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr) << " score=" << 100*E[best].score() << "% support=" << E[best].support
+                      << " good=" << E[best].good << std::endl;
+            lastBest = best;
+            best = -1;
+        }
+    }
+
+}
+
+
+int getIndex(const std::vector<bool>& C)
+{
+    int index = 0;
+    for(int i = 0; i < int(C.size()); i++)
+        index = index * 2 + C[i];
+    return index;
+}
+
+void learn(bool T, const std::vector<bool>& C)
+{
+    int index = getIndex(C);
+
+    for(int i = 0; i < int(E.size()); i++)
+    {
+        if((index & i) == i)
+        {
+            E[i].support++;
+            if(T)
+                E[i].good++;
+        } 
+    }
+}
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -63,6 +147,7 @@ void syzygy_extend_pv(const OptionsMap&            options,
 using namespace Search;
 
 namespace {
+
 
 // (*Scalers):
 // The values with Scaler asterisks have proven non-linear scaling.
@@ -1210,6 +1295,22 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
+            bool CC = !ss->ttPv;
+
+            std::vector<bool> C = {
+                capture,
+                !capture,
+                givesCheck,
+                !givesCheck,
+                ss->inCheck,
+                !ss->inCheck,
+                priorCapture,
+                !priorCapture,
+                improving,
+                !improving,
+                cutNode,
+                allNode,
+            };
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
@@ -1219,6 +1320,11 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
+            if(CC)
+            {
+                bool T = value <= alpha;
+                learn(T, C);
+            }
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)

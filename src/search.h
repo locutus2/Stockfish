@@ -44,6 +44,8 @@
 
 namespace Stockfish {
 
+void searchExpression();
+
 // Different node types, used as a template parameter
 enum NodeType {
     NonPV,
