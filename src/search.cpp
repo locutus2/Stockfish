@@ -1212,7 +1212,7 @@ moves_loop:  // When in check, search starts here
 
             if (!ss->ttPv && allNode && priorCapture && !improving && !capture && !givesCheck
                 && !ss->inCheck)
-                r += 1024;
+                r += 512;
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
