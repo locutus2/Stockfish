@@ -1534,7 +1534,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Step 4. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    const auto correctionValue      = correction_value(*thisThread, pos, ss) / 2;
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
