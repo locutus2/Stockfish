@@ -70,7 +70,6 @@ std::vector<Expression> E(1 << NC), Enew;
 void searchExpression()
 {
     std::cerr << "------------------------------" << std::endl;
-    std::cerr << "search expression" << std::endl;
 
     for(int i = 0; i < int(E.size()); ++i)
     {
@@ -1311,6 +1310,27 @@ moves_loop:  // When in check, search starts here
                 cutNode,
                 allNode,
             };
+            /*
+             * best 0:. expr=010101100101 score=99.0441% support=5217004 good=5167135
+             * best 1:. expr=010100100101 score=99.0418% support=6042133 good=5984236
+             * best 6:. expr=010000100101 score=98.7969% support=6839873 good=6757584
+             * best 8:. expr=000101100101 score=98.6977% support=6896387 good=6806572
+             * best 9:. expr=000100100101 score=98.6766% support=7786353 good=7683306
+             * best 16:. expr=000000100101 score=98.4963% support=8792631 good=8660416
+             * best 21:. expr=000100100001 score=98.3721% support=9700321 good=9542407
+             * best 28:. expr=000000100001 score=98.1464% support=10866148 good=10664729
+             * best 47:. expr=000000100100 score=97.3876% support=10944860 good=10658939
+             * best 56:. expr=000101000101 score=97.2799% support=16513768 good=16064583
+             * best 67:. expr=000100000101 score=97.1322% support=18708015 good=18171501
+             * best 76:. expr=000000000101 score=96.9748% support=20800077 good=20170834
+             * best 93:. expr=000101000001 score=96.6648% support=24801339 good=23974169
+             * best 97:. expr=000100000001 score=96.6124% support=26995586 good=26081087
+             * best 102:. expr=000001000001 score=96.4251% support=27643107 good=26654905
+             * best 104:. expr=000000000001 score=96.3945% support=29843015 good=28767022
+             * best 284:. expr=000101000000 score=92.7628% support=42827181 good=39727705
+             * best 285:. expr=000100000000 score=92.761% support=46090513 good=42754017
+             * best 300:. expr=000000000000 score=92.2932% support=50580391 good=46682275
+             * */
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
