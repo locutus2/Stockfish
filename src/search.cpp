@@ -1380,6 +1380,66 @@ moves_loop:  // When in check, search starts here
             best 285:. expr=000100000000 score=92.761% support=46090513 good=42754017
             best 300:. expr=000000000000 score=92.2932% support=50580391 good=46682275
              * */
+            /*
+            bool CC = !ss->ttPv;
+            std::vector<bool> C = {
+                capture,
+                !capture,
+                givesCheck,
+                !givesCheck,
+                ss->inCheck,
+                !ss->inCheck,
+                priorCapture,
+                //!priorCapture,
+                improving,
+                !improving,
+                //cutNode,
+                allNode,
+                ttCapture,
+                !ttCapture,
+            };
+             * Cond 0: best 105:. expr=101001101101 score=97.9261% support=200253 good=196100
+             * Cond 1: best 0:. expr=011010100110 score=100% support=21 good=21
+             * Cond 2: best 0:. expr=011010100110 score=100% support=21 good=21
+             * Cond 3: best 4:. expr=010110100110 score=99.5699% support=32786 good=32645
+             * Cond 4: best 0:. expr=011010100110 score=100% support=21 good=21
+             * Cond 5: best 7:. expr=010101101110 score=99.2628% support=171865 good=170598
+             * Cond 6: best 0:. expr=011010100110 score=100% support=21 good=21
+             * Cond 7: best 66:. expr=010100110110 score=98.442% support=46982 good=46250
+             * Cond 8: best 1:. expr=011010101110 score=100% support=21 good=21
+             * Cond 9: best 0:. expr=011010100110 score=100% support=21 good=21
+             * Cond 10: best 0:. expr=011010100110 score=100% support=21 good=21
+             * Cond 11: best 12:. expr=010101101101 score=99.0367% support=5045139 good=4996537
+             *
+             * best 0:. expr=011010100110 score=100% support=21 good=21
+             * best 2:. expr=010010101110 score=99.5702% support=32807 good=32666
+             * best 6:. expr=010100101110 score=99.312% support=204651 good=203243
+             * best 8:. expr=010100100110 score=99.1496% support=251633 good=249493
+             * best 10:. expr=010101101100 score=99.0441% support=5217004 good=5167135
+             * best 11:. expr=010100101100 score=99.0418% support=6042133 good=5984236
+             * best 24:. expr=010000101100 score=98.7969% support=6839873 good=6757584
+             * best 34:. expr=000100101101 score=98.7056% support=7468683 good=7372011
+             * best 36:. expr=000100101100 score=98.6766% support=7786353 good=7683306
+             * best 47:. expr=000000101101 score=98.5293% support=8443172 good=8318995
+             * best 59:. expr=000000101100 score=98.4963% support=8792631 good=8660416
+             * best 68:. expr=000100100101 score=98.3895% support=9323850 good=9173694
+             * best 71:. expr=000100100100 score=98.3721% support=9700321 good=9542407
+             * best 85:. expr=000000100101 score=98.1671% support=10453489 good=10261883
+             * best 87:. expr=000000100100 score=98.1464% support=10866148 good=10664729
+             * best 167:. expr=000000101000 score=97.3876% support=10944860 good=10658939
+             * best 179:. expr=000101001100 score=97.2799% support=16513768 good=16064583
+             * best 201:. expr=000100001100 score=97.1322% support=18708015 good=18171501
+             * best 224:. expr=000000001100 score=96.9748% support=20800077 good=20170834
+             * best 249:. expr=000101000100 score=96.6648% support=24801339 good=23974169
+             * best 256:. expr=000100000100 score=96.6124% support=26995586 good=26081087
+             * best 268:. expr=000001000100 score=96.4251% support=27643107 good=26654905
+             * best 270:. expr=000000000100 score=96.3945% support=29843015 good=28767022
+             * best 557:. expr=000101000001 score=92.7655% support=40574924 good=37639546
+             * best 558:. expr=000100000001 score=92.7629% support=43627283 good=40469941
+             * best 560:. expr=000100000000 score=92.761% support=46090513 good=42754017
+             * best 582:. expr=000000000001 score=92.3158% support=47912101 good=44230425
+             * best 585:. expr=000000000000 score=92.2932% support=50580391 good=46682275
+             */
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
