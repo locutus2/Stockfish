@@ -82,7 +82,7 @@ void searchExpression()
             return a.score() > b.score() || (a.score() == b.score() && a.support > b.support);
     });
 
-    constexpr bool DEBUG = true;
+    constexpr bool DEBUG = false;
 
     if(DEBUG)
         for(int i = 0; i < int(E.size()); ++i)
@@ -1315,9 +1315,9 @@ moves_loop:  // When in check, search starts here
                 capture,
                 !capture,
                 givesCheck,
-                !givesCheck,
+                //!givesCheck,
                 ss->inCheck,
-                !ss->inCheck,
+                //!ss->inCheck,
                 priorCapture,
                 //!priorCapture,
                 //improving,
@@ -1328,9 +1328,17 @@ moves_loop:  // When in check, search starts here
                 //!ttCapture,
                 ttData.value > alpha,
                 ttData.value <= alpha,
+                correctionValue > -2322860,
+                correctionValue <= -2322860,
                 
                 //ttData.depth >= depth,
                 //ttData.depth < depth,
+                //ss->statScore > -5902,
+                //ss->statScore <= -5902,
+                //depth > 5,
+                //depth <= 5,
+                //moveCount > 6,
+                //moveCount <= 6,
             };
             /*
             bool CC = !ss->ttPv;
@@ -1515,6 +1523,16 @@ moves_loop:  // When in check, search starts here
 
             if(CC)
             {
+                /*
+                dbg_mean_of(correctionValue, 0);
+                dbg_hit_on(correctionValue > -2322860, 0);
+                dbg_mean_of(ss->statScore, 1);
+                dbg_hit_on(ss->statScore > -5902, 1);
+                dbg_mean_of(depth, 2);
+                dbg_hit_on(depth > 5, 2);
+                dbg_mean_of(moveCount, 3);
+                dbg_hit_on(moveCount > 6, 3);
+                */
                 //dbg_hit_on(C[0], 0);
                 //dbg_hit_on(C[1], 1);
                 bool T = value <= alpha;
