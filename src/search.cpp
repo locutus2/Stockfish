@@ -100,7 +100,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
 // Add correctionHistory value to raw staticEval and guarantee evaluation
 // does not hit the tablebase range.
 Value to_corrected_static_eval(const Value v, const int cv) {
-    return std::clamp(v + cv / 262144, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+    return std::clamp(v + cv / 131072, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 }
 
 void update_correction_history(const Position& pos,
@@ -1451,7 +1451,7 @@ moves_loop:  // When in check, search starts here
         && ((bestValue < ss->staticEval && bestValue < beta)  // negative correction & no fail high
             || (bestValue > ss->staticEval && bestMove)))     // positive correction & no fail low
     {
-        auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth / 8,
+        auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth * 3 / 32,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *thisThread, bonus);
     }
