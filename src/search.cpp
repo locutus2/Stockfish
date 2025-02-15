@@ -1512,6 +1512,62 @@ moves_loop:  // When in check, search starts here
              * best 899:. expr=000100000000 score=92.761% support=46090513 good=42754017
              * best 932:. expr=000000000000 score=92.2932% support=50580391 good=46682275
              */
+            /*
+            bool CC = !ss->ttPv;
+            std::vector<bool> C = {
+                capture,
+                !capture,
+                givesCheck,
+                //!givesCheck,
+                ss->inCheck,
+                //!ss->inCheck,
+                priorCapture,
+                //!priorCapture,
+                //improving,
+                !improving,
+                //cutNode,
+                allNode,
+                ttCapture,
+                //!ttCapture,
+                ttData.value > alpha,
+                ttData.value <= alpha,
+                correctionValue > -2322860,
+                correctionValue <= -2322860,
+                }:
+             * Cond 0: best 14:. expr=101100110100 score=100% support=17 good=17
+             * Cond 1: best 4:. expr=011101110100 score=100% support=24 good=24
+             * Cond 2: best 0:. expr=001101110100 score=100% support=41 good=41
+             * Cond 3: best 0:. expr=001101110100 score=100% support=41 good=41
+             * Cond 4: best 2:. expr=001110110100 score=100% support=31 good=31
+             * Cond 5: best 0:. expr=001101110100 score=100% support=41 good=41
+             * Cond 6: best 0:. expr=001101110100 score=100% support=41 good=41
+             * Cond 7: best 0:. expr=001101110100 score=100% support=41 good=41
+             * Cond 8: best 43:. expr=011100111010 score=100% support=8 good=8
+             * Cond 9: best 0:. expr=001101110100 score=100% support=41 good=41
+             * Cond 10: best 10:. expr=001101110110 score=100% support=20 good=20
+             * Cond 11: best 7:. expr=001101110101 score=100% support=21 good=21
+             *
+             * best 0:. expr=001101110100 score=100% support=41 good=41
+             * best 54:. expr=010111110101 score=99.7015% support=9044 good=9017
+             * best 56:. expr=010110110100 score=99.6354% support=20021 good=19948
+             * best 64:. expr=010110110000 score=99.5702% support=32807 good=32666
+             * best 78:. expr=010011110101 score=99.2943% support=62491 good=62050
+             * best 85:. expr=010010110101 score=99.1855% support=72925 good=72331
+             * best 86:. expr=010110100101 score=99.1348% support=280861 good=278431
+             * best 90:. expr=010110100100 score=99.0765% support=655761 good=649705
+             * best 98:. expr=010110100000 score=99.0229% support=826408 good=818333
+             * best 107:. expr=010011100101 score=98.9408% support=2467661 good=2441523
+             * best 112:. expr=010011100001 score=98.9128% support=3351317 good=3314880
+             * best 126:. expr=010011100100 score=98.8198% support=5199589 good=5138226
+             * best 130:. expr=010011100000 score=98.7969% support=6839873 good=6757584
+             * best 190:. expr=000011100000 score=98.4963% support=8792631 good=8660416
+             * best 240:. expr=000010100000 score=98.1464% support=10866148 good=10664729
+             * best 375:. expr=000011000000 score=97.3876% support=10944860 good=10658939
+             * best 412:. expr=000001100100 score=97.1396% support=14149864 good=13745128
+             * best 442:. expr=000001100000 score=96.9748% support=20800077 good=20170834
+             * best 558:. expr=000000100000 score=96.3945% support=29843015 good=28767022
+             * best 1112:. expr=000000000000 score=92.2932% support=50580391 good=46682275
+             */
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
