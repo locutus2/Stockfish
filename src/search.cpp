@@ -1210,8 +1210,7 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            if (!ss->ttPv && allNode && priorCapture && !improving && !capture && !givesCheck
-                && !ss->inCheck)
+            if (!ss->ttPv && allNode && ttCapture && priorCapture && !capture && !givesCheck)
                 r += 1024;
 
             Depth d = std::max(
