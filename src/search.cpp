@@ -1069,6 +1069,10 @@ moves_loop:  // When in check, search starts here
                     continue;
                 }
 
+                if (ss->inCheck && lmrDepth <= 0 && !ss->ttPv && allNode && ttCapture
+                    && priorCapture && !improving)
+                    continue;
+
                 lmrDepth = std::max(lmrDepth, 0);
 
                 // Prune moves with negative SEE
