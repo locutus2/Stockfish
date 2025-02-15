@@ -1320,14 +1320,15 @@ moves_loop:  // When in check, search starts here
                 !ss->inCheck,
                 priorCapture,
                 //!priorCapture,
-                improving,
+                //improving,
                 !improving,
                 //cutNode,
                 allNode,
                 ttCapture,
-                !ttCapture,
-                //ttData.value > alpha,
-                //ttData.value <= alpha,
+                //!ttCapture,
+                ttData.value > alpha,
+                ttData.value <= alpha,
+                
                 //ttData.depth >= depth,
                 //ttData.depth < depth,
             };
@@ -1439,6 +1440,69 @@ moves_loop:  // When in check, search starts here
              * best 560:. expr=000100000000 score=92.761% support=46090513 good=42754017
              * best 582:. expr=000000000001 score=92.3158% support=47912101 good=44230425
              * best 585:. expr=000000000000 score=92.2932% support=50580391 good=46682275
+             */
+            /*
+            bool CC = !ss->ttPv;
+            std::vector<bool> C = {
+                capture,
+                !capture,
+                givesCheck,
+                !givesCheck,
+                ss->inCheck,
+                !ss->inCheck,
+                priorCapture,
+                //!priorCapture,
+                //improving,
+                !improving,
+                //cutNode,
+                allNode,
+                ttCapture,
+                //!ttCapture,
+                ttData.value > alpha,
+                ttData.value <= alpha,
+            };
+             * Cond 0: best 8:. expr=101010101101 score=100% support=17 good=17
+             * Cond 1: best 4:. expr=011010011101 score=100% support=24 good=24
+             * Cond 2: best 0:. expr=001010011101 score=100% support=41 good=41
+             * Cond 3: best 18:. expr=010110101101 score=99.6351% support=20007 good=19934
+             * Cond 4: best 0:. expr=001010011101 score=100% support=41 good=41
+             * Cond 5: best 29:. expr=010101111101 score=99.3643% support=105390 good=104720
+             * Cond 6: best 2:. expr=001010111101 score=100% support=31 good=31
+             * Cond 7: best 0:. expr=001010011101 score=100% support=41 good=41
+             * Cond 8: best 0:. expr=001010011101 score=100% support=41 good=41
+             * Cond 9: best 0:. expr=001010011101 score=100% support=41 good=41
+             * Cond 10: best 14:. expr=011010101110 score=100% support=7 good=7
+             * Cond 11: best 0:. expr=001010011101 score=100% support=41 good=41
+             *
+             * best 0:. expr=001010011101 score=100% support=41 good=41
+             * best 16:. expr=010010101101 score=99.6354% support=20021 good=19948
+             * best 20:. expr=010010111100 score=99.5702% support=32807 good=32666
+             * best 28:. expr=010100111101 score=99.4075% support=125397 good=124654
+             * best 34:. expr=010100111100 score=99.312% support=204651 good=203243
+             * best 43:. expr=010100101100 score=99.1496% support=251633 good=249493
+             * best 48:. expr=010110111001 score=99.081% support=654736 good=648719
+             * best 50:. expr=010010101001 score=99.0765% support=655761 good=649705
+             * best 52:. expr=010100111001 score=99.0655% support=4573949 good=4531204
+             * best 55:. expr=010101111000 score=99.0441% support=5217004 good=5167135
+             * best 56:. expr=010100111000 score=99.0418% support=6042133 good=5984236
+             * best 90:. expr=010000111000 score=98.7969% support=6839873 good=6757584
+             * best 105:. expr=000101111000 score=98.6977% support=6896387 good=6806572
+             * best 109:. expr=000100111000 score=98.6766% support=7786353 good=7683306
+             * best 144:. expr=000000111000 score=98.4963% support=8792631 good=8660416
+             * best 161:. expr=000100101000 score=98.3721% support=9700321 good=9542407
+             * best 194:. expr=000000101000 score=98.1464% support=10866148 good=10664729
+             * best 327:. expr=000000110000 score=97.3876% support=10944860 good=10658939
+             * best 329:. expr=000101011001 score=97.3847% support=11168813 good=10876713
+             * best 344:. expr=000101011000 score=97.2799% support=16513768 good=16064583
+             * best 369:. expr=000100011000 score=97.1322% support=18708015 good=18171501
+             * best 409:. expr=000000011000 score=96.9748% support=20800077 good=20170834
+             * best 458:. expr=000101001000 score=96.6648% support=24801339 good=23974169
+             * best 465:. expr=000100001000 score=96.6124% support=26995586 good=26081087
+             * best 490:. expr=000001001000 score=96.4251% support=27643107 good=26654905
+             * best 495:. expr=000000001000 score=96.3945% support=29843015 good=28767022
+             * best 898:. expr=000101000000 score=92.7628% support=42827181 good=39727705
+             * best 899:. expr=000100000000 score=92.761% support=46090513 good=42754017
+             * best 932:. expr=000000000000 score=92.2932% support=50580391 good=46682275
              */
 
             Depth d = std::max(
