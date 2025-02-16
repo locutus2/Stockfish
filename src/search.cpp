@@ -1173,7 +1173,7 @@ moves_loop:  // When in check, search starts here
         r -= std::abs(correctionValue) / 31568;
 
         // Increase reduction for cut nodes
-        if (cutNode)
+        if (!ss->ttPv && cutNode)
             r += 2608 + 1024 * !ttData.move;
 
         // Increase reduction if ttMove is a capture but the current move is not a capture
