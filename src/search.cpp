@@ -64,16 +64,70 @@ struct Expression {
 
 bool LEARNING_ENABLED = false;
 
+std::vector<std::string> conditionNames = {
+          "capture",      
+          "!capture",     
+          "givesCheck",    
+          "!givesCheck", 
+          "ss->inCheck",
+          "!ss->inCheck", 
+          "priorCapture", 
+          "!priorCapture", 
+          "improving",   
+          "!improving",
+          "cutNode",
+          "allNode",
+          "ttCapture",
+          "!ttCapture",
+          "ttData.value > alpha",
+          "ttData.value <= alpha",
+          "correctionValue > -2322860",
+          "correctionValue <= -2322860",
+          "ttData.depth >= depth",
+          "ttData.depth < depth",
+          "ss->statScore > -5902",
+          "ss->statScore <= -5902",
+          "depth > 5",
+          "depth <= 5",
+          "moveCount > 6",
+          "moveCount <= 6",
+};
+
 constexpr int NC = 10;  //18;
+
+std::vector<int> conditionIndex;
 
 std::vector<Expression> E(1 << NC), Enew;
 
-void initSearchExpression() { LEARNING_ENABLED = true; }
+void clearData()
+{
+    E = std::vector<Expression>(1 << NC);
+}
+
+void initSearchExpression() { 
+    LEARNING_ENABLED = true; 
+
+    for(int i = 0; i < int(conditionNames.size()); i++)
+        conditionIndex.push_back(i);
+
+    int seed = int(std::time(nullptr));
+    std::cerr << "SEED: " << seed << std::endl;
+
+    std::srand(seed);
+
+    for(int i = int(conditionIndex.size()) - 1; i >= 0; i--)
+    {
+        int j = std::rand() % (i+1);
+        if(i != j)
+            std::swap(conditionIndex[i], conditionIndex[j]);
+    }
+    clearData();
+}
 
 void endSearchExpression() { LEARNING_ENABLED = false; }
 
-void searchExpression() {
-    std::cerr << "------------------------------" << std::endl;
+void searchExpression(std::ostream& out) {
+    out << "------------------------------" << std::endl;
 
     for (int i = 0; i < int(E.size()); ++i)
     {
@@ -83,21 +137,25 @@ void searchExpression() {
     const auto Eorig = E;
 
     std::sort(E.begin(), E.end(), [&](const auto& a, const auto& b) {
-        return a.score() > b.score() || (a.score() == b.score() && a.support > b.support);
+        return a.score() > b.score() || (a.score() == b.score() && a.support > b.support)
+        || (a.score() == b.score() && a.support == b.support && popcount(a.expr) < popcount(b.expr))
+        || (a.score() == b.score() && a.support == b.support && popcount(a.expr) == popcount(b.expr) && a.expr > b.expr);
     });
 
     constexpr bool DEBUG = false;
 
     if (DEBUG)
+    {
         for (int i = 0; i < int(E.size()); ++i)
         {
             if (E[i].support > 0)
-                std::cerr << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr)
+                out << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr)
                           << " score=" << 100 * E[i].score() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
         }
 
-    std::cerr << std::endl;
+        out << std::endl;
+    }
 
     for (int k = NC - 1; k >= 0; --k)
     {
@@ -105,7 +163,7 @@ void searchExpression() {
         {
             if (E[i].expr & (1 << k))
             {
-                std::cerr << "Cond " << NC - 1 - k << ": best " << i << ":"
+                out << "Cond " << NC - 1 - k << ": best " << i << ":"
                           << ". expr=" << std::bitset<NC>(E[i].expr)
                           << " score=" << 100 * E[i].score() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
@@ -114,7 +172,7 @@ void searchExpression() {
         }
     }
 
-    std::cerr << std::endl;
+    out << std::endl;
 
     for (int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
     {
@@ -125,7 +183,7 @@ void searchExpression() {
 
         if (best >= 0)
         {
-            std::cerr << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
+            out << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
                       << " score=" << 100 * E[best].score() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
             lastBest = best;
@@ -133,7 +191,6 @@ void searchExpression() {
         }
     }
 }
-
 
 int getIndex(const std::vector<bool>& C) {
     int index = 0;
@@ -145,6 +202,8 @@ int getIndex(const std::vector<bool>& C) {
 void learn(bool T, const std::vector<bool>& C) {
     if (!LEARNING_ENABLED)
         return;
+
+    assert(C.size() == conditionNames.size());
 
     int index = getIndex(C);
 
@@ -1347,26 +1406,34 @@ moves_loop:  // When in check, search starts here
 
         bool              CC = false;
         std::vector<bool> C  = {
-          capture,      !capture,     givesCheck,    !givesCheck, ss->inCheck,
-          !ss->inCheck, priorCapture, !priorCapture, improving,   !improving,
-          //cutNode,
-          //allNode,
-          //ttCapture,
-          //!ttCapture,
-          //ttData.value > alpha,
-          //ttData.value <= alpha,
-          //correctionValue > -2322860,
-          //correctionValue <= -2322860,
-
-          //ttData.depth >= depth,
-          //ttData.depth < depth,
-          //ss->statScore > -5902,
-          //ss->statScore <= -5902,
-          //depth > 5,
-          //depth <= 5,
-          //moveCount > 6,
-          //moveCount <= 6,
+          capture,      
+          !capture,     
+          givesCheck,    
+          !givesCheck, 
+          ss->inCheck,
+          !ss->inCheck, 
+          priorCapture, 
+          !priorCapture, 
+          improving,   
+          !improving,
+          cutNode,
+          allNode,
+          ttCapture,
+          !ttCapture,
+          ttData.value > alpha,
+          ttData.value <= alpha,
+          correctionValue > -2322860,
+          correctionValue <= -2322860,
+          ttData.depth >= depth,
+          ttData.depth < depth,
+          ss->statScore > -5902,
+          ss->statScore <= -5902,
+          depth > 5,
+          depth <= 5,
+          moveCount > 6,
+          moveCount <= 6,
         };
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
