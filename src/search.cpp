@@ -1370,6 +1370,27 @@ moves_loop:  // When in check, search starts here
                 //moveCount > 6,
                 //moveCount <= 6,
             };
+            /*
+            bool CC = cheat_pruned;
+             * Cond 0: best 0:. expr=1010101001 score=100% support=42 good=42
+             * Cond 1: best 4:. expr=0101101001 score=99.827% support=198259 good=197916
+             * Cond 2: best 0:. expr=1010101001 score=100% support=42 good=42
+             * Cond 3: best 4:. expr=0101101001 score=99.827% support=198259 good=197916
+             * Cond 4: best 0:. expr=1010101001 score=100% support=42 good=42
+             * Cond 5: best 110:. expr=1011011110 score=0% support=0 good=0
+             * Cond 6: best 0:. expr=1010101001 score=100% support=42 good=42
+             * Cond 7: best 72:. expr=0101000101 score=96.551% support=41461 good=40031
+             * Cond 8: best 108:. expr=1011001010 score=0% support=0 good=0
+             * Cond 9: best 0:. expr=1010101001 score=100% support=42 good=42
+             *
+             * best 0:. expr=1010101001 score=100% support=42 good=42
+             * best 4:. expr=0101101001 score=99.827% support=198259 good=197916
+             * best 8:. expr=0100001000 score=99.8262% support=198475 good=198130
+             * best 12:. expr=0001101000 score=99.825% support=209088 good=208722
+             * best 16:. expr=0000101001 score=99.8242% support=209346 good=208978
+             * best 36:. expr=0001100001 score=99.2745% support=251122 good=249300
+             * best 40:. expr=0000000001 score=99.2709% support=251526 good=249692
+             */
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
