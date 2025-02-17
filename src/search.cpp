@@ -1173,11 +1173,11 @@ moves_loop:  // When in check, search starts here
         r -= std::abs(correctionValue) / 31568;
 
         // Increase reduction for cut nodes
-        if (!ss->ttPv && cutNode)
+        if (cutNode)
             r += 2608 + 1024 * !ttData.move;
 
         // Increase reduction if ttMove is a capture but the current move is not a capture
-        if (ttCapture && !capture)
+        if (!ss->ttPv && ttCapture && !capture)
             r += 1123 + (depth < 8) * 982;
 
         // Increase reduction if next ply has a lot of fail high
