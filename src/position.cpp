@@ -1005,11 +1005,11 @@ void Position::do_castling(Color us, Square from, Square& to, Square& rfrom, Squ
 
 //Literally cheat and Take the checker out.
 //If still in check, your cheat is not applicable, fail the cheat.
-bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
-    assert (checkers() && !more_than_one(checkers()));
+bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt) {
+    assert(checkers() && !more_than_one(checkers()));
     assert(&newSt != st);
     Bitboard Temp = checkers();
-    Square to = pop_lsb(Temp);
+    Square   to   = pop_lsb(Temp);
 
 
     // Copy some fields of the old state to our new StateInfo object except the
@@ -1031,7 +1031,7 @@ bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
         st->epSquare = SQ_NONE;
     }
 
-    if (st->castlingRights && ( castlingRightsMask[to]))
+    if (st->castlingRights && (castlingRightsMask[to]))
     {
         st->key ^= Zobrist::castling[st->castlingRights];
         st->castlingRights &= ~(castlingRightsMask[to]);
@@ -1042,31 +1042,33 @@ bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
 
     Piece captured = piece_on(to);
 
-    Color us = sideToMove;
+    Color us   = sideToMove;
     Color them = ~sideToMove;
 
-    if (type_of(captured) == PAWN){
+    if (type_of(captured) == PAWN)
+    {
         st->pawnKey ^= Zobrist::psq[captured][to];
     }
-    else{
+    else
+    {
         st->nonPawnMaterial[them] -= PieceValue[captured];
-            st->nonPawnKey[them] ^= Zobrist::psq[captured][to];
+        st->nonPawnKey[them] ^= Zobrist::psq[captured][to];
 
-            if (type_of(captured) <= BISHOP)
-                st->minorPieceKey ^= Zobrist::psq[captured][to];
+        if (type_of(captured) <= BISHOP)
+            st->minorPieceKey ^= Zobrist::psq[captured][to];
     }
 
 
-    st->dirtyPiece.dirty_num               = 1;
+    st->dirtyPiece.dirty_num = 1;
 
     st->accumulatorBig.computed[WHITE]     = st->accumulatorBig.computed[BLACK] =
       st->accumulatorSmall.computed[WHITE] = st->accumulatorSmall.computed[BLACK] = false;
-    auto& dp     = st->dirtyPiece;
+    auto& dp                                                                      = st->dirtyPiece;
 
 
-    st->capturedPiece = dp.piece[0]  = captured;
-    dp.from[0]   = to;
-    dp.to[0]     = SQ_NONE;
+    st->capturedPiece = dp.piece[0] = captured;
+    dp.from[0]                      = to;
+    dp.to[0]                        = SQ_NONE;
     remove_piece(to);
     //std::cout<<captured<<" captured "<<to<<std::endl;
     st->key ^= Zobrist::psq[captured][to];
@@ -1081,7 +1083,8 @@ bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
     st->checkersBB = attackers_to(square<KING>(them)) & pieces(us);
 
 
-    if (attackers_to(square<KING>(us)) & pieces(them)){
+    if (attackers_to(square<KING>(us)) & pieces(them))
+    {
         sideToMove = ~sideToMove;
         set_check_info();
         return false;
@@ -1089,7 +1092,6 @@ bool Position::cheat(StateInfo& newSt, const TranspositionTable& tt){
     sideToMove = ~sideToMove;
     set_check_info();
     return true;
-
 }
 
 void Position::undo_cheat_move(Square cheatsquare) {
@@ -1105,8 +1107,6 @@ void Position::undo_cheat_move(Square cheatsquare) {
     --gamePly;
     assert(pos_is_ok());
 }
-
-
 
 
 // Used to do a "null move": it flips

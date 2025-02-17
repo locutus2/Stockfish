@@ -409,8 +409,10 @@ class Move {
 
     constexpr PieceType promotion_type() const { return PieceType(((data >> 12) & 3) + KNIGHT); }
 
-    constexpr bool is_ok() const { return none().data != data && null().data != data && cheat().data != data;}
-    static constexpr Move cheat() {return Move(130);}
+    constexpr bool is_ok() const {
+        return none().data != data && null().data != data && cheat().data != data;
+    }
+    static constexpr Move cheat() { return Move(130); }
     static constexpr Move null() { return Move(65); }
     static constexpr Move none() { return Move(0); }
 

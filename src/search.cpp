@@ -54,54 +54,61 @@
 
 namespace Stockfish {
 
-struct Expression
-{
-    int expr = 0;
-    int good = 0;
+struct Expression {
+    int expr    = 0;
+    int good    = 0;
     int support = 0;
 
-    inline double score() const { return support > 0 ? good/double(support) : 0.0; }
+    inline double score() const { return support > 0 ? good / double(support) : 0.0; }
 };
 
-constexpr int NC = 10;//18;
+bool LEARNING_ENABLED = false;
+
+constexpr int NC = 10;  //18;
 
 std::vector<Expression> E(1 << NC), Enew;
 
-void searchExpression()
-{
+void initSearchExpression() { LEARNING_ENABLED = true; }
+
+void endSearchExpression() { LEARNING_ENABLED = false; }
+
+void searchExpression() {
     std::cerr << "------------------------------" << std::endl;
 
-    for(int i = 0; i < int(E.size()); ++i)
+    for (int i = 0; i < int(E.size()); ++i)
     {
         E[i].expr = i;
-    } 
+    }
 
     const auto Eorig = E;
 
     std::sort(E.begin(), E.end(), [&](const auto& a, const auto& b) {
-            return a.score() > b.score() || (a.score() == b.score() && a.support > b.support);
+        return a.score() > b.score() || (a.score() == b.score() && a.support > b.support);
     });
 
     constexpr bool DEBUG = false;
 
-    if(DEBUG)
-        for(int i = 0; i < int(E.size()); ++i)
+    if (DEBUG)
+        for (int i = 0; i < int(E.size()); ++i)
         {
-            if(E[i].support > 0)
-                std::cerr << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr) << " score=" << 100*E[i].score() << "% support=" << E[i].support
+            if (E[i].support > 0)
+                std::cerr << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr)
+                          << " score=" << 100 * E[i].score() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
         }
 
     std::cerr << std::endl;
 
-    for(int k = NC-1; k >= 0; --k)
+    for (int k = NC - 1; k >= 0; --k)
     {
-        for(int i = 0; i < int(E.size()); i++)
+        for (int i = 0; i < int(E.size()); i++)
         {
-            if(E[i].expr & (1 << k))
+            if (E[i].expr & (1 << k))
             {
-                std::cerr << "Cond " << NC-1-k << ": best " << i << ":" << ". expr=" << std::bitset<NC>(E[i].expr) << " score=" << 100*E[i].score() << "% support=" << E[i].support
-                      << " good=" << E[i].good << std::endl;
+                std::cerr << "Cond " << NC - 1 - k << ": best " << i << ":"
+                          << ". expr=" << std::bitset<NC>(E[i].expr)
+                          << " score=" << 100 * E[i].score() << "% support=" << E[i].support
+                          << " good=" << E[i].good << std::endl;
                 break;
             }
         }
@@ -109,45 +116,46 @@ void searchExpression()
 
     std::cerr << std::endl;
 
-    for(int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
+    for (int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
     {
-        if(lastBest < 0 || E[i].support > E[lastBest].support)
+        if (lastBest < 0 || E[i].support > E[lastBest].support)
         {
             best = i;
         }
 
-        if(best >= 0)
+        if (best >= 0)
         {
-            std::cerr << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr) << " score=" << 100*E[best].score() << "% support=" << E[best].support
+            std::cerr << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
+                      << " score=" << 100 * E[best].score() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
             lastBest = best;
-            best = -1;
+            best     = -1;
         }
     }
-
 }
 
 
-int getIndex(const std::vector<bool>& C)
-{
+int getIndex(const std::vector<bool>& C) {
     int index = 0;
-    for(int i = 0; i < int(C.size()); i++)
+    for (int i = 0; i < int(C.size()); i++)
         index = index * 2 + C[i];
     return index;
 }
 
-void learn(bool T, const std::vector<bool>& C)
-{
+void learn(bool T, const std::vector<bool>& C) {
+    if (!LEARNING_ENABLED)
+        return;
+
     int index = getIndex(C);
 
-    for(int i = 0; i < int(E.size()); i++)
+    for (int i = 0; i < int(E.size()); i++)
     {
-        if((index & i) == i)
+        if ((index & i) == i)
         {
             E[i].support++;
-            if(T)
+            if (T)
                 E[i].good++;
-        } 
+        }
     }
 }
 
@@ -917,7 +925,6 @@ Value Search::Worker::search(
         return qsearch<NonPV>(pos, ss, alpha, beta);
 
 
-
     // Step 8. Futility pruning: child node
     // The depth condition is important for mate finding.
     if (!ss->ttPv && depth < 14
@@ -1042,28 +1049,35 @@ Value Search::Worker::search(
 moves_loop:  // When in check, search starts here
     //Step 11.5: Cheat move pruning.
     bool cheat_pruned = false;
-    if (!PvNode && ttData.value < alpha -200 && ss->inCheck && !more_than_one(pos.checkers()) && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value)){
+    if (!PvNode && ttData.value < alpha - 200 && ss->inCheck && !more_than_one(pos.checkers())
+        && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value))
+    {
         //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
-        Bitboard Temp = pos.checkers();
-        Square cheat_square = pop_lsb(Temp);
-        Depth R = depth/2 + PieceValue[type_of(pos.piece_on(cheat_square))]/256 +2; //Depending on how much you cheated, reduce the depth by that amount.
-        Value cheatAlpha = alpha + PieceValue[type_of(pos.piece_on(cheat_square))]*5/8;
+        Bitboard Temp         = pos.checkers();
+        Square   cheat_square = pop_lsb(Temp);
+        Depth    R            = depth / 2 + PieceValue[type_of(pos.piece_on(cheat_square))] / 256
+                + 2;  //Depending on how much you cheated, reduce the depth by that amount.
+        Value cheatAlpha = alpha + PieceValue[type_of(pos.piece_on(cheat_square))] * 5 / 8;
         if (ttData.depth > DEPTH_UNSEARCHED)
         {
-            ss->currentMove                   = Move::cheat();
-            ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
-            ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
+            ss->currentMove         = Move::cheat();
+            ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+            ss->continuationCorrectionHistory =
+              &thisThread->continuationCorrectionHistory[NO_PIECE][0];
 
-            bool cheat_successful = pos.cheat(st,tt);
-            Value cheatValue = cheatAlpha; // Suppress warning.
+            bool  cheat_successful = pos.cheat(st, tt);
+            Value cheatValue       = cheatAlpha;  // Suppress warning.
             //std::cout<<"Cheat"<<std::endl;
 
-            if (cheat_successful){
-                cheatValue = -search<NonPV>(pos, ss + 1, -cheatAlpha, -cheatAlpha + 1, depth-R, false);
+            if (cheat_successful)
+            {
+                cheatValue =
+                  -search<NonPV>(pos, ss + 1, -cheatAlpha, -cheatAlpha + 1, depth - R, false);
             }
             pos.undo_cheat_move(cheat_square);
             //You cheated and still bad?
-            if (cheat_successful && cheatValue < cheatAlpha && !is_loss(cheatValue)){
+            if (cheat_successful && cheatValue < cheatAlpha && !is_loss(cheatValue))
+            {
                 cheat_pruned = true;
             }
         }
@@ -1331,35 +1345,27 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1407 / 16384;
 
-        bool CC = false;
-        std::vector<bool> C = {
-            capture,
-            !capture,
-            givesCheck,
-            !givesCheck,
-            ss->inCheck,
-            !ss->inCheck,
-            priorCapture,
-            !priorCapture,
-            improving,
-            !improving,
-            //cutNode,
-            //allNode,
-            //ttCapture,
-            //!ttCapture,
-            //ttData.value > alpha,
-            //ttData.value <= alpha,
-            //correctionValue > -2322860,
-            //correctionValue <= -2322860,
-            
-            //ttData.depth >= depth,
-            //ttData.depth < depth,
-            //ss->statScore > -5902,
-            //ss->statScore <= -5902,
-            //depth > 5,
-            //depth <= 5,
-            //moveCount > 6,
-            //moveCount <= 6,
+        bool              CC = false;
+        std::vector<bool> C  = {
+          capture,      !capture,     givesCheck,    !givesCheck, ss->inCheck,
+          !ss->inCheck, priorCapture, !priorCapture, improving,   !improving,
+          //cutNode,
+          //allNode,
+          //ttCapture,
+          //!ttCapture,
+          //ttData.value > alpha,
+          //ttData.value <= alpha,
+          //correctionValue > -2322860,
+          //correctionValue <= -2322860,
+
+          //ttData.depth >= depth,
+          //ttData.depth < depth,
+          //ss->statScore > -5902,
+          //ss->statScore <= -5902,
+          //depth > 5,
+          //depth <= 5,
+          //moveCount > 6,
+          //moveCount <= 6,
         };
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1401,7 +1407,7 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-            if(CC)
+            if (CC)
             {
                 /*
                 dbg_mean_of(correctionValue, 0);
@@ -1470,7 +1476,7 @@ moves_loop:  // When in check, search starts here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 3554) - (r > 5373 && newDepth > 2), !cutNode);
 
-            if(CC)
+            if (CC)
             {
                 /*
                 dbg_mean_of(correctionValue, 0);
