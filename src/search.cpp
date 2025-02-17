@@ -1185,7 +1185,7 @@ moves_loop:  // When in check, search starts here
             r += 981 + allNode * 833;
 
         // For first picked move (ttMove) reduce reduction
-        else if (!ss->ttPv && move == ttData.move)
+        else if (move == ttData.move)
             r -= 1982;
 
         if (capture)
@@ -1199,7 +1199,8 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[1])[movedPiece][move.to_sq()] - 3591;
 
         // Decrease/increase reduction for moves with a good/bad history
-        r -= ss->statScore * 1407 / 16384;
+        if (!ss->ttPv)
+            r -= ss->statScore * 1407 / 16384;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
