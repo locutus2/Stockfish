@@ -1331,6 +1331,36 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1407 / 16384;
 
+        bool CC = false;
+        std::vector<bool> C = {
+            capture,
+            !capture,
+            givesCheck,
+            !givesCheck,
+            ss->inCheck,
+            !ss->inCheck,
+            priorCapture,
+            !priorCapture,
+            improving,
+            !improving,
+            //cutNode,
+            //allNode,
+            //ttCapture,
+            //!ttCapture,
+            //ttData.value > alpha,
+            //ttData.value <= alpha,
+            //correctionValue > -2322860,
+            //correctionValue <= -2322860,
+            
+            //ttData.depth >= depth,
+            //ttData.depth < depth,
+            //ss->statScore > -5902,
+            //ss->statScore <= -5902,
+            //depth > 5,
+            //depth <= 5,
+            //moveCount > 6,
+            //moveCount <= 6,
+        };
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1340,36 +1370,7 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            bool CC = false;//cheat_pruned;
-            std::vector<bool> C = {
-                capture,
-                !capture,
-                givesCheck,
-                !givesCheck,
-                ss->inCheck,
-                !ss->inCheck,
-                priorCapture,
-                !priorCapture,
-                improving,
-                !improving,
-                //cutNode,
-                //allNode,
-                //ttCapture,
-                //!ttCapture,
-                //ttData.value > alpha,
-                //ttData.value <= alpha,
-                //correctionValue > -2322860,
-                //correctionValue <= -2322860,
-                
-                //ttData.depth >= depth,
-                //ttData.depth < depth,
-                //ss->statScore > -5902,
-                //ss->statScore <= -5902,
-                //depth > 5,
-                //depth <= 5,
-                //moveCount > 6,
-                //moveCount <= 6,
-            };
+            CC = cheat_pruned;
             /*
             bool CC = cheat_pruned;
              * Cond 0: best 0:. expr=1010101001 score=100% support=42 good=42
@@ -1440,36 +1441,7 @@ moves_loop:  // When in check, search starts here
         // Step 18. Full-depth search when LMR is skipped
         else if (!PvNode || moveCount > 1)
         {
-            bool CC = cheat_pruned;
-            std::vector<bool> C = {
-                capture,
-                !capture,
-                givesCheck,
-                !givesCheck,
-                ss->inCheck,
-                !ss->inCheck,
-                priorCapture,
-                !priorCapture,
-                improving,
-                !improving,
-                //cutNode,
-                //allNode,
-                //ttCapture,
-                //!ttCapture,
-                //ttData.value > alpha,
-                //ttData.value <= alpha,
-                //correctionValue > -2322860,
-                //correctionValue <= -2322860,
-                
-                //ttData.depth >= depth,
-                //ttData.depth < depth,
-                //ss->statScore > -5902,
-                //ss->statScore <= -5902,
-                //depth > 5,
-                //depth <= 5,
-                //moveCount > 6,
-                //moveCount <= 6,
-            };
+            CC = cheat_pruned;
             /*
             bool CC = cheat_pruned;
              * Cond 0: best 20:. expr=1001001000 score=98.8033% support=53398 good=52759
@@ -1516,6 +1488,28 @@ moves_loop:  // When in check, search starts here
                 learn(T, C);
             }
         }
+        /*
+            CC = cheat_pruned;
+         * Cond 0: best 20:. expr=1001001000 score=98.9693% support=64227 good=63565
+         * Cond 1: best 0:. expr=0101001001 score=99.8377% support=324041 good=323515
+         * Cond 2: best 16:. expr=0110101000 score=99.2063% support=378 good=375
+         * Cond 3: best 0:. expr=0101001001 score=99.8377% support=324041 good=323515
+         * Cond 4: best 1:. expr=0101101001 score=99.8377% support=324041 good=323515
+         * Cond 5: best 108:. expr=1011010000 score=0% support=0 good=0
+         * Cond 6: best 0:. expr=0101001001 score=99.8377% support=324041 good=323515
+         * Cond 7: best 68:. expr=1010000101 score=96.6513% support=866 good=837
+         * Cond 8: best 110:. expr=1011001110 score=0% support=0 good=0
+         * Cond 9: best 0:. expr=0101001001 score=99.8377% support=324041 good=323515
+         *
+         * best 0:. expr=0101001001 score=99.8377% support=324041 good=323515
+         * best 4:. expr=0100001001 score=99.8369% support=324419 good=323890
+         * best 8:. expr=0001001001 score=99.694% support=388268 good=387080
+         * best 12:. expr=0000101001 score=99.6914% support=389525 good=388323
+         * best 28:. expr=0101000001 score=98.9632% support=396135 good=392028
+         * best 32:. expr=0100000000 score=98.9585% support=396835 good=392702
+         * best 40:. expr=0001000000 score=98.8207% support=465950 good=460455
+         * best 44:. expr=0000100001 score=98.8128% support=468395 good=462834
+         */
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
         // otherwise let the parent node fail low with value <= alpha and try another move.
