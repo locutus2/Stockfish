@@ -940,9 +940,9 @@ Value Search::Worker::search(
     }
 
 moves_loop:  // When in check, search starts here
-    //Step 11.5: Cheat move pruning.
-    bool cheat_pruned = false;
-    if (!PvNode && ttData.value < alpha -200 && ss->inCheck && !more_than_one(pos.checkers()) && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value)){
+    //Step 11.5: bad cheat move detection.
+    bool badCheat = false;
+    if (!PvNode && priorCapture && ttData.value < alpha -200 && ss->inCheck && !more_than_one(pos.checkers()) && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value)){
         //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
         Bitboard Temp = pos.checkers();
         Square cheat_square = pop_lsb(Temp);
@@ -964,7 +964,7 @@ moves_loop:  // When in check, search starts here
             pos.undo_cheat_move(cheat_square);
             //You cheated and still bad?
             if (cheat_successful && cheatValue < cheatAlpha && !is_loss(cheatValue)){
-                cheat_pruned = true;
+                badCheat = true;
             }
         }
     }
@@ -1037,7 +1037,6 @@ moves_loop:  // When in check, search starts here
         // Bigger value is better for long time controls
         if (ss->ttPv)
             r += 1031;
-        r += 2048*cheat_pruned;
 
         // Step 14. Pruning at shallow depth.
         // Depth conditions are important for mate finding.
@@ -1240,6 +1239,8 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
+            if (badCheat && !capture)
+                r += 1024;
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
