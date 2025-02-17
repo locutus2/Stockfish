@@ -1340,7 +1340,7 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            bool CC = cheat_pruned;
+            bool CC = false;//cheat_pruned;
             std::vector<bool> C = {
                 capture,
                 !capture,
@@ -1440,6 +1440,56 @@ moves_loop:  // When in check, search starts here
         // Step 18. Full-depth search when LMR is skipped
         else if (!PvNode || moveCount > 1)
         {
+            bool CC = cheat_pruned;
+            std::vector<bool> C = {
+                capture,
+                !capture,
+                givesCheck,
+                !givesCheck,
+                ss->inCheck,
+                !ss->inCheck,
+                priorCapture,
+                !priorCapture,
+                improving,
+                !improving,
+                //cutNode,
+                //allNode,
+                //ttCapture,
+                //!ttCapture,
+                //ttData.value > alpha,
+                //ttData.value <= alpha,
+                //correctionValue > -2322860,
+                //correctionValue <= -2322860,
+                
+                //ttData.depth >= depth,
+                //ttData.depth < depth,
+                //ss->statScore > -5902,
+                //ss->statScore <= -5902,
+                //depth > 5,
+                //depth <= 5,
+                //moveCount > 6,
+                //moveCount <= 6,
+            };
+            /*
+            bool CC = cheat_pruned;
+             * Cond 0: best 20:. expr=1001001000 score=98.8033% support=53398 good=52759
+             * Cond 1: best 0:. expr=0101001000 score=99.8545% support=125782 good=125599
+             * Cond 2: best 16:. expr=0110001000 score=99.3827% support=162 good=161
+             * Cond 3: best 0:. expr=0101001000 score=99.8545% support=125782 good=125599
+             * Cond 4: best 1:. expr=0101101000 score=99.8545% support=125782 good=125599
+             * Cond 5: best 108:. expr=1011010000 score=0% support=0 good=0
+             * Cond 6: best 0:. expr=0101001000 score=99.8545% support=125782 good=125599
+             * Cond 7: best 68:. expr=1010000101 score=96.6942% support=847 good=819
+             * Cond 8: best 110:. expr=1011001110 score=0% support=0 good=0
+             * Cond 9: best 2:. expr=0101001001 score=99.8545% support=125782 good=125599
+             *
+             * best 0:. expr=0101001000 score=99.8545% support=125782 good=125599
+             * best 4:. expr=0100101000 score=99.8539% support=125944 good=125760
+             * best 8:. expr=0001001000 score=99.5412% support=179180 good=178358
+             * best 12:. expr=0000001001 score=99.5371% support=180179 good=179345
+             * best 44:. expr=0001100001 score=98.2903% support=214828 good=211155
+             * best 48:. expr=0000100001 score=98.2815% support=216869 good=213142
+             */
             // Increase reduction if ttMove is not present
             if (!ttData.move)
                 r += 1111;
@@ -1447,6 +1497,24 @@ moves_loop:  // When in check, search starts here
             // Note that if expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 3554) - (r > 5373 && newDepth > 2), !cutNode);
+
+            if(CC)
+            {
+                /*
+                dbg_mean_of(correctionValue, 0);
+                dbg_hit_on(correctionValue > -2322860, 0);
+                dbg_mean_of(ss->statScore, 1);
+                dbg_hit_on(ss->statScore > -5902, 1);
+                dbg_mean_of(depth, 2);
+                dbg_hit_on(depth > 5, 2);
+                dbg_mean_of(moveCount, 3);
+                dbg_hit_on(moveCount > 6, 3);
+                */
+                //dbg_hit_on(C[0], 0);
+                //dbg_hit_on(C[1], 1);
+                bool T = value <= alpha;
+                learn(T, C);
+            }
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
