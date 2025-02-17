@@ -1170,7 +1170,8 @@ moves_loop:  // When in check, search starts here
 
         r += 316 - moveCount * 32;
 
-        r -= std::abs(correctionValue) / 31568;
+        if (!ss->ttPv)
+            r -= std::abs(correctionValue) / 31568;
 
         // Increase reduction for cut nodes
         if (cutNode)
@@ -1199,8 +1200,7 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[1])[movedPiece][move.to_sq()] - 3591;
 
         // Decrease/increase reduction for moves with a good/bad history
-        if (!ss->ttPv)
-            r -= ss->statScore * 1407 / 16384;
+        r -= ss->statScore * 1407 / 16384;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
