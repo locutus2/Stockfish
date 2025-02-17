@@ -1239,8 +1239,6 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            if (badCheat && !capture)
-                r += 1024;
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
@@ -1276,6 +1274,9 @@ moves_loop:  // When in check, search starts here
             // Increase reduction if ttMove is not present
             if (!ttData.move)
                 r += 1111;
+
+            if (badCheat && !capture && !givesCheck)
+                r += 1024;
 
             // Note that if expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
