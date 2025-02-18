@@ -249,8 +249,9 @@ void UCIEngine::learn(std::istream& args) {
 
     TimePoint elapsed = now();
 
-    for (int it = 0; true; it++)
+    for (int it = 1; true; it++)
     {
+        startIterationSearchExpression();
         for (const auto& cmd : list)
         {
             std::istringstream is(cmd);
@@ -289,8 +290,10 @@ void UCIEngine::learn(std::istream& args) {
             }
         }
 
+
         elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
-        searchExpression();
+        searchExpression(it);
+        endIterationSearchExpression();
     }
 
     endSearchExpression();

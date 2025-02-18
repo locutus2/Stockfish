@@ -126,8 +126,12 @@ void initSearchExpression() {
 
 void endSearchExpression() { LEARNING_ENABLED = false; }
 
-void searchExpression(std::ostream& out) {
-    out << "------------------------------" << std::endl;
+void startIterationSearchExpression() { }
+
+void endIterationSearchExpression() { }
+
+void searchExpression(int it, std::ostream& out) {
+    out << "------------ Iteration " << it << " ---------------" << std::endl;
 
     for (int i = 0; i < int(E.size()); ++i)
     {
@@ -139,7 +143,7 @@ void searchExpression(std::ostream& out) {
     std::sort(E.begin(), E.end(), [&](const auto& a, const auto& b) {
         return a.score() > b.score() || (a.score() == b.score() && a.support > b.support)
         || (a.score() == b.score() && a.support == b.support && popcount(a.expr) < popcount(b.expr))
-        || (a.score() == b.score() && a.support == b.support && popcount(a.expr) == popcount(b.expr) && a.expr > b.expr);
+        || (a.score() == b.score() && a.support == b.support && popcount(a.expr) == popcount(b.expr) && a.expr < b.expr);
     });
 
     constexpr bool DEBUG = false;
@@ -157,22 +161,32 @@ void searchExpression(std::ostream& out) {
         out << std::endl;
     }
 
+    out << "Condition:" << std::endl;
+    int worstValue = -1;
+    int worstConditionIndex = -1;
+
     for (int k = NC - 1; k >= 0; --k)
     {
         for (int i = 0; i < int(E.size()); i++)
         {
             if (E[i].expr & (1 << k))
             {
-                out << "Cond " << NC - 1 - k << ": best " << i << ":"
+                out << "Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
                           << ". expr=" << std::bitset<NC>(E[i].expr)
                           << " score=" << 100 * E[i].score() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
+                if (i > worstValue)
+                {
+                    worstValue = i;
+                    worstConditionIndex = NC-1-k;
+                }
                 break;
             }
         }
     }
 
     out << std::endl;
+    out << "Best formulas:" << std::endl;
 
     for (int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
     {
@@ -190,6 +204,13 @@ void searchExpression(std::ostream& out) {
             best     = -1;
         }
     }
+
+    if(worstConditionIndex >= 0)
+    {
+        out << "=> Replace condition " << worstConditionIndex << std::endl;
+        conditionIndex.push_back(conditionIndex[worstConditionIndex]);
+        conditionIndex.erase(conditionIndex.begin() + worstConditionIndex);
+    }
 }
 
 int getIndex(const std::vector<bool>& C) {
@@ -199,11 +220,22 @@ int getIndex(const std::vector<bool>& C) {
     return index;
 }
 
-void learn(bool T, const std::vector<bool>& C) {
+std::vector<bool>  filterConditions(const std::vector<bool>& C0) {
+    std::vector<bool> C;
+    for(int i = 0; i < NC; i++)
+        C.push_back(C[conditionIndex[i]]);
+    return C;
+}
+
+void learn(bool T, const std::vector<bool>& C0) {
     if (!LEARNING_ENABLED)
         return;
 
-    assert(C.size() == conditionNames.size());
+    assert(C0.size() == conditionNames.size());
+
+    std::vector<bool> C = filterConditions(C0);
+
+    assert(C.size() == NC);
 
     int index = getIndex(C);
 
