@@ -1791,6 +1791,7 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
+            CC = value > alpha;
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
@@ -1803,20 +1804,19 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
-                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
-                    CC = true;
-                    if(CC)
-                    {
-                        bool T = value <= alpha;
-                        learn(T, C);
-                    }
-                }
 
                 // Post LMR continuation history updates
                 int bonus = (value >= beta) * 2010;
                 update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
+
+            if(CC)
+            {
+                bool T = value <= alpha;
+                learn(T, C);
+            }
+
         }
 
         // Step 18. Full-depth search when LMR is skipped
