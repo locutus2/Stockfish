@@ -108,6 +108,11 @@ std::vector<std::string> conditionNames = {
           "ttData.bound == BOUND_LOWER",
           "ttData.bound == BOUND_EXACT",
           "ttData.bound == BOUND_UPPER",
+          "ttData.bound != BOUND_LOWER",
+          "ttData.bound != BOUND_EXACT",
+          "ttData.bound != BOUND_UPPER",
+          "(ss+1)->cutoffCnt>3",
+          "(ss+1)->cutoffCnt<=3",
 };
 
 constexpr int NC = 10;  //18;
@@ -1476,6 +1481,11 @@ moves_loop:  // When in check, search starts here
           ttData.bound == BOUND_LOWER,
           ttData.bound == BOUND_EXACT,
           ttData.bound == BOUND_UPPER,
+          ttData.bound != BOUND_LOWER,
+          ttData.bound != BOUND_EXACT,
+          ttData.bound != BOUND_UPPER,
+          (ss+1)->cutoffCnt>3,
+          (ss+1)->cutoffCnt<=3,
         };
 
         // Step 17. Late moves reduction / extension (LMR)
