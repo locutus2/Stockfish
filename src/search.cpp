@@ -132,6 +132,11 @@ std::vector<std::string> conditionNames = {
           "!(ss-1)->ttHit",
           "(ss-1)->statScore > -5902",
           "(ss-1)->statScore <= -5902",
+          "(ss-1)->moveCount==0",
+          "(ss-1)->moveCount==1",
+          "(ss-1)->moveCount>1",
+          "(ss-1)->moveCount>6",
+          "(ss-1)->moveCount<=6",
 };
 
 constexpr int NC = 10;  //18;
@@ -154,6 +159,8 @@ void initSearchExpression() {
     int seed = int(std::time(nullptr));
     //seed = 1739865092;
     std::cerr << "SEED: " << seed << std::endl;
+    std::cerr << "Total conditions: " << conditionNames.size() << std::endl;
+    std::cerr << "Used conditions: " << NC << std::endl;
 
     std::srand(seed);
 
@@ -1530,6 +1537,11 @@ moves_loop:  // When in check, search starts here
           !(ss-1)->ttHit,
           (ss-1)->statScore > -5902,
           (ss-1)->statScore <= -5902,
+          (ss-1)->moveCount==0,
+          (ss-1)->moveCount==1,
+          (ss-1)->moveCount>1,
+          (ss-1)->moveCount>6,
+          (ss-1)->moveCount<=6,
         };
 
         // Step 17. Late moves reduction / extension (LMR)
@@ -1819,7 +1831,7 @@ moves_loop:  // When in check, search starts here
         // Step 18. Full-depth search when LMR is skipped
         else if (!PvNode || moveCount > 1)
         {
-            CC = true;
+            CC = false;
 
             // Increase reduction if ttMove is not present
             if (!ttData.move)
