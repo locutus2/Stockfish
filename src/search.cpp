@@ -1553,7 +1553,7 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            CC = true;
+            CC = false;
             /*
             CC = !ss->ttPv;
             std::vector<bool> C = {
@@ -1791,23 +1791,6 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-            if(CC)
-            {
-                /*
-                dbg_mean_of(correctionValue, 0);
-                dbg_hit_on(correctionValue > -2322860, 0);
-                dbg_mean_of(ss->statScore, 1);
-                dbg_hit_on(ss->statScore > -5902, 1);
-                dbg_mean_of(depth, 2);
-                dbg_hit_on(depth > 5, 2);
-                dbg_mean_of(moveCount, 3);
-                dbg_hit_on(moveCount > 6, 3);
-                */
-                //dbg_hit_on(C[0], 0);
-                //dbg_hit_on(C[1], 1);
-                bool T = value <= alpha;
-                learn(T, C);
-            }
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
@@ -1820,7 +1803,15 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+                    CC = true;
+                    if(CC)
+                    {
+                        bool T = value <= alpha;
+                        learn(T, C);
+                    }
+                }
 
                 // Post LMR continuation history updates
                 int bonus = (value >= beta) * 2010;
