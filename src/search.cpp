@@ -152,7 +152,7 @@ void initSearchExpression() {
         conditionIndex.push_back(i);
 
     int seed = int(std::time(nullptr));
-    seed = 1739865092;
+    //seed = 1739865092;
     std::cerr << "SEED: " << seed << std::endl;
 
     std::srand(seed);
