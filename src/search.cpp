@@ -234,7 +234,9 @@ void searchExpression(int it, std::ostream& out) {
 
     for (int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
     {
-        if (lastBest < 0 || E[i].support > E[lastBest].support)
+        if (lastBest < 0 || E[i].support > E[lastBest].support
+            || (E[i].support == E[lastBest].support && popcount(E[i].expr) < popcount(E[lastBest].expr))
+            || (E[i].support == E[lastBest].support && popcount(E[i].expr) == popcount(E[lastBest].expr) && E[i].expr < E[lastBest].expr))
         {
             best = i;
         }
@@ -262,10 +264,11 @@ void searchExpression(int it, std::ostream& out) {
 
     if(worstConditionIndex >= 0)
     {
-        out << "=> Replace condition " << worstConditionIndex << std::endl;
+        out << "=> Replace condition " << worstConditionIndex << " [" << conditionNames[conditionIndex[worstConditionIndex]] << "]" << std::endl;
         conditionIndex.push_back(conditionIndex[worstConditionIndex]);
         conditionIndex.erase(conditionIndex.begin() + worstConditionIndex);
     }
+    out << std::flush;
 }
 
 int getIndex(const std::vector<bool>& C) {
