@@ -125,6 +125,13 @@ std::vector<std::string> conditionNames = {
           "type_of(movedPiece)!=ROOK",
           "type_of(movedPiece)!=QUEEN",
           "type_of(movedPiece)!=KING",
+          "!(ss-1)->ttPv",
+          "(ss-1)->inCheck",
+          "!(ss-1)->inCheck",
+          "(ss-1)->ttHit",
+          "!(ss-1)->ttHit",
+          "(ss-1)->statScore > -5902",
+          "(ss-1)->statScore <= -5902",
 };
 
 constexpr int NC = 10;  //18;
@@ -1510,6 +1517,13 @@ moves_loop:  // When in check, search starts here
           type_of(movedPiece)!=ROOK,
           type_of(movedPiece)!=QUEEN,
           type_of(movedPiece)!=KING,
+          !(ss-1)->ttPv,
+          (ss-1)->inCheck,
+          !(ss-1)->inCheck,
+          (ss-1)->ttHit,
+          !(ss-1)->ttHit,
+          (ss-1)->statScore > -5902,
+          (ss-1)->statScore <= -5902,
         };
 
         // Step 17. Late moves reduction / extension (LMR)
