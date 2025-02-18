@@ -156,6 +156,10 @@ std::vector<std::string> conditionNames = {
           "extension>0",
           "extension==0",
           "extension<0",
+          "pawnHistory[index][movedPiece][move.to_sq()]>0",
+          "pawnHistory[index][movedPiece][move.to_sq()]<=0",
+          "mainHistory[us][move.from_to()]>0",
+          "mainHistory[us][move.from_to()]<=0",
 };
 
 constexpr int NC = 10;  //18;
@@ -1431,6 +1435,8 @@ moves_loop:  // When in check, search starts here
             }
         }
 
+        int index = pawn_structure_index(pos);
+
         // Step 16. Make the move
         pos.do_move(move, st, givesCheck, &tt);
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
@@ -1580,6 +1586,10 @@ moves_loop:  // When in check, search starts here
           extension>0,
           extension==0,
           extension<0,
+          pawnHistory[index][movedPiece][move.to_sq()]>0,
+          pawnHistory[index][movedPiece][move.to_sq()]<=0,
+          mainHistory[us][move.from_to()]>0,
+          mainHistory[us][move.from_to()]<=0,
         };
 
         // Step 17. Late moves reduction / extension (LMR)
