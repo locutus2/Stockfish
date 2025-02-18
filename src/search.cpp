@@ -105,6 +105,9 @@ std::vector<std::string> conditionNames = {
           "!excludedMove",
           "(ss-1)->currentMove==Move::null()",
           "(ss-1)->currentMove!=Move::null()",
+          "ttData.bound == BOUND_LOWER",
+          "ttData.bound == BOUND_EXACT",
+          "ttData.bound == BOUND_UPPER",
 };
 
 constexpr int NC = 10;  //18;
@@ -216,6 +219,16 @@ void searchExpression(int it, std::ostream& out) {
                       << " good=" << E[best].good << std::endl;
             lastBest = best;
             best     = -1;
+
+            bool first = true;
+            out << "=>";
+            for (int k = NC - 1; k >= 0; --k)
+                if(E[i].expr && (1 << k))
+                {
+                    if(!first) out << " &&";
+                    out << " (" << conditionNames[conditionIndex[NC-1-k]] << ")";
+                }
+            out << std::endl;
         }
     }
 
@@ -1459,6 +1472,9 @@ moves_loop:  // When in check, search starts here
           !excludedMove,
           (ss-1)->currentMove==Move::null(),
           (ss-1)->currentMove!=Move::null(),
+          ttData.bound == BOUND_LOWER,
+          ttData.bound == BOUND_EXACT,
+          ttData.bound == BOUND_UPPER,
         };
 
         // Step 17. Late moves reduction / extension (LMR)
