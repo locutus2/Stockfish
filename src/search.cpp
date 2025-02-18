@@ -54,100 +54,216 @@
 
 namespace Stockfish {
 
-struct Expression
-{
-    int expr = 0;
-    int good = 0;
+struct Expression {
+    int expr    = 0;
+    int good    = 0;
     int support = 0;
 
-    inline double score() const { return support > 0 ? good/double(support) : 0.0; }
+    inline double score() const { return support > 0 ? good / double(support) : 0.0; }
 };
 
-constexpr int NC = 12;//18;
+bool LEARNING_ENABLED = false;
+
+std::vector<std::string> conditionNames = {
+          "!PvNode",      
+          "!ss->ttPv",      
+          "capture",      
+          "!capture",     
+          "givesCheck",    
+          "!givesCheck", 
+          "ss->inCheck",
+          "!ss->inCheck", 
+          "priorCapture", 
+          "!priorCapture", 
+          "improving",   
+          "!improving",
+          "cutNode",
+          "allNode",
+          "ttCapture",
+          "!ttCapture",
+          "ttData.value > alpha",
+          "ttData.value <= alpha",
+          "correctionValue > -2322860",
+          "correctionValue <= -2322860",
+          "ttData.depth >= depth",
+          "ttData.depth < depth",
+          "ss->statScore > -5902",
+          "ss->statScore <= -5902",
+          "depth > 5",
+          "depth <= 5",
+          "moveCount > 6",
+          "moveCount <= 6",
+          "moveCount==1",
+          "moveCount!=1",
+          "move==ttData.move",
+          "move!=ttData.move",
+          "ttData.move",
+          "!ttData.move",
+          "ttHit",
+          "!ttHit",
+          "excludedMove",
+          "!excludedMove",
+          "(ss-1)->currentMove==Move::null()",
+          "(ss-1)->currentMove!=Move::null()",
+};
+
+constexpr int NC = 10;  //18;
+
+std::vector<int> conditionIndex;
 
 std::vector<Expression> E(1 << NC), Enew;
 
-void searchExpression()
+void clearData()
 {
-    std::cerr << "------------------------------" << std::endl;
+    E = std::vector<Expression>(1 << NC);
+}
 
-    for(int i = 0; i < int(E.size()); ++i)
+void initSearchExpression() { 
+    LEARNING_ENABLED = true; 
+
+    for(int i = 0; i < int(conditionNames.size()); i++)
+        conditionIndex.push_back(i);
+
+    int seed = int(std::time(nullptr));
+    std::cerr << "SEED: " << seed << std::endl;
+
+    std::srand(seed);
+
+    for(int i = int(conditionIndex.size()) - 1; i >= 0; i--)
+    {
+        int j = std::rand() % (i+1);
+        if(i != j)
+            std::swap(conditionIndex[i], conditionIndex[j]);
+    }
+    clearData();
+}
+
+void endSearchExpression() { LEARNING_ENABLED = false; }
+
+void startIterationSearchExpression() { }
+
+void endIterationSearchExpression() { }
+
+void searchExpression(int it, std::ostream& out) {
+    out << "------------ Iteration " << it << " ---------------" << std::endl;
+
+    for (int i = 0; i < int(E.size()); ++i)
     {
         E[i].expr = i;
-    } 
+    }
 
     const auto Eorig = E;
 
     std::sort(E.begin(), E.end(), [&](const auto& a, const auto& b) {
-            return a.score() > b.score() || (a.score() == b.score() && a.support > b.support);
+        return a.score() > b.score() || (a.score() == b.score() && a.support > b.support)
+        || (a.score() == b.score() && a.support == b.support && popcount(a.expr) < popcount(b.expr))
+        || (a.score() == b.score() && a.support == b.support && popcount(a.expr) == popcount(b.expr) && a.expr < b.expr);
     });
 
     constexpr bool DEBUG = false;
 
-    if(DEBUG)
-        for(int i = 0; i < int(E.size()); ++i)
+    if (DEBUG)
+    {
+        for (int i = 0; i < int(E.size()); ++i)
         {
-            if(E[i].support > 0)
-                std::cerr << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr) << " score=" << 100*E[i].score() << "% support=" << E[i].support
+            if (E[i].support > 0)
+                out << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr)
+                          << " score=" << 100 * E[i].score() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
         }
 
-    std::cerr << std::endl;
+        out << std::endl;
+    }
 
-    for(int k = NC-1; k >= 0; --k)
+    out << "Condition:" << std::endl;
+    int worstValue = -1;
+    int worstConditionIndex = -1;
+
+    for (int k = NC - 1; k >= 0; --k)
     {
-        for(int i = 0; i < int(E.size()); i++)
+        for (int i = 0; i < int(E.size()); i++)
         {
-            if(E[i].expr & (1 << k))
+            if (E[i].expr & (1 << k))
             {
-                std::cerr << "Cond " << NC-1-k << ": best " << i << ":" << ". expr=" << std::bitset<NC>(E[i].expr) << " score=" << 100*E[i].score() << "% support=" << E[i].support
-                      << " good=" << E[i].good << std::endl;
+                out << "Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
+                          << ". expr=" << std::bitset<NC>(E[i].expr)
+                          << " score=" << 100 * E[i].score() << "% support=" << E[i].support
+                          << " good=" << E[i].good << std::endl;
+                if (i > worstValue)
+                {
+                    worstValue = i;
+                    worstConditionIndex = NC-1-k;
+                }
                 break;
             }
         }
     }
 
-    std::cerr << std::endl;
+    out << std::endl;
+    out << "Best formulas:" << std::endl;
 
-    for(int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
+    for (int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
     {
-        if(lastBest < 0 || E[i].support > E[lastBest].support)
+        if (lastBest < 0 || E[i].support > E[lastBest].support)
         {
             best = i;
         }
 
-        if(best >= 0)
+        if (best >= 0)
         {
-            std::cerr << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr) << " score=" << 100*E[best].score() << "% support=" << E[best].support
+            out << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
+                      << " score=" << 100 * E[best].score() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
             lastBest = best;
-            best = -1;
+            best     = -1;
         }
     }
 
+    if(worstConditionIndex >= 0)
+    {
+        out << "=> Replace condition " << worstConditionIndex << std::endl;
+        conditionIndex.push_back(conditionIndex[worstConditionIndex]);
+        conditionIndex.erase(conditionIndex.begin() + worstConditionIndex);
+    }
 }
 
-
-int getIndex(const std::vector<bool>& C)
-{
+int getIndex(const std::vector<bool>& C) {
     int index = 0;
-    for(int i = 0; i < int(C.size()); i++)
+    for (int i = 0; i < int(C.size()); i++)
         index = index * 2 + C[i];
     return index;
 }
 
-void learn(bool T, const std::vector<bool>& C)
-{
+std::vector<bool>  filterConditions(const std::vector<bool>& C0) {
+    std::vector<bool> C;
+    for(int i = 0; i < NC; i++)
+        C.push_back(C0[conditionIndex[i]]);
+    return C;
+}
+
+void learn(bool T, const std::vector<bool>& C0) {
+    if (!LEARNING_ENABLED)
+        return;
+
+    assert(C0.size() == conditionNames.size());
+
+    std::vector<bool> C = filterConditions(C0);
+
+    assert(C.size() == NC);
+
     int index = getIndex(C);
 
-    for(int i = 0; i < int(E.size()); i++)
+    assert(E.size() == (1 << NC));
+    for (int i = 0; i < int(E.size()); i++)
     {
-        if((index & i) == i)
+        assert(i < int(E.size()));
+        assert(i >= 0);
+        if ((index & i) == i)
         {
             E[i].support++;
-            if(T)
+            if (T)
                 E[i].good++;
-        } 
+        }
     }
 }
 
@@ -1301,6 +1417,50 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1407 / 16384;
 
+        bool              CC = false;
+        std::vector<bool> C  = {
+          !PvNode,
+          !ss->ttPv,
+          capture,      
+          !capture,     
+          givesCheck,    
+          !givesCheck, 
+          ss->inCheck,
+          !ss->inCheck, 
+          priorCapture, 
+          !priorCapture, 
+          improving,   
+          !improving,
+          cutNode,
+          allNode,
+          ttCapture,
+          !ttCapture,
+          ttData.value > alpha,
+          ttData.value <= alpha,
+          correctionValue > -2322860,
+          correctionValue <= -2322860,
+          ttData.depth >= depth,
+          ttData.depth < depth,
+          ss->statScore > -5902,
+          ss->statScore <= -5902,
+          depth > 5,
+          depth <= 5,
+          moveCount > 6,
+          moveCount <= 6,
+          moveCount==1,
+          moveCount!=1,
+          move==ttData.move,
+          move!=ttData.move,
+          bool(ttData.move),
+          !ttData.move,
+          ttHit,
+          !ttHit,
+          bool(excludedMove),
+          !excludedMove,
+          (ss-1)->currentMove==Move::null(),
+          (ss-1)->currentMove!=Move::null(),
+        };
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1310,38 +1470,9 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            bool CC = !ss->ttPv;
-            std::vector<bool> C = {
-                capture,
-                !capture,
-                givesCheck,
-                //!givesCheck,
-                ss->inCheck,
-                //!ss->inCheck,
-                priorCapture,
-                //!priorCapture,
-                //improving,
-                !improving,
-                //cutNode,
-                allNode,
-                ttCapture,
-                //!ttCapture,
-                ttData.value > alpha,
-                ttData.value <= alpha,
-                correctionValue > -2322860,
-                correctionValue <= -2322860,
-                
-                //ttData.depth >= depth,
-                //ttData.depth < depth,
-                //ss->statScore > -5902,
-                //ss->statScore <= -5902,
-                //depth > 5,
-                //depth <= 5,
-                //moveCount > 6,
-                //moveCount <= 6,
-            };
+            CC = true;
             /*
-            bool CC = !ss->ttPv;
+            CC = !ss->ttPv;
             std::vector<bool> C = {
                 capture,
                 !capture,
@@ -1617,6 +1748,8 @@ moves_loop:  // When in check, search starts here
         // Step 18. Full-depth search when LMR is skipped
         else if (!PvNode || moveCount > 1)
         {
+            CC = true;
+
             // Increase reduction if ttMove is not present
             if (!ttData.move)
                 r += 1111;
@@ -1624,6 +1757,24 @@ moves_loop:  // When in check, search starts here
             // Note that if expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 3554) - (r > 5373 && newDepth > 2), !cutNode);
+
+            if (CC)
+            {
+                /*
+                dbg_mean_of(correctionValue, 0);
+                dbg_hit_on(correctionValue > -2322860, 0);
+                dbg_mean_of(ss->statScore, 1);
+                dbg_hit_on(ss->statScore > -5902, 1);
+                dbg_mean_of(depth, 2);
+                dbg_hit_on(depth > 5, 2);
+                dbg_mean_of(moveCount, 3);
+                dbg_hit_on(moveCount > 6, 3);
+                */
+                //dbg_hit_on(C[0], 0);
+                //dbg_hit_on(C[1], 1);
+                bool T = value <= alpha;
+                learn(T, C);
+            }
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
