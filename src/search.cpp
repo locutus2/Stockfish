@@ -113,6 +113,18 @@ std::vector<std::string> conditionNames = {
           "ttData.bound != BOUND_UPPER",
           "(ss+1)->cutoffCnt>3",
           "(ss+1)->cutoffCnt<=3",
+          "type_of(movedPiece)==PAWN",
+          "type_of(movedPiece)==KNIGHT",
+          "type_of(movedPiece)==BISHOP",
+          "type_of(movedPiece)==ROOK",
+          "type_of(movedPiece)==QUEEN",
+          "type_of(movedPiece)==KING",
+          "type_of(movedPiece)!=PAWN",
+          "type_of(movedPiece)!=KNIGHT",
+          "type_of(movedPiece)!=BISHOP",
+          "type_of(movedPiece)!=ROOK",
+          "type_of(movedPiece)!=QUEEN",
+          "type_of(movedPiece)!=KING",
 };
 
 constexpr int NC = 10;  //18;
@@ -1486,6 +1498,18 @@ moves_loop:  // When in check, search starts here
           ttData.bound != BOUND_UPPER,
           (ss+1)->cutoffCnt>3,
           (ss+1)->cutoffCnt<=3,
+          type_of(movedPiece)==PAWN,
+          type_of(movedPiece)==KNIGHT,
+          type_of(movedPiece)==BISHOP,
+          type_of(movedPiece)==ROOK,
+          type_of(movedPiece)==QUEEN,
+          type_of(movedPiece)==KING,
+          type_of(movedPiece)!=PAWN,
+          type_of(movedPiece)!=KNIGHT,
+          type_of(movedPiece)!=BISHOP,
+          type_of(movedPiece)!=ROOK,
+          type_of(movedPiece)!=QUEEN,
+          type_of(movedPiece)!=KING,
         };
 
         // Step 17. Late moves reduction / extension (LMR)
