@@ -223,7 +223,7 @@ void searchExpression(int it, std::ostream& out) {
             bool first = true;
             out << "=>";
             for (int k = NC - 1; k >= 0; --k)
-                if(E[i].expr && (1 << k))
+                if(E[i].expr & (1 << k))
                 {
                     if(!first) out << " &&";
                     first = false;
