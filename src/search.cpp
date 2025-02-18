@@ -226,6 +226,7 @@ void searchExpression(int it, std::ostream& out) {
                 if(E[i].expr && (1 << k))
                 {
                     if(!first) out << " &&";
+                    first = false;
                     out << " (" << conditionNames[conditionIndex[NC-1-k]] << ")";
                 }
             out << std::endl;
