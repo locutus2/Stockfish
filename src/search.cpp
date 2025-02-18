@@ -328,7 +328,7 @@ void learn(bool T, const std::vector<bool>& C0) {
     int index = getIndex(C);
 
     assert(E.size() == (1 << NC));
-    for (int i = 0; i < int(E.size()); i++)
+    for (int i = 0; i < int(E.size()) - 1; i++)
     {
         assert(i < int(E.size()));
         assert(i >= 0);
