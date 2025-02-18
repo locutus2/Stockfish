@@ -1210,6 +1210,10 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
+            if ((ss - 1)->inCheck && moveCount > 6 && correctionValue > -2322860
+                && ttData.bound != BOUND_EXACT && ttData.value <= alpha && !capture
+                && (ss + 1)->cutoffCnt <= 3 && !givesCheck)
+                r += 1024;
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
