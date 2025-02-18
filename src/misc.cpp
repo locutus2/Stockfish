@@ -352,6 +352,12 @@ void dbg_correl_of(int64_t value1, int64_t value2, int slot) {
     correl.at(slot)[5] += value1 * value2;
 }
 
+void dbg_clear()
+{
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        hit[i][0] = hit[i][1] = 0;
+}
+
 void dbg_print() {
 
     int64_t n;

@@ -152,6 +152,7 @@ void initSearchExpression() {
         conditionIndex.push_back(i);
 
     int seed = int(std::time(nullptr));
+    seed = 1739865092;
     std::cerr << "SEED: " << seed << std::endl;
 
     std::srand(seed);
@@ -162,12 +163,14 @@ void initSearchExpression() {
         if(i != j)
             std::swap(conditionIndex[i], conditionIndex[j]);
     }
-    clearData();
 }
 
 void endSearchExpression() { LEARNING_ENABLED = false; }
 
-void startIterationSearchExpression() { }
+void startIterationSearchExpression() { 
+    dbg_clear();
+    clearData();
+}
 
 void endIterationSearchExpression() { }
 
