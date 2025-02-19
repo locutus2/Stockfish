@@ -60,6 +60,8 @@ struct Expression {
     int support = 0;
 
     inline double score() const { return support > 0 ? good / double(support) : 0.0; }
+
+    Expression(int e = 0) : expr(e) {}
 };
 
 bool LEARNING_ENABLED = false;
@@ -163,14 +165,23 @@ std::vector<std::string> conditionNames = {
 };
 
 constexpr int NC = 10;  //18;
+constexpr int MAX_CONDITIONS = 6;
 
 std::vector<int> conditionIndex;
 
-std::vector<Expression> E(1 << NC), Enew;
+std::vector<Expression> E;
 
 void clearData()
 {
-    E = std::vector<Expression>(1 << NC);
+    E.clear();
+    for (int i = 0; i < int(E.size()); ++i)
+    {
+        if(popcount(i) <= MAX_CONDITIONS)
+        {
+            E.push_back(Expression(i));
+        }
+    }
+
 }
 
 void initSearchExpression() { 
@@ -206,11 +217,6 @@ void endIterationSearchExpression() { }
 
 void searchExpression(int it, std::ostream& out) {
     out << "------------ Iteration " << it << " ---------------" << std::endl;
-
-    for (int i = 0; i < int(E.size()); ++i)
-    {
-        E[i].expr = i;
-    }
 
     const auto Eorig = E;
 
