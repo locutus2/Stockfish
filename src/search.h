@@ -44,7 +44,11 @@
 
 namespace Stockfish {
 
-void searchExpression();
+void initSearchExpression();
+void searchExpression(int it, std::ostream& out = std::cerr);
+void endSearchExpression();
+void startIterationSearchExpression();
+void endIterationSearchExpression();
 
 // Different node types, used as a template parameter
 enum NodeType {

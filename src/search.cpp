@@ -54,100 +54,297 @@
 
 namespace Stockfish {
 
-struct Expression
-{
-    int expr = 0;
-    int good = 0;
+struct Expression {
+    int expr    = 0;
+    int good    = 0;
     int support = 0;
 
-    inline double score() const { return support > 0 ? good/double(support) : 0.0; }
+    inline double score() const { return support > 0 ? good / double(support) : 0.0; }
+
+    Expression(int e = 0) : expr(e) {}
 };
 
-constexpr int NC = 10;//18;
+bool LEARNING_ENABLED = false;
 
-std::vector<Expression> E(1 << NC), Enew;
+std::vector<std::string> conditionNames = {
+          "!PvNode",      
+          "!ss->ttPv",      
+          "capture",      
+          "!capture",     
+          "givesCheck",    
+          "!givesCheck", 
+          "ss->inCheck",
+          "!ss->inCheck", 
+          "priorCapture", 
+          "!priorCapture", 
+          "improving",   
+          "!improving",
+          "cutNode",
+          "allNode",
+          "ttCapture",
+          "!ttCapture",
+          "ttData.value > alpha",
+          "ttData.value <= alpha",
+          "correctionValue > -2322860",
+          "correctionValue <= -2322860",
+          "ttData.depth >= depth",
+          "ttData.depth < depth",
+          "ss->statScore > -5902",
+          "ss->statScore <= -5902",
+          "depth > 5",
+          "depth <= 5",
+          "moveCount > 6",
+          "moveCount <= 6",
+          "moveCount==1",
+          "moveCount!=1",
+          "move==ttData.move",
+          "move!=ttData.move",
+          "ttData.move",
+          "!ttData.move",
+          "ttHit",
+          "!ttHit",
+          "excludedMove",
+          "!excludedMove",
+          "(ss-1)->currentMove==Move::null()",
+          "(ss-1)->currentMove!=Move::null()",
+          "ttData.bound == BOUND_LOWER",
+          "ttData.bound == BOUND_EXACT",
+          "ttData.bound == BOUND_UPPER",
+          "ttData.bound != BOUND_LOWER",
+          "ttData.bound != BOUND_EXACT",
+          "ttData.bound != BOUND_UPPER",
+          "(ss+1)->cutoffCnt>3",
+          "(ss+1)->cutoffCnt<=3",
+          "type_of(movedPiece)==PAWN",
+          "type_of(movedPiece)==KNIGHT",
+          "type_of(movedPiece)==BISHOP",
+          "type_of(movedPiece)==ROOK",
+          "type_of(movedPiece)==QUEEN",
+          "type_of(movedPiece)==KING",
+          "type_of(movedPiece)!=PAWN",
+          "type_of(movedPiece)!=KNIGHT",
+          "type_of(movedPiece)!=BISHOP",
+          "type_of(movedPiece)!=ROOK",
+          "type_of(movedPiece)!=QUEEN",
+          "type_of(movedPiece)!=KING",
+          "!(ss-1)->ttPv",
+          "(ss-1)->inCheck",
+          "!(ss-1)->inCheck",
+          "(ss-1)->ttHit",
+          "!(ss-1)->ttHit",
+          "(ss-1)->statScore > -5902",
+          "(ss-1)->statScore <= -5902",
+          "(ss-1)->moveCount==0",
+          "(ss-1)->moveCount==1",
+          "(ss-1)->moveCount>1",
+          "(ss-1)->moveCount>6",
+          "(ss-1)->moveCount<=6",
+          "ss->statScore > 0",
+          "ss->statScore <= 0",
+          "(ss-1)->statScore > 0",
+          "(ss-1)->statScore <= 0",
+          "(*contHist[0])[movedPiece][move.to_sq()]>0",
+          "(*contHist[0])[movedPiece][move.to_sq()]<=0",
+          "(*contHist[1])[movedPiece][move.to_sq()]>0",
+          "(*contHist[1])[movedPiece][move.to_sq()]<=0",
+          "(*contHist[2])[movedPiece][move.to_sq()]>0",
+          "(*contHist[2])[movedPiece][move.to_sq()]<=0",
+          "(*contHist[3])[movedPiece][move.to_sq()]>0",
+          "(*contHist[3])[movedPiece][move.to_sq()]<=0",
+          "(*contHist[4])[movedPiece][move.to_sq()]>0",
+          "(*contHist[4])[movedPiece][move.to_sq()]<=0",
+          "(*contHist[5])[movedPiece][move.to_sq()]>0",
+          "(*contHist[5])[movedPiece][move.to_sq()]<=0",
+          "extension>0",
+          "extension==0",
+          "extension<0",
+          "pawnHistory[index][movedPiece][move.to_sq()]>0",
+          "pawnHistory[index][movedPiece][move.to_sq()]<=0",
+          "mainHistory[us][move.from_to()]>0",
+          "mainHistory[us][move.from_to()]<=0",
+};
 
-void searchExpression()
+constexpr int NC = 10;  //18;
+constexpr int MAX_CONDITIONS = NC-1;
+
+std::vector<int> conditionIndex;
+
+std::vector<Expression> E;
+
+void clearData()
 {
-    std::cerr << "------------------------------" << std::endl;
-
-    for(int i = 0; i < int(E.size()); ++i)
+    E.clear();
+    for (int i = 0; i < (1 << NC); ++i)
     {
-        E[i].expr = i;
-    } 
+        if(popcount(i) <= MAX_CONDITIONS)
+        {
+            E.push_back(Expression(i));
+        }
+    }
+
+}
+
+void initSearchExpression() { 
+    LEARNING_ENABLED = true; 
+
+    for(int i = 0; i < int(conditionNames.size()); i++)
+        conditionIndex.push_back(i);
+
+    int seed = int(std::time(nullptr));
+    //seed = 1739865092;
+    std::cerr << "SEED: " << seed << std::endl;
+    std::cerr << "Total conditions: " << conditionNames.size() << std::endl;
+    std::cerr << "Used conditions: " << NC << std::endl;
+    std::cerr << "Max conditions: " << MAX_CONDITIONS << std::endl;
+
+    std::srand(seed);
+
+    for(int i = int(conditionIndex.size()) - 1; i >= 0; i--)
+    {
+        int j = std::rand() % (i+1);
+        if(i != j)
+            std::swap(conditionIndex[i], conditionIndex[j]);
+    }
+}
+
+void endSearchExpression() { LEARNING_ENABLED = false; }
+
+void startIterationSearchExpression() { 
+    dbg_clear();
+    clearData();
+}
+
+void endIterationSearchExpression() { }
+
+void searchExpression(int it, std::ostream& out) {
+    out << "------------ Iteration " << it << " ---------------" << std::endl;
 
     const auto Eorig = E;
 
     std::sort(E.begin(), E.end(), [&](const auto& a, const auto& b) {
-            return a.score() > b.score() || (a.score() == b.score() && a.support > b.support);
+        return a.score() > b.score() || (a.score() == b.score() && a.support > b.support)
+        || (a.score() == b.score() && a.support == b.support && popcount(a.expr) < popcount(b.expr))
+        || (a.score() == b.score() && a.support == b.support && popcount(a.expr) == popcount(b.expr) && a.expr < b.expr);
     });
 
     constexpr bool DEBUG = false;
 
-    if(DEBUG)
-        for(int i = 0; i < int(E.size()); ++i)
+    if (DEBUG)
+    {
+        for (int i = 0; i < int(E.size()); ++i)
         {
-            if(E[i].support > 0)
-                std::cerr << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr) << " score=" << 100*E[i].score() << "% support=" << E[i].support
+            if (E[i].support > 0)
+                out << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr)
+                          << " score=" << 100 * E[i].score() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
         }
 
-    std::cerr << std::endl;
+        out << std::endl;
+    }
 
-    for(int k = NC-1; k >= 0; --k)
+    out << "Condition:" << std::endl;
+    int worstValue = -1;
+    int worstConditionIndex = -1;
+
+    for (int k = NC - 1; k >= 0; --k)
     {
-        for(int i = 0; i < int(E.size()); i++)
+        for (int i = 0; i < int(E.size()); i++)
         {
-            if(E[i].expr & (1 << k))
+            if (E[i].expr & (1 << k))
             {
-                std::cerr << "Cond " << NC-1-k << ": best " << i << ":" << ". expr=" << std::bitset<NC>(E[i].expr) << " score=" << 100*E[i].score() << "% support=" << E[i].support
-                      << " good=" << E[i].good << std::endl;
+                out << "Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
+                          << ". expr=" << std::bitset<NC>(E[i].expr)
+                          << " score=" << 100 * E[i].score() << "% support=" << E[i].support
+                          << " good=" << E[i].good << std::endl;
+                if (i > worstValue)
+                {
+                    worstValue = i;
+                    worstConditionIndex = NC-1-k;
+                }
                 break;
             }
         }
     }
 
-    std::cerr << std::endl;
+    out << std::endl;
+    out << "Best formulas:" << std::endl;
 
-    for(int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
+    for (int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
     {
-        if(lastBest < 0 || E[i].support > E[lastBest].support)
+        if (lastBest < 0 || E[i].support > E[lastBest].support
+            || (E[i].support == E[lastBest].support && popcount(E[i].expr) < popcount(E[lastBest].expr))
+            || (E[i].support == E[lastBest].support && popcount(E[i].expr) == popcount(E[lastBest].expr) && E[i].expr < E[lastBest].expr))
         {
             best = i;
         }
 
-        if(best >= 0)
+        if (best >= 0)
         {
-            std::cerr << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr) << " score=" << 100*E[best].score() << "% support=" << E[best].support
+            out << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
+                      << " score=" << 100 * E[best].score() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
             lastBest = best;
-            best = -1;
+            best     = -1;
+
+            bool first = true;
+            out << "=>";
+            for (int k = NC - 1; k >= 0; --k)
+                if(E[i].expr & (1 << k))
+                {
+                    if(!first) out << " &&";
+                    first = false;
+                    out << " (" << conditionNames[conditionIndex[NC-1-k]] << ")";
+                }
+            out << std::endl;
         }
     }
 
+    if(worstConditionIndex >= 0)
+    {
+        out << "=> Replace condition " << worstConditionIndex << " [" << conditionNames[conditionIndex[worstConditionIndex]] << "]" << std::endl;
+        conditionIndex.push_back(conditionIndex[worstConditionIndex]);
+        conditionIndex.erase(conditionIndex.begin() + worstConditionIndex);
+    }
+    out << std::flush;
 }
 
-
-int getIndex(const std::vector<bool>& C)
-{
+int getIndex(const std::vector<bool>& C) {
     int index = 0;
-    for(int i = 0; i < int(C.size()); i++)
+    for (int i = 0; i < int(C.size()); i++)
         index = index * 2 + C[i];
     return index;
 }
 
-void learn(bool T, const std::vector<bool>& C)
-{
+std::vector<bool>  filterConditions(const std::vector<bool>& C0) {
+    std::vector<bool> C;
+    for(int i = 0; i < NC; i++)
+        C.push_back(C0[conditionIndex[i]]);
+    return C;
+}
+
+void learn(bool T, const std::vector<bool>& C0) {
+    if (!LEARNING_ENABLED)
+        return;
+
+    assert(C0.size() == conditionNames.size());
+
+    std::vector<bool> C = filterConditions(C0);
+
+    assert(C.size() == NC);
+
     int index = getIndex(C);
 
-    for(int i = 0; i < int(E.size()); i++)
+    assert(E.size() == (1 << NC));
+    for (int i = 0; i < int(E.size()) - 1; i++)
     {
-        if((index & i) == i)
+        assert(i < int(E.size()));
+        assert(i >= 0);
+        if ((index & E[i].expr) == E[i].expr)
         {
             E[i].support++;
-            if(T)
+            if (T)
                 E[i].good++;
-        } 
+        }
     }
 }
 
@@ -1042,7 +1239,7 @@ Value Search::Worker::search(
 moves_loop:  // When in check, search starts here
     //Step 11.5: Cheat move pruning.
     bool cheat_pruned = false;
-    if (!PvNode && ttData.value < alpha -200 && ss->inCheck && !more_than_one(pos.checkers()) && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value)){
+    if (!PvNode && ttData.value < alpha -200 && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value)){
         //Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
         Bitboard Temp = pos.checkers();
         Square cheat_square = pop_lsb(Temp);
@@ -1275,6 +1472,8 @@ moves_loop:  // When in check, search starts here
             }
         }
 
+        int index = pawn_structure_index(pos);
+
         // Step 16. Make the move
         pos.do_move(move, st, givesCheck, &tt);
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
@@ -1331,36 +1530,105 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1407 / 16384;
 
-        bool CC = false;
-        std::vector<bool> C = {
-            capture,
-            !capture,
-            givesCheck,
-            !givesCheck,
-            ss->inCheck,
-            !ss->inCheck,
-            priorCapture,
-            !priorCapture,
-            improving,
-            !improving,
-            //cutNode,
-            //allNode,
-            //ttCapture,
-            //!ttCapture,
-            //ttData.value > alpha,
-            //ttData.value <= alpha,
-            //correctionValue > -2322860,
-            //correctionValue <= -2322860,
-            
-            //ttData.depth >= depth,
-            //ttData.depth < depth,
-            //ss->statScore > -5902,
-            //ss->statScore <= -5902,
-            //depth > 5,
-            //depth <= 5,
-            //moveCount > 6,
-            //moveCount <= 6,
+        bool              CC = false;
+        std::vector<bool> C  = {
+          !PvNode,
+          !ss->ttPv,
+          capture,      
+          !capture,     
+          givesCheck,    
+          !givesCheck, 
+          ss->inCheck,
+          !ss->inCheck, 
+          priorCapture, 
+          !priorCapture, 
+          improving,   
+          !improving,
+          cutNode,
+          allNode,
+          ttCapture,
+          !ttCapture,
+          ttData.value > alpha,
+          ttData.value <= alpha,
+          correctionValue > -2322860,
+          correctionValue <= -2322860,
+          ttData.depth >= depth,
+          ttData.depth < depth,
+          ss->statScore > -5902,
+          ss->statScore <= -5902,
+          depth > 5,
+          depth <= 5,
+          moveCount > 6,
+          moveCount <= 6,
+          moveCount==1,
+          moveCount!=1,
+          move==ttData.move,
+          move!=ttData.move,
+          bool(ttData.move),
+          !ttData.move,
+          ttHit,
+          !ttHit,
+          bool(excludedMove),
+          !excludedMove,
+          (ss-1)->currentMove==Move::null(),
+          (ss-1)->currentMove!=Move::null(),
+          ttData.bound == BOUND_LOWER,
+          ttData.bound == BOUND_EXACT,
+          ttData.bound == BOUND_UPPER,
+          ttData.bound != BOUND_LOWER,
+          ttData.bound != BOUND_EXACT,
+          ttData.bound != BOUND_UPPER,
+          (ss+1)->cutoffCnt>3,
+          (ss+1)->cutoffCnt<=3,
+          type_of(movedPiece)==PAWN,
+          type_of(movedPiece)==KNIGHT,
+          type_of(movedPiece)==BISHOP,
+          type_of(movedPiece)==ROOK,
+          type_of(movedPiece)==QUEEN,
+          type_of(movedPiece)==KING,
+          type_of(movedPiece)!=PAWN,
+          type_of(movedPiece)!=KNIGHT,
+          type_of(movedPiece)!=BISHOP,
+          type_of(movedPiece)!=ROOK,
+          type_of(movedPiece)!=QUEEN,
+          type_of(movedPiece)!=KING,
+          !(ss-1)->ttPv,
+          (ss-1)->inCheck,
+          !(ss-1)->inCheck,
+          (ss-1)->ttHit,
+          !(ss-1)->ttHit,
+          (ss-1)->statScore > -5902,
+          (ss-1)->statScore <= -5902,
+          (ss-1)->moveCount==0,
+          (ss-1)->moveCount==1,
+          (ss-1)->moveCount>1,
+          (ss-1)->moveCount>6,
+          (ss-1)->moveCount<=6,
+          ss->statScore > 0,
+          ss->statScore <= 0,
+          (ss-1)->statScore > 0,
+          (ss-1)->statScore <= 0,
+          (*contHist[0])[movedPiece][move.to_sq()]>0,
+          (*contHist[0])[movedPiece][move.to_sq()]<=0,
+          (*contHist[1])[movedPiece][move.to_sq()]>0,
+          (*contHist[1])[movedPiece][move.to_sq()]<=0,
+          (*contHist[2])[movedPiece][move.to_sq()]>0,
+          (*contHist[2])[movedPiece][move.to_sq()]<=0,
+          (*contHist[3])[movedPiece][move.to_sq()]>0,
+          (*contHist[3])[movedPiece][move.to_sq()]<=0,
+          (*contHist[4])[movedPiece][move.to_sq()]>0,
+          (*contHist[4])[movedPiece][move.to_sq()]<=0,
+          (*contHist[5])[movedPiece][move.to_sq()]>0,
+          (*contHist[5])[movedPiece][move.to_sq()]<=0,
+          extension>0,
+          extension==0,
+          extension<0,
+          pawnHistory[index][movedPiece][move.to_sq()]>0,
+          pawnHistory[index][movedPiece][move.to_sq()]<=0,
+          mainHistory[us][move.from_to()]>0,
+          mainHistory[us][move.from_to()]<=0,
         };
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1370,7 +1638,8 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            CC = cheat_pruned;
+            //CC = cheat_pruned;
+            CC = false;
             /*
             bool CC = cheat_pruned;
              * Cond 0: best 0:. expr=1010101001 score=100% support=42 good=42
@@ -1401,23 +1670,7 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-            if(CC)
-            {
-                /*
-                dbg_mean_of(correctionValue, 0);
-                dbg_hit_on(correctionValue > -2322860, 0);
-                dbg_mean_of(ss->statScore, 1);
-                dbg_hit_on(ss->statScore > -5902, 1);
-                dbg_mean_of(depth, 2);
-                dbg_hit_on(depth > 5, 2);
-                dbg_mean_of(moveCount, 3);
-                dbg_hit_on(moveCount > 6, 3);
-                */
-                //dbg_hit_on(C[0], 0);
-                //dbg_hit_on(C[1], 1);
-                bool T = value <= alpha;
-                learn(T, C);
-            }
+            CC = cheat_pruned && value > alpha;
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
@@ -1436,32 +1689,21 @@ moves_loop:  // When in check, search starts here
                 int bonus = (value >= beta) * 2010;
                 update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
+
+            if(CC)
+            {
+                bool T = value <= alpha;
+                learn(T, C);
+            }
+
         }
 
         // Step 18. Full-depth search when LMR is skipped
         else if (!PvNode || moveCount > 1)
         {
-            CC = cheat_pruned;
-            /*
-            bool CC = cheat_pruned;
-             * Cond 0: best 20:. expr=1001001000 score=98.8033% support=53398 good=52759
-             * Cond 1: best 0:. expr=0101001000 score=99.8545% support=125782 good=125599
-             * Cond 2: best 16:. expr=0110001000 score=99.3827% support=162 good=161
-             * Cond 3: best 0:. expr=0101001000 score=99.8545% support=125782 good=125599
-             * Cond 4: best 1:. expr=0101101000 score=99.8545% support=125782 good=125599
-             * Cond 5: best 108:. expr=1011010000 score=0% support=0 good=0
-             * Cond 6: best 0:. expr=0101001000 score=99.8545% support=125782 good=125599
-             * Cond 7: best 68:. expr=1010000101 score=96.6942% support=847 good=819
-             * Cond 8: best 110:. expr=1011001110 score=0% support=0 good=0
-             * Cond 9: best 2:. expr=0101001001 score=99.8545% support=125782 good=125599
-             *
-             * best 0:. expr=0101001000 score=99.8545% support=125782 good=125599
-             * best 4:. expr=0100101000 score=99.8539% support=125944 good=125760
-             * best 8:. expr=0001001000 score=99.5412% support=179180 good=178358
-             * best 12:. expr=0000001001 score=99.5371% support=180179 good=179345
-             * best 44:. expr=0001100001 score=98.2903% support=214828 good=211155
-             * best 48:. expr=0000100001 score=98.2815% support=216869 good=213142
-             */
+            //CC = cheat_pruned;
+            CC = false;
+
             // Increase reduction if ttMove is not present
             if (!ttData.move)
                 r += 1111;
@@ -1470,46 +1712,12 @@ moves_loop:  // When in check, search starts here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 3554) - (r > 5373 && newDepth > 2), !cutNode);
 
-            if(CC)
+            if (CC)
             {
-                /*
-                dbg_mean_of(correctionValue, 0);
-                dbg_hit_on(correctionValue > -2322860, 0);
-                dbg_mean_of(ss->statScore, 1);
-                dbg_hit_on(ss->statScore > -5902, 1);
-                dbg_mean_of(depth, 2);
-                dbg_hit_on(depth > 5, 2);
-                dbg_mean_of(moveCount, 3);
-                dbg_hit_on(moveCount > 6, 3);
-                */
-                //dbg_hit_on(C[0], 0);
-                //dbg_hit_on(C[1], 1);
                 bool T = value <= alpha;
                 learn(T, C);
             }
         }
-        /*
-            CC = cheat_pruned;
-         * Cond 0: best 20:. expr=1001001000 score=98.9693% support=64227 good=63565
-         * Cond 1: best 0:. expr=0101001001 score=99.8377% support=324041 good=323515
-         * Cond 2: best 16:. expr=0110101000 score=99.2063% support=378 good=375
-         * Cond 3: best 0:. expr=0101001001 score=99.8377% support=324041 good=323515
-         * Cond 4: best 1:. expr=0101101001 score=99.8377% support=324041 good=323515
-         * Cond 5: best 108:. expr=1011010000 score=0% support=0 good=0
-         * Cond 6: best 0:. expr=0101001001 score=99.8377% support=324041 good=323515
-         * Cond 7: best 68:. expr=1010000101 score=96.6513% support=866 good=837
-         * Cond 8: best 110:. expr=1011001110 score=0% support=0 good=0
-         * Cond 9: best 0:. expr=0101001001 score=99.8377% support=324041 good=323515
-         *
-         * best 0:. expr=0101001001 score=99.8377% support=324041 good=323515
-         * best 4:. expr=0100001001 score=99.8369% support=324419 good=323890
-         * best 8:. expr=0001001001 score=99.694% support=388268 good=387080
-         * best 12:. expr=0000101001 score=99.6914% support=389525 good=388323
-         * best 28:. expr=0101000001 score=98.9632% support=396135 good=392028
-         * best 32:. expr=0100000000 score=98.9585% support=396835 good=392702
-         * best 40:. expr=0001000000 score=98.8207% support=465950 good=460455
-         * best 44:. expr=0000100001 score=98.8128% support=468395 good=462834
-         */
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
         // otherwise let the parent node fail low with value <= alpha and try another move.

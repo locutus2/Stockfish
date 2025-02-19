@@ -61,6 +61,7 @@ class UCIEngine {
     static void print_info_string(std::string_view str);
 
     void          go(std::istringstream& is);
+    void          learn(std::istream& args);
     void          bench(std::istream& args);
     void          benchmark(std::istream& args);
     void          position(std::istringstream& is);
