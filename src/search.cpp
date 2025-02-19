@@ -214,6 +214,8 @@ void endIterationSearchExpression() { }
 void searchExpression(int it, std::ostream& out) {
     out << "------------ Iteration " << it << " ---------------" << std::endl;
 
+    dbg_print();
+
     const auto Eorig = E;
 
     std::sort(E.begin(), E.end(), [&](const auto& a, const auto& b) {
@@ -1465,6 +1467,8 @@ moves_loop:  // When in check, search starts here
                 CC = true;
             }
         }
+        
+        //dbg_hit_on(CC, 0);
 
         // Step 15. Extensions
         // We take care to not overdo to avoid search getting stuck.
@@ -1599,7 +1603,7 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            CC = false;
+            //CC = false;
             /*
             CC = !ss->ttPv;
             std::vector<bool> C = {
@@ -1837,7 +1841,7 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-            CC = false; //value > alpha;
+            //CC = false; //value > alpha;
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
@@ -1857,7 +1861,7 @@ moves_loop:  // When in check, search starts here
                 update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
 
-            if(CC)
+            if(false && CC)
             {
                 bool T = value <= alpha;
                 learn(T, C);
@@ -1868,7 +1872,7 @@ moves_loop:  // When in check, search starts here
         // Step 18. Full-depth search when LMR is skipped
         else if (!PvNode || moveCount > 1)
         {
-            CC = false;
+            //CC = false;
 
             // Increase reduction if ttMove is not present
             if (!ttData.move)
@@ -1878,20 +1882,8 @@ moves_loop:  // When in check, search starts here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 3554) - (r > 5373 && newDepth > 2), !cutNode);
 
-            if (CC)
+            if (false && CC)
             {
-                /*
-                dbg_mean_of(correctionValue, 0);
-                dbg_hit_on(correctionValue > -2322860, 0);
-                dbg_mean_of(ss->statScore, 1);
-                dbg_hit_on(ss->statScore > -5902, 1);
-                dbg_mean_of(depth, 2);
-                dbg_hit_on(depth > 5, 2);
-                dbg_mean_of(moveCount, 3);
-                dbg_hit_on(moveCount > 6, 3);
-                */
-                //dbg_hit_on(C[0], 0);
-                //dbg_hit_on(C[1], 1);
                 bool T = value <= alpha;
                 learn(T, C);
             }
@@ -1911,6 +1903,7 @@ moves_loop:  // When in check, search starts here
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
 
+        //dbg_hit_on(CC, 1);
         if(CC)
         {
             bool T = value <= alpha;

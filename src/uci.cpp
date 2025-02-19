@@ -290,7 +290,6 @@ void UCIEngine::learn(std::istream& args) {
             }
         }
 
-
         elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
         searchExpression(it);
         endIterationSearchExpression();
