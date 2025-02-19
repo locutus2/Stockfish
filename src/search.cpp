@@ -1467,11 +1467,14 @@ moves_loop:  // When in check, search starts here
 
                 // Prune moves with negative SEE
                 if (!pos.see_ge(move, -26 * lmrDepth * lmrDepth))
-                    continue;
+                {
+                    CC = true;
+                    //continue;
+                }
 
 
-                LearnPrecondition = "!PvNode && depth < 8";
-                CC = !PvNode && depth < 8;
+                //LearnPrecondition = "!PvNode && depth < 8";
+                //CC = !PvNode && depth < 8;
             }
         }
         
@@ -1913,7 +1916,8 @@ moves_loop:  // When in check, search starts here
         //dbg_hit_on(CC, 1);
         if(CC)
         {
-            bool T = value <= alpha;
+            //bool T = value <= alpha;
+            bool T = value > alpha;
             learn(T, C);
         }
 
