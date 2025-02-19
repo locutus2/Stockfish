@@ -174,7 +174,7 @@ std::vector<Expression> E;
 void clearData()
 {
     E.clear();
-    for (int i = 0; i < int(E.size()); ++i)
+    for (int i = 0; i < (1 << NC); ++i)
     {
         if(popcount(i) <= MAX_CONDITIONS)
         {
