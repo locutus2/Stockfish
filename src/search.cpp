@@ -339,7 +339,7 @@ void learn(bool T, const std::vector<bool>& C0) {
     {
         assert(i < int(E.size()));
         assert(i >= 0);
-        if ((index & i) == i)
+        if ((index & E[i].expr) == E[i].expr)
         {
             E[i].support++;
             if (T)
