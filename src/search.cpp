@@ -66,6 +66,8 @@ struct Expression {
 
 bool LEARNING_ENABLED = false;
 
+std::string LearnPrecondition;
+
 std::vector<std::string> conditionNames = {
           "!PvNode",      
           "!ss->ttPv",      
@@ -238,6 +240,9 @@ void searchExpression(int it, std::ostream& out) {
 
         out << std::endl;
     }
+
+    out << "Precondition: " << LearnPrecondition << std::endl;
+    out << std::endl;
 
     out << "Condition:" << std::endl;
     int worstValue = -1;
@@ -1464,7 +1469,9 @@ moves_loop:  // When in check, search starts here
                 if (!pos.see_ge(move, -26 * lmrDepth * lmrDepth))
                     continue;
 
-                CC = true;
+
+                LearnPrecondition = "!PvNode && depth < 8";
+                CC = !PvNode && depth < 8;
             }
         }
         
