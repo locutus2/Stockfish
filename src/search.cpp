@@ -89,8 +89,6 @@ std::vector<std::string> conditionNames = {
           "correctionValue <= -2322860",
           "ttData.depth >= depth",
           "ttData.depth < depth",
-          "ss->statScore > -5902",
-          "ss->statScore <= -5902",
           "depth > 5",
           "depth <= 5",
           "moveCount > 6",
@@ -105,6 +103,8 @@ std::vector<std::string> conditionNames = {
           "!ttHit",
           "excludedMove",
           "!excludedMove",
+          "(ss-1)->excludedMove",
+          "!(ss-1)->excludedMove",
           "(ss-1)->currentMove==Move::null()",
           "(ss-1)->currentMove!=Move::null()",
           "ttData.bound == BOUND_LOWER",
@@ -139,8 +139,6 @@ std::vector<std::string> conditionNames = {
           "(ss-1)->moveCount>1",
           "(ss-1)->moveCount>6",
           "(ss-1)->moveCount<=6",
-          "ss->statScore > 0",
-          "ss->statScore <= 0",
           "(ss-1)->statScore > 0",
           "(ss-1)->statScore <= 0",
           "(*contHist[0])[movedPiece][move.to_sq()]>0",
@@ -155,9 +153,6 @@ std::vector<std::string> conditionNames = {
           "(*contHist[4])[movedPiece][move.to_sq()]<=0",
           "(*contHist[5])[movedPiece][move.to_sq()]>0",
           "(*contHist[5])[movedPiece][move.to_sq()]<=0",
-          "extension>0",
-          "extension==0",
-          "extension<0",
           "pawnHistory[index][movedPiece][move.to_sq()]>0",
           "pawnHistory[index][movedPiece][move.to_sq()]<=0",
           "mainHistory[us][move.from_to()]>0",
@@ -1254,6 +1249,7 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    int index = pawn_structure_index(pos);
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1305,6 +1301,100 @@ moves_loop:  // When in check, search starts here
         // Bigger value is better for long time controls
         if (ss->ttPv)
             r += 1031;
+
+        bool              CC = false;
+        std::vector<bool> C  = {
+          !PvNode,
+          !ss->ttPv,
+          capture,      
+          !capture,     
+          givesCheck,    
+          !givesCheck, 
+          ss->inCheck,
+          !ss->inCheck, 
+          priorCapture, 
+          !priorCapture, 
+          improving,   
+          !improving,
+          cutNode,
+          allNode,
+          ttCapture,
+          !ttCapture,
+          ttData.value > alpha,
+          ttData.value <= alpha,
+          correctionValue > -2322860,
+          correctionValue <= -2322860,
+          ttData.depth >= depth,
+          ttData.depth < depth,
+          depth > 5,
+          depth <= 5,
+          moveCount > 6,
+          moveCount <= 6,
+          moveCount==1,
+          moveCount!=1,
+          move==ttData.move,
+          move!=ttData.move,
+          bool(ttData.move),
+          !ttData.move,
+          ttHit,
+          !ttHit,
+          bool(excludedMove),
+          !excludedMove,
+          bool((ss-1)->excludedMove),
+          !(ss-1)->excludedMove,
+          (ss-1)->currentMove==Move::null(),
+          (ss-1)->currentMove!=Move::null(),
+          ttData.bound == BOUND_LOWER,
+          ttData.bound == BOUND_EXACT,
+          ttData.bound == BOUND_UPPER,
+          ttData.bound != BOUND_LOWER,
+          ttData.bound != BOUND_EXACT,
+          ttData.bound != BOUND_UPPER,
+          (ss+1)->cutoffCnt>3,
+          (ss+1)->cutoffCnt<=3,
+          type_of(movedPiece)==PAWN,
+          type_of(movedPiece)==KNIGHT,
+          type_of(movedPiece)==BISHOP,
+          type_of(movedPiece)==ROOK,
+          type_of(movedPiece)==QUEEN,
+          type_of(movedPiece)==KING,
+          type_of(movedPiece)!=PAWN,
+          type_of(movedPiece)!=KNIGHT,
+          type_of(movedPiece)!=BISHOP,
+          type_of(movedPiece)!=ROOK,
+          type_of(movedPiece)!=QUEEN,
+          type_of(movedPiece)!=KING,
+          !(ss-1)->ttPv,
+          (ss-1)->inCheck,
+          !(ss-1)->inCheck,
+          (ss-1)->ttHit,
+          !(ss-1)->ttHit,
+          (ss-1)->statScore > -5902,
+          (ss-1)->statScore <= -5902,
+          (ss-1)->moveCount==0,
+          (ss-1)->moveCount==1,
+          (ss-1)->moveCount>1,
+          (ss-1)->moveCount>6,
+          (ss-1)->moveCount<=6,
+          (ss-1)->statScore > 0,
+          (ss-1)->statScore <= 0,
+          (*contHist[0])[movedPiece][move.to_sq()]>0,
+          (*contHist[0])[movedPiece][move.to_sq()]<=0,
+          (*contHist[1])[movedPiece][move.to_sq()]>0,
+          (*contHist[1])[movedPiece][move.to_sq()]<=0,
+          (*contHist[2])[movedPiece][move.to_sq()]>0,
+          (*contHist[2])[movedPiece][move.to_sq()]<=0,
+          (*contHist[3])[movedPiece][move.to_sq()]>0,
+          (*contHist[3])[movedPiece][move.to_sq()]<=0,
+          (*contHist[4])[movedPiece][move.to_sq()]>0,
+          (*contHist[4])[movedPiece][move.to_sq()]<=0,
+          (*contHist[5])[movedPiece][move.to_sq()]>0,
+          (*contHist[5])[movedPiece][move.to_sq()]<=0,
+          pawnHistory[index][movedPiece][move.to_sq()]>0,
+          pawnHistory[index][movedPiece][move.to_sq()]<=0,
+          mainHistory[us][move.from_to()]>0,
+          mainHistory[us][move.from_to()]<=0,
+        };
 
         // Step 14. Pruning at shallow depth.
         // Depth conditions are important for mate finding.
@@ -1371,6 +1461,8 @@ moves_loop:  // When in check, search starts here
                 // Prune moves with negative SEE
                 if (!pos.see_ge(move, -26 * lmrDepth * lmrDepth))
                     continue;
+
+                CC = true;
             }
         }
 
@@ -1442,8 +1534,6 @@ moves_loop:  // When in check, search starts here
             }
         }
 
-        int index = pawn_structure_index(pos);
-
         // Step 16. Make the move
         pos.do_move(move, st, givesCheck, &tt);
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
@@ -1499,105 +1589,6 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1407 / 16384;
-
-        bool              CC = false;
-        std::vector<bool> C  = {
-          !PvNode,
-          !ss->ttPv,
-          capture,      
-          !capture,     
-          givesCheck,    
-          !givesCheck, 
-          ss->inCheck,
-          !ss->inCheck, 
-          priorCapture, 
-          !priorCapture, 
-          improving,   
-          !improving,
-          cutNode,
-          allNode,
-          ttCapture,
-          !ttCapture,
-          ttData.value > alpha,
-          ttData.value <= alpha,
-          correctionValue > -2322860,
-          correctionValue <= -2322860,
-          ttData.depth >= depth,
-          ttData.depth < depth,
-          ss->statScore > -5902,
-          ss->statScore <= -5902,
-          depth > 5,
-          depth <= 5,
-          moveCount > 6,
-          moveCount <= 6,
-          moveCount==1,
-          moveCount!=1,
-          move==ttData.move,
-          move!=ttData.move,
-          bool(ttData.move),
-          !ttData.move,
-          ttHit,
-          !ttHit,
-          bool(excludedMove),
-          !excludedMove,
-          (ss-1)->currentMove==Move::null(),
-          (ss-1)->currentMove!=Move::null(),
-          ttData.bound == BOUND_LOWER,
-          ttData.bound == BOUND_EXACT,
-          ttData.bound == BOUND_UPPER,
-          ttData.bound != BOUND_LOWER,
-          ttData.bound != BOUND_EXACT,
-          ttData.bound != BOUND_UPPER,
-          (ss+1)->cutoffCnt>3,
-          (ss+1)->cutoffCnt<=3,
-          type_of(movedPiece)==PAWN,
-          type_of(movedPiece)==KNIGHT,
-          type_of(movedPiece)==BISHOP,
-          type_of(movedPiece)==ROOK,
-          type_of(movedPiece)==QUEEN,
-          type_of(movedPiece)==KING,
-          type_of(movedPiece)!=PAWN,
-          type_of(movedPiece)!=KNIGHT,
-          type_of(movedPiece)!=BISHOP,
-          type_of(movedPiece)!=ROOK,
-          type_of(movedPiece)!=QUEEN,
-          type_of(movedPiece)!=KING,
-          !(ss-1)->ttPv,
-          (ss-1)->inCheck,
-          !(ss-1)->inCheck,
-          (ss-1)->ttHit,
-          !(ss-1)->ttHit,
-          (ss-1)->statScore > -5902,
-          (ss-1)->statScore <= -5902,
-          (ss-1)->moveCount==0,
-          (ss-1)->moveCount==1,
-          (ss-1)->moveCount>1,
-          (ss-1)->moveCount>6,
-          (ss-1)->moveCount<=6,
-          ss->statScore > 0,
-          ss->statScore <= 0,
-          (ss-1)->statScore > 0,
-          (ss-1)->statScore <= 0,
-          (*contHist[0])[movedPiece][move.to_sq()]>0,
-          (*contHist[0])[movedPiece][move.to_sq()]<=0,
-          (*contHist[1])[movedPiece][move.to_sq()]>0,
-          (*contHist[1])[movedPiece][move.to_sq()]<=0,
-          (*contHist[2])[movedPiece][move.to_sq()]>0,
-          (*contHist[2])[movedPiece][move.to_sq()]<=0,
-          (*contHist[3])[movedPiece][move.to_sq()]>0,
-          (*contHist[3])[movedPiece][move.to_sq()]<=0,
-          (*contHist[4])[movedPiece][move.to_sq()]>0,
-          (*contHist[4])[movedPiece][move.to_sq()]<=0,
-          (*contHist[5])[movedPiece][move.to_sq()]>0,
-          (*contHist[5])[movedPiece][move.to_sq()]<=0,
-          extension>0,
-          extension==0,
-          extension<0,
-          pawnHistory[index][movedPiece][move.to_sq()]>0,
-          pawnHistory[index][movedPiece][move.to_sq()]<=0,
-          mainHistory[us][move.from_to()]>0,
-          mainHistory[us][move.from_to()]<=0,
-        };
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1846,7 +1837,7 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-            CC = value > alpha;
+            CC = false; //value > alpha;
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
@@ -1918,6 +1909,12 @@ moves_loop:  // When in check, search starts here
                 newDepth = std::max(newDepth, 1);
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
+        }
+
+        if(CC)
+        {
+            bool T = value <= alpha;
+            learn(T, C);
         }
 
         // Step 19. Undo move
