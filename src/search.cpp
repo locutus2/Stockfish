@@ -194,6 +194,7 @@ void initSearchExpression() {
     std::cerr << "Total conditions: " << conditionNames.size() << std::endl;
     std::cerr << "Used conditions: " << NC << std::endl;
     std::cerr << "Max conditions: " << MAX_CONDITIONS << std::endl;
+    std::cerr << "Min support: " << MIN_SUPPORT << std::endl;
 
     std::srand(seed);
 
