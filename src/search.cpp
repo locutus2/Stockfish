@@ -1072,7 +1072,7 @@ moves_loop:  // When in check, search starts here
                 lmrDepth = std::max(lmrDepth, 0);
 
                 // Prune moves with negative SEE
-                if ((!excludedMove || type_of(movedPiece) != PAWN)
+                if ((!ss->ttPv || !excludedMove || type_of(movedPiece) != PAWN)
                     && !pos.see_ge(move, -26 * lmrDepth * lmrDepth))
                     continue;
             }
