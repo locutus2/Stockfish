@@ -175,7 +175,7 @@ std::vector<std::string> conditionNames = {
 
 constexpr int NC = 10;  //18;
 constexpr int MAX_CONDITIONS = NC-1;
-constexpr int MIN_SUPPORT = 100000;
+constexpr int MIN_SUPPORT = 10000;
 
 std::vector<int> conditionIndex;
 
@@ -1519,7 +1519,11 @@ moves_loop:  // When in check, search starts here
 
                 // Continuation history based pruning
                 if (history < -4107 * depth)
-                    continue;
+                {
+                    CC = ss->ttPv;
+                    LearnPrecondition = "ss->ttPv";
+                    if(!CC) continue;
+                }
 
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
 
@@ -1543,11 +1547,7 @@ moves_loop:  // When in check, search starts here
 
                 // Prune moves with negative SEE
                 if (!pos.see_ge(move, -26 * lmrDepth * lmrDepth))
-                {
-                    CC = ss->ttPv;
-                    LearnPrecondition = "ss->ttPv";
-                    if(!CC) continue;
-                }
+                    continue;
 
 
                 //LearnPrecondition = "!PvNode && depth < 8";
