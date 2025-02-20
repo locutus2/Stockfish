@@ -1018,7 +1018,7 @@ moves_loop:  // When in check, search starts here
                 mp.skip_quiet_moves();
 
             // Reduced depth of the next LMR search
-            int lmrDepth = newDepth - r / 1024;
+            int lmrDepth = newDepth * 2 - r / 512;
 
             if (capture || givesCheck)
             {
@@ -1027,9 +1027,9 @@ moves_loop:  // When in check, search starts here
                   thisThread->captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
 
                 // Futility pruning for captures
-                if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
+                if (!givesCheck && lmrDepth < 14 && !ss->inCheck)
                 {
-                    Value futilityValue = ss->staticEval + 242 + 238 * lmrDepth
+                    Value futilityValue = ss->staticEval + 242 + 119 * lmrDepth
                                         + PieceValue[capturedPiece] + 95 * captHist / 700;
                     if (futilityValue <= alpha)
                         continue;
@@ -1053,15 +1053,15 @@ moves_loop:  // When in check, search starts here
 
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
 
-                lmrDepth += history / 3576;
+                lmrDepth += history / 1788;
 
-                Value futilityValue = ss->staticEval + (bestMove ? 49 : 143) + 116 * lmrDepth;
+                Value futilityValue = ss->staticEval + (bestMove ? 49 : 143) + 58 * lmrDepth;
 
-                if (bestValue < ss->staticEval - 150 && lmrDepth < 7)
+                if (bestValue < ss->staticEval - 150 && lmrDepth < 14)
                     futilityValue += 108;
 
                 // Futility pruning: parent node
-                if (!ss->inCheck && lmrDepth < 12 && futilityValue <= alpha)
+                if (!ss->inCheck && lmrDepth < 24 && futilityValue <= alpha)
                 {
                     if (bestValue <= futilityValue && !is_decisive(bestValue)
                         && !is_win(futilityValue))
@@ -1072,7 +1072,7 @@ moves_loop:  // When in check, search starts here
                 lmrDepth = std::max(lmrDepth, 0);
 
                 // Prune moves with negative SEE
-                if (!pos.see_ge(move, -26 * lmrDepth * lmrDepth))
+                if (!pos.see_ge(move, -7 * lmrDepth * lmrDepth))
                     continue;
             }
         }
