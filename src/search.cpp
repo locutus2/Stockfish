@@ -163,6 +163,10 @@ std::vector<std::string> conditionNames = {
           "lmrResearches>0",
           "lmrFailedResearches==0",
           "lmrFailedResearches>0",
+          "std::abs(correctionValue) > 4824260",
+          "std::abs(correctionValue) <= 4824260",
+          "correctionValue > 0",
+          "correctionValue <= 0",
 };
 
 constexpr int NC = 10;  //18;
@@ -1456,6 +1460,10 @@ moves_loop:  // When in check, search starts here
           lmrResearches>0,
           lmrFailedResearches==0,
           lmrFailedResearches>0,
+          std::abs(correctionValue) > 4824260,
+          std::abs(correctionValue) <= 4824260,
+          correctionValue > 0,
+          correctionValue <= 0,
         };
 
         // Step 14. Pruning at shallow depth.
