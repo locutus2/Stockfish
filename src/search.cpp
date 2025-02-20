@@ -159,6 +159,10 @@ std::vector<std::string> conditionNames = {
           "pawnHistory[index][movedPiece][move.to_sq()]<=0",
           "mainHistory[us][move.from_to()]>0",
           "mainHistory[us][move.from_to()]<=0",
+          "lmrResearches==0",
+          "lmrResearches>0",
+          "lmrFailedResearches==0",
+          "lmrFailedResearches>0",
 };
 
 constexpr int NC = 10;  //18;
@@ -1269,6 +1273,8 @@ moves_loop:  // When in check, search starts here
 
     int moveCount = 0;
     int index = pawn_structure_index(pos);
+    int lmrResearches = 0;
+    int lmrFailedResearches = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1413,6 +1419,10 @@ moves_loop:  // When in check, search starts here
           pawnHistory[index][movedPiece][move.to_sq()]<=0,
           mainHistory[us][move.from_to()]>0,
           mainHistory[us][move.from_to()]<=0,
+          lmrResearches==0,
+          lmrResearches>0,
+          lmrFailedResearches==0,
+          lmrFailedResearches>0,
         };
 
         // Step 14. Pruning at shallow depth.
@@ -1868,6 +1878,7 @@ moves_loop:  // When in check, search starts here
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
             {
+                lmrResearches++;
                 // Adjust full-depth search based on LMR results - if the result was
                 // good enough search deeper, if it was bad enough search shallower.
                 const bool doDeeperSearch    = value > (bestValue + 41 + 2 * newDepth);
@@ -1876,7 +1887,11 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+                    if(value <= alpha)
+                        lmrFailedResearches++;
+                }
 
                 // Post LMR continuation history updates
                 int bonus = (value >= beta) * 2010;
