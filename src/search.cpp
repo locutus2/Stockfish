@@ -1490,8 +1490,9 @@ moves_loop:  // When in check, search starts here
                 // Prune moves with negative SEE
                 if (!pos.see_ge(move, -26 * lmrDepth * lmrDepth))
                 {
-                    CC = true;
-                    //continue;
+                    CC = ss->ttPv;
+                    LearnPrecondition = "ss->ttPv";
+                    if(!CC) continue;
                 }
 
 
