@@ -167,11 +167,15 @@ std::vector<std::string> conditionNames = {
           "std::abs(correctionValue) <= 4824260",
           "correctionValue > 0",
           "correctionValue <= 0",
+          "nullMoveTried",
+          "!nullMoveTried",
+          "nullMoveFailed",
+          "!nullMoveFailed",
 };
 
 constexpr int NC = 10;  //18;
 constexpr int MAX_CONDITIONS = NC-1;
-constexpr int MIN_SUPPORT = 10000;
+constexpr int MIN_SUPPORT = 100000;
 
 std::vector<int> conditionIndex;
 
@@ -1017,6 +1021,9 @@ Value Search::Worker::search(
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
 
+    bool nullMoveTried = false;
+    bool nullMoveFailed = false;
+
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
 
@@ -1185,6 +1192,7 @@ Value Search::Worker::search(
     {
         assert(eval - beta >= 0);
 
+        nullMoveTried = true;
         // Null move dynamic reduction based on depth and eval
         Depth R = std::min(int(eval - beta) / 237, 6) + depth / 3 + 5;
 
@@ -1217,6 +1225,7 @@ Value Search::Worker::search(
             if (v >= beta)
                 return nullValue;
         }
+        nullMoveFailed = true;
     }
 
     improving |= ss->staticEval >= beta + 97;
@@ -1464,6 +1473,10 @@ moves_loop:  // When in check, search starts here
           std::abs(correctionValue) <= 4824260,
           correctionValue > 0,
           correctionValue <= 0,
+          nullMoveTried,
+          !nullMoveTried,
+          nullMoveFailed,
+          !nullMoveFailed,
         };
 
         // Step 14. Pruning at shallow depth.
