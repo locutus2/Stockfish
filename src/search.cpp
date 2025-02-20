@@ -227,8 +227,8 @@ void searchExpression(int it, std::ostream& out) {
     const auto Eorig = E;
 
     std::sort(E.begin(), E.end(), [&](const auto& a, const auto& b) {
-        if(b.support < MIN_SUPPORT) return true; 
-        if(a.support < MIN_SUPPORT) return false; 
+        if(b.support < MIN_SUPPORT && a.support >= MIN_SUPPORT) return true; 
+        if(a.support < MIN_SUPPORT && b.support >= MIN_SUPPORT) return false; 
         return a.score() > b.score() || (a.score() == b.score() && a.support > b.support)
         || (a.score() == b.score() && a.support == b.support && popcount(a.expr) < popcount(b.expr))
         || (a.score() == b.score() && a.support == b.support && popcount(a.expr) == popcount(b.expr) && a.expr < b.expr);
@@ -240,7 +240,7 @@ void searchExpression(int it, std::ostream& out) {
     {
         for (int i = 0; i < int(E.size()); ++i)
         {
-            if (E[i].support >= MIN_SUPPORT)
+            if (i == 0 || E[i].support >= MIN_SUPPORT)
                 out << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr)
                           << " score=" << 100 * E[i].score() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
@@ -259,8 +259,12 @@ void searchExpression(int it, std::ostream& out) {
     for (int k = NC - 1; k >= 0; --k)
     {
         bool found = false;
+        int firstFound = -1;
         for (int i = 0; i < int(E.size()); i++)
         {
+            if ((E[i].expr & (1 << k)) && firstFound < 0)
+                firstFound = i;
+
             if ((E[i].expr & (1 << k)) && E[i].support >= MIN_SUPPORT)
             {
                 found = true;
@@ -276,16 +280,25 @@ void searchExpression(int it, std::ostream& out) {
                 break;
             }
         }
-        if(!found && worstValue < int(E.size()))
+        if(!found)
         {
-            worstValue = int(E.size());
-            worstConditionIndex = NC-1-k;
+            int i = firstFound;
+            out << "*Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
+                          << ". expr=" << std::bitset<NC>(E[i].expr)
+                          << " score=" << 100 * E[i].score() << "% support=" << E[i].support
+                          << " good=" << E[i].good << std::endl;
+            if(worstValue < int(E.size()))
+            {
+                worstValue = int(E.size());
+                worstConditionIndex = NC-1-k;
+            }
         }
     }
 
     out << std::endl;
     out << "Best formulas:" << std::endl;
 
+    bool found = false;
     for (int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
     {
         if (lastBest < 0 || E[i].support > E[lastBest].support
@@ -298,6 +311,7 @@ void searchExpression(int it, std::ostream& out) {
 
         if (best >= 0)
         {
+            found = true;
             out << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
                       << " score=" << 100 * E[best].score() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
@@ -315,6 +329,25 @@ void searchExpression(int it, std::ostream& out) {
                 }
             out << std::endl;
         }
+    }
+
+    if(!found)
+    {
+            int best = 0;
+            out << "*best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
+                      << " score=" << 100 * E[best].score() << "% support=" << E[best].support
+                      << " good=" << E[best].good << std::endl;
+
+            bool first = true;
+            out << "=>";
+            for (int k = NC - 1; k >= 0; --k)
+                if(E[best].expr & (1 << k))
+                {
+                    if(!first) out << " &&";
+                    first = false;
+                    out << " (" << conditionNames[conditionIndex[NC-1-k]] << ")";
+                }
+            out << std::endl;
     }
 
     if(worstConditionIndex >= 0)
