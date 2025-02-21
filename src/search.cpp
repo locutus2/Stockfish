@@ -175,7 +175,7 @@ std::vector<std::string> conditionNames = {
 
 constexpr int NC = 10;  //18;
 constexpr int MAX_CONDITIONS = NC-1;
-constexpr int MIN_SUPPORT = 10000;
+constexpr int MIN_SUPPORT = 100000;
 
 std::vector<int> conditionIndex;
 
