@@ -54,12 +54,17 @@
 
 namespace Stockfish {
 
+constexpr int NC = 10;  //18;
+constexpr int MAX_CONDITIONS = NC-1;
+constexpr int MIN_SUPPORT = 100000;
+
 struct Expression {
     int expr    = 0;
     int good    = 0;
     int support = 0;
 
-    inline double score() const { return support > 0 ? good / double(support) : 0.0; }
+    inline double prob() const { return support > 0 ? good / double(support) : 0.0; }
+    inline double score() const { return support > 0 ? good / double(support) * std::min(support, MIN_SUPPORT) / MIN_SUPPORT: 0.0; }
 
     Expression(int e = 0) : expr(e) {}
 };
@@ -173,10 +178,6 @@ std::vector<std::string> conditionNames = {
           "!nullMoveFailed",
 };
 
-constexpr int NC = 10;  //18;
-constexpr int MAX_CONDITIONS = NC-1;
-constexpr int MIN_SUPPORT = 100000;
-
 std::vector<int> conditionIndex;
 
 std::vector<Expression> E;
@@ -235,8 +236,8 @@ void searchExpression(int it, std::ostream& out) {
     const auto Eorig = E;
 
     std::sort(E.begin(), E.end(), [&](const auto& a, const auto& b) {
-        if(b.support < MIN_SUPPORT && a.support >= MIN_SUPPORT) return true; 
-        if(a.support < MIN_SUPPORT && b.support >= MIN_SUPPORT) return false; 
+        //if(b.support < MIN_SUPPORT && a.support >= MIN_SUPPORT) return true; 
+        //if(a.support < MIN_SUPPORT && b.support >= MIN_SUPPORT) return false; 
         return a.score() > b.score() || (a.score() == b.score() && a.support > b.support)
         || (a.score() == b.score() && a.support == b.support && popcount(a.expr) < popcount(b.expr))
         || (a.score() == b.score() && a.support == b.support && popcount(a.expr) == popcount(b.expr) && a.expr < b.expr);
@@ -248,9 +249,9 @@ void searchExpression(int it, std::ostream& out) {
     {
         for (int i = 0; i < int(E.size()); ++i)
         {
-            if (i == 0 || E[i].support >= MIN_SUPPORT)
+            if (i == 0 || E[i].support >= 1 /*MIN_SUPPORT*/)
                 out << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr)
-                          << " score=" << 100 * E[i].score() << "% support=" << E[i].support
+                          << " score=" << 100 * E[i].score() << "% prob=" << E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
         }
 
@@ -273,12 +274,12 @@ void searchExpression(int it, std::ostream& out) {
             if ((E[i].expr & (1 << k)) && firstFound < 0)
                 firstFound = i;
 
-            if ((E[i].expr & (1 << k)) && E[i].support >= MIN_SUPPORT)
+            if ((E[i].expr & (1 << k)) && E[i].support >= 1 /*MIN_SUPPORT*/)
             {
                 found = true;
                 out << "Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
                           << ". expr=" << std::bitset<NC>(E[i].expr)
-                          << " score=" << 100 * E[i].score() << "% support=" << E[i].support
+                          << " score=" << 100 * E[i].score() << "% prob=" << E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
                 if (i > worstValue)
                 {
@@ -293,7 +294,7 @@ void searchExpression(int it, std::ostream& out) {
             int i = firstFound;
             out << "*Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
                           << ". expr=" << std::bitset<NC>(E[i].expr)
-                          << " score=" << 100 * E[i].score() << "% support=" << E[i].support
+                          << " score=" << 100 * E[i].score() << "% prob=" << E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
             if(worstValue < int(E.size()))
             {
@@ -313,7 +314,7 @@ void searchExpression(int it, std::ostream& out) {
             || (E[i].support == E[lastBest].support && popcount(E[i].expr) < popcount(E[lastBest].expr))
             || (E[i].support == E[lastBest].support && popcount(E[i].expr) == popcount(E[lastBest].expr) && E[i].expr < E[lastBest].expr))
         {
-            if(E[i].support >= MIN_SUPPORT)
+            if(E[i].support >= 1 /*MIN_SUPPORT*/)
                 best = i;
         }
 
@@ -321,7 +322,7 @@ void searchExpression(int it, std::ostream& out) {
         {
             found = true;
             out << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
-                      << " score=" << 100 * E[best].score() << "% support=" << E[best].support
+                      << " score=" << 100 * E[best].score() << "% prob=" << E[best].prob() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
             lastBest = best;
             best     = -1;
@@ -343,7 +344,7 @@ void searchExpression(int it, std::ostream& out) {
     {
             int best = 0;
             out << "*best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
-                      << " score=" << 100 * E[best].score() << "% support=" << E[best].support
+                      << " score=" << 100 * E[best].score() << "% prob=" << E[best].prob() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
 
             bool first = true;
