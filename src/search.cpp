@@ -1049,8 +1049,8 @@ moves_loop:  // When in check, search starts here
 
                 // Continuation history based pruning
                 if (history < -4107 * depth
-                    && ((ss - 1)->statScore > 0 || excludedMove || ttData.value <= alpha
-                        || depth > 5 || ss->inCheck || (ss - 1)->currentMove == Move::null()
+                    && ((ss - 1)->statScore > 0 || moveCount > 6 || ttData.value <= alpha
+                        || depth > 5 || !improving || (ss - 1)->currentMove == Move::null()
                         || (ss - 1)->excludedMove || ttCapture))
                     continue;
 
