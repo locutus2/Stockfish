@@ -2023,7 +2023,6 @@ moves_loop:  // When in check, search starts here
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
 
-        CC = true;
         if(CC)
         {
             //bool T = value <= alpha;
