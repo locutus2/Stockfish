@@ -54,26 +54,30 @@
 
 namespace Stockfish {
 
-constexpr int NC = 10;  //18;
-constexpr int MAX_CONDITIONS = NC-1;
-constexpr int MIN_SUPPORT = 100000;
+bool LEARNING_ENABLED = false;
+
+constexpr int NC = 102;  //18;
+constexpr int AVG_NC = 10;
+constexpr int NN = (1 << 10) - 1;  //18;
+constexpr int MIN_SUPPORT = 10000;
+
+#define BITSET(x) std::bitset<NC-64>((x)>>64) << std::bitset<64>((x))
 
 struct Expression {
-    int expr    = 0;
+    __uint128_t expr    = 0;
     int good    = 0;
     int support = 0;
 
     inline double prob() const { return support > 0 ? good / double(support) : 0.0; }
     inline double score() const { return support > 0 ? good / double(support) * std::min(support, MIN_SUPPORT) / MIN_SUPPORT: 0.0; }
 
-    Expression(int e = 0) : expr(e) {}
+    Expression(__uint128_t e = 0) : expr(e) {}
 };
 
-bool LEARNING_ENABLED = false;
 
 std::string LearnPrecondition;
 
-std::vector<std::string> conditionNames = {
+std::string conditionNames[NC] = {
           "!PvNode",      
           "!ss->ttPv",      
           "capture",      
@@ -182,15 +186,47 @@ std::vector<int> conditionIndex;
 
 std::vector<Expression> E;
 
+__uint128_t generateExpression()
+{
+    __uint128_t e = 0;
+    /*
+    int n = popcount(std::rand() % (1 << NC));
+    for(int i = 0; i < n; i++)
+    {
+        int k = 0;
+        do
+        {
+            k = std::rand() % NC;
+        }
+        while(e & (1 << k));
+        e ^= 1 << k;
+    }
+    */
+    for(int i = 0; i < NC; i++)
+    {
+        e <<= 1;
+        if(std::rand()%(NC/AVG_NC) == 0)
+            e ^= 1;
+    }
+    return e; 
+}
+
 void clearData()
 {
-    E.clear();
-    for (int i = 0; i < (1 << NC); ++i)
+    if(E.empty())
     {
-        if(popcount(i) <= MAX_CONDITIONS)
-        {
-            E.push_back(Expression(i));
-        }
+        E.push_back(Expression(generateExpression()));
+    }
+    else
+    {
+        E.resize(1);
+        E[0].support = 0;
+        E[0].good = 0;
+    }
+
+    for (int i = int(E.size()); i < NN; ++i)
+    {
+        E.push_back(Expression(generateExpression()));
     }
 
 }
@@ -198,25 +234,19 @@ void clearData()
 void initSearchExpression() { 
     LEARNING_ENABLED = true; 
 
-    for(int i = 0; i < int(conditionNames.size()); i++)
+    for(int i = 0; i < NC; i++)
         conditionIndex.push_back(i);
 
     int seed = int(std::time(nullptr));
     //seed = 1739865092;
     std::cerr << "SEED: " << seed << std::endl;
-    std::cerr << "Total conditions: " << conditionNames.size() << std::endl;
-    std::cerr << "Used conditions: " << NC << std::endl;
-    std::cerr << "Max conditions: " << MAX_CONDITIONS << std::endl;
+    std::cerr << "Total conditions: " << NC << std::endl;
+    std::cerr << "Average conditions: " << AVG_NC << std::endl;
     std::cerr << "Min support: " << MIN_SUPPORT << std::endl;
 
     std::srand(seed);
 
-    for(int i = int(conditionIndex.size()) - 1; i >= 0; i--)
-    {
-        int j = std::rand() % (i+1);
-        if(i != j)
-            std::swap(conditionIndex[i], conditionIndex[j]);
-    }
+    E.clear();
 }
 
 void endSearchExpression() { LEARNING_ENABLED = false; }
@@ -250,7 +280,7 @@ void searchExpression(int it, std::ostream& out) {
         for (int i = 0; i < int(E.size()); ++i)
         {
             if (i == 0 || E[i].support >= 1 /*MIN_SUPPORT*/)
-                out << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr)
+                out << "orig " << i << ". expr=" << BITSET(E[i].expr)
                           << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
         }
@@ -271,14 +301,14 @@ void searchExpression(int it, std::ostream& out) {
         int firstFound = -1;
         for (int i = 0; i < int(E.size()); i++)
         {
-            if ((E[i].expr & (1 << k)) && firstFound < 0)
+            if ((E[i].expr & (__uint128_t(1) << k)) && firstFound < 0)
                 firstFound = i;
 
-            if ((E[i].expr & (1 << k)) && E[i].support >= 1 /*MIN_SUPPORT*/)
+            if ((E[i].expr & (__uint128_t(1) << k)) && E[i].support >= 1 /*MIN_SUPPORT*/)
             {
                 found = true;
                 out << "Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
-                          << ". expr=" << std::bitset<NC>(E[i].expr)
+                          << ". expr=" << BITSET(E[i].expr)
                           << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
                 if (i > worstValue)
@@ -293,7 +323,7 @@ void searchExpression(int it, std::ostream& out) {
         {
             int i = firstFound;
             out << "*Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
-                          << ". expr=" << std::bitset<NC>(E[i].expr)
+                          << ". expr=" << BITSET(E[i].expr)
                           << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
             if(worstValue < int(E.size()))
@@ -321,7 +351,7 @@ void searchExpression(int it, std::ostream& out) {
         if (best >= 0)
         {
             found = true;
-            out << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
+            out << "best " << best << ":" << ". expr=" << BITSET(E[best].expr)
                       << " score=" << 100 * E[best].score() << "% prob=" << 100 * E[best].prob() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
             lastBest = best;
@@ -330,7 +360,7 @@ void searchExpression(int it, std::ostream& out) {
             bool first = true;
             out << "=>";
             for (int k = NC - 1; k >= 0; --k)
-                if(E[i].expr & (1 << k))
+                if(E[i].expr & (__uint128_t(1) << k))
                 {
                     if(!first) out << " &&";
                     first = false;
@@ -343,14 +373,14 @@ void searchExpression(int it, std::ostream& out) {
     if(!found)
     {
             int best = 0;
-            out << "*best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
+            out << "*best " << best << ":" << ". expr=" << BITSET(E[best].expr)
                       << " score=" << 100 * E[best].score() << "% prob=" << 100 * E[best].prob() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
 
             bool first = true;
             out << "=>";
             for (int k = NC - 1; k >= 0; --k)
-                if(E[best].expr & (1 << k))
+                if(E[best].expr & (__uint128_t(1) << k))
                 {
                     if(!first) out << " &&";
                     first = false;
@@ -359,17 +389,19 @@ void searchExpression(int it, std::ostream& out) {
             out << std::endl;
     }
 
+    /*
     if(worstConditionIndex >= 0)
     {
         out << "=> Replace condition " << worstConditionIndex << " [" << conditionNames[conditionIndex[worstConditionIndex]] << "]" << std::endl;
         conditionIndex.push_back(conditionIndex[worstConditionIndex]);
         conditionIndex.erase(conditionIndex.begin() + worstConditionIndex);
     }
+    */
     out << std::flush;
 }
 
-int getIndex(const std::vector<bool>& C) {
-    int index = 0;
+__uint128_t getIndex(const std::vector<bool>& C) {
+    __uint128_t index = 0;
     for (int i = 0; i < int(C.size()); i++)
         index = index * 2 + C[i];
     return index;
@@ -382,20 +414,15 @@ std::vector<bool>  filterConditions(const std::vector<bool>& C0) {
     return C;
 }
 
-void learn(bool T, const std::vector<bool>& C0) {
+void learn(bool T, const std::vector<bool>& C) {
     if (!LEARNING_ENABLED)
         return;
 
-    assert(C0.size() == conditionNames.size());
-
-    std::vector<bool> C = filterConditions(C0);
-
     assert(C.size() == NC);
 
-    int index = getIndex(C);
-
-    assert(E.size() == (1 << NC));
-    for (int i = 0; i < int(E.size()) - 1; i++)
+    __uint128_t index = getIndex(C);
+    assert(E.size() == NN);
+    for (int i = 0; i < int(E.size()); i++)
     {
         assert(i < int(E.size()));
         assert(i >= 0);
@@ -1996,7 +2023,7 @@ moves_loop:  // When in check, search starts here
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
 
-        //dbg_hit_on(CC, 1);
+        CC = true;
         if(CC)
         {
             //bool T = value <= alpha;
