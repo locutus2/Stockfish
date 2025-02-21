@@ -251,7 +251,7 @@ void searchExpression(int it, std::ostream& out) {
         {
             if (i == 0 || E[i].support >= 1 /*MIN_SUPPORT*/)
                 out << "orig " << i << ". expr=" << std::bitset<NC>(E[i].expr)
-                          << " score=" << 100 * E[i].score() << "% prob=" << E[i].prob() << "% support=" << E[i].support
+                          << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
         }
 
@@ -279,7 +279,7 @@ void searchExpression(int it, std::ostream& out) {
                 found = true;
                 out << "Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
                           << ". expr=" << std::bitset<NC>(E[i].expr)
-                          << " score=" << 100 * E[i].score() << "% prob=" << E[i].prob() << "% support=" << E[i].support
+                          << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
                 if (i > worstValue)
                 {
@@ -294,7 +294,7 @@ void searchExpression(int it, std::ostream& out) {
             int i = firstFound;
             out << "*Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
                           << ". expr=" << std::bitset<NC>(E[i].expr)
-                          << " score=" << 100 * E[i].score() << "% prob=" << E[i].prob() << "% support=" << E[i].support
+                          << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
             if(worstValue < int(E.size()))
             {
@@ -322,7 +322,7 @@ void searchExpression(int it, std::ostream& out) {
         {
             found = true;
             out << "best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
-                      << " score=" << 100 * E[best].score() << "% prob=" << E[best].prob() << "% support=" << E[best].support
+                      << " score=" << 100 * E[best].score() << "% prob=" << 100 * E[best].prob() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
             lastBest = best;
             best     = -1;
@@ -344,7 +344,7 @@ void searchExpression(int it, std::ostream& out) {
     {
             int best = 0;
             out << "*best " << best << ":" << ". expr=" << std::bitset<NC>(E[best].expr)
-                      << " score=" << 100 * E[best].score() << "% prob=" << E[best].prob() << "% support=" << E[best].support
+                      << " score=" << 100 * E[best].score() << "% prob=" << 100 * E[best].prob() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
 
             bool first = true;
