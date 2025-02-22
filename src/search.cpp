@@ -1049,8 +1049,8 @@ moves_loop:  // When in check, search starts here
 
                 // Continuation history based pruning
                 if (history < -4107 * depth
-                    && (!ss->ttPv || givesCheck || !improving || ttCapture || ttData.depth >= depth
-                        || ttData.bound == BOUND_UPPER || !(ss - 1)->ttHit))
+                    && (!ss->ttPv || !improving || ttCapture || ttData.move || !ttHit
+                        || (ss - 1)->statScore > 0))
                     continue;
 
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
