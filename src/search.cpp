@@ -56,6 +56,7 @@ namespace Stockfish {
 
 bool LEARNING_ENABLED = false;
 
+constexpr bool GENERATE_TRAINING_DATA = false;
 constexpr int NC = 102;  //18;
 constexpr int AVG_NC = 10;
 constexpr int NN = (1 << 10) - 1;  //18;
@@ -256,7 +257,10 @@ void startIterationSearchExpression() {
     clearData();
 }
 
-void endIterationSearchExpression() { }
+void endIterationSearchExpression() {
+    if(GENERATE_TRAINING_DATA)
+        std::exit(1); 
+}
 
 void searchExpression(int it, std::ostream& out) {
     out << "------------ Iteration " << it << " ---------------" << std::endl;
@@ -432,6 +436,16 @@ void learn(bool T, const std::vector<bool>& C) {
             if (T)
                 E[i].good++;
         }
+    }
+
+    if(GENERATE_TRAINING_DATA)
+    {
+        std::cerr << "#" << int(T);
+        for(int i = 0; i < int(C.size()); i++)
+        {
+            std::cerr << ";" << int(C[i]);
+        }
+        std::cerr << std::endl;
     }
 }
 
