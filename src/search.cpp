@@ -57,10 +57,12 @@ namespace Stockfish {
 bool LEARNING_ENABLED = false;
 
 constexpr bool GENERATE_TRAINING_DATA = false;
-constexpr int NC = 102;  //18;
+constexpr int NC = 126;  //18;
 constexpr int AVG_NC = 10;
 constexpr int NN = (1 << 10) - 1;  //18;
 constexpr int MIN_SUPPORT = 20000;
+
+static_assert(NC <= 128);
 
 #define BITSET(x) std::bitset<NC-64>((x)>>64) << std::bitset<64>((x))
 
@@ -101,8 +103,32 @@ std::string conditionNames[NC] = {
           "correctionValue <= -2322860",
           "ttData.depth >= depth",
           "ttData.depth < depth",
+          "depth > 1",
+          "depth <= 1",
+          "depth > 2",
+          "depth <= 2",
+          "depth > 3",
+          "depth <= 3",
+          "depth > 4",
+          "depth <= 4",
           "depth > 5",
           "depth <= 5",
+          "depth > 6",
+          "depth <= 6",
+          "depth > 7",
+          "depth <= 7",
+          "depth > 8",
+          "depth <= 8",
+          "moveCount > 1",
+          "moveCount <= 1",
+          "moveCount > 2",
+          "moveCount <= 2",
+          "moveCount > 3",
+          "moveCount <= 3",
+          "moveCount > 4",
+          "moveCount <= 4",
+          "moveCount > 5",
+          "moveCount <= 5",
           "moveCount > 6",
           "moveCount <= 6",
           "moveCount==1",
@@ -1439,8 +1465,32 @@ moves_loop:  // When in check, search starts here
           correctionValue <= -2322860,
           ttData.depth >= depth,
           ttData.depth < depth,
+          depth > 1,
+          depth <= 1,
+          depth > 2,
+          depth <= 2,
+          depth > 3,
+          depth <= 3,
+          depth > 4,
+          depth <= 4,
           depth > 5,
           depth <= 5,
+          depth > 6,
+          depth <= 6,
+          depth > 7,
+          depth <= 7,
+          depth > 8,
+          depth <= 8,
+          moveCount > 1,
+          moveCount <= 1,
+          moveCount > 2,
+          moveCount <= 2,
+          moveCount > 3,
+          moveCount <= 3,
+          moveCount > 4,
+          moveCount <= 4,
+          moveCount > 5,
+          moveCount <= 5,
           moveCount > 6,
           moveCount <= 6,
           moveCount==1,
