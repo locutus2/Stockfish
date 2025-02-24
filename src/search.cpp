@@ -384,6 +384,17 @@ void searchExpression(int it, std::ostream& out) {
         out << std::endl;
     }
 
+    for(int i = 0; i < int(E.size()); i++)
+    {
+        double p = E[i].score();
+        for (int k = NC - 1; k >= 0; --k)
+            if(E[i].expr & (__uint128_t(1) << k))
+            {
+                eStats[NC-1-k].sum += p;
+                eStats[NC-1-k].n++;
+            }
+    }
+
     out << "Precondition: " << LearnPrecondition << std::endl;
     out << std::endl;
 
@@ -483,17 +494,6 @@ void searchExpression(int it, std::ostream& out) {
                     out << " (" << conditionNames[conditionIndex[NC-1-k]] << ")";
                 }
             out << std::endl;
-    }
-
-    for(int i = 0; i < int(E.size()); i++)
-    {
-        double p = E[i].prob();
-        for (int k = NC - 1; k >= 0; --k)
-            if(E[i].expr & (__uint128_t(1) << k))
-            {
-                eStats[NC-1-k].sum += p;
-                eStats[NC-1-k].n++;
-            }
     }
 
 
