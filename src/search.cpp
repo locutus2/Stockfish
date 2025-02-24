@@ -435,7 +435,7 @@ void searchExpression(int it, std::ostream& out) {
         {
             int i = firstFound;
             out << "*Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "]: eStat=" << 100.*eStats[NC-1-k].prob() << "% best " << i << ":"
-                          << ". expr=" << E[i].expr
+                          << ". expr=" << (i >= 0 ? E[i].expr.to_string() : "")
                           << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
             if(worstValue < int(E.size()))
