@@ -260,8 +260,8 @@ std::bitset<NC> generateExpression()
     int n = 0;
     for(int i = 0; i < NC; i++)
     {
-        if(rng() <= p[NC-i-1] * AVG_NC)
-            n++, e[i] = true;
+        if(rng() <= p[i] * AVG_NC)
+            n++, e[NC-1-i] = true;
         //dbg_hit_on(e[i], i);
     }
     //dbg_mean_of(n);
