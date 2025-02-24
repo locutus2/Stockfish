@@ -60,7 +60,7 @@ constexpr bool GENERATE_TRAINING_DATA = false;
 constexpr int NC = 126;  //18;
 constexpr int AVG_NC = 10;
 constexpr int NN = (1 << 10) - 1;  //18;
-constexpr int MIN_SUPPORT = 20000;
+constexpr int MIN_SUPPORT = 10000;
 
 static_assert(NC <= 128);
 
@@ -213,6 +213,32 @@ std::vector<int> conditionIndex;
 
 std::vector<Expression> E;
 
+struct EStat
+{
+    double sum = 0;
+    uint64_t n = 0;
+    double prob() { return n ? sum/n : 0.0001; }
+};
+
+std::vector<EStat> eStats;
+
+double rng()
+{
+     return std::rand() / double(RAND_MAX);
+}
+
+std::vector<double> getEProbs()
+{
+    double sum = 0;
+    for(int i = 0; i < NC; i++)
+        sum += eStats[i].prob();
+
+    std::vector<double> p;
+    for(int i = 0; i < NC; i++)
+        p.push_back(eStats[i].prob()/sum);
+    return p;
+}
+
 __uint128_t generateExpression()
 {
     __uint128_t e = 0;
@@ -229,12 +255,43 @@ __uint128_t generateExpression()
         e ^= 1 << k;
     }
     */
+    std::vector<double> p = getEProbs();
+
+    int n = 0;
+    for(int i = 0; i < NC; i++)
+    {
+        e <<= 1;
+        if(rng() <= p[NC-i-1] * AVG_NC)
+            n++,e ^= 1;
+    }
+    //dbg_mean_of(n);
+    return e; 
+}
+
+__uint128_t generateExpressionRandom()
+{
+    __uint128_t e = 0;
+    /*
+    int n = popcount(std::rand() % (1 << NC));
+    for(int i = 0; i < n; i++)
+    {
+        int k = 0;
+        do
+        {
+            k = std::rand() % NC;
+        }
+        while(e & (1 << k));
+        e ^= 1 << k;
+    }
+    */
+    int n = 0;
     for(int i = 0; i < NC; i++)
     {
         e <<= 1;
         if(std::rand()%(NC/AVG_NC) == 0)
-            e ^= 1;
+            n++,e ^= 1;
     }
+    //dbg_mean_of(n);
     return e; 
 }
 
@@ -261,8 +318,12 @@ void clearData()
 void initSearchExpression() { 
     LEARNING_ENABLED = true; 
 
+    eStats.clear();
     for(int i = 0; i < NC; i++)
+    {
         conditionIndex.push_back(i);
+        eStats.push_back(EStat());
+    }
 
     int seed = int(std::time(nullptr));
     //seed = 1739865092;
@@ -279,6 +340,11 @@ void initSearchExpression() {
 void endSearchExpression() { LEARNING_ENABLED = false; }
 
 void startIterationSearchExpression() { 
+    //std::vector<double> p = getEProbs();
+    //std::cerr << "PROB:";
+    //for(int i = 0; i < NC; i++)
+     //   std::cerr << " " << p[NC-i-1];
+    //std::cerr << std::endl;
     dbg_clear();
     clearData();
 }
@@ -337,7 +403,7 @@ void searchExpression(int it, std::ostream& out) {
             if ((E[i].expr & (__uint128_t(1) << k)) && E[i].support >= 1 /*MIN_SUPPORT*/)
             {
                 found = true;
-                out << "Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
+                out << "Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "]: eStat=" << 100.*eStats[NC-1-k].prob() << "% best " << i << ":"
                           << ". expr=" << BITSET(E[i].expr)
                           << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
@@ -352,7 +418,7 @@ void searchExpression(int it, std::ostream& out) {
         if(!found)
         {
             int i = firstFound;
-            out << "*Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "] : best " << i << ":"
+            out << "*Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "]: eStat=" << 100.*eStats[NC-1-k].prob() << "% best " << i << ":"
                           << ". expr=" << BITSET(E[i].expr)
                           << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
@@ -418,6 +484,18 @@ void searchExpression(int it, std::ostream& out) {
                 }
             out << std::endl;
     }
+
+    for(int i = 0; i < int(E.size()); i++)
+    {
+        double p = E[i].prob();
+        for (int k = NC - 1; k >= 0; --k)
+            if(E[i].expr & (__uint128_t(1) << k))
+            {
+                eStats[NC-1-k].sum += p;
+                eStats[NC-1-k].n++;
+            }
+    }
+
 
     /*
     if(worstConditionIndex >= 0)
