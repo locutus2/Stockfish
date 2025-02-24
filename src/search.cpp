@@ -61,8 +61,6 @@ constexpr int AVG_NC = 10;
 constexpr int NN = (1 << 10) - 1;  //18;
 constexpr int MIN_SUPPORT = 10000;
 
-static_assert(NC <= 128);
-
 struct Expression {
     std::bitset<NC> expr    = 0;
     int good    = 0;
