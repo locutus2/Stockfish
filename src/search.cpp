@@ -1048,7 +1048,10 @@ moves_loop:  // When in check, search starts here
                   + thisThread->pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
-                if (history < -4107 * depth)
+                if (history < -4107 * depth
+                    && (!ss->ttPv || ss->inCheck || ttData.value <= alpha || moveCount > 6
+                        || ttData.move || type_of(movedPiece) == QUEEN
+                        || (*contHist[3])[movedPiece][move.to_sq()] <= 0))
                     continue;
 
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
