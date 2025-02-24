@@ -60,7 +60,7 @@ constexpr bool GENERATE_TRAINING_DATA = false;
 constexpr int NC = 102;  //18;
 constexpr int AVG_NC = 10;
 constexpr int NN = (1 << 10) - 1;  //18;
-constexpr int MIN_SUPPORT = 10000;
+constexpr int MIN_SUPPORT = 20000;
 
 #define BITSET(x) std::bitset<NC-64>((x)>>64) << std::bitset<64>((x))
 
