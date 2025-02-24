@@ -1199,7 +1199,7 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[1])[movedPiece][move.to_sq()] - 3591;
 
         // Decrease/increase reduction for moves with a good/bad history
-        if (!ss->ttPv)
+        if (ss->ttPv)
             r -= ss->statScore * 1407 / 16384;
 
         // Step 17. Late moves reduction / extension (LMR)
