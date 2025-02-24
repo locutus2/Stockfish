@@ -64,17 +64,15 @@ constexpr int MIN_SUPPORT = 10000;
 
 static_assert(NC <= 128);
 
-#define BITSET(x) std::bitset<NC-64>((x)>>64) << std::bitset<64>((x))
-
 struct Expression {
-    __uint128_t expr    = 0;
+    std::bitset<NC> expr    = 0;
     int good    = 0;
     int support = 0;
 
     inline double prob() const { return support > 0 ? good / double(support) : 0.0; }
     inline double score() const { return support > 0 ? good / double(support) * std::min(support, MIN_SUPPORT) / MIN_SUPPORT: 0.0; }
 
-    Expression(__uint128_t e = 0) : expr(e) {}
+    Expression(std::bitset<NC> e = 0) : expr(e) {}
 };
 
 
@@ -241,9 +239,9 @@ std::vector<double> getEProbs()
     return p;
 }
 
-__uint128_t generateExpression()
+std::bitset<NC> generateExpression()
 {
-    __uint128_t e = 0;
+    std::bitset<NC> e = 0;
     /*
     int n = popcount(std::rand() % (1 << NC));
     for(int i = 0; i < n; i++)
@@ -262,9 +260,9 @@ __uint128_t generateExpression()
     int n = 0;
     for(int i = 0; i < NC; i++)
     {
-        e <<= 1;
         if(rng() <= p[NC-i-1] * AVG_NC)
-            n++,e ^= 1;
+            n++, e[i] = true;
+        //dbg_hit_on(e[i], i);
     }
     //dbg_mean_of(n);
     return e; 
@@ -367,8 +365,8 @@ void searchExpression(int it, std::ostream& out) {
         //if(b.support < MIN_SUPPORT && a.support >= MIN_SUPPORT) return true; 
         //if(a.support < MIN_SUPPORT && b.support >= MIN_SUPPORT) return false; 
         return a.score() > b.score() || (a.score() == b.score() && a.support > b.support)
-        || (a.score() == b.score() && a.support == b.support && popcount(a.expr) < popcount(b.expr))
-        || (a.score() == b.score() && a.support == b.support && popcount(a.expr) == popcount(b.expr) && a.expr < b.expr);
+        || (a.score() == b.score() && a.support == b.support && a.expr.count() < b.expr.count())
+        || (a.score() == b.score() && a.support == b.support && a.expr.count() == b.expr.count() && a.expr.to_string() < b.expr.to_string());
     });
 
     constexpr bool DEBUG = false;
@@ -378,7 +376,7 @@ void searchExpression(int it, std::ostream& out) {
         for (int i = 0; i < int(E.size()); ++i)
         {
             if (i == 0 || E[i].support >= 1 /*MIN_SUPPORT*/)
-                out << "orig " << i << ". expr=" << BITSET(E[i].expr)
+                out << "orig " << i << ". expr=" << E[i].expr
                           << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
         }
@@ -390,7 +388,7 @@ void searchExpression(int it, std::ostream& out) {
     {
         double p = E[i].score();
         for (int k = NC - 1; k >= 0; --k)
-            if(E[i].expr & (__uint128_t(1) << k))
+            if(E[i].expr[k])
             {
                 eStats[NC-1-k].sum += p;
                 eStats[NC-1-k].n++;
@@ -410,14 +408,14 @@ void searchExpression(int it, std::ostream& out) {
         int firstFound = -1;
         for (int i = 0; i < int(E.size()); i++)
         {
-            if ((E[i].expr & (__uint128_t(1) << k)) && firstFound < 0)
+            if (E[i].expr[k] && firstFound < 0)
                 firstFound = i;
 
-            if ((E[i].expr & (__uint128_t(1) << k)) && E[i].support >= 1 /*MIN_SUPPORT*/)
+            if (E[i].expr[k] && E[i].support >= 1 /*MIN_SUPPORT*/)
             {
                 found = true;
                 out << "Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "]: eStat=" << 100.*eStats[NC-1-k].prob() << "% best " << i << ":"
-                          << ". expr=" << BITSET(E[i].expr)
+                          << ". expr=" << E[i].expr
                           << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
                 if (i > worstValue)
@@ -432,7 +430,7 @@ void searchExpression(int it, std::ostream& out) {
         {
             int i = firstFound;
             out << "*Cond " << NC - 1 - k << " [" << conditionNames[conditionIndex[NC-1-k]] << "]: eStat=" << 100.*eStats[NC-1-k].prob() << "% best " << i << ":"
-                          << ". expr=" << BITSET(E[i].expr)
+                          << ". expr=" << E[i].expr
                           << " score=" << 100 * E[i].score() << "% prob=" << 100 * E[i].prob() << "% support=" << E[i].support
                           << " good=" << E[i].good << std::endl;
             if(worstValue < int(E.size()))
@@ -450,8 +448,8 @@ void searchExpression(int it, std::ostream& out) {
     for (int i = 0, best = -1, lastBest = -1; best < 0 && i < int(E.size()); i++)
     {
         if (lastBest < 0 || E[i].support > E[lastBest].support
-            || (E[i].support == E[lastBest].support && popcount(E[i].expr) < popcount(E[lastBest].expr))
-            || (E[i].support == E[lastBest].support && popcount(E[i].expr) == popcount(E[lastBest].expr) && E[i].expr < E[lastBest].expr))
+            || (E[i].support == E[lastBest].support && E[i].expr.count() < E[lastBest].expr.count())
+            || (E[i].support == E[lastBest].support && E[i].expr.count() == E[lastBest].expr.count() && E[i].expr.to_string() < E[lastBest].expr.to_string()))
         {
             if(E[i].support >= 1 /*MIN_SUPPORT*/)
                 best = i;
@@ -460,7 +458,7 @@ void searchExpression(int it, std::ostream& out) {
         if (best >= 0)
         {
             found = true;
-            out << "best " << best << ":" << ". expr=" << BITSET(E[best].expr)
+            out << "best " << best << ":" << ". expr=" << E[best].expr
                       << " score=" << 100 * E[best].score() << "% prob=" << 100 * E[best].prob() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
             lastBest = best;
@@ -469,7 +467,7 @@ void searchExpression(int it, std::ostream& out) {
             bool first = true;
             out << "=>";
             for (int k = NC - 1; k >= 0; --k)
-                if(E[i].expr & (__uint128_t(1) << k))
+                if(E[i].expr[k])
                 {
                     if(!first) out << " &&";
                     first = false;
@@ -482,14 +480,14 @@ void searchExpression(int it, std::ostream& out) {
     if(!found)
     {
             int best = 0;
-            out << "*best " << best << ":" << ". expr=" << BITSET(E[best].expr)
+            out << "*best " << best << ":" << ". expr=" << E[best].expr
                       << " score=" << 100 * E[best].score() << "% prob=" << 100 * E[best].prob() << "% support=" << E[best].support
                       << " good=" << E[best].good << std::endl;
 
             bool first = true;
             out << "=>";
             for (int k = NC - 1; k >= 0; --k)
-                if(E[best].expr & (__uint128_t(1) << k))
+                if(E[best].expr[k])
                 {
                     if(!first) out << " &&";
                     first = false;
@@ -510,10 +508,11 @@ void searchExpression(int it, std::ostream& out) {
     out << std::flush;
 }
 
-__uint128_t getIndex(const std::vector<bool>& C) {
-    __uint128_t index = 0;
+std::bitset<NC> getIndex(const std::vector<bool>& C) {
+    std::bitset<NC> index(0);
     for (int i = 0; i < int(C.size()); i++)
-        index = index * 2 + C[i];
+        if(C[i])
+            index[NC-i-1] = true;
     return index;
 }
 
@@ -530,7 +529,7 @@ void learn(bool T, const std::vector<bool>& C) {
 
     assert(C.size() == NC);
 
-    __uint128_t index = getIndex(C);
+    std::bitset<NC> index = getIndex(C);
     assert(E.size() == NN);
     for (int i = 0; i < int(E.size()); i++)
     {
