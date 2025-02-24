@@ -1168,7 +1168,10 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 316 - moveCount * 32;
+        r += 316;
+
+        if (!ss->ttPv)
+            r -= moveCount * 32;
 
         r -= std::abs(correctionValue) / 31568;
 
