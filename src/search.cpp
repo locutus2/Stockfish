@@ -1170,7 +1170,7 @@ moves_loop:  // When in check, search starts here
 
         r += 316 - moveCount * 32;
 
-        if (!ss->ttPv)
+        if (ss->ttPv)
             r -= std::abs(correctionValue) / 31568;
 
         // Increase reduction for cut nodes
