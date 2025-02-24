@@ -56,7 +56,7 @@ namespace Stockfish {
 bool LEARNING_ENABLED = false;
 
 constexpr bool GENERATE_TRAINING_DATA = false;
-constexpr int NC = 136;  //18;
+constexpr int NC = 144;  //18;
 constexpr int AVG_NC = 10;
 constexpr int NN = (1 << 10) - 1;  //18;
 constexpr int MIN_SUPPORT = 10000;
@@ -146,8 +146,16 @@ std::string conditionNames[NC] = {
           "ttData.bound != BOUND_LOWER",
           "ttData.bound != BOUND_EXACT",
           "ttData.bound != BOUND_UPPER",
+          "(ss+1)->cutoffCnt>0",
+          "(ss+1)->cutoffCnt<=0",
+          "(ss+1)->cutoffCnt>1",
+          "(ss+1)->cutoffCnt<=1",
+          "(ss+1)->cutoffCnt>2",
+          "(ss+1)->cutoffCnt<=2",
           "(ss+1)->cutoffCnt>3",
           "(ss+1)->cutoffCnt<=3",
+          "(ss+1)->cutoffCnt>4",
+          "(ss+1)->cutoffCnt<=4",
           "type_of(movedPiece)==PAWN",
           "type_of(movedPiece)==KNIGHT",
           "type_of(movedPiece)==BISHOP",
@@ -1616,8 +1624,16 @@ moves_loop:  // When in check, search starts here
           ttData.bound != BOUND_LOWER,
           ttData.bound != BOUND_EXACT,
           ttData.bound != BOUND_UPPER,
+          (ss+1)->cutoffCnt>0,
+          (ss+1)->cutoffCnt<=0,
+          (ss+1)->cutoffCnt>1,
+          (ss+1)->cutoffCnt<=1,
+          (ss+1)->cutoffCnt>2,
+          (ss+1)->cutoffCnt<=2,
           (ss+1)->cutoffCnt>3,
           (ss+1)->cutoffCnt<=3,
+          (ss+1)->cutoffCnt>4,
+          (ss+1)->cutoffCnt<=4,
           type_of(movedPiece)==PAWN,
           type_of(movedPiece)==KNIGHT,
           type_of(movedPiece)==BISHOP,
