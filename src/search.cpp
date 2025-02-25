@@ -1767,8 +1767,9 @@ moves_loop:  // When in check, search starts here
                 // Continuation history based pruning
                 if (history < -4107 * depth)
                 {
-                    CC = ss->ttPv;
-                    LearnPrecondition = "ss->ttPv";
+                    //CC = ss->ttPv;
+                    //LearnPrecondition = "ss->ttPv";
+                    CC = true;
                     if(!CC) continue;
                 }
 
