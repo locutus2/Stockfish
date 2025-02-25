@@ -56,7 +56,7 @@ namespace Stockfish {
 bool LEARNING_ENABLED = false;
 
 constexpr bool GENERATE_TRAINING_DATA = false;
-constexpr int NC = 153;  //18;
+constexpr int NC = 157;  //18;
 constexpr int AVG_NC = 10;
 constexpr int NN = (1 << 10) - 1;  //18;
 constexpr int MIN_SUPPORT = 10000;
@@ -229,6 +229,10 @@ std::string conditionNames[NC] = {
           "priorReduction <= 3",
           "priorReduction > 4",
           "priorReduction <= 4",
+          "eval >= ss->staticEval",
+          "eval < ss->staticEval",
+          "eval > ss->staticEval",
+          "eval <= ss->staticEval",
 };
 
 std::vector<int> conditionIndex;
@@ -1716,6 +1720,10 @@ moves_loop:  // When in check, search starts here
           priorReduction <= 3,
           priorReduction > 4,
           priorReduction <= 4,
+          eval >= ss->staticEval,
+          eval < ss->staticEval,
+          eval > ss->staticEval,
+          eval <= ss->staticEval,
         };
 
         // Step 14. Pruning at shallow depth.
