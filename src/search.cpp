@@ -56,7 +56,7 @@ namespace Stockfish {
 bool LEARNING_ENABLED = false;
 
 constexpr bool GENERATE_TRAINING_DATA = false;
-constexpr int NC = 144;  //18;
+constexpr int NC = 153;  //18;
 constexpr int AVG_NC = 10;
 constexpr int NN = (1 << 10) - 1;  //18;
 constexpr int MIN_SUPPORT = 10000;
@@ -178,6 +178,15 @@ std::string conditionNames[NC] = {
           "(ss-1)->moveCount==0",
           "(ss-1)->moveCount==1",
           "(ss-1)->moveCount>1",
+          "(ss-1)->moveCount<=1",
+          "(ss-1)->moveCount>2",
+          "(ss-1)->moveCount<=2",
+          "(ss-1)->moveCount>3",
+          "(ss-1)->moveCount<=3",
+          "(ss-1)->moveCount>4",
+          "(ss-1)->moveCount<=4",
+          "(ss-1)->moveCount>5",
+          "(ss-1)->moveCount<=5",
           "(ss-1)->moveCount>6",
           "(ss-1)->moveCount<=6",
           "(ss-1)->statScore > 0",
@@ -1656,6 +1665,15 @@ moves_loop:  // When in check, search starts here
           (ss-1)->moveCount==0,
           (ss-1)->moveCount==1,
           (ss-1)->moveCount>1,
+          (ss-1)->moveCount<=1,
+          (ss-1)->moveCount>2,
+          (ss-1)->moveCount<=2,
+          (ss-1)->moveCount>3,
+          (ss-1)->moveCount<=3,
+          (ss-1)->moveCount>4,
+          (ss-1)->moveCount<=4,
+          (ss-1)->moveCount>5,
+          (ss-1)->moveCount<=5,
           (ss-1)->moveCount>6,
           (ss-1)->moveCount<=6,
           (ss-1)->statScore > 0,
