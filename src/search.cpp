@@ -1190,8 +1190,7 @@ moves_loop:  // When in check, search starts here
 
         r += 316 - moveCount * 32;
 
-        if (ss->ttPv)
-            r -= std::abs(correctionValue) / 31568;
+        r -= std::abs(correctionValue) / (31568 * (2 - ss->ttPv));
 
         if (PvNode && !is_decisive(bestValue))
             r -= risk_tolerance(pos, bestValue);
