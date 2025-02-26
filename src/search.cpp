@@ -1067,7 +1067,10 @@ moves_loop:  // When in check, search starts here
 
                 // Continuation history based pruning
                 if (history < -4107 * depth
-                    && (!ss->ttPv || depth > 2 || ttData.move || ss->inCheck || (ss - 1)->inCheck))
+                    && (!ss->ttPv || ss->inCheck
+                        || ((depth > 2 || ttData.move || (ss - 1)->inCheck)
+                            && (ttData.value <= alpha || ttData.depth >= depth
+                                || !(ss - 1)->ttHit))))
                     continue;
 
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
