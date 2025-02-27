@@ -1772,8 +1772,9 @@ moves_loop:  // When in check, search starts here
                 {
                     //CC = ss->ttPv;
                     //LearnPrecondition = "ss->ttPv";
-                    CC = true;
-                    if(!CC) continue;
+                    //CC = true;
+                    //if(!CC) continue;
+                    continue;
                 }
 
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
@@ -1875,6 +1876,11 @@ moves_loop:  // When in check, search starts here
                 // over current beta
                 else if (cutNode)
                     extension = -2;
+            }
+            else
+            {
+                CC = true;
+                extension = 1;
             }
         }
 
