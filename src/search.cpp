@@ -1880,7 +1880,7 @@ moves_loop:  // When in check, search starts here
             else
             {
                 CC = true;
-                extension = 1;
+                //extension = 1;
             }
         }
 
