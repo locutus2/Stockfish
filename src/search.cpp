@@ -1163,6 +1163,11 @@ moves_loop:  // When in check, search starts here
                 else if (cutNode)
                     extension = -2;
             }
+            else if (depth <= 1 && !improving && ttCapture && ttData.value > alpha && moveCount <= 5
+                     && priorReduction > 3 && (ss - 1)->moveCount > 2 && (ss - 1)->statScore <= 0
+                     && (*contHist[2])[movedPiece][move.to_sq()] <= 0
+                     && (*contHist[4])[movedPiece][move.to_sq()] <= 0)
+                extension = 1;
         }
 
         // Step 16. Make the move
