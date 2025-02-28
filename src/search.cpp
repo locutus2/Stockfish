@@ -59,7 +59,7 @@ constexpr bool GENERATE_TRAINING_DATA = false;
 constexpr int NC = 157;  //18;
 constexpr int AVG_NC = 10;
 constexpr int NN = (1 << 10) - 1;  //18;
-constexpr int MIN_SUPPORT = 10000;
+constexpr int MIN_SUPPORT = 100000;
 
 struct Expression {
     std::bitset<NC> expr    = 0;
@@ -1879,9 +1879,10 @@ moves_loop:  // When in check, search starts here
             }
             else
             {
-                LearnPrecondition = "move != ttData.move";
-                CC = (move != ttData.move);
+                //LearnPrecondition = "move != ttData.move";
+                //CC = (move != ttData.move);
                 //extension = 1;
+                CC = true;
             }
         }
 
@@ -2261,8 +2262,8 @@ moves_loop:  // When in check, search starts here
 
         if(CC)
         {
-            //bool T = value <= alpha;
-            bool T = value > alpha;
+            bool T = value <= alpha;
+            //bool T = value > alpha;
             learn(T, C);
         }
 
