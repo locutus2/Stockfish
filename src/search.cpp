@@ -1882,7 +1882,7 @@ moves_loop:  // When in check, search starts here
                 //LearnPrecondition = "move != ttData.move";
                 //CC = (move != ttData.move);
                 //extension = 1;
-                CC = (priorCapture) && (correctionValue > -2322860) && (depth > 5) && (moveCount > 6) && (!ttData.move) && ((ss+1)->cutoffCnt==1) && ((ss-1)->statScore > -5902) && ((ss-1)->moveCount>4) && (lmrResearches==0) && (priorReduction <= 2);
+                CC = (!givesCheck) && (!ss->inCheck) && (priorCapture) && (ttData.depth >= depth) && (depth > 8) && (moveCount > 5) && (ttData.bound == BOUND_UPPER) && ((ss-1)->moveCount>1);
                 if(CC)
                     extension = 1;
             }
