@@ -57,7 +57,7 @@ bool LEARNING_ENABLED = false;
 
 constexpr bool GENERATE_TRAINING_DATA = false;
 constexpr int NC = 157;  //18;
-constexpr int AVG_NC = 5;//10;
+constexpr int AVG_NC = 10;
 constexpr int NN = (1 << 10) - 1;  //18;
 constexpr int MIN_SUPPORT = 10000;
 
@@ -1887,7 +1887,7 @@ moves_loop:  // When in check, search starts here
                 //CC = (!givesCheck) && (!ss->inCheck) && (priorCapture) && (ttData.depth >= depth) && (depth > 8) && (moveCount > 5) && (ttData.bound == BOUND_UPPER) && ((ss-1)->moveCount>1);
                 CC = !((nodes ^ pos.key()) & 0x7e);
                 FH = nodes & 1;
-                if(FH)
+                if(CC && FH)
                     extension = 1;
             }
         }
