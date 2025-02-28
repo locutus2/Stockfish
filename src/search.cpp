@@ -1879,7 +1879,7 @@ moves_loop:  // When in check, search starts here
             }
             else
             {
-                CC = true;
+                CC = (move != ttData.move);
                 //extension = 1;
             }
         }
