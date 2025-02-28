@@ -1879,6 +1879,7 @@ moves_loop:  // When in check, search starts here
             }
             else
             {
+                LearnPrecondition = "move != ttData.move";
                 CC = (move != ttData.move);
                 //extension = 1;
             }
