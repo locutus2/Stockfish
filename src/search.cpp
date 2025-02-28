@@ -1882,6 +1882,7 @@ moves_loop:  // When in check, search starts here
                 //LearnPrecondition = "move != ttData.move";
                 //CC = (move != ttData.move);
                 //extension = 1;
+                LearnPrecondition = "(!givesCheck) && (!ss->inCheck) && (priorCapture) && (ttData.depth >= depth) && (depth > 8) && (moveCount > 5) && (ttData.bound == BOUND_UPPER) && ((ss-1)->moveCount>1)";
                 CC = (!givesCheck) && (!ss->inCheck) && (priorCapture) && (ttData.depth >= depth) && (depth > 8) && (moveCount > 5) && (ttData.bound == BOUND_UPPER) && ((ss-1)->moveCount>1);
                 if(CC)
                     extension = 1;
