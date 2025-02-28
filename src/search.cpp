@@ -1569,6 +1569,7 @@ moves_loop:  // When in check, search starts here
             r += 1031;
 
         bool              CC = false;
+        bool FH = true;
         std::vector<bool> C  = {
           !PvNode,
           !ss->ttPv,
@@ -1882,9 +1883,11 @@ moves_loop:  // When in check, search starts here
                 //LearnPrecondition = "move != ttData.move";
                 //CC = (move != ttData.move);
                 //extension = 1;
-                LearnPrecondition = "(!givesCheck) && (!ss->inCheck) && (priorCapture) && (ttData.depth >= depth) && (depth > 8) && (moveCount > 5) && (ttData.bound == BOUND_UPPER) && ((ss-1)->moveCount>1)";
-                CC = (!givesCheck) && (!ss->inCheck) && (priorCapture) && (ttData.depth >= depth) && (depth > 8) && (moveCount > 5) && (ttData.bound == BOUND_UPPER) && ((ss-1)->moveCount>1);
-                if(CC)
+                //LearnPrecondition = "(!givesCheck) && (!ss->inCheck) && (priorCapture) && (ttData.depth >= depth) && (depth > 8) && (moveCount > 5) && (ttData.bound == BOUND_UPPER) && ((ss-1)->moveCount>1)";
+                //CC = (!givesCheck) && (!ss->inCheck) && (priorCapture) && (ttData.depth >= depth) && (depth > 8) && (moveCount > 5) && (ttData.bound == BOUND_UPPER) && ((ss-1)->moveCount>1);
+                CC = !((nodes ^ pos.key()) & 0x7e);
+                FH = nodes & 1;
+                if(FH)
                     extension = 1;
             }
         }
@@ -2031,7 +2034,7 @@ moves_loop:  // When in check, search starts here
         if(CC)
         {
             //bool T = value <= alpha;
-            bool T = value > alpha;
+            bool T = (FH ? value > alpha : value <= alpha);
             learn(T, C);
         }
 
