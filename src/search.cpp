@@ -1163,6 +1163,11 @@ moves_loop:  // When in check, search starts here
                 else if (cutNode)
                     extension = -2;
             }
+            else if (ss->inCheck && moveCount == 1 && move != ttData.move && !ss->ttPv
+                     && !givesCheck && !improving && cutNode && !ttCapture && depth > 5 && !ttHit
+                     && !excludedMove && (ss - 1)->moveCount > 4
+                     && (*contHist[0])[movedPiece][move.to_sq()] <= 0)
+                extension = 1;
         }
 
         // Step 16. Make the move
