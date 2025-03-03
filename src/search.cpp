@@ -93,7 +93,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
     const auto cntcv1 =
-      m.is_ok() && (ss - 2)->isTTMove
+      m.is_ok() && !(ss - 1)->priorCapture
         ? (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         : 0;
 
@@ -155,7 +155,7 @@ void update_correction_history(const Position& pos,
         (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
           << bonus * 143 / 128;
 
-        if ((ss - 2)->isTTMove)
+        if (!(ss - 1)->priorCapture)
             (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()] << bonus;
     }
 }
@@ -640,11 +640,11 @@ Value Search::Worker::search(
     // Step 1. Initialize node
     Worker* thisThread = this;
     ss->inCheck        = pos.checkers();
-    priorCapture       = pos.captured_piece();
-    Color us           = pos.side_to_move();
-    ss->moveCount      = 0;
-    bestValue          = -VALUE_INFINITE;
-    maxValue           = VALUE_INFINITE;
+    ss->priorCapture = priorCapture = pos.captured_piece();
+    Color us                        = pos.side_to_move();
+    ss->moveCount                   = 0;
+    bestValue                       = -VALUE_INFINITE;
+    maxValue                        = VALUE_INFINITE;
 
     // Check for the available remaining time
     if (is_mainthread())
