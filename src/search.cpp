@@ -93,7 +93,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
     const auto cntcv1 =
-      m.is_ok() && (ss - 2)->moveCount == 1
+      m.is_ok() && !(ss - 1)->inCheck
         ? (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         : 0;
 
@@ -155,7 +155,7 @@ void update_correction_history(const Position& pos,
         (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
           << bonus * 143 / 128;
 
-        if ((ss - 2)->moveCount == 1)
+        if (!(ss - 1)->inCheck)
             (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()] << bonus;
     }
 }
