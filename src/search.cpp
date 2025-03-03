@@ -93,10 +93,11 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
     const auto cntcv1 =
-      m.is_ok() ? (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-                : 0;
+      m.is_ok() && (ss - 2)->moveCount == 1
+        ? (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        : 0;
 
-    return 7685 * pcv + 7495 * micv + 9144 * (wnpcv + bnpcv) + 6469 * cntcv0 + 500 * cntcv1;
+    return 7685 * pcv + 7495 * micv + 9144 * (wnpcv + bnpcv) + 6469 * cntcv0 + 1500 * cntcv1;
 }
 
 int risk_tolerance(const Position& pos, Value v) {
@@ -153,8 +154,9 @@ void update_correction_history(const Position& pos,
     {
         (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
           << bonus * 143 / 128;
-        (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-          << bonus;
+
+        if ((ss - 2)->moveCount == 1)
+            (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()] << bonus;
     }
 }
 
