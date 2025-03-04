@@ -1208,8 +1208,8 @@ moves_loop:  // When in check, search starts here
             r += 1042 + allNode * 864;
 
         // For first picked move (ttMove) reduce reduction
-        else if (move == ttData.move && !allNode)
-            r -= 1937;
+        else if (move == ttData.move)
+            r -= 1937 - allNode * 968;
 
         if (capture)
             ss->statScore =
