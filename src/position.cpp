@@ -340,7 +340,8 @@ void Position::set_state() const {
     st->key = st->materialKey = 0;
     st->minorPieceKey         = 0;
     st->nonPawnKey[WHITE] = st->nonPawnKey[BLACK] = 0;
-    st->pawnKey                                   = Zobrist::noPawns;
+    st->movesKey[WHITE] = st->movesKey[BLACK] = 0;
+    st->pawnKey                               = Zobrist::noPawns;
     st->nonPawnMaterial[WHITE] = st->nonPawnMaterial[BLACK] = VALUE_ZERO;
     st->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
 
@@ -693,7 +694,10 @@ void Position::do_move(Move                      m,
     assert(m.is_ok());
     assert(&newSt != st);
 
-    Key k = st->key ^ Zobrist::side;
+    Color us = sideToMove;
+
+    Key k  = st->key ^ Zobrist::side;
+    Key mk = st->movesKey[us];
 
     // Copy some fields of the old state to our new StateInfo object except the
     // ones which are going to be recalculated from scratch anyway and then switch
@@ -716,7 +720,6 @@ void Position::do_move(Move                      m,
     auto& dp     = st->dirtyPiece;
     dp.dirty_num = 1;
 
-    Color  us       = sideToMove;
     Color  them     = ~us;
     Square from     = m.from_sq();
     Square to       = m.to_sq();
@@ -736,6 +739,7 @@ void Position::do_move(Move                      m,
         do_castling<true>(us, from, to, rfrom, rto);
 
         k ^= Zobrist::psq[captured][rfrom] ^ Zobrist::psq[captured][rto];
+        mk ^= Zobrist::psq[captured][rfrom] ^ Zobrist::psq[captured][rto];
         st->nonPawnKey[us] ^= Zobrist::psq[captured][rfrom] ^ Zobrist::psq[captured][rto];
         captured = NO_PIECE;
     }
@@ -787,6 +791,7 @@ void Position::do_move(Move                      m,
 
     // Update hash key
     k ^= Zobrist::psq[pc][from] ^ Zobrist::psq[pc][to];
+    mk ^= Zobrist::psq[pc][from] ^ Zobrist::psq[pc][to];
 
     // Reset en passant square
     if (st->epSquare != SQ_NONE)
@@ -845,6 +850,7 @@ void Position::do_move(Move                      m,
             // Update hash keys
             // Zobrist::psq[pc][to] is zero, so we don't need to clear it
             k ^= Zobrist::psq[promotion][to];
+            mk ^= Zobrist::psq[promotion][to];
             st->materialKey ^= Zobrist::psq[promotion][8 + pieceCount[promotion] - 1]
                              ^ Zobrist::psq[pc][8 + pieceCount[pc]];
 
@@ -857,6 +863,7 @@ void Position::do_move(Move                      m,
 
         // Update pawn hash key
         st->pawnKey ^= Zobrist::psq[pc][from] ^ Zobrist::psq[pc][to];
+        mk ^= Zobrist::psq[pc][from] ^ Zobrist::psq[pc][to];
 
         // Reset rule 50 draw counter
         st->rule50 = 0;
@@ -871,7 +878,8 @@ void Position::do_move(Move                      m,
     }
 
     // Update the key with the final value
-    st->key = k;
+    st->key          = k;
+    st->movesKey[us] = mk;
     if (tt)
         prefetch(tt->first_entry(key()));
 

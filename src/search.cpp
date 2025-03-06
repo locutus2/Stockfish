@@ -557,6 +557,7 @@ void Search::Worker::clear() {
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
     pawnHistory.fill(-1262);
+    movesHistory.fill(0);
     pawnCorrectionHistory.fill(6);
     minorPieceCorrectionHistory.fill(0);
     nonPawnCorrectionHistory[WHITE].fill(0);
@@ -970,7 +971,8 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->lowPlyHistory,
-                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory, ss->ply);
+                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory, &movesHistory,
+                  ss->ply);
 
     value = bestValue;
 
@@ -1614,7 +1616,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
     MovePicker mp(pos, ttData.move, DEPTH_QS, &thisThread->mainHistory, &thisThread->lowPlyHistory,
-                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory, ss->ply);
+                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory, &movesHistory,
+                  ss->ply);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.
@@ -1828,7 +1831,10 @@ void update_all_stats(const Position&      pos,
                       bool                 isTTMove,
                       int                  moveCount) {
 
+    Color us = pos.side_to_move();
+
     CapturePieceToHistory& captureHistory = workerThread.captureHistory;
+    MovesHistory&          movesHistory   = workerThread.movesHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
 
@@ -1838,10 +1844,14 @@ void update_all_stats(const Position&      pos,
     if (!pos.capture_stage(bestMove))
     {
         update_quiet_histories(pos, ss, workerThread, bestMove, bonus * 1129 / 1024);
+        movesHistory[us][moves_index(pos, us)][moved_piece][bestMove.to_sq()] << bonus;
 
         // Decrease stats for all non-best quiet moves
         for (Move move : quietsSearched)
+        {
             update_quiet_histories(pos, ss, workerThread, move, -malus * 1246 / 1024);
+            movesHistory[us][moves_index(pos, us)][pos.moved_piece(move)][move.to_sq()] << bonus;
+        }
     }
     else
     {
