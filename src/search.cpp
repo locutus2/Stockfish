@@ -55,6 +55,7 @@ namespace Stockfish {
 constexpr double LEARN_MIN_FREQ = 0;//0.001;
 
 std::vector<std::string> names = {
+            "1",
             "mainHistory",
             "pawnHistory",
             "contHist[0]",
@@ -64,6 +65,7 @@ std::vector<std::string> names = {
             "contHist[4]",
             "contHist[5]",
  //           "captureHistory",
+            "-1",
             "-mainHistory",
             "-pawnHistory",
             "-contHist[0]",
@@ -1372,6 +1374,7 @@ moves_loop:  // When in check, search starts here
         }
 
         std::vector<double> C = {
+            1.0,
             mainHistory[us][move.from_to()] / 7183.,
             pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()] / 8192.,
             (*contHist[0])[movedPiece][move.to_sq()] / 30000.,
@@ -1381,6 +1384,7 @@ moves_loop:  // When in check, search starts here
             (*contHist[4])[movedPiece][move.to_sq()] / 30000.,
             (*contHist[5])[movedPiece][move.to_sq()] / 30000.,
             //captureHistory[movedPiece][move.to_sq()][type_of(pos.piece_on(move.to_sq()))] / 10692.,
+            -1.0,
             -mainHistory[us][move.from_to()] / 7183.,
             -pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()] / 8192.,
             -(*contHist[0])[movedPiece][move.to_sq()] / 30000.,
