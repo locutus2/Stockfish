@@ -813,6 +813,8 @@ Value Search::Worker::search(
     {
         int bonus = std::clamp(-10 * int((ss - 1)->staticEval + ss->staticEval), -1950, 1416) + 655;
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus * 1124 / 1024;
+        minorPieceHistory[minor_piece_index(pos)][pos.piece_on(prevSq)][prevSq]
+          << bonus * 1196 / 1024;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
               << bonus * 1196 / 1024;
@@ -1442,6 +1444,8 @@ moves_loop:  // When in check, search starts here
 
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
           << scaledBonus * 212 / 32768;
+        minorPieceHistory[minor_piece_index(pos)][pos.piece_on(prevSq)][prevSq]
+          << scaledBonus * 1055 / 32768;
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
