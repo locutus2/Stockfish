@@ -63,7 +63,7 @@ std::vector<std::string> names = {
             "contHist[3]",
             "contHist[4]",
             "contHist[5]",
-            "captureHistory",
+ //           "captureHistory",
             "-mainHistory",
             "-pawnHistory",
             "-contHist[0]",
@@ -72,7 +72,7 @@ std::vector<std::string> names = {
             "-contHist[3]",
             "-contHist[4]",
             "-contHist[5]",
-            "-captureHistory",
+//            "-captureHistory",
 };
 
 std::vector<bool> weak_learner_enabled;
@@ -1380,7 +1380,7 @@ moves_loop:  // When in check, search starts here
             (*contHist[3])[movedPiece][move.to_sq()] / 30000.,
             (*contHist[4])[movedPiece][move.to_sq()] / 30000.,
             (*contHist[5])[movedPiece][move.to_sq()] / 30000.,
-            captureHistory[movedPiece][move.to_sq()][type_of(pos.piece_on(move.to_sq()))] / 10692.,
+            //captureHistory[movedPiece][move.to_sq()][type_of(pos.piece_on(move.to_sq()))] / 10692.,
             -mainHistory[us][move.from_to()] / 7183.,
             -pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()] / 8192.,
             -(*contHist[0])[movedPiece][move.to_sq()] / 30000.,
@@ -1389,7 +1389,7 @@ moves_loop:  // When in check, search starts here
             -(*contHist[3])[movedPiece][move.to_sq()] / 30000.,
             -(*contHist[4])[movedPiece][move.to_sq()] / 30000.,
             -(*contHist[5])[movedPiece][move.to_sq()] / 30000.,
-            -captureHistory[movedPiece][move.to_sq()][type_of(pos.piece_on(move.to_sq()))] / 10692.,
+            //-captureHistory[movedPiece][move.to_sq()][type_of(pos.piece_on(move.to_sq()))] / 10692.,
         };
 
 
@@ -1561,15 +1561,15 @@ moves_loop:  // When in check, search starts here
                 {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
-                    bool CC = true;
+                    bool CC = !capture;
                     if(CC)
                     {
                         bool T = value <= alpha;
 
                         //constexpr double W[2] = {0.265531, 1-0.265531}; // balanced classes
-                        //constexpr double W[2] = {1,0}; // Only !T
+                        constexpr double W[2] = {1,0}; // Only !T
                         //constexpr double W[2] = {0,1}; // Only T
-                        constexpr double W[2] = {1,1}; // equal weight
+                        //constexpr double W[2] = {1,1}; // equal weight
 
                         adaboost_collect_stats(T, C);
                         adaboost_learn(T, C, W[T]);
