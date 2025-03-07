@@ -52,35 +52,18 @@
 
 namespace Stockfish {
 
-constexpr double LEARN_MIN_FREQ = 0.001;
+constexpr double LEARN_MIN_FREQ = 0;//0.001;
 
 std::vector<std::string> names = {
-    "allNode", "!allNode", 
-    "PvNode", "!PvNode",
-    "cutNode", "!cutNode",
-    "improving", "!improving", // 3 4
-    "capture", "!capture", // 5 6
-    "givesCheck", "!givesCheck", // 7 8
-    "ss->inCheck", "!ss->inCheck", // 9 10
-    "priorCapture", "!priorCapture", // 11 12
-    "ss->ttPv", "!ss->ttPv", // 13 14
-    "ss->statScore>0", "ss->statScore<=0", // 15 16
-    "extension<0", "extension==0","extension>0", // 17 18
-    "ttCapture", "ttCapture",
-    "bool(excludedMove)", "!excludedMove",
-    "ss->reduction>0", "ss->reduction<=0",
-    "(ss-1)->currentMove==Move::null()", "(ss-1)->currentMove!=Move::null()",
-    "ss->ttHit", "!ss->ttHit",
-    "depth<3", "depth>=3",
-    "depth<4", "depth>=4",
-    "depth<5", "depth>=5",
-    "depth<6", "depth>=6",
-    "depth<7", "depth>=7",
-    "depth<8", "depth>=8",
-    "depth<9", "depth>=9",
-    "depth<10", "depth>=10",
-    "depth<11", "depth>=11",
-    "depth<12", "depth>=12",
+            "mainHistory",
+            "pawnHistory",
+            "contHist[0]",
+            "contHist[1]",
+            "contHist[2]",
+            "contHist[3]",
+            "contHist[4]",
+            "contHist[5]",
+            "captureHistory",
 };
 
 std::vector<bool> weak_learner_enabled;
@@ -113,22 +96,22 @@ void adaboost_init_step()
     nConf[1][0] = nConf[1][1] = 0;
 }
 
-double adaboost_predict_margin(const std::vector<bool>& C)
+double adaboost_predict_margin(const std::vector<double>& C)
 {
     double v = 0;
     for (int i = 0; i < int(learner_index.size()); i++)
     {
-        v += learner_weight[i] * (2 * C[learner_index[i]] - 1);
+        v += learner_weight[i] * C[learner_index[i]];
     }
     return v;
 }
 
-bool adaboost_predict_class(const std::vector<bool>& C)
+bool adaboost_predict_class(const std::vector<double>& C)
 {
     return adaboost_predict_margin(C) > 0;
 }
 
-void adaboost_learn(bool T, const std::vector<bool>& C, double W)
+void adaboost_learn(bool T, const std::vector<double>& C, double W)
 {
        weak_learner_stats.resize(C.size(), {0,0});
        weak_learner_enabled.resize(C.size(), true);
@@ -137,7 +120,7 @@ void adaboost_learn(bool T, const std::vector<bool>& C, double W)
        double weight = W * std::exp(-(2 * T - 1) * F);
        for (int i = 0; i < int(C.size()); i++)
        {
-           weak_learner_stats[i][T == C[i]] += weight;
+           weak_learner_stats[i][T == (C[i] > 0)] += weight;
        } 
        
        //dbg_hit_on(T, 0);
@@ -160,17 +143,17 @@ bool adaboost_add_learner()
     //std::cerr << "C[" << 0 << "] = " << weak_learner_stats[0][0] << " | " << weak_learner_stats[0][1] << std::endl;
     for (int i = 0; i < int(weak_learner_stats.size()); i++)
     {
-        //std::cerr << "C[" << i << "] = " << weak_learner_stats[i][0] << " | " << weak_learner_stats[i][1] << std::endl;
+        std::cerr << "C[" << i << "] = " << weak_learner_stats[i][0] << " | " << weak_learner_stats[i][1] << std::endl;
         if (weak_learner_enabled[i]
             && weak_learner_stats[i][0] > 0
-            && weak_learner_stats[i][0] < weak_learner_stats[i][1]
+            //&& weak_learner_stats[i][0] < weak_learner_stats[i][1]
             && (bestValue < 0 || weak_learner_stats[i][0] < bestValue))
         {
             bestLearner = i;
             bestValue = weak_learner_stats[i][0];
         }
     }
-    //std::cerr << "select " << bestLearner << std::endl;
+    std::cerr << "select " << bestLearner << std::endl;
 
     if(bestLearner >= 0)
     {
@@ -186,7 +169,7 @@ bool adaboost_add_learner()
         return false;
 }
 
-void adaboost_collect_stats(bool T, const std::vector<bool>& C)
+void adaboost_collect_stats(bool T, const std::vector<double>& C)
 {
     bool P = adaboost_predict_class(C);
 
@@ -216,6 +199,8 @@ bool adaboost_print_stats(std::ostream& out)
         learner_weight.pop_back();
         out << "=> SKIP last weak learner" << std::endl;
     }
+
+    out << std::flush;
 
     return nPrediction[1] > 0;
 }
@@ -259,6 +244,7 @@ void adaboost_print_model(std::ostream& out)
         }
         out << " > " << sum/2 << std::endl;
 
+        /*
         double m = std::min(sum/2, *std::min_element(w.begin(), w.end()));
         for(int S = 1; S <= 64; S *= 2)
         {
@@ -270,6 +256,7 @@ void adaboost_print_model(std::ostream& out)
             }
             out << " > " << int(std::floor(sum/2/m*S + 0.5)) << std::endl;
         }
+        */
     }
     else
     {
@@ -281,6 +268,7 @@ void adaboost_print_model(std::ostream& out)
         }
         out << " > " << sum/2 << std::endl;
     }
+    out << std::flush;
 }
 
 //---------------------------------------------------
@@ -1373,6 +1361,19 @@ moves_loop:  // When in check, search starts here
             }
         }
 
+        std::vector<double> C = {
+            mainHistory[us][move.from_to()] / 7183.,
+            pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()] / 8192.,
+            (*contHist[0])[movedPiece][move.to_sq()] / 30000.,
+            (*contHist[1])[movedPiece][move.to_sq()] / 30000.,
+            (*contHist[2])[movedPiece][move.to_sq()] / 30000.,
+            (*contHist[3])[movedPiece][move.to_sq()] / 30000.,
+            (*contHist[4])[movedPiece][move.to_sq()] / 30000.,
+            (*contHist[5])[movedPiece][move.to_sq()] / 30000.,
+            captureHistory[movedPiece][move.to_sq()][type_of(pos.piece_on(move.to_sq()))] / 10692.,
+        };
+
+
         // Step 16. Make the move
         pos.do_move(move, st, givesCheck, &tt);
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
@@ -1541,44 +1542,15 @@ moves_loop:  // When in check, search starts here
                 {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
-                    bool CC = !ss->ttPv;
+                    bool CC = true;
                     if(CC)
                     {
                         bool T = value <= alpha;
 
-                        std::vector<bool> C = {
-                            allNode, !allNode, // 0 1 2
-                            PvNode, !PvNode, // 0 1 2
-                            cutNode, !cutNode, // 0 1 2
-                            improving, !improving, // 3 4
-                            capture, !capture, // 5 6
-                            givesCheck, !givesCheck, // 7 8
-                            ss->inCheck, !ss->inCheck, // 9 10
-                            priorCapture, !priorCapture, // 11 12
-                            ss->ttPv, !ss->ttPv, // 13 14
-                            ss->statScore>0, ss->statScore<=0, // 15 16
-                            extension<0,extension==0,extension>0,// 17 18
-                            ttCapture,!ttCapture,
-                            bool(excludedMove), !excludedMove,
-                            ss->reduction>0, ss->reduction<=0,
-                            (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
-                            ss->ttHit, !ss->ttHit, // 9 10
-                            depth<3,depth>=3,
-                            depth<4,depth>=4,
-                            depth<5,depth>=5,
-                            depth<6,depth>=6,
-                            depth<7,depth>=7,
-                            depth<8,depth>=8,
-                            depth<9,depth>=9,
-                            depth<10,depth>=10,
-                            depth<11,depth>=11,
-                            depth<12,depth>=12,
-                        };
-
                         //constexpr double W[2] = {0.265531, 1-0.265531}; // balanced classes
-                        constexpr double W[2] = {1,0}; // Only !T
+                        //constexpr double W[2] = {1,0}; // Only !T
                         //constexpr double W[2] = {0,1}; // Only T
-                        //constexpr double W[2] = {1,1}; // equal weight
+                        constexpr double W[2] = {1,1}; // equal weight
 
                         adaboost_collect_stats(T, C);
                         adaboost_learn(T, C, W[T]);
