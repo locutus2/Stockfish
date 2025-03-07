@@ -217,7 +217,7 @@ void adaboost_print_model(std::ostream& out)
 
         for(int i = 0; i < int(learner_index.size()); i++)
         {
-            sum += learner_weight[i];
+            //sum += learner_weight[i];
             int found = -1;
             for(int j = 0; j < int(l.size()); j++)
                 if(l[j] == learner_index[i])
