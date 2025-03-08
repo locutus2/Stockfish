@@ -297,6 +297,8 @@ class Worker {
     CapturePieceToHistory captureHistory;
     ContinuationHistory   continuationHistory[2][2];
     PawnHistory           pawnHistory;
+    LmrHistory            lmrHistory;
+    LmrHistory2           lmrHistory2;
 
     CorrectionHistory<Pawn>         pawnCorrectionHistory;
     CorrectionHistory<Minor>        minorPieceCorrectionHistory;

@@ -125,6 +125,8 @@ using ContinuationHistory = MultiArray<PieceToHistory, PIECE_NB, SQUARE_NB>;
 
 // PawnHistory is addressed by the pawn structure and a move's [piece][to]
 using PawnHistory = Stats<std::int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
+using LmrHistory = Stats<std::int16_t, 8192, PIECE_NB, SQUARE_NB>;
+using LmrHistory2 = Stats<std::int16_t, 8192, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
 
 // Correction histories record differences between the static evaluation of
 // positions and their search score. It is used to improve the static evaluation

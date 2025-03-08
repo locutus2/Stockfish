@@ -64,6 +64,8 @@ std::vector<std::string> names = {
             "contHist[3]",
             "contHist[4]",
             "contHist[5]",
+            "lmrHist",
+            "lmrHist2",
  //           "captureHistory",
             "-1",
             "-mainHistory",
@@ -74,6 +76,8 @@ std::vector<std::string> names = {
             "-contHist[3]",
             "-contHist[4]",
             "-contHist[5]",
+            "-lmrHist",
+            "-lmrHist2",
 //            "-captureHistory",
 };
 
@@ -773,6 +777,8 @@ void Search::Worker::clear() {
     lowPlyHistory.fill(107);
     captureHistory.fill(-655);
     pawnHistory.fill(-1215);
+    lmrHistory.fill(0);
+    lmrHistory2.fill(0);
     pawnCorrectionHistory.fill(4);
     minorPieceCorrectionHistory.fill(0);
     nonPawnCorrectionHistory[WHITE].fill(0);
@@ -1386,6 +1392,8 @@ moves_loop:  // When in check, search starts here
             (*contHist[3])[movedPiece][move.to_sq()] / 30000.,
             (*contHist[4])[movedPiece][move.to_sq()] / 30000.,
             (*contHist[5])[movedPiece][move.to_sq()] / 30000.,
+            lmrHistory[movedPiece][move.to_sq()] / 8192.,
+            lmrHistory2[us][move.from_to()] / 8192.,
             //captureHistory[movedPiece][move.to_sq()][type_of(pos.piece_on(move.to_sq()))] / 10692.,
             -1.0,
             -mainHistory[us][move.from_to()] / 7183.,
@@ -1396,6 +1404,8 @@ moves_loop:  // When in check, search starts here
             -(*contHist[3])[movedPiece][move.to_sq()] / 30000.,
             -(*contHist[4])[movedPiece][move.to_sq()] / 30000.,
             -(*contHist[5])[movedPiece][move.to_sq()] / 30000.,
+            -lmrHistory[movedPiece][move.to_sq()] / 8192.,
+            -lmrHistory2[us][move.from_to()] / 8192.,
             //-captureHistory[movedPiece][move.to_sq()][type_of(pos.piece_on(move.to_sq()))] / 10692.,
         };
 
@@ -1567,6 +1577,12 @@ moves_loop:  // When in check, search starts here
                 if (newDepth > d)
                 {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+
+                    if(!capture)
+                    {
+                         lmrHistory[movedPiece][move.to_sq()] << (value > alpha ? stat_bonus(newDepth) : -stat_malus(newDepth));
+                         lmrHistory2[movedPiece][move.to_sq()] << (value > alpha ? stat_bonus(newDepth) : -stat_malus(newDepth));
+                    }
 
                     bool CC = !capture;
                     if(CC)
