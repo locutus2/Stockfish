@@ -1233,6 +1233,17 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
+            if (!capture
+                && 58 * mainHistory[us][move.from_to()]
+                       + 25 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                       + 32 * (*contHist[3])[movedPiece][move.to_sq()]
+                       + 43 * (*contHist[1])[movedPiece][move.to_sq()]
+                       + 48 * (*contHist[0])[movedPiece][move.to_sq()]
+                       + 31 * (*contHist[5])[movedPiece][move.to_sq()]
+                       + 24 * (*contHist[2])[movedPiece][move.to_sq()]
+                       + 15 * (*contHist[4])[movedPiece][move.to_sq()]
+                     < -1355306)
+                r += 1024;
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
