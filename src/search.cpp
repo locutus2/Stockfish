@@ -216,7 +216,7 @@ bool adaboost_print_stats(std::ostream& out)
     }
 
     out << std::flush;
-
+    return true;
     return nPrediction[1] > 0;
 }
 
