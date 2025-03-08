@@ -63,8 +63,8 @@ std::vector<std::string> names = {
             "contHist[3]",
             "contHist[4]",
             "contHist[5]",
-//            "lmrHist",
-            "lmrHist2",
+            "lmrHist",
+            //"lmrHist2",
  //           "captureHistory",
             "-1",
             "-mainHistory",
@@ -75,8 +75,8 @@ std::vector<std::string> names = {
             "-contHist[3]",
             "-contHist[4]",
             "-contHist[5]",
- //           "-lmrHist",
-            "-lmrHist2",
+            "-lmrHist",
+            //"-lmrHist2",
 //            "-captureHistory",
 };
 
@@ -1417,8 +1417,8 @@ moves_loop:  // When in check, search starts here
             (*contHist[3])[movedPiece][move.to_sq()] / 30000.,
             (*contHist[4])[movedPiece][move.to_sq()] / 30000.,
             (*contHist[5])[movedPiece][move.to_sq()] / 30000.,
-            //lmrHistory[movedPiece][move.to_sq()] / 8192.,
-            lmrHistory2[us][move.from_to()] / 8192.,
+            lmrHistory[movedPiece][move.to_sq()] / 8192.,
+            //lmrHistory2[us][move.from_to()] / 8192.,
             //captureHistory[movedPiece][move.to_sq()][type_of(pos.piece_on(move.to_sq()))] / 10692.,
             -1.0,
             -mainHistory[us][move.from_to()] / 7183.,
@@ -1429,8 +1429,8 @@ moves_loop:  // When in check, search starts here
             -(*contHist[3])[movedPiece][move.to_sq()] / 30000.,
             -(*contHist[4])[movedPiece][move.to_sq()] / 30000.,
             -(*contHist[5])[movedPiece][move.to_sq()] / 30000.,
-            //-lmrHistory[movedPiece][move.to_sq()] / 8192.,
-            -lmrHistory2[us][move.from_to()] / 8192.,
+            -lmrHistory[movedPiece][move.to_sq()] / 8192.,
+            //-lmrHistory2[us][move.from_to()] / 8192.,
             //-captureHistory[movedPiece][move.to_sq()][type_of(pos.piece_on(move.to_sq()))] / 10692.,
         };
 
@@ -1608,7 +1608,7 @@ moves_loop:  // When in check, search starts here
                     {
                          int bonus = (value > alpha ? std::min(141 * depth - 89, 1613) : -std::min(695 * depth - 215, 2808));
                          lmrHistory[movedPiece][move.to_sq()] << bonus;
-                         lmrHistory2[movedPiece][move.to_sq()] << bonus;
+                         lmrHistory2[us][move.from_to()] << bonus;
                     }
 
                     bool CC = !capture;
