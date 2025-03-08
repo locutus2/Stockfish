@@ -194,8 +194,11 @@ void adaboost_collect_stats(bool T, const std::vector<double>& C)
 bool adaboost_print_stats(std::ostream& out)
 {
     double freq = double(nConf[0][1] + nConf[1][1]) / nStats;
+    double acc = double(nConf[0][0] + nConf[1][1]) / nStats;
+    double fpr = double(nConf[0][1]) / (nConf[0][0] + nConf[0][1]);
 
-    out << "=> false positive rate: " << 100. * nConf[0][1] / (nConf[0][1] + nConf[0][0]) << "%" << std::endl;
+    out << "=> false positive rate: " << 100. * fpr << "%" << std::endl;
+    out << "=> accuracy: " << 100. * acc << "%" << std::endl;
     out << "=> frequency: " << 100. * freq << "%" << std::endl;
     //out << "n: " << nStats << std::endl;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
@@ -1571,9 +1574,9 @@ moves_loop:  // When in check, search starts here
                         bool T = value <= alpha;
 
                         //constexpr double W[2] = {0.265531, 1-0.265531}; // balanced classes
-                        constexpr double W[2] = {1,0}; // Only !T
+                        //constexpr double W[2] = {1,0}; // Only !T
                         //constexpr double W[2] = {0,1}; // Only T
-                        //constexpr double W[2] = {1,1}; // equal weight
+                        constexpr double W[2] = {1,1}; // equal weight
 
                         adaboost_collect_stats(T, C);
                         adaboost_learn(T, C, W[T]);
