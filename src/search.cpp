@@ -294,6 +294,8 @@ void Search::Worker::iterative_deepening() {
     {
         (ss - i)->continuationHistory =
           &this->continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
+        (ss - i)->lmrContinuationHistory =
+          &this->lmrContinuationHistory[NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &this->continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
         (ss - i)->reduction                     = 0;
@@ -571,6 +573,10 @@ void Search::Worker::clear() {
             for (auto& to : continuationHistory[inCheck][c])
                 for (auto& h : to)
                     h.fill(-468);
+
+    for (auto& to : lmrContinuationHistory)
+        for (auto& h : to)
+            h.fill(0);
 
     for (size_t i = 1; i < reductions.size(); ++i)
         reductions[i] = int(2954 / 128.0 * std::log(i));
@@ -856,6 +862,7 @@ Value Search::Worker::search(
 
         ss->currentMove                   = Move::null();
         ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+        ss->lmrContinuationHistory        = &thisThread->lmrContinuationHistory[NO_PIECE][0];
         ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
 
         pos.do_null_move(st, tt);
@@ -931,6 +938,8 @@ Value Search::Worker::search(
             ss->isTTMove    = (move == ttData.move);
             ss->continuationHistory =
               &this->continuationHistory[ss->inCheck][true][movedPiece][move.to_sq()];
+            ss->lmrContinuationHistory =
+              &thisThread->lmrContinuationHistory[movedPiece][move.to_sq()];
             ss->continuationCorrectionHistory =
               &this->continuationCorrectionHistory[movedPiece][move.to_sq()];
 
@@ -1177,6 +1186,7 @@ moves_loop:  // When in check, search starts here
         ss->isTTMove    = (move == ttData.move);
         ss->continuationHistory =
           &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
+        ss->lmrContinuationHistory = &thisThread->lmrContinuationHistory[movedPiece][move.to_sq()];
         ss->continuationCorrectionHistory =
           &thisThread->continuationCorrectionHistory[movedPiece][move.to_sq()];
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
@@ -1233,6 +1243,8 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
+            if (!capture)
+                r -= (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()];
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
@@ -1254,7 +1266,17 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+
+                    if (!capture)
+                    {
+                        int bonus = std::clamp(value > alpha ? std::min(141 * depth - 89, 1613)
+                                                             : -std::min(695 * depth - 215, 2808),
+                                               -LMR_HISTORY_LIMIT / 4, LMR_HISTORY_LIMIT / 4);
+                        (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()] << bonus;
+                    }
+                }
 
                 // Post LMR continuation history updates
                 int bonus = (value >= beta) * 1800;

@@ -33,6 +33,7 @@
 
 namespace Stockfish {
 
+constexpr int LMR_HISTORY_LIMIT        = 1024;
 constexpr int PAWN_HISTORY_SIZE        = 512;    // has to be a power of 2
 constexpr int CORRECTION_HISTORY_SIZE  = 32768;  // has to be a power of 2
 constexpr int CORRECTION_HISTORY_LIMIT = 1024;
@@ -122,6 +123,10 @@ using PieceToHistory = Stats<std::int16_t, 30000, PIECE_NB, SQUARE_NB>;
 // PieceToHistory instead of ButterflyBoards.
 // (~63 elo)
 using ContinuationHistory = MultiArray<PieceToHistory, PIECE_NB, SQUARE_NB>;
+
+using LmrPieceToHistory = Stats<std::int16_t, LMR_HISTORY_LIMIT, PIECE_NB, SQUARE_NB>;
+
+using LmrContinuationHistory = MultiArray<LmrPieceToHistory, PIECE_NB, SQUARE_NB>;
 
 // PawnHistory is addressed by the pawn structure and a move's [piece][to]
 using PawnHistory = Stats<std::int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
