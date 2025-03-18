@@ -1243,7 +1243,8 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            if (!capture && (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()] < -896)
+            if (priorCapture && !capture
+                && (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()] < -576)
                 r += 1024;
 
             Depth d = std::max(
@@ -1269,7 +1270,7 @@ moves_loop:  // When in check, search starts here
                 {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
-                    if (!capture)
+                    if (priorCapture && !capture)
                     {
                         int bonus = value > alpha
                                     ? std::min(141 * depth - 89, LMR_HISTORY_LIMIT / 4)
