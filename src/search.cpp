@@ -1247,7 +1247,7 @@ moves_loop:  // When in check, search starts here
             //if (!capture)
             //    r -= (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()];
             bool CC = false;
-            if (!capture && allNode)
+            if (!capture && !givesCheck)
             {
                 CC = true;
                 V = (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()];
