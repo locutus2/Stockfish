@@ -1243,8 +1243,15 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
+            int V = 0;
+            //if (!capture)
+            //    r -= (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()];
             if (!capture)
-                r -= (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()];
+            {
+                V = (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()];
+                //dbg_mean_of((*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()], 0);
+                //dbg_stdev_of((*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()], 0);
+            }
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
@@ -1271,9 +1278,21 @@ moves_loop:  // When in check, search starts here
 
                     if (!capture)
                     {
+                        bool T = value > alpha;
+                        //int V0 = -256;
+                        //dbg_correl_of(T, V > V0);
+                        //dbg_mean_of(V, 10+int(T));
+                        //dbg_hit_on(T, int(V>V0));
+
+                        int index = 32 * (V + LMR_HISTORY_LIMIT) / (2 * LMR_HISTORY_LIMIT);
+                        dbg_hit_on(T, index);
+                        dbg_hit_on(T, 1000);
+
                         int bonus = value > alpha
-                                    ? std::min(36 * depth - 22, LMR_HISTORY_LIMIT / 4)
-                                    : -std::min(36 * depth - 22, LMR_HISTORY_LIMIT / 4);
+                                    ? std::min((141 * d - 89)/2, LMR_HISTORY_LIMIT / 4)
+                                    : -std::min((695 * d - 215)/2, LMR_HISTORY_LIMIT / 4);
+                                    //? std::min(12 * depth - 7, LMR_HISTORY_LIMIT / 4)
+                                    //: -std::min(36 * depth - 22, LMR_HISTORY_LIMIT / 4);
                         (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()] << bonus;
                     }
                 }
