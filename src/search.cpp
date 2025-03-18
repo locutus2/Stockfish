@@ -1246,8 +1246,10 @@ moves_loop:  // When in check, search starts here
             int V = 0;
             //if (!capture)
             //    r -= (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()];
-            if (!capture)
+            bool CC = false;
+            if (!capture && !priorCapture)
             {
+                CC = true;
                 V = (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()];
                 //dbg_mean_of((*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()], 0);
                 //dbg_stdev_of((*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()], 0);
@@ -1276,7 +1278,7 @@ moves_loop:  // When in check, search starts here
                 {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
-                    if (!capture)
+                    if (CC)
                     {
                         bool T = value > alpha;
                         //int V0 = -256;
@@ -1289,8 +1291,8 @@ moves_loop:  // When in check, search starts here
                         dbg_hit_on(T, 1000);
 
                         int bonus = value > alpha
-                                    ? std::min((141 * d - 89)/2, LMR_HISTORY_LIMIT / 4)
-                                    : -std::min((695 * d - 215)/2, LMR_HISTORY_LIMIT / 4);
+                                    ? std::min((141 * depth - 89)/1, LMR_HISTORY_LIMIT / 4)
+                                    : -std::min((695 * depth - 215)/1, LMR_HISTORY_LIMIT / 4);
                                     //? std::min(12 * depth - 7, LMR_HISTORY_LIMIT / 4)
                                     //: -std::min(36 * depth - 22, LMR_HISTORY_LIMIT / 4);
                         (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()] << bonus;
