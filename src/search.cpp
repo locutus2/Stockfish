@@ -1257,7 +1257,7 @@ moves_loop:  // When in check, search starts here
             if (!capture)
             {
                 int bonus = value > alpha ? std::min(141 * depth - 89, LMR_HISTORY_LIMIT / 4)
-                                          : -std::min(70 * depth - 45, LMR_HISTORY_LIMIT / 8);
+                                          : -std::min(35 * depth - 23, LMR_HISTORY_LIMIT / 16);
                 (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()] << bonus;
             }
 
