@@ -320,6 +320,12 @@ void dbg_auc_print(int n)
 
     for(int i = 0; i <= n; i++)
     {
+        N += hit.at(i)[0];
+        P += hit.at(i)[1];
+    }
+
+    for(int i = 0; i <= n; i++)
+    {
         AUC += hit.at(i)[1] / double(P) * (Ni - Pi) / double(N);
         Ni += hit.at(i)[0];
         Pi += hit.at(i)[1];
