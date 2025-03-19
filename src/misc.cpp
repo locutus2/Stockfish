@@ -380,7 +380,8 @@ void dbg_correl_of(int64_t value1, int64_t value2, int slot) {
 
 void dbg_print() {
 
-    dbg_auc_print(2048);
+    //dbg_auc_print(2048);
+    dbg_auc_print(3000);
     return;
 
     int64_t n;

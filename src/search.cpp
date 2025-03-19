@@ -1266,6 +1266,37 @@ moves_loop:  // When in check, search starts here
                 //dbg_mean_of((*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()], 0);
                 //dbg_stdev_of((*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()], 0);
                 CC = true;
+                V = ((*contHist[0])[movedPiece][move.to_sq()] + (*contHist[1])[movedPiece][move.to_sq()] + (*contHist[3])[movedPiece][move.to_sq()] + (*contHist[5])[movedPiece][move.to_sq()]) / 118; // AUC 0.585258
+                //V = ((*contHist[0])[movedPiece][move.to_sq()] + (*contHist[1])[movedPiece][move.to_sq()] + (*contHist[3])[movedPiece][move.to_sq()]) / 88; // AUC 0.578847
+                //V = ((*contHist[0])[movedPiece][move.to_sq()] + (*contHist[1])[movedPiece][move.to_sq()] + (*contHist[2])[movedPiece][move.to_sq()]) / 88; // AUC 0.569616
+                //V = ((*contHist[0])[movedPiece][move.to_sq()] + (*contHist[1])[movedPiece][move.to_sq()]) / 59; // AUC 0.561223
+                //V = ((*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()] + (*contHist[0])[movedPiece][move.to_sq()]) / 31; // AUC 0.545736
+                //V = (*contHist[0])[movedPiece][move.to_sq()] / 30; //  AUC 0.543949
+                //V = (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()] / 2 + (*contHist[0])[movedPiece][move.to_sq()] / 59; // AUC 0.539048
+                //V = 128 * cutNode + (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()]; //  AUC 0.538784
+                //V = 64 * cutNode + (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()]; // AUC 0.525622
+                //V = 32 * cutNode + (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()]; // AUC 0.518054
+                //V = 16 * cutNode + (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()]; // AUC 0.513968
+                //V = 8 * cutNode + (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()]; // AUC 0.511779
+                //V = 4 * cutNode + (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()]; // AUC 0.510626
+                //V = 2 * cutNode + (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()]; // AUC 0.510037
+                //V = cutNode + (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()]; // AUC 0.509738
+                //V = (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()]; // AUC 0.507772
+                //V = -(*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()]; // AUC 0.419855
+                //V = cutNode; // AUC 0.40092
+                //V = -allNode; // AUC 0.388047
+                //V = improving; // AUC 0.330393
+                //V = -ss->ttPv; // AUC 0.235376
+                //V = -improving; // AUC 0.151143
+                //V = ss->ttPv; // AUC 0.134342
+                //V = givesCheck; // AUC 0.115416
+                //V = -cutNode; // AUC 0.110534
+                //V = allNode; // AUC 0.10793
+                //V = -PvNode; // AUC 0.0730154
+                //V = -givesCheck; // AUC 0.0640612
+                //V = PvNode; // AUC 0.0627458
+                //V = -ss->inCheck; // AUC 0.0542758
+                //V = ss->inCheck; // AUC 0.0524008
             }
 
             Depth d = std::max(
@@ -1279,8 +1310,10 @@ moves_loop:  // When in check, search starts here
             if (CC)
             {
                 int bonusLmr = value > alpha
-                    ? std::min((141 * depth - 89)/1, LMR_HISTORY_LIMIT / 4)
-                    : -std::min((695 * depth - 215)/1, LMR_HISTORY_LIMIT / 4);
+                    ? std::min(depth, LMR_HISTORY_LIMIT / 4)
+                    : -std::min(depth, LMR_HISTORY_LIMIT / 4);
+                    //? std::min((141 * depth - 89)/1, LMR_HISTORY_LIMIT / 4)
+                    //: -std::min((695 * depth - 215)/1, LMR_HISTORY_LIMIT / 4);
 
                 bool T = value > alpha;
                 //int V0 = -256;
