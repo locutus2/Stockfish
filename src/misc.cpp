@@ -310,6 +310,26 @@ std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
 
+void dbg_auc_print(int n)
+{
+    int64_t N = 0;
+    int64_t P = 0;
+    int64_t Ni = 0;
+    int64_t Pi = 0;
+    double AUC = 0;
+
+    for(int i = 0; i <= n; i++)
+    {
+        AUC += hit.at(i)[1] / double(P) * (Ni - Pi) / double(N);
+        Ni += hit.at(i)[0];
+        Pi += hit.at(i)[1];
+    }
+
+    std::cerr << "Hit #" << n << ": Total " << N << " Hits " << P
+              << " Hit Rate (%) " << 100.0 * P / N 
+              << " AUC " << AUC << std::endl;
+}
+
 void dbg_hit_on(bool cond, int slot) {
 
     ++hit.at(slot)[0];
@@ -353,6 +373,9 @@ void dbg_correl_of(int64_t value1, int64_t value2, int slot) {
 }
 
 void dbg_print() {
+
+    dbg_auc_print(2048);
+    return;
 
     int64_t n;
     auto    E   = [&n](int64_t x) { return double(x) / n; };
