@@ -1244,7 +1244,7 @@ moves_loop:  // When in check, search starts here
             // std::clamp has been replaced by a more robust implementation.
 
             if (!capture && (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()] < -640)
-                r += 1024;
+                r -= (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()];
 
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
