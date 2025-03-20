@@ -125,12 +125,15 @@ void MovePicker::score() {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-    [[maybe_unused]] Bitboard threatenedByPawn, threatenedByMinor, threatenedByRook,
-      threatenedPieces;
+    [[maybe_unused]] Bitboard pawnAttackSquaresOnOpponent, threatenedByPawn, threatenedByMinor,
+      threatenedByRook, threatenedPieces;
     if constexpr (Type == QUIETS)
     {
         Color us = pos.side_to_move();
 
+        pawnAttackSquaresOnOpponent =
+          us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(BLACK) ^ pos.pieces(BLACK, PAWN))
+                      : pawn_attacks_bb<WHITE>(pos.pieces(WHITE) ^ pos.pieces(WHITE, PAWN));
         threatenedByPawn = pos.attacks_by<PAWN>(~us);
         threatenedByMinor =
           pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us) | threatenedByPawn;
@@ -167,6 +170,9 @@ void MovePicker::score() {
 
             // bonus for checks
             m.value += bool(pos.check_squares(pt) & to) * 16384;
+
+            // bonus for pawn moves which attack an opponent piece (excluding pawns)
+            m.value += (pt == PAWN && pawnAttackSquaresOnOpponent & to) * 4096;
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 51700
