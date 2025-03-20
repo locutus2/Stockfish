@@ -1117,11 +1117,11 @@ moves_loop:  // When in check, search starts here
 
         int V = 0;
         bool CC = false;
-        if(!ss->inCheck && !capture)
+        if(move != ttData.move && !ss->inCheck && !capture)
         {
             CC = true;
-            //V = (*contHist[0])[movedPiece][move.to_sq()] + 30000; // AUC 0.563586
-            V = 60001 * cutNode + (*contHist[0])[movedPiece][move.to_sq()] + 30000; // 
+            V = (*contHist[0])[movedPiece][move.to_sq()] + 30000; // 
+            //V = 60001 * cutNode + (*contHist[0])[movedPiece][move.to_sq()] + 30000; // 
         }
 
         // Step 15. Extensions
