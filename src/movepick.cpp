@@ -132,8 +132,9 @@ void MovePicker::score() {
         Color us = pos.side_to_move();
 
         pawnAttackSquaresOnOpponent =
-          us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(BLACK) ^ pos.pieces(BLACK, PAWN))
-                      : pawn_attacks_bb<WHITE>(pos.pieces(WHITE) ^ pos.pieces(WHITE, PAWN));
+          ~pos.attacks_by<PAWN>(~us)
+          & (us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(BLACK) ^ pos.pieces(BLACK, PAWN))
+                         : pawn_attacks_bb<WHITE>(pos.pieces(WHITE) ^ pos.pieces(WHITE, PAWN)));
         threatenedByPawn = pos.attacks_by<PAWN>(~us);
         threatenedByMinor =
           pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us) | threatenedByPawn;
