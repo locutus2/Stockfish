@@ -1115,6 +1115,15 @@ moves_loop:  // When in check, search starts here
             }
         }
 
+        int V = 0;
+        bool CC = false;
+        if(!ss->inCheck && !capture)
+        {
+            CC = true;
+            //V = (*contHist[0])[movedPiece][move.to_sq()] + 30000; // AUC 0.563586
+            V = 60001 * cutNode + (*contHist[0])[movedPiece][move.to_sq()] + 30000; // 
+        }
+
         // Step 15. Extensions
         // We take care to not overdo to avoid search getting stuck.
         if (ss->ply < thisThread->rootDepth * 2)
@@ -1253,13 +1262,11 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 
-            int V = 0;
             int VR = 0;
             int V0 = -960;
             //if (!capture)
             //    r -= (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()];
-            bool CC = false;
-            if (!capture)
+            if (false && !capture)
             {
                 V = (*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()];
                 VR = (*(ss - 1)->lmrResearchContinuationHistory)[movedPiece][move.to_sq()];
@@ -1309,7 +1316,7 @@ moves_loop:  // When in check, search starts here
                 //V = 2*cutNode - allNode; // AUC 0.439907
                 //V = 2*cutNode + priorCapture; // AUC 0.437583
                 //V = 2*cutNode + allNode; // AUC 0.422075
-                V = 2*cutNode + givesCheck; // 
+                //V = 2*cutNode + givesCheck; // 
                 //V = 2*cutNode - givesCheck; // 
                 //V = 2*cutNode - PvNode; // 
                 //V = 2*cutNode + PvNode; // 
@@ -1325,7 +1332,7 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-            if (CC)
+            if (false && CC)
             {
                 int bonusLmr = value > alpha
                     ? std::min(depth, LMR_HISTORY_LIMIT / 4)
@@ -1443,6 +1450,13 @@ moves_loop:  // When in check, search starts here
                 newDepth = std::max(newDepth, 1);
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
+        }
+
+        if(CC)
+        {
+            bool T = value > alpha;
+            int index = V;
+            dbg_hit_on(T, index);
         }
 
         // Step 19. Undo move
