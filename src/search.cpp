@@ -1266,7 +1266,7 @@ moves_loop:  // When in check, search starts here
                 //dbg_mean_of((*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()], 0);
                 //dbg_stdev_of((*(ss - 1)->lmrContinuationHistory)[movedPiece][move.to_sq()], 0);
                 CC = true;
-                V = ((*contHist[0])[movedPiece][move.to_sq()] + (*contHist[1])[movedPiece][move.to_sq()] + (*contHist[3])[movedPiece][move.to_sq()] + (*contHist[5])[movedPiece][move.to_sq()]) / 118; // AUC 0.585258
+                //V = ((*contHist[0])[movedPiece][move.to_sq()] + (*contHist[1])[movedPiece][move.to_sq()] + (*contHist[3])[movedPiece][move.to_sq()] + (*contHist[5])[movedPiece][move.to_sq()]) / 118; // AUC 0.585258
                 //V = ((*contHist[0])[movedPiece][move.to_sq()] + (*contHist[1])[movedPiece][move.to_sq()] + (*contHist[3])[movedPiece][move.to_sq()]) / 88; // AUC 0.578847
                 //V = ((*contHist[0])[movedPiece][move.to_sq()] + (*contHist[1])[movedPiece][move.to_sq()] + (*contHist[2])[movedPiece][move.to_sq()]) / 88; // AUC 0.569616
                 //V = ((*contHist[0])[movedPiece][move.to_sq()] + (*contHist[1])[movedPiece][move.to_sq()]) / 59; // AUC 0.561223
@@ -1287,16 +1287,34 @@ moves_loop:  // When in check, search starts here
                 //V = -allNode; // AUC 0.388047
                 //V = improving; // AUC 0.330393
                 //V = -ss->ttPv; // AUC 0.235376
+                //V = -priorCapture; // AUC 0.22003
                 //V = -improving; // AUC 0.151143
                 //V = ss->ttPv; // AUC 0.134342
                 //V = givesCheck; // AUC 0.115416
                 //V = -cutNode; // AUC 0.110534
                 //V = allNode; // AUC 0.10793
+                //V = priorCapture; // AUC 0.0767067
                 //V = -PvNode; // AUC 0.0730154
                 //V = -givesCheck; // AUC 0.0640612
                 //V = PvNode; // AUC 0.0627458
                 //V = -ss->inCheck; // AUC 0.0542758
                 //V = ss->inCheck; // AUC 0.0524008
+               
+                /* precondition cutNode */ //V = cutNode; // AUC 0.40092
+                //V = 2*cutNode + improving; // AUC 0.528706
+                //V = 2*cutNode - ss->ttPv; // AUC 0.494992
+                //V = 2*cutNode - priorCapture; // AUC 0.491879
+                //V = 2*cutNode - improving; // AUC 0.476138
+                //V = 2*cutNode + ss->ttPv; // AUC 0.470962
+                //V = 2*cutNode - allNode; // AUC 0.439907
+                //V = 2*cutNode + priorCapture; // AUC 0.437583
+                //V = 2*cutNode + allNode; // AUC 0.422075
+                V = 2*cutNode + givesCheck; // 
+                //V = 2*cutNode - givesCheck; // 
+                //V = 2*cutNode - PvNode; // 
+                //V = 2*cutNode + PvNode; // 
+                //V = 2*cutNode - ss->inCheck; // 
+                //V = 2*cutNode + ss->inCheck; // 
             }
 
             Depth d = std::max(
