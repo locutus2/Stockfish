@@ -1120,8 +1120,234 @@ moves_loop:  // When in check, search starts here
         if(move != ttData.move && !ss->inCheck && !capture)
         {
             CC = true;
-            V = (*contHist[0])[movedPiece][move.to_sq()] + 30000; // 
-            //V = 60001 * cutNode + (*contHist[0])[movedPiece][move.to_sq()] + 30000; // 
+            //V = (*contHist[0])[movedPiece][move.to_sq()] + 30000; // AUC 0.564953
+            //V = 60001 * givesCheck + (*contHist[0])[movedPiece][move.to_sq()] + 30000; // AUC 0.562415
+            //V = givesCheck + 2 * ((*contHist[0])[movedPiece][move.to_sq()] + 30000); // AUC 0.565175
+            //V = 16384 * givesCheck + (*contHist[0])[movedPiece][move.to_sq()] + 30000; // 
+            //V = 30000 * givesCheck + (*contHist[0])[movedPiece][move.to_sq()] + 30000; // 
+            //
+            /*
+            constexpr int A1 = 30000;
+            constexpr int A2 = 7183 * 2 + 8192 * 2 + 30000 * 16 / 3;
+            V =   (
+                    int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.707743
+            V =   ( givesCheck +
+                    int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.707744
+            V =   ( givesCheck * 16384 +
+                    int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.71497 
+            V =   ( givesCheck * 32768 +
+                    int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.714149
+            V =   ( givesCheck * 8192 +
+                    int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.712368
+            V =   ( givesCheck * 2 * A2 +
+                    int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // 0.683264 
+                */
+
+            constexpr int A1 = 30000;
+            constexpr int A2 = 7183 * 2 + 8192 * 2 + 30000 * 16 / 3;
+            V =   ( givesCheck * 16384
+                  +  int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.71497 
+            V =   ( (type_of(movedPiece) == PAWN) * 16384 
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.70986
+            V =   ( (type_of(movedPiece) != PAWN) * 16384 
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.707922
+            V =   ( (type_of(movedPiece) == KNIGHT && more_than_one(attacks_bb<KNIGHT>(move.to_sq()) & pos.pieces(~pos.side_to_move(), ROOK, QUEEN))) * 16384 
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.714946
+            V =   ( (type_of(movedPiece) == KNIGHT && more_than_one(attacks_bb<KNIGHT>(move.to_sq()) & pos.pieces(~pos.side_to_move(), ROOK, QUEEN))) * 8192 
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.714967
+            V =   ( (type_of(movedPiece) == KNIGHT && more_than_one(attacks_bb<KNIGHT>(move.to_sq()) & (pos.pieces(~pos.side_to_move()) ^ pos.pieces(~pos.side_to_move(), PAWN)))) * 16384 
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.714475
+            V =   ( (type_of(movedPiece) == PAWN && (pawn_attacks_bb(pos.side_to_move(), move.to_sq()) & (pos.pieces(~pos.side_to_move()) ^ pos.pieces(~pos.side_to_move(), PAWN)))) * 16384 
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.714536
+            V =   ( (type_of(movedPiece) == PAWN && (pawn_attacks_bb(pos.side_to_move(), move.to_sq()) & (pos.pieces(~pos.side_to_move()) ^ pos.pieces(~pos.side_to_move(), PAWN)))) * 16384 * 2
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2; // AUC 0.712278
+            V =   ( (type_of(movedPiece) == PAWN && (pawn_attacks_bb(pos.side_to_move(), move.to_sq()) & (pos.pieces(~pos.side_to_move()) ^ pos.pieces(~pos.side_to_move(), PAWN)))) * 16384 / 2
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.71498
+            V =   ( (type_of(movedPiece) == PAWN && (pawn_attacks_bb(pos.side_to_move(), move.to_sq()) & (pos.pieces(~pos.side_to_move()) ^ pos.pieces(~pos.side_to_move(), PAWN)))) * 16384 / 4
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.715095
+            /*
+            V =   ( (type_of(movedPiece) == PAWN && (pawn_attacks_bb(pos.side_to_move(), move.to_sq()) & (pos.pieces(~pos.side_to_move()) ^ pos.pieces(~pos.side_to_move(), PAWN)))) * 16384 / 8
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.715053
+            V =   ( (type_of(movedPiece) == PAWN && more_than_one(pawn_attacks_bb(pos.side_to_move(), move.to_sq()) & (pos.pieces(~pos.side_to_move()) ^ pos.pieces(~pos.side_to_move(), PAWN)))) * 16384 
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.71498
+            V =   ( (type_of(movedPiece) == PAWN && more_than_one(pawn_attacks_bb(pos.side_to_move(), move.to_sq()) & (pos.pieces(~pos.side_to_move()) ^ pos.pieces(~pos.side_to_move(), PAWN)))) * 16384 * 2
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2; // AUC 0.715055
+            V =   ( (type_of(movedPiece) == PAWN && more_than_one(pawn_attacks_bb(pos.side_to_move(), move.to_sq()) & (pos.pieces(~pos.side_to_move()) ^ pos.pieces(~pos.side_to_move(), PAWN)))) * 16384 * 4
+                    + givesCheck * 16384
+                    + int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2; // AUC 0.714871
+            */
         }
 
         // Step 15. Extensions
