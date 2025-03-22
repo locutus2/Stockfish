@@ -1209,6 +1209,7 @@ moves_loop:  // When in check, search starts here
                 + A2) * A1 / A2;  // 0.683264 
                 */
 
+            /*
             constexpr int A1 = 30000;
             constexpr int A2 = 7183 * 2 + 8192 * 2 + 30000 * 16 / 3;
             V =   ( givesCheck * 16384
@@ -1499,6 +1500,64 @@ moves_loop:  // When in check, search starts here
                 + (*contHist[4])[movedPiece][move.to_sq()] / 3
                 + (*contHist[5])[movedPiece][move.to_sq()]
                 + A2) * A1 / A2;  // 
+            */
+            constexpr int A1 = 30000;
+            constexpr int A2 = 7183 * 2 + 8192 * 2 + 30000 * 16 / 3;
+            V =   ( givesCheck * 16384
+                  +  int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.719505
+            V =   ( (type_of(movedPiece) == PAWN && (pawn_attacks_bb(pos.side_to_move(), move.to_sq()) & ~pos.attacks_by<PAWN>(~pos.side_to_move()) & (pos.pieces(~pos.side_to_move()) ^ pos.pieces(~pos.side_to_move(), PAWN)))) * 16384 / 2
+                    + givesCheck * 16384
+                  +  int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.719439
+
+            V =   ( (type_of(movedPiece) == QUEEN && !pos.see_ge(move)) * -16384 + 16384
+                    + givesCheck * 16384
+                  +  int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.72082
+            V =   ( (type_of(movedPiece) == QUEEN && !pos.see_ge(move)) * -16384 * 2 + 2 * 16384
+                    + givesCheck * 16384
+                  +  int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.721787
+            V =   ( (type_of(movedPiece) == QUEEN && !pos.see_ge(move)) * -16384 * 4 + 4 * 16384
+                    + givesCheck * 16384
+                  +  int64_t(2) * mainHistory[pos.side_to_move()][move.from_to()]
+                + 2 * pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
+                + (*contHist[0])[movedPiece][move.to_sq()]
+                + (*contHist[1])[movedPiece][move.to_sq()]
+                + (*contHist[2])[movedPiece][move.to_sq()]
+                + (*contHist[3])[movedPiece][move.to_sq()]
+                + (*contHist[4])[movedPiece][move.to_sq()] / 3
+                + (*contHist[5])[movedPiece][move.to_sq()]
+                + A2) * A1 / A2;  // AUC 0.722636
         }
 
         // Step 15. Extensions
