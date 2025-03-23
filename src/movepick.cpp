@@ -126,7 +126,7 @@ void MovePicker::score() {
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
     [[maybe_unused]] Bitboard threatenedByPawn, threatenedByMinor, threatenedByRook,
-      threatenedPieces, threatenedAndUndefended;
+      threatenedPieces, threatenedAndUndefendedRook, threatenedAndUndefendedQueen;
     if constexpr (Type == QUIETS)
     {
         Color us = pos.side_to_move();
@@ -141,15 +141,13 @@ void MovePicker::score() {
                          | (pos.pieces(us, ROOK) & threatenedByMinor)
                          | (pos.pieces(us, KNIGHT, BISHOP) & threatenedByPawn);
 
-        Bitboard b, a, defended;
-        b = defended = pos.attacks_by<KING>(us) | pos.attacks_by<PAWN>(us)
-                     | pos.attacks_by<KNIGHT>(us) | pos.attacks_by<BISHOP>(us);
-        defended |= b & (a = pos.attacks_by<ROOK>(us));
-        b |= a;
-        defended |= b & pos.attacks_by<QUEEN>(us);
+        Bitboard defended = pos.attacks_by<KING>(us) | pos.attacks_by<PAWN>(us)
+                          | pos.attacks_by<KNIGHT>(us) | pos.attacks_by<BISHOP>(us);
 
-        threatenedAndUndefended =
-          (pos.attacks_by<QUEEN>(~us) | pos.attacks_by<KING>(~us) | threatenedByRook) & ~defended;
+        threatenedAndUndefendedRook = threatenedAndUndefendedQueen =
+          pos.attacks_by<QUEEN>(~us) | pos.attacks_by<KING>(~us) | threatenedByRook;
+        threatenedAndUndefendedRook &= ~(defended | pos.attacks_by<QUEEN>(us));
+        threatenedAndUndefendedQueen &= ~(defended | pos.attacks_by<ROOK>(us));
     }
 
     for (auto& m : *this)
@@ -187,9 +185,9 @@ void MovePicker::score() {
 
             // malus for putting piece en prise
             m.value -=
-              (pt == QUEEN ? bool(to & (threatenedByRook | threatenedAndUndefended)) * 49000
-               : pt == ROOK && bool(to & (threatenedByMinor | threatenedAndUndefended)) ? 24335
-                                                                                        : 0);
+              (pt == QUEEN ? bool(to & (threatenedByRook | threatenedAndUndefendedQueen)) * 49000
+               : pt == ROOK && bool(to & (threatenedByMinor | threatenedAndUndefendedRook)) ? 24335
+                                                                                             : 0);
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + 2 * ply);
