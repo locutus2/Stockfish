@@ -39,6 +39,7 @@ enum GenType {
 struct ExtMove: public Move {
     int value;
 
+    ExtMove(Move m = Move::none()) { data = m.raw(); }
     void operator=(Move m) { data = m.raw(); }
 
     // Inhibit unwanted implicit conversions to Move
