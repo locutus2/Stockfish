@@ -172,7 +172,7 @@ void MovePicker::score() {
             m.value += bool(pos.check_squares(pt) & to) * 16384;
 
             // bonus for pawn moves which attack an opponent piece (excluding pawns)
-            m.value += (pt == PAWN && pawnAttackSquaresOnOpponent & to) * 16384;
+            m.value += (pt == PAWN && pawnAttackSquaresOnOpponent & to) * 24576;
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 51700
