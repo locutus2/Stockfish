@@ -1141,12 +1141,12 @@ moves_loop:  // When in check, search starts here
         {
             CC = true;
             constexpr int64_t DBG = 60000;
-            int64_t MIN = 7183 * 2 + 8192 * 2 + 30000 * 16 / 3 +  8 * 7183;
-            int64_t MAX = MIN + 16384 + 51700;
-            MIN += 49000;
-            V =   ( MIN + extmove.value
+            int64_t MAX = 7183 * 2 + 8192 * 2 + 30000 * 16 / 3 +  8 * 7183;
+            int64_t MIN = -MAX - 49000;
+            MAX += 16384 + 51700;
+            V =   ( -MIN + extmove.value
                     + 0 
-                  ) * DBG / (MAX + MIN);  // AUC 0.719661
+                  ) * DBG / (MAX - MIN);  // AUC 0.719661
         }
 
         // Step 15. Extensions
