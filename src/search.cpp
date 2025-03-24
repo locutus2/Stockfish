@@ -1139,6 +1139,13 @@ moves_loop:  // When in check, search starts here
         bool CC = false;
         if(mp.isQuiet())
         {
+            /*
+            const Color us = pos.side_to_move();
+            const Square to = move.to_sq();
+            const PieceType pt = type_of(pos.moved_piece(move));
+            const Bitboard pawnAttackSquaresOnOpponent = ~pos.attacks_by<PAWN>(~us)
+                                                  & (us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(BLACK) ^ pos.pieces(BLACK, PAWN))
+                                                                 : pawn_attacks_bb<WHITE>(pos.pieces(WHITE) ^ pos.pieces(WHITE, PAWN)));
             CC = true;
             constexpr int64_t DBG = 60000;
             int64_t MAX = 7183 * 2 + 8192 * 2 + 30000 * 16 / 3 +  8 * 7183;
@@ -1147,6 +1154,48 @@ moves_loop:  // When in check, search starts here
             V =   ( -MIN + extmove.value
                     + 0 
                   ) * DBG / (MAX - MIN);  // AUC 0.719661
+            V =   ( -MIN + extmove.value
+                    + (pt == PAWN && to & pawnAttackSquaresOnOpponent) * 32768 
+                  ) * DBG / (MAX - MIN);  // AUC 0.718199 
+            V =   ( -MIN + extmove.value
+                    + (pt == PAWN && to & pawnAttackSquaresOnOpponent) * 2*32768 
+                  ) * DBG / (MAX - MIN);  // AUC 0.714327
+            V =   ( -MIN + extmove.value
+                    + (pt == PAWN && to & pawnAttackSquaresOnOpponent) * 32768/2 
+                  ) * DBG / (MAX - MIN);  // AUC 0.719681
+                  */
+
+            //const Color us = pos.side_to_move();
+            const Square to = move.to_sq();
+            const PieceType pt = type_of(pos.moved_piece(move));
+            const Bitboard pawnAttackSquaresOnOpponent = ~pos.attacks_by<PAWN>(~us)
+                                                  & (us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(BLACK) ^ pos.pieces(BLACK, PAWN))
+                                                                 : pawn_attacks_bb<WHITE>(pos.pieces(WHITE) ^ pos.pieces(WHITE, PAWN)));
+            const Bitboard pawnAttackSquaresOnOpponent2 = pos.attacks_by<PAWN>(us)
+                                                  & (us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(BLACK) ^ pos.pieces(BLACK, PAWN))
+                                                                 : pawn_attacks_bb<WHITE>(pos.pieces(WHITE) ^ pos.pieces(WHITE, PAWN)));
+            CC = true;
+            int64_t MAX = 7183 * 2 + 8192 * 2 + 30000 * 16 / 3 +  8 * 7183;
+            int64_t MIN = -MAX - 49000;
+            MAX += 16384 + 51700;
+            // MAX - MIN = 613512
+
+            //int VV = 0;   // AUC 0.71969 
+            //int VV = (pt == PAWN && to & pawnAttackSquaresOnOpponent2) * 16384 * 2; //  AUC 0.719457
+            //int VV = (pt == PAWN && to & pawnAttackSquaresOnOpponent2) * 16384; // AUC 0.719927
+            //int VV = (pt == PAWN && to & pawnAttackSquaresOnOpponent) * 16384; // AUC 0.71971
+            //int VV = (pt == PAWN && to & pawnAttackSquaresOnOpponent) * 16384 * 3 / 2; // AUC 0.719096
+            //int VV = (pt == PAWN && to & pawnAttackSquaresOnOpponent) * 16384 * 2; // AUC 0.718227
+            //int VV = mainHistory; // AUC 0.720539
+            //int VV = -mainHistory; // AUC 0.714327
+            //int VV = 2*mainHistory; //AUC 0.717281 
+            //int VV = pawnHistory; // AUC 0.714436
+            //int VV = -pawnHistory; // AUC 0.717287
+            //int VV = cmh[0]; // AUC 0.717663 
+            //int VV = -cmh[0]; // AUC 0.703103
+            int VV = 0; // 
+            MIN -= 30000;
+            V = ( -MIN + extmove.value + VV ); 
         }
 
         // Step 15. Extensions
