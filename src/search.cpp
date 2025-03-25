@@ -1212,6 +1212,8 @@ moves_loop:  // When in check, search starts here
             //int VV = (pt != PAWN) * 16384; // AUC 0.712428
             //int VV = (pt == KING) * 16384; // AUC 0.715358
             //int VV = (pt != KING) * 16384; // AUC 0.713781
+            //int VV = cmh_index(bool(m.to_sq() & pos.attacks_by<PAWN>(pos.side_to_move()))) // AUC 0.721444
+            //int VV = cmh_index(bool(m.to_sq() & pos.attacks_by<PAWN>(~pos.side_to_move()))) // AUC 0.717018
             V = ( -MIN + extmove.value + VV ); 
         }
 

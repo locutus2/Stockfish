@@ -46,7 +46,10 @@ static_assert((CORRECTION_HISTORY_SIZE & (CORRECTION_HISTORY_SIZE - 1)) == 0,
               "CORRECTION_HISTORY_SIZE has to be a power of 2");
 
 inline int cmh_index(const Position& pos, const Move& m) {
-    return bool(m.to_sq() & pos.attacks_by<PAWN>(pos.side_to_move()));
+    //return bool(relative_rank(pos.side_to_move(), m.to_sq()) > RANK_1 && pos.piece_on(m.to_sq() - pawn_push(pos.side_to_move())) == make_piece(pos.side_to_move(), PAWN)); // 
+    return bool(m.to_sq() & pos.attacks_by<PAWN>(pos.side_to_move())); //
+    //return bool(m.to_sq() & pos.attacks_by<PAWN>(~pos.side_to_move())); // AUC 0.714869
+    //return 0; // master AUC 0.71969
 }
 
 enum PawnHistoryType {
