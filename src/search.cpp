@@ -1180,21 +1180,37 @@ moves_loop:  // When in check, search starts here
             MAX += 16384 + 51700;
             // MAX - MIN = 613512
 
-            //int VV = 0;   // AUC 0.71969 
+            int VV = 0;   // AUC 0.71969 
             //int VV = (pt == PAWN && to & pawnAttackSquaresOnOpponent2) * 16384 * 2; //  AUC 0.719457
             //int VV = (pt == PAWN && to & pawnAttackSquaresOnOpponent2) * 16384; // AUC 0.719927
             //int VV = (pt == PAWN && to & pawnAttackSquaresOnOpponent) * 16384; // AUC 0.71971
             //int VV = (pt == PAWN && to & pawnAttackSquaresOnOpponent) * 16384 * 3 / 2; // AUC 0.719096
             //int VV = (pt == PAWN && to & pawnAttackSquaresOnOpponent) * 16384 * 2; // AUC 0.718227
-            //int VV = mainHistory; // AUC 0.720539
-            //int VV = -mainHistory; // AUC 0.714327
             //int VV = 2*mainHistory; //AUC 0.717281 
+            //int VV = mainHistory * 3 / 2; // AUC 0.717577
+            //int VV = mainHistory; // AUC 0.720539
+            //int VV = mainHistory / 2; // AUC 0.717098
+            //int VV = -mainHistory / 2; // AUC 0.713758
+            //int VV = -mainHistory; // AUC 0.714327
+            //int VV = -mainHistory * 3 / 2; // AUC 0.709709
+            //int VV = -2 * mainHistory; // AUC 0.703426 
+            //int VV = 2*pawnHistory; // AUC 0.710994
+            //int VV = pawnHistory * 3 / 2; // AUC 0.716004
             //int VV = pawnHistory; // AUC 0.714436
+            //int VV = pawnHistory / 2; //  AUC 0.715987
+            //int VV = -pawnHistory / 2; // AUC 0.714322
             //int VV = -pawnHistory; // AUC 0.717287
+            //int VV = -pawnHistory * 3 / 2; // AUC 0.715356
+            //int VV = -2*pawnHistory; // AUC 0.706232 
             //int VV = cmh[0]; // AUC 0.717663 
             //int VV = -cmh[0]; // AUC 0.703103
-            int VV = 0; // 
-            MIN -= 30000;
+            //int VV = cmh[1]; // AUC 0.714279
+            //int VV = -cmh[1]; // AUC 0.711575
+            //MIN -= 30000;
+            //int VV = (pt == PAWN) * 16384; // AUC 0.715507 
+            //int VV = (pt != PAWN) * 16384; // AUC 0.712428
+            //int VV = (pt == KING) * 16384; // AUC 0.715358
+            //int VV = (pt != KING) * 16384; // AUC 0.713781
             V = ( -MIN + extmove.value + VV ); 
         }
 
