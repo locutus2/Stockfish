@@ -160,6 +160,8 @@ void MovePicker::score() {
             Square    from = m.from_sq();
             Square    to   = m.to_sq();
 
+            int B = cmh_index(pos, m);
+
             // histories
             m.value = 2 * (*mainHistory)[pos.side_to_move()][m.from_to()];
             m.value += 2 * (*pawnHistory)[pawn_structure_index(pos)][pc][to];
@@ -191,6 +193,7 @@ void MovePicker::score() {
 
         else  // Type == EVASIONS
         {
+            int B = bool(m.to_sq() & pos.attacks_by<PAWN>(~pos.side_to_move()));
             if (pos.capture_stage(m))
                 m.value = PieceValue[pos.piece_on(m.to_sq())] + (1 << 28);
             else

@@ -1067,6 +1067,7 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 979;
 
+        int B = cmh_index(pos, move);
         // Step 14. Pruning at shallow depth.
         // Depth conditions are important for mate finding.
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
@@ -1101,8 +1102,8 @@ moves_loop:  // When in check, search starts here
             else
             {
                 int history =
-                  (*contHist[0])[movedPiece][move.to_sq()][0]
-                  + (*contHist[1])[movedPiece][move.to_sq()][0]
+                  (*contHist[0])[movedPiece][move.to_sq()][B]
+                  + (*contHist[1])[movedPiece][move.to_sq()][B]
                   + thisThread->pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
@@ -1337,11 +1338,11 @@ moves_loop:  // When in check, search starts here
               - 4822;
         else if (ss->inCheck)
             ss->statScore = thisThread->mainHistory[us][move.from_to()]
-                          + (*contHist[0])[movedPiece][move.to_sq()][0] - 2771;
+                          + (*contHist[0])[movedPiece][move.to_sq()][B] - 2771;
         else
             ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
-                          + (*contHist[0])[movedPiece][move.to_sq()][0]
-                          + (*contHist[1])[movedPiece][move.to_sq()][0] - 3271;
+                          + (*contHist[0])[movedPiece][move.to_sq()][B]
+                          + (*contHist[1])[movedPiece][move.to_sq()][B] - 3271;
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1582 / 16384;
@@ -1919,9 +1920,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 }
             }
 
+            int B = cmh_index(pos, move);
+
             // Continuation history based pruning
             if (!capture
-                && (*contHist[0])[pos.moved_piece(move)][move.to_sq()][0]
+                && (*contHist[0])[pos.moved_piece(move)][move.to_sq()][B]
                        + thisThread->pawnHistory[pawn_structure_index(pos)][pos.moved_piece(move)]
                                                 [move.to_sq()]
                      <= 6290)

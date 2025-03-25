@@ -45,6 +45,10 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
 static_assert((CORRECTION_HISTORY_SIZE & (CORRECTION_HISTORY_SIZE - 1)) == 0,
               "CORRECTION_HISTORY_SIZE has to be a power of 2");
 
+inline int cmh_index(const Position& pos, const Move& m) {
+    return bool(m.to_sq() & pos.attacks_by<PAWN>(pos.side_to_move()));
+}
+
 enum PawnHistoryType {
     Normal,
     Correction
