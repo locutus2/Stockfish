@@ -1101,8 +1101,8 @@ moves_loop:  // When in check, search starts here
             else
             {
                 int history =
-                  (*contHist[0])[movedPiece][move.to_sq()]
-                  + (*contHist[1])[movedPiece][move.to_sq()]
+                  (*contHist[0])[movedPiece][move.to_sq()][0]
+                  + (*contHist[1])[movedPiece][move.to_sq()][0]
                   + thisThread->pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
@@ -1337,11 +1337,11 @@ moves_loop:  // When in check, search starts here
               - 4822;
         else if (ss->inCheck)
             ss->statScore = thisThread->mainHistory[us][move.from_to()]
-                          + (*contHist[0])[movedPiece][move.to_sq()] - 2771;
+                          + (*contHist[0])[movedPiece][move.to_sq()][0] - 2771;
         else
             ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
-                          + (*contHist[0])[movedPiece][move.to_sq()]
-                          + (*contHist[1])[movedPiece][move.to_sq()] - 3271;
+                          + (*contHist[0])[movedPiece][move.to_sq()][0]
+                          + (*contHist[1])[movedPiece][move.to_sq()][0] - 3271;
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1582 / 16384;
@@ -1921,7 +1921,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
             // Continuation history based pruning
             if (!capture
-                && (*contHist[0])[pos.moved_piece(move)][move.to_sq()]
+                && (*contHist[0])[pos.moved_piece(move)][move.to_sq()][0]
                        + thisThread->pawnHistory[pawn_structure_index(pos)][pos.moved_piece(move)]
                                                 [move.to_sq()]
                      <= 6290)
@@ -2136,7 +2136,7 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
         if (ss->inCheck && i > 2)
             break;
         if (((ss - i)->currentMove).is_ok())
-            (*(ss - i)->continuationHistory)[pc][to] << bonus * weight / 1024;
+            (*(ss - i)->continuationHistory)[pc][to][0] << bonus * weight / 1024;
     }
 }
 

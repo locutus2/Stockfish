@@ -116,7 +116,7 @@ using LowPlyHistory =
 using CapturePieceToHistory = Stats<std::int16_t, 10692, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
 
 // PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
-using PieceToHistory = Stats<std::int16_t, 30000, PIECE_NB, SQUARE_NB>;
+using PieceToHistory = Stats<std::int16_t, 30000, PIECE_NB, SQUARE_NB, 2>;
 
 // ContinuationHistory is the combined history of a given pair of moves, usually
 // the current one given a previous one. The nested history table is based on
