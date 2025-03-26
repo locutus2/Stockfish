@@ -295,7 +295,7 @@ void Search::Worker::iterative_deepening() {
     for (int i = 7; i > 0; --i)
     {
         (ss - i)->continuationHistory =
-          &this->continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
+          &this->continuationHistory[0][0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->lmrContinuationHistory =
           &this->lmrContinuationHistory[NO_PIECE][0];  // Use as a sentinel
         (ss - i)->lmrResearchContinuationHistory =
@@ -594,9 +594,10 @@ void Search::Worker::clear() {
 
     for (bool inCheck : {false, true})
         for (StatsType c : {NoCaptures, Captures})
-            for (auto& to : continuationHistory[inCheck][c])
-                for (auto& h : to)
-                    h.fill(-468);
+            for (bool cond : {false, true})
+                for (auto& to : continuationHistory[inCheck][c][cond])
+                    for (auto& h : to)
+                        h.fill(-468);
 
     for (auto& to : lmrContinuationHistory)
         for (auto& h : to)
@@ -888,7 +889,7 @@ Value Search::Worker::search(
         Depth R = std::min(int(eval - beta) / 232, 6) + depth / 3 + 5;
 
         ss->currentMove                   = Move::null();
-        ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+        ss->continuationHistory           = &thisThread->continuationHistory[0][0][0][NO_PIECE][0];
         ss->lmrContinuationHistory        = &thisThread->lmrContinuationHistory[NO_PIECE][0];
         ss->lmrResearchContinuationHistory        = &thisThread->lmrResearchContinuationHistory[NO_PIECE][0];
         ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
@@ -960,12 +961,13 @@ Value Search::Worker::search(
             movedPiece = pos.moved_piece(move);
 
             do_move(pos, move, st);
+            int cmhIndex2 = cmh_index2(pos, move);
             thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
 
             ss->currentMove = move;
             ss->isTTMove    = (move == ttData.move);
             ss->continuationHistory =
-              &this->continuationHistory[ss->inCheck][true][movedPiece][move.to_sq()];
+              &this->continuationHistory[ss->inCheck][true][cmhIndex2][movedPiece][move.to_sq()];
             ss->lmrContinuationHistory =
               &thisThread->lmrContinuationHistory[movedPiece][move.to_sq()];
             ss->lmrResearchContinuationHistory =
@@ -1290,6 +1292,7 @@ moves_loop:  // When in check, search starts here
 
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck);
+            int cmhIndex2 = cmh_index2(pos, move);
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
 
         // Add extension to new depth
@@ -1299,7 +1302,7 @@ moves_loop:  // When in check, search starts here
         ss->currentMove = move;
         ss->isTTMove    = (move == ttData.move);
         ss->continuationHistory =
-          &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
+          &thisThread->continuationHistory[ss->inCheck][capture][cmhIndex2][movedPiece][move.to_sq()];
         ss->lmrContinuationHistory = &thisThread->lmrContinuationHistory[movedPiece][move.to_sq()];
         ss->lmrResearchContinuationHistory = &thisThread->lmrResearchContinuationHistory[movedPiece][move.to_sq()];
         ss->continuationCorrectionHistory =
@@ -1944,12 +1947,13 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         Piece movedPiece = pos.moved_piece(move);
 
         do_move(pos, move, st, givesCheck);
+            int cmhIndex2 = cmh_index2(pos, move);
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
 
         // Update the current move
         ss->currentMove = move;
         ss->continuationHistory =
-          &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
+          &thisThread->continuationHistory[ss->inCheck][capture][cmhIndex2][movedPiece][move.to_sq()];
         ss->continuationCorrectionHistory =
           &thisThread->continuationCorrectionHistory[movedPiece][move.to_sq()];
 

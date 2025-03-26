@@ -287,7 +287,7 @@ class Worker {
     LowPlyHistory    lowPlyHistory;
 
     CapturePieceToHistory  captureHistory;
-    ContinuationHistory    continuationHistory[2][2];
+    ContinuationHistory    continuationHistory[2][2][512];
     LmrContinuationHistory lmrContinuationHistory;
     LmrContinuationHistory lmrResearchContinuationHistory;
     PawnHistory            pawnHistory;

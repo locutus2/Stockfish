@@ -45,12 +45,39 @@ static_assert((PAWN_HISTORY_SIZE & (PAWN_HISTORY_SIZE - 1)) == 0,
 static_assert((CORRECTION_HISTORY_SIZE & (CORRECTION_HISTORY_SIZE - 1)) == 0,
               "CORRECTION_HISTORY_SIZE has to be a power of 2");
 
+inline int cmh_index2(const Position& pos, const Move& m) {
+    //return pos.pawn_key() & 255; // AUC 0.727419
+    //return pos.pawn_key() & 127; // AUC 0.726315
+    //return pos.pawn_key() & 63; // AUC 0.727001
+    //return pos.pawn_key() & 31; // AUC 0.723066
+    //return pos.pawn_key() & 15; // AUC 0.721336
+    //return pos.pawn_key() & 7; // AUC 0.719499
+    //return pos.pawn_key() & 3; // AUC 0.717389
+    //return pos.pawn_key() & 511; // AUC 0.726557
+    return 0; // master AUC 0.71969
+    //return pos.count<ROOK>(WHITE) == pos.count<ROOK>(BLACK); // AUC 0.718667
+    //return bool(m.to_sq() & pos.attacks_by<PAWN>(~pos.side_to_move())); // AUC 0.718119
+    //return pos.count<PAWN>(WHITE) == pos.count<PAWN>(BLACK); // AUC 0.717861
+    //return bool(m.to_sq() & pos.attacks_by<PAWN>(pos.side_to_move())); // AUC 0.716605
+    //return pos.count<QUEEN>(WHITE) == pos.count<QUEEN>(BLACK); // AUC 0.71753
+    //return pos.count<PAWN>() & 1; // AUC 0.717264
+    //return bool(pos.checkers()); // AUC 0.7169 
+    //return pos.pawn_key() & 1; // AUC 0.715813
+}
+
 inline int cmh_index(const Position& pos, const Move& m) {
-    //return 0; // master AUC 0.71969
+    //return pos.gives_check(m); //  AUC 0.721028
+    //return pos.count<PAWN>(WHITE) == pos.count<PAWN>(BLACK); // AUC 0.719731 
+    return 0; // master AUC 0.71969
+    //return pos.gives_check(m); // without quiet check bonus AUC 0.7192 
+    //return bool(pos.check_squares(type_of(pos.moved_piece(m))) & m.to_sq()); // without quiet check bonus AUC 0.718852
+    //return bool(m.to_sq() & pos.attacks_by<PAWN>(~pos.side_to_move())); // AUC 0.718587
+    //return pos.count<QUEEN>(WHITE) == pos.count<QUEEN>(BLACK); // AUC 0.717097
+    //return bool(m.to_sq() & pos.attacks_by<PAWN>(pos.side_to_move())); //  AUC 0.716928
+    //return bool(relative_rank(pos.side_to_move(), m.to_sq()) > RANK_2 && pos.pieces(pos.side_to_move(), PAWN) & (m.to_sq() - pawn_push(pos.side_to_move()))); // AUC 0.71612
+    //return 0; // without quiet check bonus AUC 0.712617 
+    //return pos.pawn_key() & 1; // AUC 0.711715
     //return pos.key() & 1; // AUC 0.706409
-    //return bool(relative_rank(pos.side_to_move(), m.to_sq()) > RANK_1 && pos.pieces(pos.side_to_move(), PAWN) & (m.to_sq() - pawn_push(pos.side_to_move()))); // 
-    //return bool(m.to_sq() & pos.attacks_by<PAWN>(pos.side_to_move())); // 
-    return bool(m.to_sq() & pos.attacks_by<PAWN>(~pos.side_to_move())); // AUC 
 }
 
 enum PawnHistoryType {
