@@ -844,7 +844,7 @@ Value Search::Worker::search(
     if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-10 * int((ss - 1)->staticEval + ss->staticEval), -1950, 1416) + 655;
-        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus * 1124 / 1024;
+        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()][(ss-1)->mainIndex] << bonus * 1124 / 1024;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
               << bonus * 1196 / 1024;
@@ -889,6 +889,7 @@ Value Search::Worker::search(
         Depth R = std::min(int(eval - beta) / 232, 6) + depth / 3 + 5;
 
         ss->currentMove                   = Move::null();
+        ss->mainIndex                     = main_index(pos, ss->currentMove);
         ss->continuationHistory           = &thisThread->continuationHistory[0][0][0][NO_PIECE][0];
         ss->lmrContinuationHistory        = &thisThread->lmrContinuationHistory[NO_PIECE][0];
         ss->lmrResearchContinuationHistory        = &thisThread->lmrResearchContinuationHistory[NO_PIECE][0];
@@ -960,6 +961,7 @@ Value Search::Worker::search(
 
             movedPiece = pos.moved_piece(move);
 
+            ss->mainIndex   = main_index(pos, move);
             do_move(pos, move, st);
             int cmhIndex2 = cmh_index2(pos, move);
             thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
@@ -1064,6 +1066,9 @@ moves_loop:  // When in check, search starts here
 
         r -= 32 * moveCount;
 
+        int M = main_index(pos, move);
+
+
         // Increase reduction for ttPv nodes (*Scaler)
         // Smaller or even negative value is better for short time controls
         // Bigger value is better for long time controls
@@ -1113,7 +1118,7 @@ moves_loop:  // When in check, search starts here
                 if (history < -4348 * depth)
                     continue;
 
-                history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
+                history += 68 * thisThread->mainHistory[us][move.from_to()][M] / 32;
 
                 lmrDepth += history / 3593;
 
@@ -1290,6 +1295,7 @@ moves_loop:  // When in check, search starts here
 
         ss->cmhIndex = cmh_index(pos, move);
 
+        ss->mainIndex   = main_index(pos, ss->currentMove);
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck);
             int cmhIndex2 = cmh_index2(pos, move);
@@ -1345,10 +1351,10 @@ moves_loop:  // When in check, search starts here
               + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
               - 4822;
         else if (ss->inCheck)
-            ss->statScore = thisThread->mainHistory[us][move.from_to()]
+            ss->statScore = thisThread->mainHistory[us][move.from_to()][M]
                           + (*contHist[0])[movedPiece][move.to_sq()][B] - 2771;
         else
-            ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
+            ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()][M]
                           + (*contHist[0])[movedPiece][move.to_sq()][B]
                           + (*contHist[1])[movedPiece][move.to_sq()][B] - 3271;
 
@@ -1708,7 +1714,7 @@ moves_loop:  // When in check, search starts here
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, (ss-1)->cmhIndex, 
                                       scaledBonus * 388 / 32768);
 
-        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
+        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()][(ss-1)->mainIndex]
           << scaledBonus * 212 / 32768;
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
@@ -1946,6 +1952,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         // Step 7. Make and search the move
         Piece movedPiece = pos.moved_piece(move);
 
+        ss->mainIndex   = main_index(pos, move);
         do_move(pos, move, st, givesCheck);
             int cmhIndex2 = cmh_index2(pos, move);
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
@@ -2158,7 +2165,7 @@ void update_quiet_histories(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
-    workerThread.mainHistory[us][move.from_to()] << bonus;  // Untuned to prevent duplicate effort
+    workerThread.mainHistory[us][move.from_to()][main_index(pos, move)] << bonus;  // Untuned to prevent duplicate effort
 
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
         workerThread.lowPlyHistory[ss->ply][move.from_to()] << bonus * 829 / 1024;

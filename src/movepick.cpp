@@ -160,10 +160,11 @@ void MovePicker::score() {
             Square    from = m.from_sq();
             Square    to   = m.to_sq();
 
+            int M = main_index(pos, m);
             int B = cmh_index(pos, m);
 
             // histories
-            m.value = 2 * (*mainHistory)[pos.side_to_move()][m.from_to()];
+            m.value = 2 * (*mainHistory)[pos.side_to_move()][m.from_to()][M];
             m.value += 2 * (*pawnHistory)[pawn_structure_index(pos)][pc][to];
             m.value += (*continuationHistory[0])[pc][to][B];
             m.value += (*continuationHistory[1])[pc][to][B];
@@ -193,11 +194,12 @@ void MovePicker::score() {
 
         else  // Type == EVASIONS
         {
+            int M = main_index(pos, m);
             int B = cmh_index(pos, m);
             if (pos.capture_stage(m))
                 m.value = PieceValue[pos.piece_on(m.to_sq())] + (1 << 28);
             else
-                m.value = (*mainHistory)[pos.side_to_move()][m.from_to()]
+                m.value = (*mainHistory)[pos.side_to_move()][m.from_to()][M]
                         + (*continuationHistory[0])[pos.moved_piece(m)][m.to_sq()][B]
                         + (*pawnHistory)[pawn_structure_index(pos)][pos.moved_piece(m)][m.to_sq()];
         }
