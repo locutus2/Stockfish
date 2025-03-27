@@ -46,12 +46,18 @@ static_assert((CORRECTION_HISTORY_SIZE & (CORRECTION_HISTORY_SIZE - 1)) == 0,
               "CORRECTION_HISTORY_SIZE has to be a power of 2");
 
 inline int main_index(const Position& pos, const Move& m) {
-    //return 0; // master AUC 0.71969
-    return pos.key() & 15; //  
-    //return pos.key() & 7; //  AUC 0.715983
+    //return pos.key() & 511; // AUC 0.724927
+    //return pos.key() & 255; // AUC 0.724169 
+    //return pos.key() & 127; // AUC 0.723518
+    return 0; // master AUC 0.71969
+    //return pos.pawn_key() & 511; // AUC 0.719641
+    //return pos.key() & 63; // AUC 0.718424  
+    //return pos.key() & 15; //  AUC 0.718182
     //return relative_square(pos.side_to_move(), m.from_sq()) <= relative_square(pos.side_to_move(), m.to_sq()); // AUC 0.718038
+    //return pos.key() & 31; //  AUC 0.717305
     //return pos.key() & 3; // AUC 0.717251
     //return relative_square(pos.side_to_move(), m.from_sq()) < relative_square(pos.side_to_move(), m.to_sq()); // AUC 0.717031
+    //return pos.key() & 7; //  AUC 0.715983
     //return bool(m.to_sq() & pos.attacks_by<PAWN>(~pos.side_to_move())); // AUC 0.715626
     //return pos.key() & 1; // AUC 0.71548
 }
@@ -151,7 +157,7 @@ using Stats = MultiArray<StatsEntry<T, D>, Sizes...>;
 // during the current search, and is used for reduction and move ordering decisions.
 // It uses 2 tables (one for each color) indexed by the move's from and to squares,
 // see https://www.chessprogramming.org/Butterfly_Boards (~11 elo)
-using ButterflyHistory = Stats<std::int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB), 16>;
+using ButterflyHistory = Stats<std::int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB), 512>;
 
 // LowPlyHistory is adressed by play and move's from and to squares, used
 // to improve move ordering near the root
