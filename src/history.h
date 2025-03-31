@@ -118,7 +118,7 @@ class StatsEntry<Average, T, D>: public StatsEntryBase<T, D> {
         // Make sure that bonus is in range [-D, D]
         int clampedBonus = std::clamp(bonus, -D, D);
         this->entry += clampedBonus - this->entry * std::abs(clampedBonus) / D;
-        average += (this->entry - average) / 2;
+        average += (this->entry - average) / 4;
 
         assert(std::abs(this->entry) <= D);
         assert(std::abs(average) <= D);
