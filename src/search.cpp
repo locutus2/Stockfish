@@ -1850,8 +1850,8 @@ void update_all_stats(const Position&      pos,
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
 
-    int bonus = std::clamp(199 * depth - 22 * ss->ply - 89, 0, 1613) + 311 * isTTMove;
-    int malus = std::clamp(979 * depth - 109 * ss->ply - 215, 0, 2808) - 31 * (moveCount - 1);
+    int bonus = std::clamp(233 * depth - 39 * ss->ply - 89, 0, 1613) + 311 * isTTMove;
+    int malus = std::clamp(1147 * depth - 191 * ss->ply - 215, 0, 2808) - 31 * (moveCount - 1);
 
     if (!pos.capture_stage(bestMove))
     {
