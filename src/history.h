@@ -109,7 +109,7 @@ class AverageStatsEntry: public StatsEntry<T, D> {
 
     void operator<<(int bonus) {
         StatsEntry<T, D>::operator<<(bonus);
-        average += (this->entry - average) * std::abs(this->entry - average) / (N * D);
+        average += (this->entry - int(average)) * std::abs(this->entry - int(average)) / (N * D);
 
         assert(std::abs(average) <= D);
     }
