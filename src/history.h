@@ -63,52 +63,44 @@ inline int non_pawn_index(const Position& pos) {
     return pos.non_pawn_key(c) & (CORRECTION_HISTORY_SIZE - 1);
 }
 
-enum StatsEntryType {
-    Default,
-    Average
-};
-
 // StatsEntry is the container of various numerical statistics. We use a class
 // instead of a naked value to directly call history update operator<<() on
 // the entry. The first template parameter T is the base type of the array,
 // and the second template parameter D limits the range of updates in [-D, D]
 // when we update values with the << operator
 template<typename T, int D>
-class StatsEntryBase {
+class StatsEntry {
 
     static_assert(std::is_arithmetic_v<T>, "Not an arithmetic type");
     static_assert(D <= std::numeric_limits<T>::max(), "D overflows T");
 
    protected:
     T entry;
-};
-
-template<StatsEntryType S, typename T, int D>
-class StatsEntry: public StatsEntryBase<T, D> {
 
    public:
     StatsEntry& operator=(const T& v) {
-        this->entry = v;
+        entry = v;
         return *this;
     }
-    operator const T&() const { return this->entry; }
+    operator const T&() const { return entry; }
 
     void operator<<(int bonus) {
         // Make sure that bonus is in range [-D, D]
         int clampedBonus = std::clamp(bonus, -D, D);
-        this->entry += clampedBonus - this->entry * std::abs(clampedBonus) / D;
+        entry += clampedBonus - entry * std::abs(clampedBonus) / D;
 
-        assert(std::abs(this->entry) <= D);
+        assert(std::abs(entry) <= D);
     }
 };
 
-template<typename T, int D>
-class StatsEntry<Average, T, D>: public StatsEntryBase<T, D> {
+template<int N, typename T, int D>
+class AverageStatsEntry: public StatsEntry<T, D> {
 
+   protected:
     T average;
 
    public:
-    StatsEntry& operator=(const T& v) {
+    AverageStatsEntry& operator=(const T& v) {
         average = this->entry = v;
         return *this;
     }
@@ -118,7 +110,7 @@ class StatsEntry<Average, T, D>: public StatsEntryBase<T, D> {
         // Make sure that bonus is in range [-D, D]
         int clampedBonus = std::clamp(bonus, -D, D);
         this->entry += clampedBonus - this->entry * std::abs(clampedBonus) / D;
-        average += (this->entry - average) / 2;
+        average += (this->entry - average) / N;
 
         assert(std::abs(this->entry) <= D);
         assert(std::abs(average) <= D);
@@ -130,27 +122,29 @@ enum StatsType {
     Captures
 };
 
-template<StatsEntryType S, typename T, int D, std::size_t... Sizes>
-using Stats = MultiArray<StatsEntry<S, T, D>, Sizes...>;
+template<typename T, int D, std::size_t... Sizes>
+using Stats = MultiArray<StatsEntry<T, D>, Sizes...>;
+
+template<int N, typename T, int D, std::size_t... Sizes>
+using AverageStats = MultiArray<AverageStatsEntry<N, T, D>, Sizes...>;
 
 // ButterflyHistory records how often quiet moves have been successful or unsuccessful
 // during the current search, and is used for reduction and move ordering decisions.
 // It uses 2 tables (one for each color) indexed by the move's from and to squares,
 // see https://www.chessprogramming.org/Butterfly_Boards (~11 elo)
 using ButterflyHistory =
-  Stats<Average, std::int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
+  AverageStats<2, std::int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
 
 // LowPlyHistory is adressed by play and move's from and to squares, used
 // to improve move ordering near the root
 using LowPlyHistory =
-  Stats<Default, std::int16_t, 7183, LOW_PLY_HISTORY_SIZE, int(SQUARE_NB) * int(SQUARE_NB)>;
+  Stats<std::int16_t, 7183, LOW_PLY_HISTORY_SIZE, int(SQUARE_NB) * int(SQUARE_NB)>;
 
 // CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
-using CapturePieceToHistory =
-  Stats<Default, std::int16_t, 10692, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
+using CapturePieceToHistory = Stats<std::int16_t, 10692, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
 
 // PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
-using PieceToHistory = Stats<Default, std::int16_t, 30000, PIECE_NB, SQUARE_NB>;
+using PieceToHistory = Stats<std::int16_t, 30000, PIECE_NB, SQUARE_NB>;
 
 // ContinuationHistory is the combined history of a given pair of moves, usually
 // the current one given a previous one. The nested history table is based on
@@ -159,7 +153,7 @@ using PieceToHistory = Stats<Default, std::int16_t, 30000, PIECE_NB, SQUARE_NB>;
 using ContinuationHistory = MultiArray<PieceToHistory, PIECE_NB, SQUARE_NB>;
 
 // PawnHistory is addressed by the pawn structure and a move's [piece][to]
-using PawnHistory = Stats<Default, std::int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
+using PawnHistory = Stats<std::int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
 
 // Correction histories record differences between the static evaluation of
 // positions and their search score. It is used to improve the static evaluation
@@ -177,13 +171,12 @@ namespace Detail {
 
 template<CorrHistType>
 struct CorrHistTypedef {
-    using type =
-      Stats<Default, std::int16_t, CORRECTION_HISTORY_LIMIT, CORRECTION_HISTORY_SIZE, COLOR_NB>;
+    using type = Stats<std::int16_t, CORRECTION_HISTORY_LIMIT, CORRECTION_HISTORY_SIZE, COLOR_NB>;
 };
 
 template<>
 struct CorrHistTypedef<PieceTo> {
-    using type = Stats<Default, std::int16_t, CORRECTION_HISTORY_LIMIT, PIECE_NB, SQUARE_NB>;
+    using type = Stats<std::int16_t, CORRECTION_HISTORY_LIMIT, PIECE_NB, SQUARE_NB>;
 };
 
 template<>
@@ -193,12 +186,8 @@ struct CorrHistTypedef<Continuation> {
 
 template<>
 struct CorrHistTypedef<NonPawn> {
-    using type = Stats<Default,
-                       std::int16_t,
-                       CORRECTION_HISTORY_LIMIT,
-                       CORRECTION_HISTORY_SIZE,
-                       COLOR_NB,
-                       COLOR_NB>;
+    using type =
+      Stats<std::int16_t, CORRECTION_HISTORY_LIMIT, CORRECTION_HISTORY_SIZE, COLOR_NB, COLOR_NB>;
 };
 
 }
