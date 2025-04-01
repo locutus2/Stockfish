@@ -107,12 +107,9 @@ class AverageStatsEntry: public StatsEntry<T, D> {
     operator const T&() const { return average; }
 
     void operator<<(int bonus) {
-        // Make sure that bonus is in range [-D, D]
-        int clampedBonus = std::clamp(bonus, -D, D);
-        this->entry += clampedBonus - this->entry * std::abs(clampedBonus) / D;
+        StatsEntry<T, D>::operator<<(bonus);
         average += (this->entry - average) / N;
 
-        assert(std::abs(this->entry) <= D);
         assert(std::abs(average) <= D);
     }
 };
