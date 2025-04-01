@@ -101,7 +101,8 @@ class AverageStatsEntry: public StatsEntry<T, D> {
 
    public:
     AverageStatsEntry& operator=(const T& v) {
-        average = this->entry = v;
+        StatsEntry<T, D>::operator=(v);
+        average = v;
         return *this;
     }
     operator const T&() const { return average; }
