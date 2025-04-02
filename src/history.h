@@ -132,7 +132,7 @@ using AverageStats = MultiArray<AverageStatsEntry<N, A, T, D>, Sizes...>;
 // It uses 2 tables (one for each color) indexed by the move's from and to squares,
 // see https://www.chessprogramming.org/Butterfly_Boards (~11 elo)
 using ButterflyHistory =
-  AverageStats<16, 2, std::int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
+  AverageStats<16, 3, std::int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
 
 // LowPlyHistory is adressed by play and move's from and to squares, used
 // to improve move ordering near the root
