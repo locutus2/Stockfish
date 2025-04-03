@@ -1142,7 +1142,7 @@ moves_loop:  // When in check, search starts here
                     int corrValAdj1  = std::abs(correctionValue) / 248873;
                     int corrValAdj2  = std::abs(correctionValue) / 255331;
                     int doubleMargin = 262 * PvNode - 188 * !ttCapture - corrValAdj1
-                                     - ttMoveHistory[pawn_structure_index(pos)][us] / 128;
+                                     - ttMoveHistory[movedPiece][move.to_sq()] / 128;
                     int tripleMargin =
                       88 + 265 * PvNode - 256 * !ttCapture + 93 * ss->ttPv - corrValAdj2;
 
@@ -1439,7 +1439,7 @@ moves_loop:  // When in check, search starts here
         if (!PvNode)
         {
             int bonus = (ttData.move == bestMove) ? 800 : -600 * moveCount;
-            ttMoveHistory[pawn_structure_index(pos)][us] << bonus;
+            ttMoveHistory[pos.moved_piece(ttData.move)][ttData.move.to_sq()] << bonus;
         }
     }
 
