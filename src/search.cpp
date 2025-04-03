@@ -1436,7 +1436,7 @@ moves_loop:  // When in check, search starts here
     {
         update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth,
                          bestMove == ttData.move, moveCount);
-        if (!PvNode)
+        if (!PvNode && ttData.move)
         {
             int bonus = (ttData.move == bestMove) ? 800 : -600 * moveCount;
             ttMoveHistory[pawn_structure_index(pos)][us] << bonus;
