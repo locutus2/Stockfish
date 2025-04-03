@@ -74,6 +74,7 @@ class StatsEntry {
     static_assert(std::is_arithmetic_v<T>, "Not an arithmetic type");
     static_assert(D <= std::numeric_limits<T>::max(), "D overflows T");
 
+   protected:
     T entry;
 
    public:
@@ -92,6 +93,28 @@ class StatsEntry {
     }
 };
 
+template<int N, typename T, int D>
+class AverageStatsEntry: public StatsEntry<T, D> {
+
+   protected:
+    T average;
+
+   public:
+    AverageStatsEntry& operator=(const T& v) {
+        StatsEntry<T, D>::operator=(v);
+        average = v;
+        return *this;
+    }
+    operator const T&() const { return average; }
+
+    void operator<<(int bonus) {
+        StatsEntry<T, D>::operator<<(bonus);
+        average += (this->entry - int(average)) / N;
+
+        assert(std::abs(average) <= D);
+    }
+};
+
 enum StatsType {
     NoCaptures,
     Captures
@@ -99,6 +122,9 @@ enum StatsType {
 
 template<typename T, int D, std::size_t... Sizes>
 using Stats = MultiArray<StatsEntry<T, D>, Sizes...>;
+
+template<int N, typename T, int D, std::size_t... Sizes>
+using AverageStats = MultiArray<AverageStatsEntry<N, T, D>, Sizes...>;
 
 // ButterflyHistory records how often quiet moves have been successful or unsuccessful
 // during the current search, and is used for reduction and move ordering decisions.
@@ -142,12 +168,13 @@ namespace Detail {
 
 template<CorrHistType>
 struct CorrHistTypedef {
-    using type = Stats<std::int16_t, CORRECTION_HISTORY_LIMIT, CORRECTION_HISTORY_SIZE, COLOR_NB>;
+    using type =
+      AverageStats<2, std::int16_t, CORRECTION_HISTORY_LIMIT, CORRECTION_HISTORY_SIZE, COLOR_NB>;
 };
 
 template<>
 struct CorrHistTypedef<PieceTo> {
-    using type = Stats<std::int16_t, CORRECTION_HISTORY_LIMIT, PIECE_NB, SQUARE_NB>;
+    using type = AverageStats<2, std::int16_t, CORRECTION_HISTORY_LIMIT, PIECE_NB, SQUARE_NB>;
 };
 
 template<>
@@ -157,8 +184,12 @@ struct CorrHistTypedef<Continuation> {
 
 template<>
 struct CorrHistTypedef<NonPawn> {
-    using type =
-      Stats<std::int16_t, CORRECTION_HISTORY_LIMIT, CORRECTION_HISTORY_SIZE, COLOR_NB, COLOR_NB>;
+    using type = AverageStats<2,
+                              std::int16_t,
+                              CORRECTION_HISTORY_LIMIT,
+                              CORRECTION_HISTORY_SIZE,
+                              COLOR_NB,
+                              COLOR_NB>;
 };
 
 }
