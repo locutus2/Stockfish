@@ -169,12 +169,12 @@ namespace Detail {
 template<CorrHistType>
 struct CorrHistTypedef {
     using type =
-      AverageStats<2, std::int16_t, CORRECTION_HISTORY_LIMIT, CORRECTION_HISTORY_SIZE, COLOR_NB>;
+      AverageStats<4, std::int16_t, CORRECTION_HISTORY_LIMIT, CORRECTION_HISTORY_SIZE, COLOR_NB>;
 };
 
 template<>
 struct CorrHistTypedef<PieceTo> {
-    using type = AverageStats<2, std::int16_t, CORRECTION_HISTORY_LIMIT, PIECE_NB, SQUARE_NB>;
+    using type = AverageStats<4, std::int16_t, CORRECTION_HISTORY_LIMIT, PIECE_NB, SQUARE_NB>;
 };
 
 template<>
@@ -184,7 +184,7 @@ struct CorrHistTypedef<Continuation> {
 
 template<>
 struct CorrHistTypedef<NonPawn> {
-    using type = AverageStats<2,
+    using type = AverageStats<4,
                               std::int16_t,
                               CORRECTION_HISTORY_LIMIT,
                               CORRECTION_HISTORY_SIZE,
