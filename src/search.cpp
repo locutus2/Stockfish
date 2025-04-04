@@ -572,7 +572,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
-    mainHistory.fill(66);
+    mainHistory.fill(132);
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
     pawnHistory.fill(-1262);
@@ -828,7 +828,7 @@ Value Search::Worker::search(
     if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-10 * int((ss - 1)->staticEval + ss->staticEval), -1950, 1416) + 655;
-        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus * 1124 / 1024;
+        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus * 1124 / 512;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
               << bonus * 1196 / 1024;
@@ -1084,7 +1084,7 @@ moves_loop:  // When in check, search starts here
                 if (history < -4348 * depth)
                     continue;
 
-                history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
+                history += 68 * thisThread->mainHistory[us][move.from_to()] / 64;
 
                 lmrDepth += history / 3593;
 
@@ -1231,10 +1231,10 @@ moves_loop:  // When in check, search starts here
               + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
               - 4822;
         else if (ss->inCheck)
-            ss->statScore = thisThread->mainHistory[us][move.from_to()]
+            ss->statScore = thisThread->mainHistory[us][move.from_to()] / 2
                           + (*contHist[0])[movedPiece][move.to_sq()] - 2771;
         else
-            ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
+            ss->statScore = thisThread->mainHistory[us][move.from_to()]
                           + (*contHist[0])[movedPiece][move.to_sq()]
                           + (*contHist[1])[movedPiece][move.to_sq()] - 3271;
 
@@ -1461,7 +1461,7 @@ moves_loop:  // When in check, search starts here
                                       scaledBonus * 388 / 32768);
 
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << scaledBonus * 212 / 32768;
+          << scaledBonus * 212 / 16384;
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
@@ -1908,7 +1908,8 @@ void update_quiet_histories(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
-    workerThread.mainHistory[us][move.from_to()] << bonus;  // Untuned to prevent duplicate effort
+    workerThread.mainHistory[us][move.from_to()]
+      << bonus * 2;  // Untuned to prevent duplicate effort
 
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
         workerThread.lowPlyHistory[ss->ply][move.from_to()] << bonus * 829 / 1024;
