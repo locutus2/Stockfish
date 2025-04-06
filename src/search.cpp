@@ -575,7 +575,7 @@ void Search::Worker::clear() {
     mainHistory.fill(66);
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
-    pawnHistory.fill(-316);
+    pawnHistory.fill(-158);
     pawnCorrectionHistory.fill(6);
     minorPieceCorrectionHistory.fill(0);
     nonPawnCorrectionHistory.fill(0);
@@ -831,7 +831,7 @@ Value Search::Worker::search(
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus * 1124 / 1024;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << bonus * 299 / 1024;
+              << bonus * 150 / 1024;
     }
 
     // Set up the improving flag, which is true if current static evaluation is
@@ -1079,7 +1079,7 @@ moves_loop:  // When in check, search starts here
                   (*contHist[0])[movedPiece][move.to_sq()]
                   + (*contHist[1])[movedPiece][move.to_sq()]
                   + thisThread->pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()]
-                      * 4;
+                      * 8;
 
                 // Continuation history based pruning
                 if (history < -4348 * depth)
@@ -1466,7 +1466,7 @@ moves_loop:  // When in check, search starts here
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << scaledBonus * 264 / 32768;
+              << scaledBonus * 132 / 32768;
     }
 
     // Bonus for prior capture countermove that caused the fail low
@@ -1687,7 +1687,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 && (*contHist[0])[pos.moved_piece(move)][move.to_sq()]
                        + thisThread->pawnHistory[pawn_structure_index(pos)][pos.moved_piece(move)]
                                                 [move.to_sq()]
-                           * 4
+                           * 8
                      <= 6290)
                 continue;
 
@@ -1918,7 +1918,7 @@ void update_quiet_histories(
     update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus * 1004 / 1024);
 
     int pIndex = pawn_structure_index(pos);
-    workerThread.pawnHistory[pIndex][pos.moved_piece(move)][move.to_sq()] << bonus * 147 / 1024;
+    workerThread.pawnHistory[pIndex][pos.moved_piece(move)][move.to_sq()] << bonus * 74 / 1024;
 }
 
 }
