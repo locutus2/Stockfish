@@ -574,7 +574,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 void Search::Worker::clear() {
     mainHistory.fill(66);
     lowPlyHistory.fill(105);
-    captureHistory.fill(-323);
+    captureHistory.fill(-162);
     pawnHistory.fill(-1262);
     pawnCorrectionHistory.fill(6);
     minorPieceCorrectionHistory.fill(0);
@@ -1063,13 +1063,13 @@ moves_loop:  // When in check, search starts here
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
                     Value futilityValue = ss->staticEval + 242 + 230 * lmrDepth
-                                        + PieceValue[capturedPiece] + 133 * captHist / 512;
+                                        + PieceValue[capturedPiece] + 133 * captHist / 256;
                     if (futilityValue <= alpha)
                         continue;
                 }
 
                 // SEE based pruning for captures and checks
-                int seeHist = std::clamp(captHist / 16, -138 * depth, 135 * depth);
+                int seeHist = std::clamp(captHist / 8, -138 * depth, 135 * depth);
                 if (!pos.see_ge(move, -154 * depth - seeHist))
                     continue;
             }
@@ -1228,9 +1228,8 @@ moves_loop:  // When in check, search starts here
         if (capture)
             ss->statScore =
               846 * int(PieceValue[pos.captured_piece()]) / 128
-              + 2
-                  * thisThread
-                      ->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
+              + thisThread
+                  ->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece()) * 4]
               - 4822;
         else if (ss->inCheck)
             ss->statScore = thisThread->mainHistory[us][move.from_to()]
@@ -1475,7 +1474,7 @@ moves_loop:  // When in check, search starts here
     {
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
-        thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 550;
+        thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 275;
     }
 
     if (PvNode)
@@ -1870,7 +1869,7 @@ void update_all_stats(const Position&      pos,
     {
         // Increase stats for the best move in case it was a capture move
         captured = type_of(pos.piece_on(bestMove.to_sq()));
-        captureHistory[moved_piece][bestMove.to_sq()][captured] << bonus * 594 / 1024;
+        captureHistory[moved_piece][bestMove.to_sq()][captured] << bonus * 297 / 1024;
     }
 
     // Extra penalty for a quiet early move that was not a TT move in
@@ -1883,7 +1882,7 @@ void update_all_stats(const Position&      pos,
     {
         moved_piece = pos.moved_piece(move);
         captured    = type_of(pos.piece_on(move.to_sq()));
-        captureHistory[moved_piece][move.to_sq()][captured] << -malus * 689 / 1024;
+        captureHistory[moved_piece][move.to_sq()][captured] << -malus * 345 / 1024;
     }
 }
 
