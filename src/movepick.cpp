@@ -195,9 +195,7 @@ void MovePicker::score() {
         }
 }
 
-bool MovePicker::isQuiet() const {
-    return stage == GOOD_QUIET;
-}
+bool MovePicker::isGoodQuiet() const { return stage == GOOD_QUIET; }
 
 // Returns the next move satisfying a predicate function.
 // This never returns the TT move, as it was emitted before.

@@ -50,7 +50,7 @@ class MovePicker {
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
     Move next_move();
     void skip_quiet_moves();
-    bool isQuiet() const;
+    bool isGoodQuiet() const;
 
    private:
     template<typename Pred>

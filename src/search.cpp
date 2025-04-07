@@ -1209,6 +1209,9 @@ moves_loop:  // When in check, search starts here
         if (PvNode && std::abs(bestValue) <= 2000)
             r -= risk_tolerance(pos, bestValue);
 
+        if (!PvNode && moveCount > 12 && mp.isGoodQuiet())
+            r += 1024;
+
         // Increase reduction for cut nodes
         if (cutNode)
             r += 2784 + 1038 * !ttData.move;
@@ -1304,13 +1307,6 @@ moves_loop:  // When in check, search starts here
                 newDepth = std::max(newDepth, 1);
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
-        }
-
-        bool CC = !PvNode && mp.isQuiet();
-        if(CC)
-        {
-            int T = value > alpha;
-            std::cerr << T << ";" << moveCount << std::endl; 
         }
 
         // Step 19. Undo move
