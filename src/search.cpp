@@ -1306,6 +1306,13 @@ moves_loop:  // When in check, search starts here
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
 
+        bool CC = !PvNode && mp.isQuiet();
+        if(CC)
+        {
+            int T = value > alpha;
+            std::cerr << T << ";" << moveCount << std::endl; 
+        }
+
         // Step 19. Undo move
         undo_move(pos, move);
 
