@@ -93,7 +93,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return 15370 * pcv + 14990 * micv + 18288 * (wnpcv + bnpcv) + 12938 * cntcv;
+    return 30740 * pcv + 29980 * micv + 36576 * (wnpcv + bnpcv) + 25876 * cntcv;
 }
 
 int risk_tolerance(const Position& pos, Value v) {
@@ -576,7 +576,7 @@ void Search::Worker::clear() {
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
     pawnHistory.fill(-1262);
-    pawnCorrectionHistory.fill(3);
+    pawnCorrectionHistory.fill(2);
     minorPieceCorrectionHistory.fill(0);
     nonPawnCorrectionHistory.fill(0);
 
@@ -1498,7 +1498,7 @@ moves_loop:  // When in check, search starts here
         && ((bestValue < ss->staticEval && bestValue < beta)  // negative correction & no fail high
             || (bestValue > ss->staticEval && bestMove)))     // positive correction & no fail low
     {
-        auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth / 16,
+        auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth / 32,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *thisThread, bonus);
     }
