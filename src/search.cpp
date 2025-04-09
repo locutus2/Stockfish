@@ -325,7 +325,7 @@ void Search::Worker::iterative_deepening() {
 
     int searchAgainCounter = 0;
 
-    lowPlyHistory.fill(184);
+    lowPlyHistory.fill(368);
 
     // Iterative deepening loop until requested to stop or the target depth is reached
     while (++rootDepth < MAX_PLY && !threads.stop
@@ -573,7 +573,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(66);
-    lowPlyHistory.fill(210);
+    lowPlyHistory.fill(420);
     captureHistory.fill(-646);
     pawnHistory.fill(-1262);
     pawnCorrectionHistory.fill(6);
@@ -1911,7 +1911,7 @@ void update_quiet_histories(
     workerThread.mainHistory[us][move.from_to()] << bonus;  // Untuned to prevent duplicate effort
 
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
-        workerThread.lowPlyHistory[ss->ply][move.from_to()] << bonus * 1658 / 1024;
+        workerThread.lowPlyHistory[ss->ply][move.from_to()] << bonus * 3316 / 1024;
 
     update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus * 1004 / 1024);
 
