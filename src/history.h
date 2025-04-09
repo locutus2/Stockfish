@@ -96,6 +96,8 @@ class StatsEntry {
 template<int N, typename T, int D>
 class AverageStatsEntry: public StatsEntry<T, D> {
 
+    static_assert(2 * D <= std::numeric_limits<T>::max(), "2*D overflows T");
+
    protected:
     T average;
 
@@ -169,12 +171,12 @@ namespace Detail {
 template<CorrHistType>
 struct CorrHistTypedef {
     using type =
-      AverageStats<5, std::int16_t, CORRECTION_HISTORY_LIMIT, CORRECTION_HISTORY_SIZE, COLOR_NB>;
+      AverageStats<3, std::int16_t, CORRECTION_HISTORY_LIMIT, CORRECTION_HISTORY_SIZE, COLOR_NB>;
 };
 
 template<>
 struct CorrHistTypedef<PieceTo> {
-    using type = AverageStats<5, std::int16_t, CORRECTION_HISTORY_LIMIT, PIECE_NB, SQUARE_NB>;
+    using type = AverageStats<3, std::int16_t, CORRECTION_HISTORY_LIMIT, PIECE_NB, SQUARE_NB>;
 };
 
 template<>
@@ -184,7 +186,7 @@ struct CorrHistTypedef<Continuation> {
 
 template<>
 struct CorrHistTypedef<NonPawn> {
-    using type = AverageStats<5,
+    using type = AverageStats<3,
                               std::int16_t,
                               CORRECTION_HISTORY_LIMIT,
                               CORRECTION_HISTORY_SIZE,
