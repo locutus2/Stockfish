@@ -1209,7 +1209,7 @@ moves_loop:  // When in check, search starts here
         if (PvNode && std::abs(bestValue) <= 2000)
             r -= risk_tolerance(pos, bestValue);
 
-        if (!PvNode && moveCount > 10 && mp.isGoodQuiet())
+        if (!PvNode && moveCount > 16 && mp.isGoodQuiet())
             r += 1024;
 
         // Increase reduction for cut nodes
