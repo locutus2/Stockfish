@@ -183,7 +183,7 @@ void MovePicker::score() {
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + 2 * ply);
 
-            m.value = m.value / 16 * 16;
+            m.value = m.value * depth / 4096;
         }
 
         else  // Type == EVASIONS
@@ -214,7 +214,7 @@ Move MovePicker::select(Pred filter) {
 // picking the move with the highest score from a list of generated moves.
 Move MovePicker::next_move() {
 
-    auto quiet_threshold = [](Depth d) { return -3560 * d; };
+    auto quiet_threshold = [](Depth d) { return -3560 * d * d / 4096; };
 
 top:
     switch (stage)
