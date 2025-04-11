@@ -1375,6 +1375,7 @@ moves_loop:  // When in check, search starts here
         int inc = (value == bestValue && ss->ply + 2 >= thisThread->rootDepth
                    && (int(nodes) & 15) == 0 && !is_win(std::abs(value) + 1));
 
+        bool badMove = value <= alpha;
         if (value + inc > bestValue)
         {
             bestValue = value;
@@ -1407,7 +1408,7 @@ moves_loop:  // When in check, search starts here
 
         // If the move is worse than some previously searched move,
         // remember it, to update its stats later.
-        if (move != bestMove && moveCount <= 32)
+        if (badMove && moveCount <= 32)
         {
             if (capture)
                 capturesSearched.push_back(move);
