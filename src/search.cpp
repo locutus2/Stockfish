@@ -1381,13 +1381,10 @@ moves_loop:  // When in check, search starts here
 
             if (value + inc > alpha)
             {
-                if (value > alpha)
-                {
-                    bestMove = move;
+                bestMove = move;
 
-                    if (PvNode && !rootNode)  // Update pv even in fail-high case
-                        update_pv(ss->pv, move, (ss + 1)->pv);
-                }
+                if (PvNode && !rootNode)  // Update pv even in fail-high case
+                    update_pv(ss->pv, move, (ss + 1)->pv);
 
                 if (value >= beta)
                 {
@@ -1399,7 +1396,7 @@ moves_loop:  // When in check, search starts here
                 else
                 {
                     // Reduce other moves if we have found at least one score improvement
-                    if (depth > 2 && depth < 16 && !is_decisive(value))
+                    if (depth > 2 && depth < 16 && value > alpha && !is_decisive(value))
                         depth -= 2;
 
                     assert(depth > 0);
