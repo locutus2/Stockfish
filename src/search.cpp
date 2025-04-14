@@ -1304,6 +1304,13 @@ moves_loop:  // When in check, search starts here
         if (ttCapture)
             r += 1039;
 
+        const auto prediction =
+          lmrModel.predict({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode,
+                            move == ttData.move, depth < 8, ttCapture, ss->ttPv});
+
+        if (prediction.failureValue > prediction.successValue)
+            r -= 512;
+
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 1)
             r += 236 + 1079 * ((ss + 1)->cutoffCnt > 2) + 1143 * allNode;
@@ -1358,6 +1365,10 @@ moves_loop:  // When in check, search starts here
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1415);
             }
+
+            lmrModel.learn({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode,
+                            move == ttData.move, depth < 8, ttCapture, ss->ttPv},
+                           value > alpha);
         }
 
         // Step 18. Full-depth search when LMR is skipped
@@ -2286,6 +2297,62 @@ bool RootMove::extract_ponder_from_tt(const TranspositionTable& tt, Position& po
 
     pos.undo_move(pv[0]);
     return pv.size() > 1;
+}
+
+void NaiveBayes::BinaryFeature::update(bool input) {
+    count += input;
+    total++;
+}
+
+float NaiveBayes::BinaryFeature::prior(bool input) {
+    return input ? float(count) / total : float(total - count) / total;
+}
+
+void NaiveBayes::learn(ModelInput data, bool target) {
+    features[target][0].update(data.cutNode);
+    features[target][1].update(data.capture);
+    features[target][2].update(data.givesCheck);
+    features[target][3].update(data.highCutoffCnt);
+    features[target][4].update(data.inCheck);
+    features[target][5].update(data.isPv);
+    features[target][6].update(data.isTTMove);
+    features[target][7].update(data.lowDepth);
+    features[target][8].update(data.ttCapture);
+    features[target][9].update(data.ttPv);
+
+    classPrior[target]++;
+    samplesCount++;
+}
+
+NaiveBayes::Result NaiveBayes::predict(ModelInput data) {
+    if (samplesCount == 0)
+        return {0, 0};
+
+    Result result{float(classPrior[0]) / samplesCount, float(classPrior[1]) / samplesCount};
+
+    result.failureValue *= features[0][0].prior(data.cutNode);
+    result.failureValue *= features[0][1].prior(data.capture);
+    result.failureValue *= features[0][2].prior(data.givesCheck);
+    result.failureValue *= features[0][3].prior(data.highCutoffCnt);
+    result.failureValue *= features[0][4].prior(data.inCheck);
+    result.failureValue *= features[0][5].prior(data.isPv);
+    result.failureValue *= features[0][6].prior(data.isTTMove);
+    result.failureValue *= features[0][7].prior(data.lowDepth);
+    result.failureValue *= features[0][8].prior(data.ttCapture);
+    result.failureValue *= features[0][9].prior(data.ttPv);
+
+    result.successValue *= features[1][0].prior(data.cutNode);
+    result.successValue *= features[1][1].prior(data.capture);
+    result.successValue *= features[1][2].prior(data.givesCheck);
+    result.successValue *= features[1][3].prior(data.highCutoffCnt);
+    result.successValue *= features[1][4].prior(data.inCheck);
+    result.successValue *= features[1][5].prior(data.isPv);
+    result.successValue *= features[1][6].prior(data.isTTMove);
+    result.successValue *= features[1][7].prior(data.lowDepth);
+    result.successValue *= features[1][8].prior(data.ttCapture);
+    result.successValue *= features[1][9].prior(data.ttPv);
+
+    return result;
 }
 
 

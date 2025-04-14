@@ -306,6 +306,41 @@ class NullSearchManager: public ISearchManager {
     void check_time(Search::Worker&) override {}
 };
 
+struct NaiveBayes {
+    struct BinaryFeature {
+        std::uint64_t count;
+        std::uint64_t total;
+
+        void  update(bool input);
+        float prior(bool input);
+    };
+
+    struct ModelInput {
+        bool cutNode;
+        bool capture;
+        bool givesCheck;
+        bool highCutoffCnt;
+        bool inCheck;
+        bool isPv;
+        bool isTTMove;
+        bool lowDepth;
+        bool ttCapture;
+        bool ttPv;
+    };
+
+    struct Result {
+        float successValue;
+        float failureValue;
+    };
+
+    void   learn(ModelInput data, bool target);
+    Result predict(ModelInput data);
+
+    std::array<std::array<BinaryFeature, 10>, 2> features;
+    std::array<std::uint64_t, 2>                 classPrior;
+    std::uint64_t                                samplesCount;
+};
+
 // Search::Worker is the class that does the actual search.
 // It is instantiated once per thread, and it is responsible for keeping track
 // of the search history, and storing data required for the search.
@@ -340,6 +375,8 @@ class Worker {
     TTMoveHistory    ttMoveHistory;
     SharedHistories& sharedHistory;
     ContinuationHistory (&continuationHistory)[2][2];
+
+    NaiveBayes lmrModel;
 
    private:
     bool iterative_deepening();
