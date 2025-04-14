@@ -322,7 +322,6 @@ struct NaiveBayes {
         bool highCutoffCnt;
         bool inCheck;
         bool isPv;
-        bool isTTMove;
         bool lowDepth;
         bool ttCapture;
         bool ttPv;
@@ -336,9 +335,9 @@ struct NaiveBayes {
     void   learn(ModelInput data, bool target);
     Result predict(ModelInput data);
 
-    std::array<std::array<BinaryFeature, 10>, 2> features;
-    std::array<std::uint64_t, 2>                 classPrior;
-    std::uint64_t                                samplesCount;
+    std::array<std::array<BinaryFeature, 9>, 2> features;
+    std::array<std::uint64_t, 2>                classPrior;
+    std::uint64_t                               samplesCount;
 };
 
 // Search::Worker is the class that does the actual search.
