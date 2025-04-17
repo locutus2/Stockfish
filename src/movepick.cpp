@@ -172,8 +172,10 @@ void MovePicker::score() {
             m.value += threatenedPieces & from
                        ? (pt == QUEEN && !(to & threatenedByRook)
                             ? 51700
-                                / popcount(attacks_bb<QUEEN>(from, pos.pieces()) & ~threatenedByRook
-                                           & ~pos.pieces(pos.side_to_move()))
+                                / (popcount(attacks_bb<QUEEN>(from, pos.pieces())
+                                            & ~threatenedByRook & ~pos.pieces(pos.side_to_move()))
+                                     * 2
+                                   - 1)
                           : pt == ROOK && !(to & threatenedByMinor) ? 25600
                           : !(to & threatenedByPawn)                ? 14450
                                                                     : 0)
