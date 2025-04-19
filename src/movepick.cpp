@@ -167,7 +167,9 @@ void MovePicker::score() {
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to)
-                        + 3 * bool(pos.blockers_for_king(~pos.side_to_move()) & from))
+                        + (pos.blockers_for_king(~pos.side_to_move()) & from
+                           && !aligned(from, to, pos.square<KING>(~pos.side_to_move())))
+                            * 3)
                      * 16384;
 
             // bonus for escaping from capture
