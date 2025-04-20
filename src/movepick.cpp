@@ -170,7 +170,7 @@ void MovePicker::score() {
                        ? 16384
                        : (pos.blockers_for_king(~pos.side_to_move()) & from
                           && !aligned(from, to, pos.square<KING>(~pos.side_to_move())))
-                           * 32768;
+                           * 49152;
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 51700
