@@ -146,7 +146,7 @@ void MovePicker::score() {
     for (auto& m : *this)
         if constexpr (Type == CAPTURES)
             m.value =
-              (2 * (pos.blockers_for_king(~pos.side_to_move()) & m.from_sq()
+              (3 * (pos.blockers_for_king(~pos.side_to_move()) & m.from_sq()
                 && !aligned(m.from_sq(), m.to_sq(), pos.square<KING>(~pos.side_to_move())))
                + 7)
                 * int(PieceValue[pos.piece_on(m.to_sq())])
