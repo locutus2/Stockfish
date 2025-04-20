@@ -180,6 +180,8 @@ void MovePicker::score() {
                         : pt == ROOK && bool(to & threatenedByMinor) ? 24335
                                                                      : 0);
 
+            m.value += int(pos.key() ^ m.raw()) & 0x3f;
+
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + 2 * ply);
         }
