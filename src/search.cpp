@@ -70,7 +70,7 @@ template<int N_IN       = 8,
          int MAX_INPUT  = 30000,
          int MAX_OUTPUT = 1024>
 struct NN {
-    const int w_in[N_HIDDEN][N_IN + 1];
+    const int w_in[N_IN + 1][N_HIDDEN];
     const int w_out[N_HIDDEN + 1];
 
     int calculate(int mh, int ph, int cmh0, int cmh1, int cmh2, int cmh3, int cmh4, int cmh5) {
@@ -80,8 +80,8 @@ struct NN {
         {
             int value = 0;
             for (int j = 0; j < N_IN; ++j)
-                value += input[j] * w_in[i][j] / MAX_INPUT;
-            value += w_in[i][N_IN];
+                value += input[j] * w_in[j][i] / MAX_INPUT;
+            value += w_in[N_IN][i];
             sum += std::max(value / ((N_IN + 1) * SCALE), 0) * w_out[i];
         }
         sum += w_out[N_HIDDEN];
@@ -93,22 +93,15 @@ struct NN {
 
 NN<8, 16, 256, 30000, 1024> rnn = {
     { // w_in
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
-        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) }
+        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
+        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
+        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
+        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
+        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
+        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
+        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
+        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) },
+        { SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0) }
     },
     { // w_out
         SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0), SV(0),
