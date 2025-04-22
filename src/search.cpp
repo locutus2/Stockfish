@@ -70,7 +70,7 @@ template<int N_IN       = 8,
          int MAX_INPUT  = 30000,
          int MAX_OUTPUT = 1024>
 struct NN {
-    int w_in[N_IN + 1][N_HIDDEN];
+    int w_in[N_HIDDEN][N_IN + 1];
     int w_out[N_HIDDEN + 1];
 
     int calculate(int mh, int ph, int cmh0, int cmh1, int cmh2, int cmh3, int cmh4, int cmh5) {
@@ -78,16 +78,40 @@ struct NN {
         int sum         = w_out[N_HIDDEN];
         for (int i = 0; i < N_HIDDEN; i++)
         {
-            int value = w_in[N_IN][i];
+            int value = 0;
             for (int j = 0; j < N_IN; ++j)
-                value += input[j] * w_in[j][i] / MAX_INPUT;
+                value += input[j] * w_in[i][j] / MAX_INPUT;
+            value += w_in[i][N_IN];
             sum += std::max(value / ((N_IN + 1) * SCALE), 0) * w_out[i];
         }
         return MAX_OUTPUT * sum / ((N_HIDDEN + 1) * SCALE);
     }
 };
 
-NN rnn;
+NN<8, 16, 256, 30000, 1024> rnn = {
+    { // w_in
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    },
+    { // w_out
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0
+    }
+};
 
 // (*Scalers):
 // The values with Scaler asterisks have proven non-linear scaling.
