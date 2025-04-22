@@ -80,7 +80,7 @@ struct NN {
         {
             int value = w_in[N_IN][i];
             for (int j = 0; j < N_IN; ++j)
-                value += std::abs(input[j]) * w_in[j][i] / MAX_INPUT;
+                value += input[j] * w_in[j][i] / MAX_INPUT;
             sum += std::max(value / ((N_IN + 1) * SCALE), 0) * w_out[i];
         }
         return MAX_OUTPUT * sum / ((N_HIDDEN + 1) * SCALE);
@@ -88,8 +88,6 @@ struct NN {
 };
 
 NN rnn;
-
-TUNE(SetRange(-256, 256), rnn.w_in, rnn.w_out);
 
 // (*Scalers):
 // The values with Scaler asterisks have proven non-linear scaling.
