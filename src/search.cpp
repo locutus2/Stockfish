@@ -75,7 +75,7 @@ struct NN {
 
     int calculate(int mh, int ph, int cmh0, int cmh1, int cmh2, int cmh3, int cmh4, int cmh5) {
         int input[N_IN] = {mh, ph, cmh0, cmh1, cmh2, cmh3, cmh4, cmh5};
-        int sum         = w_out[N_HIDDEN];
+        int sum         = 0;
         for (int i = 0; i < N_HIDDEN; i++)
         {
             int value = 0;
@@ -84,6 +84,7 @@ struct NN {
             value += w_in[i][N_IN];
             sum += std::max(value / ((N_IN + 1) * SCALE), 0) * w_out[i];
         }
+        sum += w_out[N_HIDDEN];
         return MAX_OUTPUT * sum / ((N_HIDDEN + 1) * SCALE);
     }
 };
@@ -108,7 +109,8 @@ NN<8, 16, 256, 30000, 1024> rnn = {
         { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
     },
     { // w_out
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
         0
     }
 };
