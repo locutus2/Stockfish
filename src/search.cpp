@@ -64,6 +64,33 @@ using namespace Search;
 
 namespace {
 
+template<int N_IN       = 8,
+         int N_HIDDEN   = 16,
+         int SCALE      = 256,
+         int MAX_INPUT  = 30000,
+         int MAX_OUTPUT = 1024>
+struct NN {
+    int w_in[N_IN + 1][N_HIDDEN];
+    int w_out[N_HIDDEN + 1];
+
+    int calculate(int mh, int ph, int cmh0, int cmh1, int cmh2, int cmh3, int cmh4, int cmh5) {
+        int input[N_IN] = {mh, ph, cmh0, cmh1, cmh2, cmh3, cmh4, cmh5};
+        int sum         = w_out[N_HIDDEN];
+        for (int i = 0; i < N_HIDDEN; i++)
+        {
+            int value = w_in[N_IN][i];
+            for (int j = 0; j < N_IN; ++j)
+                value += std::abs(input[j]) * w_in[j][i] / MAX_INPUT;
+            sum += std::max(value / ((N_IN + 1) * SCALE), 0) * w_out[i];
+        }
+        return MAX_OUTPUT * sum / ((N_HIDDEN + 1) * SCALE);
+    }
+};
+
+NN rnn;
+
+TUNE(SetRange(-256, 256), rnn.w_in, rnn.w_out);
+
 // (*Scalers):
 // The values with Scaler asterisks have proven non-linear scaling.
 // They are optimized to time controls of 180 + 1.8 and longer,
@@ -1190,6 +1217,14 @@ moves_loop:  // When in check, search starts here
                     extension = -2;
             }
         }
+
+        if (!ss->ttPv && move != ttData.move && !capture)
+            r += rnn.calculate(
+              mainHistory[us][move.from_to()],
+              pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()],
+              (*contHist[0])[movedPiece][move.to_sq()], (*contHist[1])[movedPiece][move.to_sq()],
+              (*contHist[2])[movedPiece][move.to_sq()], (*contHist[3])[movedPiece][move.to_sq()],
+              (*contHist[4])[movedPiece][move.to_sq()], (*contHist[5])[movedPiece][move.to_sq()]);
 
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck);
