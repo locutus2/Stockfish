@@ -70,8 +70,8 @@ template<int N_IN       = 8,
          int MAX_INPUT  = 30000,
          int MAX_OUTPUT = 1024>
 struct NN {
-    int w_in[N_HIDDEN][N_IN + 1];
-    int w_out[N_HIDDEN + 1];
+    const int w_in[N_HIDDEN][N_IN + 1];
+    const int w_out[N_HIDDEN + 1];
 
     int calculate(int mh, int ph, int cmh0, int cmh1, int cmh2, int cmh3, int cmh4, int cmh5) {
         int input[N_IN] = {mh, ph, cmh0, cmh1, cmh2, cmh3, cmh4, cmh5};
