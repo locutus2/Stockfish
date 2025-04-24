@@ -651,11 +651,11 @@ Value Search::Worker::search(
     // Step 1. Initialize node
     Worker* thisThread = this;
     ss->inCheck        = pos.checkers();
-    ss->priorCapture = priorCapture = pos.captured_piece();
-    Color us                        = pos.side_to_move();
-    ss->moveCount                   = 0;
-    bestValue                       = -VALUE_INFINITE;
-    maxValue                        = VALUE_INFINITE;
+    priorCapture       = pos.captured_piece();
+    Color us           = pos.side_to_move();
+    ss->moveCount      = 0;
+    bestValue          = -VALUE_INFINITE;
+    maxValue           = VALUE_INFINITE;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -793,7 +793,7 @@ Value Search::Worker::search(
     {
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
-        improving             = false;
+        ss->improving = improving = false;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -830,7 +830,7 @@ Value Search::Worker::search(
     {
         int bonus = std::clamp(-10 * int((ss - 1)->staticEval + ss->staticEval), -1950, 1416) + 655;
 
-        if ((ss - 1)->priorCapture)
+        if ((ss - 1)->improving)
         {
             thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
               << bonus * 562 / 1024;
@@ -854,7 +854,7 @@ Value Search::Worker::search(
     // bigger than the previous static evaluation at our turn (if we were in
     // check at our previous move we go back until we weren't in check) and is
     // false otherwise. The improving flag is used in various pruning heuristics.
-    improving = ss->staticEval > (ss - 2)->staticEval;
+    ss->improving = improving = ss->staticEval > (ss - 2)->staticEval;
 
     opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
 
@@ -1000,7 +1000,7 @@ moves_loop:  // When in check, search starts here
       (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
 
 
-    MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory[priorCapture],
+    MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory[improving],
                   &thisThread->lowPlyHistory, &thisThread->captureHistory, contHist,
                   &thisThread->pawnHistory, ss->ply);
 
@@ -1113,7 +1113,7 @@ moves_loop:  // When in check, search starts here
                 if (history < -4348 * depth)
                     continue;
 
-                history += 68 * thisThread->mainHistory[priorCapture][us][move.from_to()] / 32;
+                history += 68 * thisThread->mainHistory[improving][us][move.from_to()] / 32;
 
                 lmrDepth += history / 3593;
 
@@ -1259,10 +1259,10 @@ moves_loop:  // When in check, search starts here
               + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
               - 4822;
         else if (ss->inCheck)
-            ss->statScore = thisThread->mainHistory[priorCapture][us][move.from_to()]
+            ss->statScore = thisThread->mainHistory[improving][us][move.from_to()]
                           + (*contHist[0])[movedPiece][move.to_sq()] - 2771;
         else
-            ss->statScore = 2 * thisThread->mainHistory[priorCapture][us][move.from_to()]
+            ss->statScore = 2 * thisThread->mainHistory[improving][us][move.from_to()]
                           + (*contHist[0])[movedPiece][move.to_sq()]
                           + (*contHist[1])[movedPiece][move.to_sq()] - 3271;
 
@@ -1488,7 +1488,7 @@ moves_loop:  // When in check, search starts here
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                       scaledBonus * 388 / 32768);
 
-        if ((ss - 1)->priorCapture)
+        if ((ss - 1)->improving)
         {
             thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
               << scaledBonus * 106 / 32768;
@@ -1605,8 +1605,6 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
-    ss->priorCapture = pos.captured_piece();
-
     // Step 3. Transposition table lookup
     posKey                         = pos.key();
     auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
@@ -1625,7 +1623,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
     if (ss->inCheck)
+    {
         bestValue = futilityBase = -VALUE_INFINITE;
+        ss->improving            = false;
+    }
     else
     {
         const auto correctionValue = correction_value(*thisThread, pos, ss);
@@ -1668,7 +1669,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         if (bestValue > alpha)
             alpha = bestValue;
 
-        futilityBase = ss->staticEval + 359;
+        futilityBase  = ss->staticEval + 359;
+        ss->improving = ss->staticEval > (ss - 2)->staticEval;
     }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
@@ -1679,7 +1681,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // Initialize a MovePicker object for the current position, and prepare to search
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
-    MovePicker mp(pos, ttData.move, DEPTH_QS, &thisThread->mainHistory[ss->priorCapture],
+    MovePicker mp(pos, ttData.move, DEPTH_QS, &thisThread->mainHistory[ss->improving],
                   &thisThread->lowPlyHistory, &thisThread->captureHistory, contHist,
                   &thisThread->pawnHistory, ss->ply);
 
@@ -1969,7 +1971,7 @@ void update_quiet_histories(
 
     Color us = pos.side_to_move();
 
-    if (ss->priorCapture)
+    if (ss->improving)
     {
         workerThread.mainHistory[0][us][move.from_to()]
           << bonus / 2;  // Untuned to prevent duplicate effort
