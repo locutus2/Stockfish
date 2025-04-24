@@ -76,6 +76,7 @@ struct Stack {
     int                         cutoffCnt;
     int                         reduction;
     bool                        isTTMove;
+    bool                        priorCapture;
 };
 
 
@@ -280,7 +281,7 @@ class Worker {
     void ensure_network_replicated();
 
     // Public because they need to be updatable by the stats
-    ButterflyHistory mainHistory;
+    ButterflyHistory mainHistory[2];
     LowPlyHistory    lowPlyHistory;
 
     CapturePieceToHistory captureHistory;
