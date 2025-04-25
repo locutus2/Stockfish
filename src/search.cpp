@@ -833,7 +833,7 @@ Value Search::Worker::search(
         if ((ss - 1)->improving)
         {
             thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
-              << bonus * 843 / 1024;
+              << bonus * 281 / 1024;
             thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
               << bonus * 1124 / 1024;
         }
@@ -842,7 +842,7 @@ Value Search::Worker::search(
             thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
               << bonus * 1124 / 1024;
             thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
-              << bonus * 843 / 1024;
+              << bonus * 281 / 1024;
         }
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
@@ -1491,7 +1491,7 @@ moves_loop:  // When in check, search starts here
         if ((ss - 1)->improving)
         {
             thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
-              << scaledBonus * 159 / 32768;
+              << scaledBonus * 53 / 32768;
             thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
               << scaledBonus * 212 / 32768;
         }
@@ -1500,7 +1500,7 @@ moves_loop:  // When in check, search starts here
             thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
               << scaledBonus * 212 / 32768;
             thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
-              << scaledBonus * 159 / 32768;
+              << scaledBonus * 53 / 32768;
         }
 
 
@@ -1974,7 +1974,7 @@ void update_quiet_histories(
     if (ss->improving)
     {
         workerThread.mainHistory[0][us][move.from_to()]
-          << bonus * 3 / 4;  // Untuned to prevent duplicate effort
+          << bonus / 4;  // Untuned to prevent duplicate effort
         workerThread.mainHistory[1][us][move.from_to()]
           << bonus;  // Untuned to prevent duplicate effort
     }
@@ -1983,7 +1983,7 @@ void update_quiet_histories(
         workerThread.mainHistory[0][us][move.from_to()]
           << bonus;  // Untuned to prevent duplicate effort
         workerThread.mainHistory[1][us][move.from_to()]
-          << bonus * 3 / 4;  // Untuned to prevent duplicate effort
+          << bonus / 4;  // Untuned to prevent duplicate effort
     }
 
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
