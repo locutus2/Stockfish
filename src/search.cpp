@@ -835,12 +835,12 @@ Value Search::Worker::search(
             thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
               << bonus * 562 / 1024;
             thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
-              << bonus * 1124 / 1024;
+              << bonus * 1686 / 1024;
         }
         else
         {
             thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
-              << bonus * 1124 / 1024;
+              << bonus * 1686 / 1024;
             thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
               << bonus * 562 / 1024;
         }
@@ -1493,14 +1493,14 @@ moves_loop:  // When in check, search starts here
             thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
               << scaledBonus * 106 / 32768;
             thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
-              << scaledBonus * 212 / 32768;
+              << scaledBonus * 318 / 32768;
         }
         else
         {
             thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
               << scaledBonus * 212 / 32768;
             thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
-              << scaledBonus * 106 / 32768;
+              << scaledBonus * 318 / 32768;
         }
 
 
@@ -1976,12 +1976,12 @@ void update_quiet_histories(
         workerThread.mainHistory[0][us][move.from_to()]
           << bonus / 2;  // Untuned to prevent duplicate effort
         workerThread.mainHistory[1][us][move.from_to()]
-          << bonus;  // Untuned to prevent duplicate effort
+          << bonus * 3 / 2;  // Untuned to prevent duplicate effort
     }
     else
     {
         workerThread.mainHistory[0][us][move.from_to()]
-          << bonus;  // Untuned to prevent duplicate effort
+          << bonus * 3 / 2;  // Untuned to prevent duplicate effort
         workerThread.mainHistory[1][us][move.from_to()]
           << bonus / 2;  // Untuned to prevent duplicate effort
     }
