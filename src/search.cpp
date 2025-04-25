@@ -830,20 +830,8 @@ Value Search::Worker::search(
     {
         int bonus = std::clamp(-10 * int((ss - 1)->staticEval + ss->staticEval), -1950, 1416) + 655;
 
-        if ((ss - 1)->improving)
-        {
-            thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
-              << bonus * 562 / 1024;
-            thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
-              << bonus * 1124 / 1024;
-        }
-        else
-        {
-            thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
-              << bonus * 1124 / 1024;
-            thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
-              << bonus * 562 / 1024;
-        }
+        thisThread->mainHistory[(ss - 1)->improving][~us][((ss - 1)->currentMove).from_to()]
+          << bonus * 1124 / 1024;
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
@@ -1488,21 +1476,8 @@ moves_loop:  // When in check, search starts here
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                       scaledBonus * 388 / 32768);
 
-        if ((ss - 1)->improving)
-        {
-            thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
-              << scaledBonus * 106 / 32768;
-            thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
-              << scaledBonus * 212 / 32768;
-        }
-        else
-        {
-            thisThread->mainHistory[0][~us][((ss - 1)->currentMove).from_to()]
-              << scaledBonus * 212 / 32768;
-            thisThread->mainHistory[1][~us][((ss - 1)->currentMove).from_to()]
-              << scaledBonus * 106 / 32768;
-        }
-
+        thisThread->mainHistory[(ss - 1)->improving][~us][((ss - 1)->currentMove).from_to()]
+          << scaledBonus * 212 / 32768;
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
@@ -1971,20 +1946,8 @@ void update_quiet_histories(
 
     Color us = pos.side_to_move();
 
-    if (ss->improving)
-    {
-        workerThread.mainHistory[0][us][move.from_to()]
-          << bonus / 2;  // Untuned to prevent duplicate effort
-        workerThread.mainHistory[1][us][move.from_to()]
-          << bonus;  // Untuned to prevent duplicate effort
-    }
-    else
-    {
-        workerThread.mainHistory[0][us][move.from_to()]
-          << bonus;  // Untuned to prevent duplicate effort
-        workerThread.mainHistory[1][us][move.from_to()]
-          << bonus / 2;  // Untuned to prevent duplicate effort
-    }
+    workerThread.mainHistory[ss->improving][us][move.from_to()]
+      << bonus;  // Untuned to prevent duplicate effort
 
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
         workerThread.lowPlyHistory[ss->ply][move.from_to()] << bonus * 829 / 1024;
