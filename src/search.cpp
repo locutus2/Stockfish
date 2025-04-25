@@ -586,9 +586,9 @@ void Search::Worker::clear() {
         for (auto& h : to)
             h.fill(5);
 
-    for (bool inCheck : {false, true})
+    for (int inCheckImproving : {0, 1, 2})
         for (StatsType c : {NoCaptures, Captures})
-            for (auto& to : continuationHistory[inCheck][c])
+            for (auto& to : continuationHistory[inCheckImproving][c])
                 for (auto& h : to)
                     h.fill(-468);
 
@@ -945,7 +945,8 @@ Value Search::Worker::search(
             ss->currentMove = move;
             ss->isTTMove    = (move == ttData.move);
             ss->continuationHistory =
-              &this->continuationHistory[ss->inCheck][true][movedPiece][move.to_sq()];
+              &this
+                 ->continuationHistory[2 * ss->inCheck + improving][true][movedPiece][move.to_sq()];
             ss->continuationCorrectionHistory =
               &this->continuationCorrectionHistory[movedPiece][move.to_sq()];
 
@@ -1201,7 +1202,8 @@ moves_loop:  // When in check, search starts here
         ss->currentMove = move;
         ss->isTTMove    = (move == ttData.move);
         ss->continuationHistory =
-          &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
+          &thisThread
+             ->continuationHistory[2 * ss->inCheck + improving][capture][movedPiece][move.to_sq()];
         ss->continuationCorrectionHistory =
           &thisThread->continuationCorrectionHistory[movedPiece][move.to_sq()];
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
@@ -1550,7 +1552,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     Key   posKey;
     Move  move, bestMove;
     Value bestValue, value, futilityBase;
-    bool  pvHit, givesCheck, capture;
+    bool  pvHit, givesCheck, capture, improving;
     int   moveCount;
 
     // Step 1. Initialize node
@@ -1593,7 +1595,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
     if (ss->inCheck)
+    {
         bestValue = futilityBase = -VALUE_INFINITE;
+        ss->staticEval           = (ss - 2)->staticEval;
+        improving                = false;
+    }
     else
     {
         const auto correctionValue = correction_value(*thisThread, pos, ss);
@@ -1637,6 +1643,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             alpha = bestValue;
 
         futilityBase = ss->staticEval + 359;
+        improving    = ss->staticEval > (ss - 2)->staticEval;
     }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
@@ -1714,7 +1721,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         // Update the current move
         ss->currentMove = move;
         ss->continuationHistory =
-          &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
+          &thisThread
+             ->continuationHistory[2 * ss->inCheck + improving][capture][movedPiece][move.to_sq()];
         ss->continuationCorrectionHistory =
           &thisThread->continuationCorrectionHistory[movedPiece][move.to_sq()];
 
