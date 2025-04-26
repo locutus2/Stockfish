@@ -1913,7 +1913,7 @@ void update_all_stats(const Position&      pos,
     int bonus = std::min(141 * depth - 89, 1613) + 311 * (bestMove == TTMove);
     int malus = std::min(695 * depth - 215, 2808) - 31 * (moveCount - 1);
 
-    if (pos.captured_piece())
+    if (ss->inCheck)
     {
         bonus -= bonus / 8;
         malus -= malus / 8;
