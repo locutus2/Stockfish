@@ -1917,13 +1917,13 @@ void update_all_stats(const Position&      pos,
 
     if (bestValue > 0)
     {
-        bonus += bonus / 8;
-        malus += malus / 8;
+        bonus -= bonus / 8;
+        malus -= malus / 8;
     }
     else
     {
-        bonus -= bonus / 8;
-        malus -= malus / 8;
+        bonus += bonus / 8;
+        malus += malus / 8;
     }
 
     if (!pos.capture_stage(bestMove))
