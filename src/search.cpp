@@ -75,19 +75,32 @@ struct NN {
 
     int calculate(int mh, int ph, int cmh0, int cmh1, int cmh2, int cmh3, int cmh4, int cmh5) {
         int input[N_IN] = {mh, ph, cmh0, cmh1, cmh2, cmh3, cmh4, cmh5};
-        int sum         = w_out[N_HIDDEN];
+        int sum         = 0;
         for (int i = 0; i < N_HIDDEN; i++)
         {
-            int value = w_in[N_IN][i];
+            int value = 0;
             for (int j = 0; j < N_IN; ++j)
-                value += input[j] * w_in[j][i] / MAX_INPUT;
-            sum += std::max(value / ((N_IN + 1) * SCALE), 0) * w_out[i];
+                value += input[j] * w_in[j][i];
+            sum += std::max(value / MAX_INPUT + w_in[N_IN][i], 0) * w_out[i] / ((N_IN + 1) * SCALE);
         }
-        return MAX_OUTPUT * sum / ((N_HIDDEN + 1) * SCALE);
+        return (sum + w_out[N_HIDDEN]) * MAX_OUTPUT / ((N_HIDDEN + 1) * SCALE);
     }
 };
 
-NN rnn;
+NN<8, 16, 256, 30000, 1024> rnn = {
+    {
+        { 14, 11, 5, 31, -15, 20, 4, 30, 18, 0, 1, -4, -8, 0, 26, 3, },
+        { -15, -2, -26, 0, 1, 7, 22, 12, -27, -11, -10, -27, 22, -2, -11, 10, },
+        { -12, -24, 18, 30, 13, 7, -20, -3, -4, 31, 9, -11, 15, -2, 6, -17, },
+        { 10, -5, 1, -1, -3, 5, -11, -9, -7, -4, -18, -24, -19, -8, -3, 2, },
+        { 15, -5, -18, 10, 6, 16, 21, 10, -15, 5, -37, -10, -13, -8, -41, 22, },
+        { 6, 3, 9, -3, 5, -14, 0, -2, -16, -4, 2, 17, -19, 5, 19, 7, },
+        { 3, -2, -21, 9, -10, 4, -20, 9, -3, 4, -8, 26, -39, 2, 2, -32, },
+        { -14, 17, -24, -39, 16, 26, -8, 14, -16, 11, 16, 16, 26, -0, -3, -3, },
+        { 14, 37, -6, -2, 14, -3, 7, 16, 17, -9, 11, -14, -5, -41, 43, 24, },
+    },
+    { -4, 16, 18, -4, -3, 19, 19, -16, 40, 30, 14, -14, 2, 12, -15, 11, -39, }
+};
 
 TUNE(SetRange(-256, 256), rnn.w_in, rnn.w_out);
 
