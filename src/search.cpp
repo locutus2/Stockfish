@@ -1918,11 +1918,6 @@ void update_all_stats(const Position&      pos,
         bonus += bonus / 8;
         malus += malus / 8;
     }
-    else
-    {
-        bonus -= bonus / 8;
-        malus -= malus / 8;
-    }
 
     if (!pos.capture_stage(bestMove))
     {
