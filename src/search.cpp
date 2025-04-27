@@ -57,8 +57,10 @@ constexpr int SCALE = 128;
 
 constexpr double P[N] = { 0.227374, 0.193983, 0.396606, 0.396521, 0.415475, 0.106769, 0.16751, 0.788896, 0.487225 };
 
-int Bbias, B[N];
-int Mbias, M[N];
+int Bbias = -6;
+int B[N] = {-2, -9, 8, -8, 11, 4, -8, 3, -3};
+int Mbias = -12;
+int M[N] = {-7, 9, -1, -2, 14, 2, 13, 0, -1};
 
 TUNE(SetRange(-SCALE, SCALE), Bbias, B, Mbias, M);
 
