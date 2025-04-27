@@ -52,14 +52,6 @@
 
 namespace Stockfish {
 
-constexpr int N = 9;
-constexpr int SCALE = 128;
-
-int B[N][2];
-int M[N][2];
-
-TUNE(SetRange(-SCALE, SCALE), B, M);
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1926,27 +1918,29 @@ void update_all_stats(const Position&      pos,
     int bonus = std::min(141 * depth - 89, 1613) + 311 * (bestMove == TTMove);
     int malus = std::min(695 * depth - 215, 2808) - 31 * (moveCount - 1);
 
-    bonus += (B[0][bool(pos.captured_piece())]
-            + B[1][ss->inCheck]
-            + B[2][bestMove==TTMove]
-            + B[3][improving]
-            + B[4][pos.capture_stage(bestMove)]
-            + B[5][givesCheck]
-            + B[6][ss->ttPv]
-            + B[7][cutNode]
-            + B[8][ss->staticEval > 0])
-          * bonus / SCALE;
+    bonus += ((-56 - 23) * bool(pos.captured_piece())
+            + (27 - -10) * ss->inCheck
+            + (5 - -5) * (bestMove == TTMove)
+            + (50 - 0) * improving
+            + (-6 - 25) * pos.capture_stage(bestMove)
+            + (-25 - -45) * givesCheck
+            + (26 - 38) * ss->ttPv
+            + (54 - 11) * cutNode
+            + (-18 - -4) * (ss->staticEval > 0)
+            + (23 + -10 + -5 + 0 + 25 + -45 + 38 + 11 + -4))
+          * bonus / 128;
 
-    malus += (M[0][bool(pos.captured_piece())]
-            + M[1][ss->inCheck]
-            + M[2][bestMove==TTMove]
-            + M[3][improving]
-            + M[4][pos.capture_stage(bestMove)]
-            + M[5][givesCheck]
-            + M[6][ss->ttPv]
-            + M[7][cutNode]
-            + M[8][ss->staticEval > 0])
-          * malus / SCALE;
+    malus += ((-46 - -55) * bool(pos.captured_piece())
+            + (-9 - 10) * ss->inCheck
+            + (-45 - -5) * (bestMove == TTMove)
+            + (21 - 29) * improving
+            + (-34 - 17) * pos.capture_stage(bestMove)
+            + (-8 - -15) * givesCheck
+            + (-33 - 16) * ss->ttPv
+            + (25 - 21) * cutNode
+            + (3 - -15) * (ss->staticEval > 0)
+            + (-55 + 10 + -5 + 29 + 17 + -15 + 16 + 21 + -15))
+          * malus / 128;
 
     if (!pos.capture_stage(bestMove))
     {
