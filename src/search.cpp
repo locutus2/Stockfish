@@ -1918,54 +1918,28 @@ void update_all_stats(const Position&      pos,
     int bonus = std::min(141 * depth - 89, 1613) + 311 * (bestMove == TTMove);
     int malus = std::min(695 * depth - 215, 2808) - 31 * (moveCount - 1);
 
-    constexpr double P[9] = { 0.227374, 0.193983, 0.396606, 0.396521, 0.415475, 0.106769, 0.16751, 0.788896, 0.487225 };
-    constexpr int B[9] = { -1, -4, 2, -4, 7, 3, -8, 6, -2 };
-    constexpr int M[9] = { -6, 5, 4, -3, 15, 8, 8, 0, -2 };
-    double Bbias = -1;
-    double Mbias = -15;
-
-
-    for(int i = 0; i < 9; i++)
-    {
-        int V0 = -B[i] * P[i] / (1-P[i]);
-        int V1 = B[i] - V0;
-        std::cerr << V1  << "(" << V0 << ") ";
-        Bbias += V0;
-    }
-    std::cerr << Bbias << std::endl;
-    for(int i = 0; i < 9; i++)
-    {
-        int V0 = -M[i] * P[i] / (1-P[i]);
-        int V1 = M[i] - V0;
-        std::cerr << V1  << "(" << V0 << ") ";
-        Mbias += V0;
-    }
-    std::cerr << Mbias << std::endl;
-    std::exit(1);
-
-
-    bonus += (0 * bool(pos.captured_piece())
-            + 0 * ss->inCheck
-            + 0 * (bestMove == TTMove)
-            + 0 * improving
-            + 0 * pos.capture_stage(bestMove)
-            + 0 * givesCheck
-            + 0 * ss->ttPv
-            + 0 * cutNode
-            + 0 * (ss->staticEval > 0)
-            + 0)
+    bonus += (-2 * bool(pos.captured_piece())
+            - 11 * ss->inCheck
+            + 13 * (bestMove == TTMove)
+            - 13 * improving
+            + 18 * pos.capture_stage(bestMove)
+            + 4 * givesCheck
+            - 9 * ss->ttPv
+            + 14 * cutNode
+            - 5 * (ss->staticEval > 0)
+            - 19)
           * bonus / 128;
 
-    malus += (0 * bool(pos.captured_piece())
-            + 0 * ss->inCheck
-            + 0 * (bestMove == TTMove)
-            + 0 * improving
-            + 0 * pos.capture_stage(bestMove)
-            + 0 * givesCheck
-            + 0 * ss->ttPv
-            + 0 * cutNode
-            + 0 * (ss->staticEval > 0)
-            + 0)
+    malus += (-9 * bool(pos.captured_piece())
+            + 11 * ss->inCheck
+            - (bestMove == TTMove)
+            - 3 * improving
+            + 23 * pos.capture_stage(bestMove)
+            + 2 * givesCheck
+            + 15 * ss->ttPv
+            //+ 0 * cutNode
+            - (ss->staticEval > 0)
+            - 22)
           * malus / 128;
 
     if (!pos.capture_stage(bestMove))
