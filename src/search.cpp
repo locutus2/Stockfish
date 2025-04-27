@@ -55,10 +55,12 @@ namespace Stockfish {
 constexpr int N = 9;
 constexpr int SCALE = 128;
 
-int B[N][2];
-int M[N][2];
+constexpr double P[N] = { 0.227374, 0.193983, 0.396606, 0.396521, 0.415475, 0.106769, 0.16751, 0.788896, 0.487225 };
 
-TUNE(SetRange(-SCALE, SCALE), B, M);
+int Bbias, B[N];
+int Mbias, M[N];
+
+TUNE(SetRange(-SCALE, SCALE), Bbias, B, Mbias, M);
 
 namespace TB = Tablebases;
 
@@ -1903,6 +1905,7 @@ void update_pv(Move* pv, Move move, const Move* childPv) {
     *pv = Move::none();
 }
 
+#define V(v, p, c) ((v) * bool(c) - int((v)*(p)/(1-(p))) * !(c))
 
 // Updates stats at the end of search() when a bestMove is found
 void update_all_stats(const Position&      pos,
@@ -1926,26 +1929,28 @@ void update_all_stats(const Position&      pos,
     int bonus = std::min(141 * depth - 89, 1613) + 311 * (bestMove == TTMove);
     int malus = std::min(695 * depth - 215, 2808) - 31 * (moveCount - 1);
 
-    bonus += (B[0][bool(pos.captured_piece())]
-            + B[1][ss->inCheck]
-            + B[2][bestMove==TTMove]
-            + B[3][improving]
-            + B[4][pos.capture_stage(bestMove)]
-            + B[5][givesCheck]
-            + B[6][ss->ttPv]
-            + B[7][cutNode]
-            + B[8][ss->staticEval > 0])
+    bonus += (V(B[0], P[0], bool(pos.captured_piece()))
+            + V(B[1], P[1], ss->inCheck)
+            + V(B[2], P[2], bestMove==TTMove)
+            + V(B[3], P[3], improving)
+            + V(B[4], P[4], pos.capture_stage(bestMove))
+            + V(B[5], P[5], givesCheck)
+            + V(B[6], P[6], ss->ttPv)
+            + V(B[7], P[7], cutNode)
+            + V(B[8], P[8], ss->staticEval > 0)
+            + Bbias)
           * bonus / SCALE;
 
-    malus += (M[0][bool(pos.captured_piece())]
-            + M[1][ss->inCheck]
-            + M[2][bestMove==TTMove]
-            + M[3][improving]
-            + M[4][pos.capture_stage(bestMove)]
-            + M[5][givesCheck]
-            + M[6][ss->ttPv]
-            + M[7][cutNode]
-            + M[8][ss->staticEval > 0])
+    malus += (V(M[0], P[0], bool(pos.captured_piece()))
+            + V(M[1], P[1], ss->inCheck)
+            + V(M[2], P[2], bestMove==TTMove)
+            + V(M[3], P[3], improving)
+            + V(M[4], P[4], pos.capture_stage(bestMove))
+            + V(M[5], P[5], givesCheck)
+            + V(M[6], P[6], ss->ttPv)
+            + V(M[7], P[7], cutNode)
+            + V(M[8], P[8], ss->staticEval > 0)
+            + Mbias)
           * malus / SCALE;
 
     if (!pos.capture_stage(bestMove))
