@@ -52,6 +52,14 @@
 
 namespace Stockfish {
 
+constexpr int N = 9;
+constexpr int SCALE = 128;
+
+int B[N][2];
+int M[N][2];
+
+TUNE(SetRange(-SCALE, SCALE), B, M);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -185,7 +193,9 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
                       Move                 TTMove,
-                      int                  moveCount);
+                      int                  moveCount,
+                      bool                 improving,
+                      bool                 cutNode);
 
 }  // namespace
 
@@ -1476,7 +1486,7 @@ moves_loop:  // When in check, search starts here
     else if (bestMove)
     {
         update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth,
-                         ttData.move, moveCount);
+                         ttData.move, moveCount, improving, cutNode);
         if (!PvNode)
         {
             int bonus = ss->isTTMove ? 800 : -870;
@@ -1904,14 +1914,39 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
                       Move                 TTMove,
-                      int                  moveCount) {
+                      int                  moveCount,
+                      bool                 improving,
+                      bool                 cutNode) {
 
     CapturePieceToHistory& captureHistory = workerThread.captureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
+    bool                   givesCheck     = pos.gives_check(bestMove);
 
     int bonus = std::min(141 * depth - 89, 1613) + 311 * (bestMove == TTMove);
     int malus = std::min(695 * depth - 215, 2808) - 31 * (moveCount - 1);
+
+    bonus += (B[0][bool(pos.captured_piece())]
+            + B[1][ss->inCheck]
+            + B[2][bestMove==TTMove]
+            + B[3][improving]
+            + B[4][pos.capture_stage(bestMove)]
+            + B[5][givesCheck]
+            + B[6][ss->ttPv]
+            + B[7][cutNode]
+            + B[8][ss->staticEval > 0])
+          * bonus / SCALE;
+
+    malus += (M[0][bool(pos.captured_piece())]
+            + M[1][ss->inCheck]
+            + M[2][bestMove==TTMove]
+            + M[3][improving]
+            + M[4][pos.capture_stage(bestMove)]
+            + M[5][givesCheck]
+            + M[6][ss->ttPv]
+            + M[7][cutNode]
+            + M[8][ss->staticEval > 0])
+          * malus / SCALE;
 
     if (!pos.capture_stage(bestMove))
     {
