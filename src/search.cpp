@@ -1918,28 +1918,28 @@ void update_all_stats(const Position&      pos,
     int bonus = std::min(141 * depth - 89, 1613) + 311 * (bestMove == TTMove);
     int malus = std::min(695 * depth - 215, 2808) - 31 * (moveCount - 1);
 
-    bonus += ((-56 - 23) * bool(pos.captured_piece())
-            + (27 - -10) * ss->inCheck
-            + (5 - -5) * (bestMove == TTMove)
-            + (50 - 0) * improving
-            + (-6 - 25) * pos.capture_stage(bestMove)
-            + (-25 - -45) * givesCheck
-            + (26 - 38) * ss->ttPv
-            + (54 - 11) * cutNode
-            + (-18 - -4) * (ss->staticEval > 0)
-            + (23 + -10 + -5 + 0 + 25 + -45 + 38 + 11 + -4))
+    bonus += ((-12 - 6) * bool(pos.captured_piece())
+            + (-14 - -12) * ss->inCheck
+            + (-5 - -1) * (bestMove == TTMove)
+            + (11 - -2) * improving
+            + (-3 - 0) * pos.capture_stage(bestMove)
+            + (-5 - -1) * givesCheck
+            + (4 - 5) * ss->ttPv
+            + (-7 - 2) * cutNode
+            + (-15 - 3) * (ss->staticEval > 0)
+            + (6 + -12 + -1 + -2 + 0 + -1 + 5 + 2 + 3))
           * bonus / 128;
 
-    malus += ((-46 - -55) * bool(pos.captured_piece())
-            + (-9 - 10) * ss->inCheck
-            + (-45 - -5) * (bestMove == TTMove)
-            + (21 - 29) * improving
-            + (-34 - 17) * pos.capture_stage(bestMove)
-            + (-8 - -15) * givesCheck
-            + (-33 - 16) * ss->ttPv
-            + (25 - 21) * cutNode
-            + (3 - -15) * (ss->staticEval > 0)
-            + (-55 + 10 + -5 + 29 + 17 + -15 + 16 + 21 + -15))
+    malus += ((-6 - 2) * bool(pos.captured_piece())
+            + (-14 - 4) * ss->inCheck
+            + (-2 - 5) * (bestMove == TTMove)
+            + (1 - -10) * improving
+            + (15 - -10) * pos.capture_stage(bestMove)
+            + (10 - -13) * givesCheck
+            + (12 - 8) * ss->ttPv
+            + (-8 - 2) * cutNode
+            + (-7 - 1) * (ss->staticEval > 0)
+            + (2 + 4 + 5 + -10 + -10 + -13 + 8 + 2 + 1))
           * malus / 128;
 
     if (!pos.capture_stage(bestMove))
