@@ -132,7 +132,9 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
                       Move                 TTMove,
-                      int                  moveCount);
+                      int                  moveCount,
+                      bool                 improving,
+                      bool                 cutNode);
 
 }  // namespace
 
@@ -1420,7 +1422,7 @@ moves_loop:  // When in check, search starts here
     else if (bestMove)
     {
         update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth,
-                         ttData.move, moveCount);
+                         ttData.move, moveCount, improving, cutNode);
         if (!PvNode)
         {
             int bonus = ss->isTTMove ? 800 : -879;
@@ -1850,14 +1852,25 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
                       Move                 ttMove,
-                      int                  moveCount) {
+                      int                  moveCount,
+                      bool                 improving,
+                      bool                 cutNode) {
 
     CapturePieceToHistory& captureHistory = workerThread.captureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
+    bool                   givesCheck     = pos.gives_check(bestMove);
     PieceType              captured;
 
     int bonus = std::min(143 * depth - 89, 1496) + 302 * (bestMove == ttMove);
     int malus = std::min(737 * depth - 179, 3141) - 30 * moveCount;
+
+    bonus += (-35 * ss->inCheck + 28 * (bestMove == ttMove) - 33 * improving
+              + 44 * pos.capture_stage(bestMove) + 17 * givesCheck - 52 * cutNode + 20)
+           * bonus / 128;
+
+    malus += (-42 * bool(pos.captured_piece()) + 40 * ss->inCheck - 18 * (bestMove == ttMove)
+              + 24 * improving + 32 * pos.capture_stage(bestMove) - 14 * cutNode - 26)
+           * malus / 128;
 
     if (!pos.capture_stage(bestMove))
     {
