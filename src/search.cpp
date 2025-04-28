@@ -1905,27 +1905,26 @@ void update_all_stats(const Position&      pos,
     int malus = std::min(737 * depth - 179, 3141) - 30 * moveCount;
 
     bonus += (2 * bool(pos.captured_piece())
-            - 32 * ss->inCheck
-            + 34 * (bestMove == ttMove)
-            - 39 * improving
-            + 42 * pos.capture_stage(bestMove)
-            + 13 * givesCheck
-            - 7 * ss->ttPv
-            - 14 * cutNode
-            + 3 * (ss->staticEval > 0)
-            - 7)
+            - 35 * ss->inCheck
+            + 28 * (bestMove == ttMove)
+            - 33 * improving
+            + 44 * pos.capture_stage(bestMove)
+            + 17 * givesCheck
+            - 52 * cutNode
+            + (ss->staticEval > 0)
+            + 20)
           * bonus / 128;
 
-    malus += (-47 * bool(pos.captured_piece())
-            + 38 * ss->inCheck
-            - 11 * (bestMove == ttMove)
-            + 23 * improving
-            + 34 * pos.capture_stage(bestMove)
-            - 8 * givesCheck
-            + 4 * ss->ttPv
-            - 18 * cutNode
+    malus += (-42 * bool(pos.captured_piece())
+            + 40 * ss->inCheck
+            - 18 * (bestMove == ttMove)
+            + 24 * improving
+            + 32 * pos.capture_stage(bestMove)
+            - 6 * givesCheck
+            + 3 * ss->ttPv
+            - 14 * cutNode
             + 5 * (ss->staticEval > 0)
-            - 25)
+            - 28)
           * malus / 128;
 
     if (!pos.capture_stage(bestMove))
