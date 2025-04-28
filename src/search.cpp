@@ -52,6 +52,18 @@
 
 namespace Stockfish {
 
+    constexpr int N = 9;
+    constexpr int SCALE = 1024;
+
+    constexpr double P[N] = { 0.304562, 0.124928, 0.100284, 0.352924, 0.270747, 0.0962403, 0.129121, 0.514994, 0.427615 };
+
+    int Bbias;
+    int B[N];
+
+    TUNE(SetRange(-SCALE, SCALE), Bbias, B);
+
+#define V(v, p, c) ((v) * bool(c) - int((v)*(p)/(1-(p))) * !(c))
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1259,6 +1271,18 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
+
+        if(!ss->ttPv)
+            r +=  V(B[0], P[0], priorCapture)
+                + V(B[1], P[1], ss->inCheck)
+                + V(B[2], P[2], move == ttData.move)
+                + V(B[3], P[3], improving)
+                + V(B[4], P[4], capture)
+                + V(B[5], P[5], givesCheck)
+                + V(B[6], P[6], (ss + 1)->cutoffCnt > 2)
+                + V(B[7], P[7], cutNode)
+                + V(B[8], P[8], ss->staticEval > 0)
+                + Bbias;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
