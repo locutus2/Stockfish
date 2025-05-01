@@ -1226,16 +1226,16 @@ moves_loop:  // When in check, search starts here
         r -= std::abs(correctionValue) / 28047;
 
         if (!ss->ttPv)
-            r +=  67 * priorCapture
-                - 25 * ss->inCheck
-                +  3 * (move == ttData.move)
-                - 98 * improving
-                + 95 * capture
-                + 21 * givesCheck
-                + 22 * ((ss + 1)->cutoffCnt > 2)
-                + 41 * cutNode
-                + 94 * (ss->staticEval > 0)
-                - 47;
+            r +=  134 * priorCapture
+                -  50 * ss->inCheck
+                +   6 * (move == ttData.move)
+                - 196 * improving
+                + 190 * capture
+                +  42 * givesCheck
+                +  44 * ((ss + 1)->cutoffCnt > 2)
+                +  82 * cutNode
+                + 188 * (ss->staticEval > 0)
+                -  94;
 
         if (PvNode && std::abs(bestValue) <= 2078)
             r -= risk_tolerance(bestValue);
