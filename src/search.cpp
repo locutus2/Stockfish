@@ -52,18 +52,6 @@
 
 namespace Stockfish {
 
-    constexpr int N = 9;
-    constexpr int SCALE = 1024;
-
-    constexpr double P[N] = { 0.304562, 0.124928, 0.100284, 0.352924, 0.270747, 0.0962403, 0.129121, 0.514994, 0.427615 };
-
-    int Bbias = 31;
-    int B[N] = { 47, -22, 3, -64, 70, 19, 20, 20, 54 };
-
-    TUNE(SetRange(-SCALE, SCALE), Bbias, B);
-
-#define V(v, p, c) ((v) * bool(c) - int((v)*(p)/(1-(p))) * !(c))
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1237,6 +1225,18 @@ moves_loop:  // When in check, search starts here
         r -= moveCount * 66;
         r -= std::abs(correctionValue) / 28047;
 
+        if (!ss->ttPv)
+            r +=  67 * priorCapture
+                - 25 * ss->inCheck
+                +  3 * (move == ttData.move)
+                - 98 * improving
+                + 95 * capture
+                + 21 * givesCheck
+                + 22 * ((ss + 1)->cutoffCnt > 2)
+                + 41 * cutNode
+                + 94 * (ss->staticEval > 0)
+                - 47;
+
         if (PvNode && std::abs(bestValue) <= 2078)
             r -= risk_tolerance(bestValue);
 
@@ -1271,67 +1271,6 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
-
-        /*
-        int sum = Bbias;
-        for(int i = 0; i < 9; i++)
-        {
-            sum -= B[i]*P[i]/(1-P[i]);
-            std::cout << int(B[i] + B[i]*P[i]/(1-P[i])) << " " << int(-B[i]*P[i]/(1-P[i])) << std::endl;
-        }
-        std::cout << sum << std::endl;
-        std::exit(1);
-        *(
-        /*
-         * 67 -20
-         * -25 3
-         *  3 0
-         *  -98 34
-         *  95 -25
-         *  21 -2
-         *  22 -2
-         *  41 -21
-         *  94 -40
-         *  -47
-         * */
-        if(false && !ss->ttPv)
-        {
-            r +=  92 * priorCapture
-                - 28 * ss->inCheck
-                + 36 * (move == ttData.move)
-                - 69 * improving
-                + 52 * capture
-                + 9 * givesCheck
-                + 20 * ((ss + 1)->cutoffCnt > 2)
-                + 51 * cutNode
-                + 71 * (ss->staticEval > 0)
-                - 48;
-            double r0 = 92 * priorCapture
-                - 28 * ss->inCheck
-                + 36 * (move == ttData.move)
-                - 69 * improving
-                + 52 * capture
-                + 9 * givesCheck
-                + 20 * ((ss + 1)->cutoffCnt > 2)
-                + 51 * cutNode
-                + 71 * (ss->staticEval > 0)
-                - 48;
-            dbg_hit_on(r0>0, 0);
-            dbg_mean_of(r0, 0);
-            dbg_mean_of(std::abs(r0), 1);
-        }
-            /*
-            r +=  V(B[0], P[0], priorCapture)
-                + V(B[1], P[1], ss->inCheck)
-                + V(B[2], P[2], move == ttData.move)
-                + V(B[3], P[3], improving)
-                + V(B[4], P[4], capture)
-                + V(B[5], P[5], givesCheck)
-                + V(B[6], P[6], (ss + 1)->cutoffCnt > 2)
-                + V(B[7], P[7], cutNode)
-                + V(B[8], P[8], ss->staticEval > 0)
-                + Bbias;
-                */
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
