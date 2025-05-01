@@ -57,8 +57,8 @@ namespace Stockfish {
 
     constexpr double P[N] = { 0.304562, 0.124928, 0.100284, 0.352924, 0.270747, 0.0962403, 0.129121, 0.514994, 0.427615 };
 
-    int Bbias;
-    int B[N];
+    int Bbias = 31;
+    int B[N] = { 47, -22, 3, -64, 70, 19, 20, 20, 54 };
 
     TUNE(SetRange(-SCALE, SCALE), Bbias, B);
 
@@ -1272,7 +1272,55 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
 
-        if(!ss->ttPv)
+        /*
+        int sum = Bbias;
+        for(int i = 0; i < 9; i++)
+        {
+            sum -= B[i]*P[i]/(1-P[i]);
+            std::cout << int(B[i] + B[i]*P[i]/(1-P[i])) << " " << int(-B[i]*P[i]/(1-P[i])) << std::endl;
+        }
+        std::cout << sum << std::endl;
+        std::exit(1);
+        *(
+        /*
+         * 67 -20
+         * -25 3
+         *  3 0
+         *  -98 34
+         *  95 -25
+         *  21 -2
+         *  22 -2
+         *  41 -21
+         *  94 -40
+         *  -47
+         * */
+        if(false && !ss->ttPv)
+        {
+            r +=  92 * priorCapture
+                - 28 * ss->inCheck
+                + 36 * (move == ttData.move)
+                - 69 * improving
+                + 52 * capture
+                + 9 * givesCheck
+                + 20 * ((ss + 1)->cutoffCnt > 2)
+                + 51 * cutNode
+                + 71 * (ss->staticEval > 0)
+                - 48;
+            double r0 = 92 * priorCapture
+                - 28 * ss->inCheck
+                + 36 * (move == ttData.move)
+                - 69 * improving
+                + 52 * capture
+                + 9 * givesCheck
+                + 20 * ((ss + 1)->cutoffCnt > 2)
+                + 51 * cutNode
+                + 71 * (ss->staticEval > 0)
+                - 48;
+            dbg_hit_on(r0>0, 0);
+            dbg_mean_of(r0, 0);
+            dbg_mean_of(std::abs(r0), 1);
+        }
+            /*
             r +=  V(B[0], P[0], priorCapture)
                 + V(B[1], P[1], ss->inCheck)
                 + V(B[2], P[2], move == ttData.move)
@@ -1283,6 +1331,7 @@ moves_loop:  // When in check, search starts here
                 + V(B[7], P[7], cutNode)
                 + V(B[8], P[8], ss->staticEval > 0)
                 + Bbias;
+                */
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
