@@ -147,7 +147,6 @@ void MovePicker::score() {
             m.value =
               ((pos.blockers_for_king(~pos.side_to_move()) & m.from_sq()
                 && !aligned(m.from_sq(), m.to_sq(), pos.square<KING>(~pos.side_to_move())))
-                 * 2
                + 7)
                 * int(PieceValue[pos.piece_on(m.to_sq())])
               + 1024 * bool(pos.check_squares(type_of(pos.moved_piece(m))) & m.to_sq())
