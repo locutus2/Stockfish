@@ -241,7 +241,7 @@ top:
     case GOOD_CAPTURE :
         if (select([&]() {
                 // Move losing capture to endBadCaptures to be tried later
-                return pos.see_ge(*cur, -cur->value / 18 - margin)
+                return pos.see_ge(*cur, margin - cur->value / 18)
                        ? true
                        : (*endBadCaptures++ = *cur, false);
             }))
