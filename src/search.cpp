@@ -1191,16 +1191,16 @@ moves_loop:  // When in check, search starts here
         r -= std::abs(correctionValue) / 28047;
 
         if (!ss->ttPv)
-            r +=  67 * priorCapture
-                - 25 * ss->inCheck
-                +  3 * (move == ttData.move)
-                - 98 * improving
-                + 95 * capture
-                + 21 * givesCheck
-                + 22 * ((ss + 1)->cutoffCnt > 2)
-                + 41 * cutNode
-                + 94 * (ss->staticEval > 0)
-                - 47;
+            r +=  156 * priorCapture
+                -  14 * ss->inCheck
+                -   5 * (move == ttData.move)
+                -   7 * improving
+                + 157 * capture
+                -   7 * givesCheck
+                +  12 * ((ss + 1)->cutoffCnt > 2)
+                +  32 * cutNode
+                + 141 * (ss->staticEval > 0)
+                - 259;
 
         // Increase reduction for cut nodes
         if (cutNode)
