@@ -63,6 +63,7 @@ namespace Search {
 struct Stack {
     Move*                       pv;
     PieceToHistory*             continuationHistory;
+    PieceToHistory*             skipLmrHistory;
     CorrectionHistory<PieceTo>* continuationCorrectionHistory;
     int                         ply;
     Move                        currentMove;
@@ -286,6 +287,7 @@ class Worker {
 
     CapturePieceToHistory captureHistory;
     ContinuationHistory   continuationHistory[2][2];
+    ContinuationHistory   skipLmrHistory;
     PawnHistory           pawnHistory;
 
     CorrectionHistory<Pawn>         pawnCorrectionHistory;

@@ -259,7 +259,8 @@ void Search::Worker::iterative_deepening() {
     for (int i = 7; i > 0; --i)
     {
         (ss - i)->continuationHistory =
-          &this->continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
+          &this->continuationHistory[0][0][NO_PIECE][0];                // Use as a sentinel
+        (ss - i)->skipLmrHistory = &this->skipLmrHistory[NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &this->continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
     }
@@ -550,6 +551,10 @@ void Search::Worker::clear() {
     for (auto& to : continuationCorrectionHistory)
         for (auto& h : to)
             h.fill(8);
+
+    for (auto& to : skipLmrHistory)
+        for (auto& h : to)
+            h.fill(0);
 
     for (bool inCheck : {false, true})
         for (StatsType c : {NoCaptures, Captures})
@@ -876,6 +881,7 @@ Value Search::Worker::search(
 
         ss->currentMove                   = Move::null();
         ss->continuationHistory           = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+        ss->skipLmrHistory                = &thisThread->skipLmrHistory[NO_PIECE][0];
         ss->continuationCorrectionHistory = &thisThread->continuationCorrectionHistory[NO_PIECE][0];
 
         do_null_move(pos, st);
@@ -946,6 +952,7 @@ Value Search::Worker::search(
             ss->currentMove = move;
             ss->continuationHistory =
               &this->continuationHistory[ss->inCheck][true][movedPiece][move.to_sq()];
+            ss->skipLmrHistory = &this->skipLmrHistory[movedPiece][move.to_sq()];
             ss->continuationCorrectionHistory =
               &this->continuationCorrectionHistory[movedPiece][move.to_sq()];
 
@@ -1198,6 +1205,7 @@ moves_loop:  // When in check, search starts here
         ss->currentMove = move;
         ss->continuationHistory =
           &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
+        ss->skipLmrHistory = &thisThread->skipLmrHistory[movedPiece][move.to_sq()];
         ss->continuationCorrectionHistory =
           &thisThread->continuationCorrectionHistory[movedPiece][move.to_sq()];
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
@@ -1245,6 +1253,17 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
 
+        bool CC      = !capture && !ss->inCheck && depth >= 2 && moveCount > 1;
+        int  V       = 0;
+        bool skipLMR = false;
+        if (CC)
+        {
+            V       = (*ss->skipLmrHistory)[movedPiece][move.to_sq()];
+            skipLMR = V > 15000;
+            dbg_mean_of(V);
+            //dbg_mean_of(V, depth);
+        }
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1256,6 +1275,7 @@ moves_loop:  // When in check, search starts here
             Depth d = std::max(1, std::min(newDepth - r / 1024,
                                            newDepth + !allNode + (PvNode && !bestMove)))
                     + ((ss - 1)->isPvNode);
+
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
@@ -1274,13 +1294,25 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+                }
 
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1508);
             }
             else if (value > alpha && value < bestValue + 9)
                 newDepth--;
+
+            if (CC)
+            {
+                dbg_hit_on(value > alpha, 0);
+                dbg_hit_on(skipLMR, 1);
+                dbg_hit_on(value > alpha, 10 + skipLMR);
+
+                int bonus = (value > alpha ? 1000 : -50);
+                (*ss->skipLmrHistory)[movedPiece][move.to_sq()] << bonus;
+            }
         }
 
         // Step 18. Full-depth search when LMR is skipped
