@@ -1253,19 +1253,9 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
 
-        bool CC      = !capture && !ss->inCheck && depth >= 2 && moveCount > 1;
-        int  V       = 0;
-        bool skipLMR = false;
-        if (CC)
-        {
-            V       = (*ss->skipLmrHistory)[movedPiece][move.to_sq()];
-            skipLMR = V > 15000;
-            dbg_mean_of(V);
-            //dbg_mean_of(V, depth);
-        }
-
         // Step 17. Late moves reduction / extension (LMR)
-        if (depth >= 2 && moveCount > 1)
+        if (depth >= 2 && moveCount > 1
+            && (capture || ss->inCheck || (*ss->skipLmrHistory)[movedPiece][move.to_sq()] < 20000))
         {
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
@@ -1304,15 +1294,8 @@ moves_loop:  // When in check, search starts here
             else if (value > alpha && value < bestValue + 9)
                 newDepth--;
 
-            if (CC)
-            {
-                dbg_hit_on(value > alpha, 0);
-                dbg_hit_on(skipLMR, 1);
-                dbg_hit_on(value > alpha, 10 + skipLMR);
-
-                int bonus = (value > alpha ? 1000 : -50);
-                (*ss->skipLmrHistory)[movedPiece][move.to_sq()] << bonus;
-            }
+            if (!capture && !ss->inCheck)
+                (*ss->skipLmrHistory)[movedPiece][move.to_sq()] << (value > alpha ? 1000 : -50);
         }
 
         // Step 18. Full-depth search when LMR is skipped
