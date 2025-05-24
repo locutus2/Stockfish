@@ -1256,7 +1256,9 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1
             && (capture || ss->inCheck || !cutNode
-                || (*ss->skipLmrHistory)[movedPiece][move.to_sq()] < 24000 + std::max(r / 2, 0)))
+                || (*ss->skipLmrHistory)[movedPiece][move.to_sq()]
+                       + (*contHist[0])[movedPiece][move.to_sq()]
+                     < 46000 + std::max(r, 0)))
         {
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
