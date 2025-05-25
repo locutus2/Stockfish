@@ -1095,7 +1095,7 @@ moves_loop:  // When in check, search starts here
 
                 // Continuation history based pruning
                 if (history < -4229 * depth
-                    && (!ss->inCheck || (*contHist[0])[movedPiece][move.to_sq()] < 0))
+                    && (!ss->inCheck || (*contHist[0])[movedPiece][move.to_sq()] < -5000))
                     continue;
 
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
