@@ -601,7 +601,7 @@ Value Search::Worker::search(
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    bool  givesCheck, improving, opponentWorsening;
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
@@ -612,7 +612,7 @@ Value Search::Worker::search(
     // Step 1. Initialize node
     Worker* thisThread = this;
     ss->inCheck        = pos.checkers();
-    priorCapture       = pos.captured_piece();
+    ss->priorCapture   = pos.captured_piece();
     Color us           = pos.side_to_move();
     ss->moveCount      = 0;
     bestValue          = -VALUE_INFINITE;
@@ -687,7 +687,7 @@ Value Search::Worker::search(
                                        std::min(125 * depth - 77, 1157));
 
             // Extra penalty for early quiet moves of the previous ply
-            if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 3 && !priorCapture)
+            if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 3 && !ss->priorCapture)
                 update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, -2301);
         }
 
@@ -816,8 +816,9 @@ Value Search::Worker::search(
     if (((ss - 1)->currentMove).is_ok()
         && (!(ss - 1)->inCheck
             || (!(ss - 3)->inCheck && ((ss - 2)->currentMove).is_ok()
-                && ((ss - 3)->currentMove).is_ok()))
-        && !priorCapture && (ttData.depth - 2) <= depth)
+                && ((ss - 3)->currentMove).is_ok())
+                 && !(ss - 1)->priorCapture && !(ss - 2)->priorCapture)
+        && !ss->priorCapture && (ttData.depth - 2) <= depth)
     {
         int staticEvalDiff = (ss - 1)->inCheck ? (ss->staticEval + (ss - 3)->staticEval) / 2
                                                : ss->staticEval + (ss - 1)->staticEval;
@@ -1446,7 +1447,7 @@ moves_loop:  // When in check, search starts here
     }
 
     // Bonus for prior quiet countermove that caused the fail low
-    else if (!priorCapture && prevSq != SQ_NONE)
+    else if (!ss->priorCapture && prevSq != SQ_NONE)
     {
         int bonusScale = -302;
         bonusScale += std::min(-(ss - 1)->statScore / 103, 323);
@@ -1472,7 +1473,7 @@ moves_loop:  // When in check, search starts here
     }
 
     // Bonus for prior capture countermove that caused the fail low
-    else if (priorCapture && prevSq != SQ_NONE)
+    else if (ss->priorCapture && prevSq != SQ_NONE)
     {
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
