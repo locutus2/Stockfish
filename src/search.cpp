@@ -817,7 +817,8 @@ Value Search::Worker::search(
     }
 
     // Use static evaluation difference to improve quiet move ordering
-    if (((ss - 1)->currentMove).is_ok() && (!(ss - 1)->inCheck || !(ss - 2)->inCheck)
+    if (((ss - 1)->currentMove).is_ok()
+        && (!(ss - 1)->inCheck || (!(ss - 2)->inCheck && ((ss - 2)->currentMove).is_ok()))
         && !priorCapture && (ttData.depth - 2) <= depth)
     {
         Value prevStaticEval = (ss - 1)->inCheck ? (ss - 2)->staticEval : -(ss - 1)->staticEval;
