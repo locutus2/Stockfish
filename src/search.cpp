@@ -814,11 +814,13 @@ Value Search::Worker::search(
 
     // Use static evaluation difference to improve quiet move ordering
     if (((ss - 1)->currentMove).is_ok()
-        && (!(ss - 1)->inCheck || (!(ss - 2)->inCheck && ((ss - 2)->currentMove).is_ok()))
+        && (!(ss - 1)->inCheck
+            || (!(ss - 3)->inCheck && ((ss - 2)->currentMove).is_ok()
+                && ((ss - 3)->currentMove).is_ok()))
         && !priorCapture && (ttData.depth - 2) <= depth)
     {
-        Value prevStaticEval = (ss - 1)->inCheck ? (ss - 2)->staticEval : -(ss - 1)->staticEval;
-        int   bonus = std::clamp(-10 * int(ss->staticEval - prevStaticEval), -1858, 1492) + 661;
+        Value prevStaticEval = (ss - 1)->inCheck ? (ss - 3)->staticEval : (ss - 1)->staticEval;
+        int   bonus = std::clamp(-10 * int(ss->staticEval + prevStaticEval), -1858, 1492) + 661;
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus * 1057 / 1024;
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
