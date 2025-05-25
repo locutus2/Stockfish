@@ -1097,7 +1097,9 @@ moves_loop:  // When in check, search starts here
                 if (history < -4229 * depth
                     && (!ss->inCheck
                         || ((*contHist[0])[movedPiece][move.to_sq()] < 0
-                            && thisThread->mainHistory[us][move.from_to()] < 0)))
+                            && thisThread->pawnHistory[pawn_structure_index(pos)][movedPiece]
+                                                      [move.to_sq()]
+                                 < 0)))
                     continue;
 
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
