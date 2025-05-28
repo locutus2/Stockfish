@@ -1228,8 +1228,8 @@ moves_loop:  // When in check, search starts here
         if (move == ttData.move)
             r -= 2006;
 
-        // Decrease reduction if pin on own piece is removed
-        if (pinnedPieces & ~pos.blockers_for_king(us))
+        // Decrease reduction for captures if pin on own piece is removed
+        if (capture && pinnedPieces & ~pos.blockers_for_king(us))
             r -= 1024;
 
         if (capture)
