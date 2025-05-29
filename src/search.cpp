@@ -1243,8 +1243,8 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-            if (!PvNode && depth >= 8 && priorCapture)
-                r += 1024;
+            if (!PvNode && depth >= 6)
+                r += 1024 * priorCapture - 285;
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
