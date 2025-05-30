@@ -1324,6 +1324,28 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	    constexpr int TH = 98; // all conditions
 	    int sum = 0;
 	    int R = false;
+	    // specify tested rule
+	    if(CP)
+	    {
+		    //set rule!!!
+		    R =   -67 * cutNode
+			+ 30 * ss->ttPv
+			+ -31 * improving
+			+ -11 * ss->inCheck
+			+ 3 * capture
+			+ -32 * givesCheck
+			+ 35 * priorCapture
+			+ 6 * ttCapture
+			+ -64 * (eval > alpha)
+			+ -52 * (ss->staticEval > alpha)
+			+ 25 * (eval < ss->staticEval)
+			>= 43;
+		    //R = ss->inCheck && allNode;// && !cutNode;
+		    //R = true;
+		    //R = ttCapture;
+	    }
+
+
 		    static bool init = false;
 		    if(!init)
 		    {
@@ -1367,29 +1389,11 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    //dbg_hit_on(sum >= N*TH, 10);
 		    if(sum >= N*TH)
 		    {
-			    R = true;
+			    //R = true;
 		    }
 
 		    sum /= N;
 
-		    //OVerwrite rule!!!
-		    //R = ss->inCheck && allNode;// && !cutNode;
-		    /*
-		    R =   -67 * cutNode
-			+ 30 * ss->ttPv
-			+ -31 * improving
-			+ -11 * ss->inCheck
-			+ 3 * capture
-			+ -32 * givesCheck
-			+ 35 * priorCapture
-			+ 6 * ttCapture
-			+ -64 * (eval > alpha)
-			+ -52 * (ss->staticEval > alpha)
-			+ 25 * (eval < ss->staticEval)
-			>= 43;
-*/
-		    //R = true;
-		    //R = ttCapture;
 
 		    for(int i = 0; i < int(C.size()); i++)
 		    {
@@ -1442,7 +1446,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    {
 			    dbg_hit_on(T, 11);
 		    }
-		    if(!T) dbg_hit_on(R, 12);
+		    //if(!T) dbg_hit_on(R, 12);
+		    if(!T) dbg_hit_on(!R, 12);
             }
 	    if(CP)
 	    {
@@ -1452,8 +1457,10 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		        if(C[i]) dbg_hit_on(T, 500+i*10+5+1);
 			if(!T)
 			{
-		              dbg_hit_on(!C[i], 500+i*10+2);
-		              dbg_hit_on(C[i], 500+i*10+5+2);
+		              //dbg_hit_on(!C[i], 500+i*10+2);
+		              //dbg_hit_on(C[i], 500+i*10+5+2);
+		              dbg_hit_on(!!C[i], 500+i*10+2);
+		              dbg_hit_on(!C[i], 500+i*10+5+2);
 			}
 		    }
 
@@ -1463,8 +1470,10 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			dbg_hit_on(T, (1+C[i])*100+i);
 			if(!T)
 			{
-		              dbg_hit_on(!C[i], 300+i);
-		              dbg_hit_on(C[i], 400+i);
+		              //dbg_hit_on(!C[i], 300+i);
+		              //dbg_hit_on(C[i], 400+i);
+		              dbg_hit_on(!!C[i], 300+i);
+		              dbg_hit_on(!C[i], 400+i);
 			}
 		    }
 
