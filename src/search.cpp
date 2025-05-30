@@ -58,15 +58,22 @@ std::string formatNumber(double x);
 
 std::string formatNumber(double x)
 {
-	std::string s =  std::to_string(x) + "%";
+	std::string s =  std::to_string(x);
 	std::replace(s.begin(), s.end(), '.', ',');
 	return s;
 }
 
 void writeResultFile(const std::string& filename)
 {
+	const std::string path = "/mnt/c/Users/cng/Documents/";
 	std::string SEP = ";";
-	std::ofstream file(filename);
+	std::vector<std::string> header = {"Condition","Frequency","Correct(fail low)","True positive rate","Accuracy"};
+
+	std::ofstream file(path + filename);
+	
+	for(int i = 0; i < int(header.size()); i++)
+		file << (i ? SEP : "") << header[i];
+	file << std::endl;
 
 	for(int i = 0; i < int(derivedConditions.size()); i++)
 	{
@@ -1446,7 +1453,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    CONDITION(bool(excludedMove)),
 			    CONDITION((ttData.value > alpha)),
 			    CONDITION(ttHit),
-			    CONDITION((prevSq != SQ_NONE)),
+			    CONDITION((prevSq == SQ_NONE)),
 			    CONDITION((prevSq == move.to_sq())),
 			    CONDITION(more_than_one(pos.checkers())),
 		    };
