@@ -1243,6 +1243,56 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
+	    /*
+	     * Hit #0: Total 65150829 Hits 61768915 Hit Rate (%) 94.8091
+Hit #100: Total 38862095 Hits 37877027 Hit Rate (%) 97.4652
+Hit #101: Total 49229475 Hits 46304306 Hit Rate (%) 94.0581
+Hit #102: Total 37077952 Hits 35650319 Hit Rate (%) 96.1496
+Hit #103: Total 61544967 Hits 58389777 Hit Rate (%) 94.8734
+Hit #104: Total 57694289 Hits 54677063 Hit Rate (%) 94.7703
+Hit #105: Total 59702899 Hits 56766602 Hit Rate (%) 95.0818
+Hit #106: Total 48524190 Hits 45572427 Hit Rate (%) 93.9169
+Hit #107: Total 60332995 Hits 57170032 Hit Rate (%) 94.7575
+Hit #108: Total 42675526 Hits 41402825 Hit Rate (%) 97.0177
+Hit #109: Total 37501000 Hits 36381808 Hit Rate (%) 97.0156
+Hit #110: Total 51757261 Hits 48798171 Hit Rate (%) 94.2828
+Hit #200: Total 26288734 Hits 23891888 Hit Rate (%) 90.8826
+Hit #201: Total 15921354 Hits 15464609 Hit Rate (%) 97.1312
+Hit #202: Total 28072877 Hits 26118596 Hit Rate (%) 93.0385
+Hit #203: Total 3605862 Hits 3379138 Hit Rate (%) 93.7123
+Hit #204: Total 7456540 Hits 7091852 Hit Rate (%) 95.1092
+Hit #205: Total 5447930 Hits 5002313 Hit Rate (%) 91.8204
+Hit #206: Total 16626639 Hits 16196488 Hit Rate (%) 97.4129
+Hit #207: Total 4817834 Hits 4598883 Hit Rate (%) 95.4554
+Hit #208: Total 22475303 Hits 20366090 Hit Rate (%) 90.6154
+Hit #209: Total 27649829 Hits 25387107 Hit Rate (%) 91.8165
+Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
+	     * */
+   	    constexpr int SCALE = 1024;
+            constexpr double mean = 94.8091;
+	    const std::vector<double> factor[2] ={
+		    { 97.4652, 94.0581, 96.1496, 94.8734, 94.7703, 95.0818, 93.9169, 94.7575, 97.0177, 97.0156, 94.2828 },
+		    { 90.8826, 97.1312, 93.0385, 93.7123, 95.1092, 91.8204, 97.4129, 95.4554, 90.6154, 91.8165, 96.8431 },
+	    };
+
+	    bool CC = !PvNode;
+	    std::vector<bool> C = {
+		    //allNode, PvNode, cutNode,
+		    cutNode,
+		    ss->ttPv,
+		    improving,
+		    ss->inCheck,
+		    capture,
+		    givesCheck,
+		    priorCapture,
+		    ttCapture,
+		    eval > alpha,
+		    ss->staticEval > alpha,
+		    eval < ss->staticEval,
+	    };
+
+	    auto scale = [](double x)->int { return int(x/100*SCALE); };
+
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
@@ -1276,6 +1326,49 @@ moves_loop:  // When in check, search starts here
             }
             else if (value > alpha && value < bestValue + 9)
                 newDepth--;
+
+	    if(CC)
+	    {
+		    bool T = value <= alpha;
+		    dbg_hit_on(T, 0);
+		    for(int i = 0; i < (int)C.size(); i++)
+		    {
+			    dbg_hit_on(T, (1+C[i])*100+i);
+		    }
+
+		    const int N = int(C.size());
+	            int sum = 0;
+		    sum = scale(mean);
+		    for(int i = 0; i < int(C.size()); i++)
+		    {
+			    sum += scale(factor[C[i]][i] - mean);
+		    }
+		    sum /= N;
+
+		    //dbg_correl_of(sum, T);
+		    //dbg_mean_of(sum, 0);
+		    //dbg_stdev_of(sum, 0);
+
+		    sum += SCALE;
+
+		    dbg_hit_on(T, 1000 + sum);
+		    //for(int i = 0; i <= 2*SCALE; i++)
+		    //{
+		//	 dbg_hit_on(sum >= i, 1000+i);
+		 //        if(sum <= i) dbg_hit_on(T, 2000 + i);
+		  //  }
+
+		    /*
+		    dbg_hit_on(T, 1000+SCALE+sum);
+		    //dbg_hit_on(T, 1000+N*SCALE+sum);
+
+		    for(int i = 0; i <= 2*SCALE; i++)
+		    //for(int i = 0; i <= 2*N*SCALE; i++)
+		    {
+			    dbg_hit_on(sum + SCALE >= i, 10000+i);
+		    }
+		    */
+	    }
         }
 
         // Step 18. Full-depth search when LMR is skipped
