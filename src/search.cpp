@@ -1296,7 +1296,7 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 
 	    std::vector<int> index;
 	    index = {0,1,2,3,4,5,6,7,8,9,10};
-	    //index = {0, 8, 9};
+	    //index = {7,3};
 
 	    auto scale = [](double x)->int { return int(x/100*SCALE); };
 
@@ -1352,14 +1352,14 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 		    sum /= N;
 
 		    //OVerwrite rule!!!
-		    //R = C[0];
+		    //R = ss->inCheck && ttCapture;
 
 
 		    dbg_hit_on(R, 10);
 		    for(int i = 0; i < int(C.size()); i++)
 		    {
-		        dbg_hit_on(!C[i], 300+i*10);
-		        dbg_hit_on(C[i], 300+i*10+5);
+		        dbg_hit_on(!C[i], 500+i*10);
+		        dbg_hit_on(C[i], 500+i*10+5);
 		    }
 	    }
 
@@ -1408,12 +1408,12 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 
 		    for(int i = 0; i < int(C.size()); i++)
 		    {
-		        if(!C[i]) dbg_hit_on(T, 300+i*10+1);
-		        if(C[i]) dbg_hit_on(T, 300+i*10+5+1);
+		        if(!C[i]) dbg_hit_on(T, 500+i*10+1);
+		        if(C[i]) dbg_hit_on(T, 500+i*10+5+1);
 			if(!T)
 			{
-		              dbg_hit_on(!C[i], 300+i*10+2);
-		              dbg_hit_on(C[i], 300+i*10+5+2);
+		              dbg_hit_on(!C[i], 500+i*10+2);
+		              dbg_hit_on(C[i], 500+i*10+5+2);
 			}
 		    }
 
