@@ -53,6 +53,14 @@ struct Condition
 	Condition Not() const {
 		return Condition(std::string("!(") + name + ")", !value);
 	}
+
+	Condition And(const Condition& c) const {
+		return Condition(std::string("(") + name + " && " + c.name + ")", value && c.value);
+	}
+
+	Condition Or(const Condition& c) const {
+		return Condition(std::string("(") + name + " || " + c.name + ")", value || c.value);
+	}
 };
 
 #define CONDITION(c) Condition(#c, (c))
