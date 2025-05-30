@@ -69,7 +69,8 @@ void writeResultFile(const std::string& filename)
 	std::string SEP = ";";
 	std::vector<std::string> header = {"Condition","Frequency","Correct(fail low)","True positive rate","Accuracy"};
 
-	std::ofstream file(path + filename);
+	std::string filename2 = std::string("lmr_condition_results_") + std::to_string((int)std::time(nullptr)) + ".csv";
+	std::ofstream file(path + filename2);
 	
 	for(int i = 0; i < int(header.size()); i++)
 		file << (i ? SEP : "") << header[i];
