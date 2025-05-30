@@ -1343,7 +1343,7 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 			    sum += scale(factor[C[k]][k] - mean);
 		    }
 
-		    dbg_hit_on(sum >= N*TH, 10);
+		    //dbg_hit_on(sum >= N*TH, 10);
 		    if(sum >= N*TH)
 		    {
 			    R = true;
@@ -1352,7 +1352,10 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 		    sum /= N;
 
 		    //OVerwrite rule!!!
-		    //R = C[0];
+		    R = C[0];
+
+
+		    dbg_hit_on(R, 10);
 	    }
 
             // In general we want to cap the LMR depth search at newDepth, but when
