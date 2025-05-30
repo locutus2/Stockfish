@@ -84,6 +84,8 @@
         #define pext(b, m) 0
     #endif
 
+constexpr int SCALE = 1024;
+
 namespace Stockfish {
 
     #ifdef USE_POPCNT

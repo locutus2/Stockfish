@@ -1268,30 +1268,88 @@ Hit #208: Total 22475303 Hits 20366090 Hit Rate (%) 90.6154
 Hit #209: Total 27649829 Hits 25387107 Hit Rate (%) 91.8165
 Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 	     * */
-   	    constexpr int SCALE = 1024;
             constexpr double mean = 94.8091;
 	    const std::vector<double> factor[2] ={
 		    { 97.4652, 94.0581, 96.1496, 94.8734, 94.7703, 95.0818, 93.9169, 94.7575, 97.0177, 97.0156, 94.2828 },
 		    { 90.8826, 97.1312, 93.0385, 93.7123, 95.1092, 91.8204, 97.4129, 95.4554, 90.6154, 91.8165, 96.8431 },
 	    };
 
+	    std::vector<std::string> name;
+
+#define SETNAME(x) (name.push_back(#x), (x))
+
 	    bool CC = !PvNode;
 	    std::vector<bool> C = {
 		    //allNode, PvNode, cutNode,
-		    cutNode,
-		    ss->ttPv,
-		    improving,
-		    ss->inCheck,
-		    capture,
-		    givesCheck,
-		    priorCapture,
-		    ttCapture,
-		    eval > alpha,
-		    ss->staticEval > alpha,
-		    eval < ss->staticEval,
+		    SETNAME(cutNode),
+		    SETNAME(ss->ttPv),
+		    SETNAME(improving),
+		    SETNAME(ss->inCheck),
+		    SETNAME(capture),
+		    SETNAME(givesCheck),
+		    SETNAME(priorCapture),
+		    SETNAME(ttCapture),
+		    SETNAME(eval > alpha),
+		    SETNAME(ss->staticEval > alpha),
+		    SETNAME(eval < ss->staticEval),
 	    };
 
+	    std::vector<int> index;
+	    index = {0,1,2,3,4,5,6,7,8,9,10};
+
 	    auto scale = [](double x)->int { return int(x/100*SCALE); };
+
+	    constexpr int TH = 98;
+	    int sum = 0;
+	    int R = false;
+	    if(CC)
+	    {
+		    static bool init = false;
+		    if(!init)
+		    {
+			    // print rule
+			    init = true;
+			    sum = scale(mean);
+			    for(int i = 0; i < int(index.size()); i++)
+			    {
+				    int k = index[i];
+				    sum +=  scale(factor[0][k] - mean);
+			    }
+
+			    std::string rule;
+			    const int N = int(index.size());
+			    //rule += std::to_string(sum) + "\n";
+
+			    for(int i = 0; i < int(index.size()); i++)
+			    {
+				    int k = index[i];
+			            rule += (k?"+ ":"  ") + std::to_string(scale(factor[1][k] - mean) - scale(factor[0][k] - mean)) 
+					    + " * " + name[k] + "\n";
+			    //        rule += "+ " + std::to_string(scale(factor[1][k] - mean)) + " * " + name[k]
+			//		  + " + " + std::to_string(scale(factor[0][k] - mean)) + " * !" + name[k] + "\n";
+			    }
+			    rule += ">= " + std::to_string(N * TH - sum);
+
+			    std::cerr << "Rule:" << std::endl << rule << std::endl;
+		    }
+
+		    // predict
+		    const int N = int(index.size());
+		    sum = scale(mean);
+		    for(int i = 0; i < int(index.size()); i++)
+		    {
+			    int k = index[i];
+			    sum += scale(factor[C[k]][k] - mean);
+		    }
+		    sum /= N;
+
+		    dbg_hit_on(sum >= TH, 10);
+		    if(sum >= TH)
+		    {
+			    R = true;
+		    }
+
+	    }
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
@@ -1330,20 +1388,17 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 	    if(CC)
 	    {
 		    bool T = value <= alpha;
+		    if(R)
+		    {
+			    dbg_hit_on(T, 11);
+		    }
+		    if(!T) dbg_hit_on(R, 12);
+
 		    dbg_hit_on(T, 0);
 		    for(int i = 0; i < (int)C.size(); i++)
 		    {
 			    dbg_hit_on(T, (1+C[i])*100+i);
 		    }
-
-		    const int N = int(C.size());
-	            int sum = 0;
-		    sum = scale(mean);
-		    for(int i = 0; i < int(C.size()); i++)
-		    {
-			    sum += scale(factor[C[i]][i] - mean);
-		    }
-		    sum /= N;
 
 		    //dbg_correl_of(sum, T);
 		    //dbg_mean_of(sum, 0);

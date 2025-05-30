@@ -410,7 +410,7 @@ void dbg_print() {
 	    {
 		    count += n;
 		    failLow += hit[i][1];
-		    std::cerr << "i=" << i - MIN_INDEX << " n=" << count << " freq=" << 100.*count/N << "%"
+		    std::cerr << "threshold=" << i - MIN_INDEX - SCALE << " n=" << count << " freq=" << 100.*count/N << "%"
 			      << " faillow=" << 100.*failLow/count << "%" 
 			      << " fpr=" << 100.*(count-failLow)/N_FAIL_HIGH  << "%" << std::endl;
 	    }
