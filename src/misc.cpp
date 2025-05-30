@@ -34,6 +34,7 @@
 #include <string_view>
 
 #include "types.h"
+#include "search.h"
 
 namespace Stockfish {
 
@@ -315,6 +316,10 @@ std::array<DebugInfo<6>, MaxDebugSlots>  correl;
 std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
+
+double dbg_get_hit_on(int slot) {
+    return double(hit[slot][1]) / hit[slot][0];
+}
 
 void dbg_hit_on(bool cond, int slot) {
 

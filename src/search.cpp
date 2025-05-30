@@ -32,6 +32,7 @@
 #include <ratio>
 #include <string>
 #include <utility>
+#include <fstream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -50,6 +51,35 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+
+std::vector<Condition> derivedConditions;
+
+std::string formatNumber(double x);
+
+std::string formatNumber(double x)
+{
+	std::string s =  std::to_string(x) + "%";
+	std::replace(s.begin(), s.end(), '.', ',');
+	return s;
+}
+
+void writeResultFile(const std::string& filename)
+{
+	std::string SEP = ";";
+	std::ofstream file(filename);
+
+	for(int i = 0; i < int(derivedConditions.size()); i++)
+	{
+		int index = 10000 + 10 * i;
+		file << derivedConditions[i].name
+			<< SEP << formatNumber(dbg_get_hit_on(index))
+			<< SEP << formatNumber(dbg_get_hit_on(index+1))
+			<< SEP << formatNumber(dbg_get_hit_on(index+2))
+			<< SEP << formatNumber(dbg_get_hit_on(index+3))
+			<< std::endl;
+	}
+	file.close();
+}
 
 namespace TB = Tablebases;
 
@@ -1355,6 +1385,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 
 	    auto scale = [](double x)->int { return int(x/100*SCALE); };
 
+	    std::vector<Condition> baseConditions;
+
 	    //constexpr int TH = 98; // fail low: all conditions
 	    constexpr int TH = 517; // true positive rate: all conditions
 	    int sum = 0;
@@ -1399,26 +1431,36 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    //R = depth >= 12 && priorCapture;
 		    //R = ss->inCheck && ttCapture;
 		    //
-		    RC = {
-			    /*
-			    cutNode, allNode,
-			    ss->ttPv, !ss->ttPv,
-			    ss->inCheck, !ss->inCheck,
-			    capture, !capture,
-			    givesCheck, !givesCheck,
-			    improving, !improving,
-			    priorCapture, !priorCapture,
-			    */
-			    eval > alpha, eval <= alpha,
-			    ss->staticEval > alpha, ss->staticEval <= alpha,
-			    eval < ss->staticEval, eval >= ss->staticEval,
-			    bool(excludedMove), !excludedMove,
-			    ttData.value > alpha, ttData.value <= alpha,
-			    ttHit, !ttHit,
-			    prevSq != SQ_NONE, prevSq == SQ_NONE,
-			    prevSq == move.to_sq(), prevSq != move.to_sq(),
-			    more_than_one(pos.checkers()), !more_than_one(pos.checkers()),
-		    }; 
+
+		    baseConditions = {
+			    CONDITION(cutNode),
+			    CONDITION(ss->ttPv),
+			    CONDITION(ss->inCheck),
+			    CONDITION(capture),
+			    CONDITION(givesCheck),
+			    CONDITION(improving),
+			    CONDITION(priorCapture),
+			    CONDITION((eval > alpha)),
+			    CONDITION((ss->staticEval > alpha)),
+			    CONDITION((eval < ss->staticEval)),
+			    CONDITION(bool(excludedMove)),
+			    CONDITION((ttData.value > alpha)),
+			    CONDITION(ttHit),
+			    CONDITION((prevSq != SQ_NONE)),
+			    CONDITION((prevSq == move.to_sq())),
+			    CONDITION(more_than_one(pos.checkers())),
+		    };
+
+		    derivedConditions.clear();
+		   for(int i = 0; i < int(baseConditions.size()); i++) 
+		   {
+		       derivedConditions.push_back(baseConditions[i]);
+		       derivedConditions.push_back(baseConditions[i].Not());
+		   }
+
+		   for(int i = 0; i < int(derivedConditions.size()); i++) 
+			   RC.push_back(derivedConditions[i].value);
+
 	    }
 
 

@@ -44,6 +44,23 @@
 
 namespace Stockfish {
 
+struct Condition
+{
+        std::string name;
+        bool value;
+        Condition(const std::string& n = "?", bool v = false) : name(n), value(v) {}
+
+	Condition Not() const {
+		return Condition(std::string("!(") + name + ")", !value);
+	}
+};
+
+#define CONDITION(c) Condition(#c, (c))
+
+extern std::vector<Condition> derivedConditions;
+
+void writeResultFile(const std::string& filename = "lmr_condition_results.csv");
+
 // Different node types, used as a template parameter
 enum NodeType {
     NonPV,
