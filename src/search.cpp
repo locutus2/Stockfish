@@ -1296,10 +1296,11 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 
 	    std::vector<int> index;
 	    index = {0,1,2,3,4,5,6,7,8,9,10};
+	    //index = {0, 8, 9};
 
 	    auto scale = [](double x)->int { return int(x/100*SCALE); };
 
-	    constexpr int TH = 98;
+	    constexpr int TH = 98; // all conditions
 	    int sum = 0;
 	    int R = false;
 	    if(CC)
@@ -1341,14 +1342,17 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 			    int k = index[i];
 			    sum += scale(factor[C[k]][k] - mean);
 		    }
-		    sum /= N;
 
-		    dbg_hit_on(sum >= TH, 10);
-		    if(sum >= TH)
+		    dbg_hit_on(sum >= N*TH, 10);
+		    if(sum >= N*TH)
 		    {
 			    R = true;
 		    }
 
+		    sum /= N;
+
+		    //OVerwrite rule!!!
+		    //R = C[0];
 	    }
 
             // In general we want to cap the LMR depth search at newDepth, but when
