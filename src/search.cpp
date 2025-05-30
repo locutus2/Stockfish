@@ -1394,7 +1394,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			>= 2325;
 		    //R = ss->inCheck && allNode;// && !cutNode;
 		    //R = true;
-		    //R = ttCapture;
+		    //R = allNode && ttCapture;
+		    R = depth >= 12 && priorCapture;
 	    }
 
 
