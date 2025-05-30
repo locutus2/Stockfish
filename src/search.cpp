@@ -1359,6 +1359,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	    constexpr int TH = 517; // true positive rate: all conditions
 	    int sum = 0;
 	    int R = false;
+	    std::vector<bool> RC;
 	    // specify tested rule
 	    if(CP)
 	    {
@@ -1395,7 +1396,29 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    //R = ss->inCheck && allNode;// && !cutNode;
 		    //R = true;
 		    //R = allNode && ttCapture;
-		    R = depth >= 12 && priorCapture;
+		    //R = depth >= 12 && priorCapture;
+		    //R = ss->inCheck && ttCapture;
+		    //
+		    RC = {
+			    /*
+			    cutNode, allNode,
+			    ss->ttPv, !ss->ttPv,
+			    ss->inCheck, !ss->inCheck,
+			    capture, !capture,
+			    givesCheck, !givesCheck,
+			    improving, !improving,
+			    priorCapture, !priorCapture,
+			    */
+			    eval > alpha, eval <= alpha,
+			    ss->staticEval > alpha, ss->staticEval <= alpha,
+			    eval < ss->staticEval, eval >= ss->staticEval,
+			    bool(excludedMove), !excludedMove,
+			    ttData.value > alpha, ttData.value <= alpha,
+			    ttHit, !ttHit,
+			    prevSq != SQ_NONE, prevSq == SQ_NONE,
+			    prevSq == move.to_sq(), prevSq != move.to_sq(),
+			    more_than_one(pos.checkers()), !more_than_one(pos.checkers()),
+		    }; 
 	    }
 
 
@@ -1456,7 +1479,11 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	    }
 
 	    if(CC)
+	    {
 		    dbg_hit_on(R, 10);
+		    for(int i = 0; i <int(RC.size()); i++)
+		        dbg_hit_on(RC[i], 10000+10*i);
+	    }
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
@@ -1501,10 +1528,20 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    }
 		    //if(!T) dbg_hit_on(R, 12);
 		    if(!T) dbg_hit_on(!R, 12);
+		    
+		    for(int i = 0; i <int(RC.size()); i++)
+		    {
+			    if(RC[i])
+				    dbg_hit_on(T, 10000+10*i+1);
+			    if(!T) dbg_hit_on(!RC[i], 10000+10*i+2);
+		    }
             }
 	    if(CP)
 	    {
 		    dbg_hit_on(T == R, 13);
+		    for(int i = 0; i <int(RC.size()); i++)
+		        dbg_hit_on(T == RC[i], 10000+10*i+3);
+
 		    for(int i = 0; i < int(C.size()); i++)
 		    {
 		        if(!C[i]) dbg_hit_on(T, 500+i*10+1);
