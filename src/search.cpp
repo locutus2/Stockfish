@@ -1460,19 +1460,37 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    };
 
 		    derivedConditions.clear();
-		    for(int i = 0; i < int(baseConditions.size()); i++) 
+		    if(true)
 		    {
-		        derivedConditions.push_back(baseConditions[i]);
-		        derivedConditions.push_back(baseConditions[i].Not());
+			    for(int i = 0; i < int(baseConditions.size()); i++) 
+			    {
+				derivedConditions.push_back(baseConditions[i]);
+				derivedConditions.push_back(baseConditions[i].Not());
 
-			for(int j = 0; j < i; j++)
-			{
-		             derivedConditions.push_back(baseConditions[j].And(baseConditions[i]));
-		             derivedConditions.push_back(baseConditions[j].And(baseConditions[i].Not()));
-		             derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i]));
-		             derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i].Not()));
-			}
+				if(false)
+				{
+					for(int j = 0; j < i; j++)
+					{
+					     derivedConditions.push_back(baseConditions[j].And(baseConditions[i]));
+					     derivedConditions.push_back(baseConditions[j].And(baseConditions[i].Not()));
+					     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i]));
+					     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i].Not()));
+
+					     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i]));
+					     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i].Not()));
+					     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i]));
+					     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i].Not()));
+					}
+				}
+			    }
 		    }
+                    else
+		    {
+		        derivedConditions.push_back(CONDITION(more_than_one(pos.checkers())));
+		        derivedConditions.push_back(CONDITION(prevSq == SQ_NONE));
+		    }
+
+		    std::cerr << "Use " << derivedConditions.size() << " conditions." << std::endl;
  
   		    for(int i = 0; i < int(derivedConditions.size()); i++) 
 			   RC.push_back(derivedConditions[i].value);
