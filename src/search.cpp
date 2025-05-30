@@ -1279,6 +1279,7 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 #define SETNAME(x) (name.push_back(#x), (x))
 
 	    bool CC = !PvNode;
+	    bool CP = CC;
 	    std::vector<bool> C = {
 		    //allNode, PvNode, cutNode,
 		    SETNAME(cutNode),
@@ -1294,17 +1295,35 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 		    SETNAME(eval < ss->staticEval),
 	    };
 
-	    std::vector<int> index;
-	    //index = {0,1,2,3,4,5,6,7,8,9,10};
-	    index = {7,3};
+	    /*
+	     * lmr_fh11.txt: result all 11 conditions; criteria fail low; TH=98 CC=!PvNode; CP=CC;
+	     *   -67 * cutNode
++ 30 * ss->ttPv
++ -31 * improving
++ -11 * ss->inCheck
++ 3 * capture
++ -32 * givesCheck
++ 35 * priorCapture
++ 6 * ttCapture
++ -64 * eval > alpha
++ -52 * ss->staticEval > alpha
++ 25 * eval < ss->staticEval
+>= 43
+	     * Hit #10: Total 65150829 Hits 2323707 Hit Rate (%) 3.56666
+Hit #11: Total 2323707 Hits 2305065 Hit Rate (%) 99.1977
+Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
+	     * */
+
+	    std::vector<int> index = {0,1,2,3,4,5,6,7,8,9,10};
+	    //index = {0,1,2,3,4,5,6,/*7,*/8,9,10};
+	    //index = {0,1,2,3/*,4*/,5,6,7,8,9,10}; // without capture
+	    //index = {7,3};
 
 	    auto scale = [](double x)->int { return int(x/100*SCALE); };
 
 	    constexpr int TH = 98; // all conditions
 	    int sum = 0;
 	    int R = false;
-	    if(CC)
-	    {
 		    static bool init = false;
 		    if(!init)
 		    {
@@ -1334,6 +1353,8 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 			    std::cerr << "Rule:" << std::endl << rule << std::endl;
 		    }
 
+	    if(CP)
+	    {
 		    // predict
 		    const int N = int(index.size());
 		    sum = scale(mean);
@@ -1352,16 +1373,33 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 		    sum /= N;
 
 		    //OVerwrite rule!!!
-		    R = ss->inCheck && allNode;// && !cutNode;
+		    //R = ss->inCheck && allNode;// && !cutNode;
+		    /*
+		    R =   -67 * cutNode
+			+ 30 * ss->ttPv
+			+ -31 * improving
+			+ -11 * ss->inCheck
+			+ 3 * capture
+			+ -32 * givesCheck
+			+ 35 * priorCapture
+			+ 6 * ttCapture
+			+ -64 * (eval > alpha)
+			+ -52 * (ss->staticEval > alpha)
+			+ 25 * (eval < ss->staticEval)
+			>= 43;
+*/
+		    //R = true;
+		    //R = ttCapture;
 
-
-		    dbg_hit_on(R, 10);
 		    for(int i = 0; i < int(C.size()); i++)
 		    {
 		        dbg_hit_on(!C[i], 500+i*10);
 		        dbg_hit_on(C[i], 500+i*10+5);
 		    }
 	    }
+
+	    if(CC)
+		    dbg_hit_on(R, 10);
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
@@ -1397,15 +1435,17 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
             else if (value > alpha && value < bestValue + 9)
                 newDepth--;
 
+	    bool T = value <= alpha;
 	    if(CC)
 	    {
-		    bool T = value <= alpha;
 		    if(R)
 		    {
 			    dbg_hit_on(T, 11);
 		    }
 		    if(!T) dbg_hit_on(R, 12);
-
+            }
+	    if(CP)
+	    {
 		    for(int i = 0; i < int(C.size()); i++)
 		    {
 		        if(!C[i]) dbg_hit_on(T, 500+i*10+1);
