@@ -1352,10 +1352,15 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 		    sum /= N;
 
 		    //OVerwrite rule!!!
-		    R = C[0];
+		    //R = C[0];
 
 
 		    dbg_hit_on(R, 10);
+		    for(int i = 0; i < int(C.size()); i++)
+		    {
+		        dbg_hit_on(!C[i], 300+i*10);
+		        dbg_hit_on(C[i], 300+i*10+5);
+		    }
 	    }
 
             // In general we want to cap the LMR depth search at newDepth, but when
@@ -1400,6 +1405,17 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 			    dbg_hit_on(T, 11);
 		    }
 		    if(!T) dbg_hit_on(R, 12);
+
+		    for(int i = 0; i < int(C.size()); i++)
+		    {
+		        if(!C[i]) dbg_hit_on(T, 300+i*10+1);
+		        if(C[i]) dbg_hit_on(T, 300+i*10+5+1);
+			if(!T)
+			{
+		              dbg_hit_on(!C[i], 300+i*10+2);
+		              dbg_hit_on(C[i], 300+i*10+5+2);
+			}
+		    }
 
 		    dbg_hit_on(T, 0);
 		    for(int i = 0; i < (int)C.size(); i++)
