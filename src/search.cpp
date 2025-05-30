@@ -1268,10 +1268,44 @@ Hit #208: Total 22475303 Hits 20366090 Hit Rate (%) 90.6154
 Hit #209: Total 27649829 Hits 25387107 Hit Rate (%) 91.8165
 Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 	     * */
+	    // fail low CC=!PvNode CP=CC
+	    /*
             constexpr double mean = 94.8091;
 	    const std::vector<double> factor[2] ={
 		    { 97.4652, 94.0581, 96.1496, 94.8734, 94.7703, 95.0818, 93.9169, 94.7575, 97.0177, 97.0156, 94.2828 },
 		    { 90.8826, 97.1312, 93.0385, 93.7123, 95.1092, 91.8204, 97.4129, 95.4554, 90.6154, 91.8165, 96.8431 },
+	    };
+	    */
+
+		/*
+		 * Hit #300: Total 3381914 Hits 2396846 Hit Rate (%) 70.8725
+Hit #301: Total 3381914 Hits 456745 Hit Rate (%) 13.5055
+Hit #302: Total 3381914 Hits 1954281 Hit Rate (%) 57.7862
+Hit #303: Total 3381914 Hits 226724 Hit Rate (%) 6.70401
+Hit #304: Total 3381914 Hits 364688 Hit Rate (%) 10.7835
+Hit #305: Total 3381914 Hits 445617 Hit Rate (%) 13.1765
+Hit #306: Total 3381914 Hits 430151 Hit Rate (%) 12.7192
+Hit #307: Total 3381914 Hits 218951 Hit Rate (%) 6.47417
+Hit #308: Total 3381914 Hits 2109213 Hit Rate (%) 62.3674
+Hit #309: Total 3381914 Hits 2262722 Hit Rate (%) 66.9066
+Hit #310: Total 3381914 Hits 422824 Hit Rate (%) 12.5025
+Hit #400: Total 3381914 Hits 985068 Hit Rate (%) 29.1275
+Hit #401: Total 3381914 Hits 2925169 Hit Rate (%) 86.4945
+Hit #402: Total 3381914 Hits 1427633 Hit Rate (%) 42.2138
+Hit #403: Total 3381914 Hits 3155190 Hit Rate (%) 93.296
+Hit #404: Total 3381914 Hits 3017226 Hit Rate (%) 89.2165
+Hit #405: Total 3381914 Hits 2936297 Hit Rate (%) 86.8235
+Hit #406: Total 3381914 Hits 2951763 Hit Rate (%) 87.2808
+Hit #407: Total 3381914 Hits 3162963 Hit Rate (%) 93.5258
+Hit #408: Total 3381914 Hits 1272701 Hit Rate (%) 37.6326
+Hit #409: Total 3381914 Hits 1119192 Hit Rate (%) 33.0934
+Hit #410: Total 3381914 Hits 2959090 Hit Rate (%) 87.4975
+		 */
+	    // true positive CC=!PvNode CP=CC
+            constexpr double mean = 0.5;
+	    const std::vector<double> factor[2] ={
+		    { 70.8725, 13.5055, 57.7862, 6.70401, 10.7835, 13.1765, 12.7192, 6.47417, 62.3674, 66.9066, 12.5025 },
+		    { 29.1275, 86.4945, 42.2138, 93.296, 89.2165, 86.8235, 87.2808, 93.5258, 37.6326, 33.0934, 87.4975 },
 	    };
 
 	    std::vector<std::string> name;
@@ -1321,13 +1355,16 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 
 	    auto scale = [](double x)->int { return int(x/100*SCALE); };
 
-	    constexpr int TH = 98; // all conditions
+	    //constexpr int TH = 98; // fail low: all conditions
+	    constexpr int TH = 517; // true positive rate: all conditions
 	    int sum = 0;
 	    int R = false;
 	    // specify tested rule
 	    if(CP)
 	    {
 		    //set rule!!!
+		    //// fail low
+		    /*
 		    R =   -67 * cutNode
 			+ 30 * ss->ttPv
 			+ -31 * improving
@@ -1340,6 +1377,21 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			+ -52 * (ss->staticEval > alpha)
 			+ 25 * (eval < ss->staticEval)
 			>= 43;
+			*/
+
+		    // true positive rate
+		    R =   -427 * cutNode
+			+ 747 * ss->ttPv
+			+ -159 * improving
+			+ 887 * ss->inCheck
+			+ 803 * capture
+			+ 754 * givesCheck
+			+ 763 * priorCapture
+			+ 891 * ttCapture
+			+ -253 * (eval > alpha)
+			+ -347 * (ss->staticEval > alpha)
+			+ 768 * (eval < ss->staticEval)
+			>= 2325;
 		    //R = ss->inCheck && allNode;// && !cutNode;
 		    //R = true;
 		    //R = ttCapture;
@@ -1451,6 +1503,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
             }
 	    if(CP)
 	    {
+		    dbg_hit_on(T == R, 13);
 		    for(int i = 0; i < int(C.size()); i++)
 		    {
 		        if(!C[i]) dbg_hit_on(T, 500+i*10+1);
