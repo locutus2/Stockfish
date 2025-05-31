@@ -89,6 +89,159 @@ void writeResultFile(const std::string& filename)
 	file.close();
 }
 
+struct UPN
+{
+	int N;
+	std::string code;
+
+	UPN(int n, const std::string& c = "") : code(c), N(n) {
+		cleanup();
+	}
+
+	void cleanup()
+	{
+		for(int i = int(code.size())-1; i >= 0; i--)
+                    if(!isVar(code[i]) && !isUnary(code[i]) && !isBinary(code[i]))
+			    code.erase(code.begin() + i);
+	}
+
+	bool isVar(char ch) const
+	{
+		return ch >= 'a' && ch <= char('a' + N - 1);
+	}
+
+	bool isUnary(char ch) const
+	{
+		return ch == '!';
+	}
+
+	bool isBinary(char ch) const
+	{
+		return ch == '&' || ch == '|';
+	}
+
+	bool operator()(std::vector<bool> vars) const
+	{
+		std::deque<bool> stack;
+		for(int i = 0; i < int(code.size()); i++)
+		{
+			if(isVar(code[i]))
+			{
+				int index = code[i] - 'a';
+				assert(index < int(vars.size()));
+				stack.push_back(vars[index]);
+			}
+			else if(isUnary(code[i]))
+			{
+				assert(int(stack.size()) >= 1);
+				if(code[i] == '!')
+				{
+					*stack.rbegin() = !stack.back();
+				}
+			}
+			else if(isBinary(code[i]))
+			{
+				assert(int(stack.size()) >= 2);
+				bool b = stack.back();
+				stack.pop_back();
+				if(code[i] == '&')
+				{
+					*stack.rbegin() = stack.back() && b;
+				}
+				else if(code[i] == '|')
+				{
+					*stack.rbegin() = stack.back() || b;
+				}
+			}
+		}
+		assert(int(stack.size()) == 1);
+		return stack.back();
+	}
+
+	char getRandomVar() const
+	{
+                return 'a' + std::rand()%N;
+	}
+
+	char getRandomUnary() const
+	{
+                return '!';
+	}
+
+	char getRandomBinary() const
+	{
+		return std::rand()&1 ? '&' : '|';
+	}
+
+	void initRandom(int n)
+	{
+		code.resize(n);
+		int count = 0;
+		for(int i = 0; i < n; i++)
+		{
+			switch(count)
+			{
+				default:
+                                        if(count - n + i >= 1 || std::rand()%3==0)
+					{
+                                            code[i] = getRandomBinary();
+					    count--;
+					    break;
+					}
+					[[fallthrough]];
+				case 1:
+                                        if(count + 2 - n + i > 1 || std::rand()%2)
+					{
+                                            code[i] = getRandomUnary();
+					    break;
+					}
+					[[fallthrough]];
+				case 0:
+                                        code[i] = getRandomVar();
+					count++;
+					break;
+			}
+		}
+	}
+
+	std::string infix() const
+	{
+		std::deque<std::string> stack;
+		for(int i = 0; i < int(code.size()); i++)
+		{
+			if(isVar(code[i]))
+			{
+				assert(index < int(vars.size()));
+				stack.push_back(std::string(1, code[i]));
+			}
+			else if(isUnary(code[i]))
+			{
+				assert(int(stack.size()) >= 1);
+				if(code[i] == '!')
+				{
+					*stack.rbegin() = std::string("!(") + stack.back() + ")";
+				}
+			}
+			else if(isBinary(code[i]))
+			{
+				assert(int(stack.size()) >= 2);
+				std::string b = stack.back();
+				stack.pop_back();
+				if(code[i] == '&')
+				{
+					*stack.rbegin() = std::string("(") + stack.back() + " && " + b + ")";
+				}
+				else if(code[i] == '|')
+				{
+					*stack.rbegin() = std::string("(") + stack.back() + " || " + b + ")";
+				}
+			}
+		}
+		assert(int(stack.size()) == 1);
+		return stack.back();
+	}
+};
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -184,6 +337,22 @@ Search::Worker::Worker(SharedState&                    sharedState,
     networks(sharedState.networks),
     refreshTable(networks[token]) {
     clear();
+
+    for(int i = 0; i < 10; i++)
+    {
+	    UPN upn(4);
+	    upn.initRandom(10);
+	    std::cerr << upn.code << " <=> " << upn.infix() << std::endl;
+	    for(bool a : {false, true}) 
+	    	for(bool b : {false, true}) 
+	    		for(bool c : {false, true}) 
+	    			for(bool d : {false, true})
+				{
+	                            std::vector<bool> vars = {a,b,c,d};
+				    std::cerr << "=> " << a << "," << b << "," << c << "," << d << " = " << upn(vars) << std::endl;
+				}	
+    }
+    std::exit(1);
 }
 
 void Search::Worker::ensure_network_replicated() {
