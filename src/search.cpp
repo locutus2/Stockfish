@@ -1056,8 +1056,7 @@ moves_loop:  // When in check, search starts here
                   thisThread->captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
 
                 // Futility pruning for captures
-                if (!givesCheck && lmrDepth < 7 && !ss->inCheck
-                    && !(pos.pinners(~us) & move.to_sq()))
+                if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
                     Value futilityValue = ss->staticEval + 232 + 224 * lmrDepth
                                         + PieceValue[capturedPiece] + 131 * captHist / 1024;
@@ -1067,7 +1066,7 @@ moves_loop:  // When in check, search starts here
 
                 // SEE based pruning for captures and checks
                 int seeHist = std::clamp(captHist / 31, -137 * depth, 125 * depth);
-                if (!pos.see_ge(move, -158 * depth - seeHist))
+                if (!(pos.pinners(~us) & move.to_sq()) && !pos.see_ge(move, -158 * depth - seeHist))
                 {
                     bool mayStalemateTrap =
                       depth > 2 && alpha < 0 && pos.non_pawn_material(us) == PieceValue[movedPiece]
