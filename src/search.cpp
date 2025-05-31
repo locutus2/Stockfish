@@ -1038,6 +1038,8 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 968;
 
+	bool C = false;
+	int V = 0;
         // Step 14. Pruning at shallow depth.
         // Depth conditions are important for mate finding.
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
@@ -1061,12 +1063,19 @@ moves_loop:  // When in check, search starts here
                     Value futilityValue = ss->staticEval + 232 + 224 * lmrDepth
                                         + PieceValue[capturedPiece] + 131 * captHist / 1024;
                     if (futilityValue <= alpha)
-                        continue;
+		    {
+                        //C = pos.pinners(~us) & move.to_sq();
+                        //C = pos.blockers_for_king(~us) & move.to_sq();
+			//C = pos.blockers_for_king(us) && capture && type_of(movedPiece) == KING;
+			C = false;
+			V = futilityValue - alpha;
+                        if(!C) continue;
+		    }
                 }
 
                 // SEE based pruning for captures and checks
                 int seeHist = std::clamp(captHist / 31, -137 * depth, 125 * depth);
-                if (!(pos.pinners(~us) & move.to_sq()) && !pos.see_ge(move, -158 * depth - seeHist))
+                if (!pos.see_ge(move, -158 * depth - seeHist))
                 {
                     bool mayStalemateTrap =
                       depth > 2 && alpha < 0 && pos.non_pawn_material(us) == PieceValue[movedPiece]
@@ -1077,7 +1086,20 @@ moves_loop:  // When in check, search starts here
 
                     // avoid pruning sacrifices of our last piece for stalemate
                     if (!mayStalemateTrap)
-                        continue;
+		    {
+                        //C = pos.pinners(~us) & move.to_sq();
+                        //C = pos.blockers_for_king(~us) & move.to_sq();
+			//C = pos.blockers_for_king(us) && capture && type_of(movedPiece) == KING;
+			//C = pos.blockers_for_king(~us) & move.from_sq();
+			C = pos.blockers_for_king(~us) & move.from_sq() && capture;
+			//C = pos.blockers_for_king(~us) & move.from_sq() && givesCheck && capture;
+			//C = givesCheck && capture;
+			//C = givesCheck;
+			//C = capture;
+			//C = false;
+			V =  -158 * depth - seeHist;
+                        if(!C) continue;
+		    }
                 }
             }
             else
@@ -1308,6 +1330,17 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+	if(C)
+	{
+		bool T = value > alpha;
+		for(int i = 0; i < 30; i++)
+		{
+                     //if (V+100*i > 0)
+		     if(pos.see_ge(move, V - 100*i))
+                          dbg_hit_on (T, i);
+		}
+	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
