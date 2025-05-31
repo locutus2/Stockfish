@@ -1440,6 +1440,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    //
 
 		    baseConditions = {
+			    /*
 			    CONDITION(cutNode),
 			    CONDITION(ss->ttPv),
 			    CONDITION(ss->inCheck),
@@ -1454,20 +1455,21 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    CONDITION(bool(excludedMove)),
 			    CONDITION((ttData.value > alpha)),
 			    CONDITION(ttHit),
+			    */
 			    CONDITION((prevSq == SQ_NONE)),
-			    CONDITION((prevSq == move.to_sq())),
-			    //CONDITION(more_than_one(pos.checkers())),
+			    //CONDITION((prevSq == move.to_sq())),
+			    CONDITION(more_than_one(pos.checkers())),
 		    };
 
 		    std::vector<Condition> additionalConditions = {
-			    CONDITION(more_than_one(pos.checkers())),
+//			    CONDITION(more_than_one(pos.checkers())),
 		    };
 
 		    derivedConditions.clear();
 
 		    bool USE_FIXED = false;
-                    bool COMBINE_ADDITIONAL = true;
-                    bool COMBINE_FULL = false;
+                    bool COMBINE_ADDITIONAL = false;
+                    bool COMBINE_FULL = true;
 		    if(!USE_FIXED)
 		    {
 			    if(COMBINE_ADDITIONAL)
