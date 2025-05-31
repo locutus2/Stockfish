@@ -986,6 +986,14 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    Bitboard pinned_pieces_attacker = pos.pinners(~us);
+
+    Bitboard b = pos.blockers_for_king(us) & pos.pieces(us);
+    while(b)
+    {
+	    Square sq = pop_lsb(b);
+	    pinned_pieces_attacker |= pos.attackers_to(sq, pos.pieces()) & pos.pieces(~us);
+    }
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1038,7 +1046,7 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 968;
 
-	bool SEE_PRUNING = true;
+	bool SEE_PRUNING = false;
 	bool C = false;
 	int V = 0;
         // Step 14. Pruning at shallow depth.
@@ -1069,6 +1077,7 @@ moves_loop:  // When in check, search starts here
                         //C = pos.blockers_for_king(~us) & move.to_sq();
 			//C = pos.blockers_for_king(us) && capture && type_of(movedPiece) == KING;
 			C = false;
+			C = pinned_pieces_attacker & move.to_sq(); 
 			C = C && !SEE_PRUNING; 
 			V = futilityValue - alpha;
                         if(!C) continue;
@@ -1098,8 +1107,9 @@ moves_loop:  // When in check, search starts here
 			//C = givesCheck && capture;
 			//C = givesCheck;
 			//C = capture;
-			C = type_of(movedPiece) == KNIGHT 
-			    && more_than_one(attacks_bb<KNIGHT>(move.to_sq()) & pos.pieces(~us, KING, ROOK, QUEEN));
+			//C = type_of(movedPiece) == KNIGHT 
+			   // && more_than_one(attacks_bb<KNIGHT>(move.to_sq()) & pos.pieces(~us, KING, ROOK, QUEEN));
+			C = pinned_pieces_attacker & move.to_sq(); 
 			C = C && SEE_PRUNING; 
 			V =  -158 * depth - seeHist;
                         if(!C) continue;
