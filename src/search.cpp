@@ -985,11 +985,11 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int      moveCount               = 0;
-    Bitboard pinned_pieces_attackers = pos.pinners(~us);
-    Bitboard b                       = pos.blockers_for_king(us) & pos.pieces(us);
+    int      moveCount             = 0;
+    Bitboard pinnedPiecesAttackers = pos.pinners(~us);
+    Bitboard b                     = pos.blockers_for_king(us) & pos.pieces(us);
     while (b)
-        pinned_pieces_attackers |= pos.attackers_to(pop_lsb(b), pos.pieces()) & pos.pieces(~us);
+        pinnedPiecesAttackers |= pos.attackers_to(pop_lsb(b), pos.pieces()) & pos.pieces(~us);
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1044,8 +1044,7 @@ moves_loop:  // When in check, search starts here
 
         // Step 14. Pruning at shallow depth.
         // Depth conditions are important for mate finding.
-        if (!rootNode && pos.non_pawn_material(us) && !(pinned_pieces_attackers & move.to_sq())
-            && !is_loss(bestValue))
+        if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
             if (moveCount >= (3 + depth * depth) / (2 - improving))
@@ -1071,7 +1070,8 @@ moves_loop:  // When in check, search starts here
 
                 // SEE based pruning for captures and checks
                 int seeHist = std::clamp(captHist / 31, -137 * depth, 125 * depth);
-                if (!pos.see_ge(move, -158 * depth - seeHist))
+                if (!(pinnedPiecesAttackers & move.to_sq())
+                    && !pos.see_ge(move, -158 * depth - seeHist))
                 {
                     bool mayStalemateTrap =
                       depth > 2 && alpha < 0 && pos.non_pawn_material(us) == PieceValue[movedPiece]
