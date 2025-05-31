@@ -985,7 +985,11 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int moveCount = 0;
+    int      moveCount               = 0;
+    Bitboard pinned_pieces_attackers = pos.pinners(~us);
+    Bitboard b                       = pos.blockers_for_king(us) & pos.pieces(us);
+    while (b)
+        pinned_pieces_attackers |= pos.attackers_to(pop_lsb(b), pos.pieces()) & pos.pieces(~us);
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1040,7 +1044,7 @@ moves_loop:  // When in check, search starts here
 
         // Step 14. Pruning at shallow depth.
         // Depth conditions are important for mate finding.
-        if (!rootNode && pos.non_pawn_material(us) && !(pos.pinners(~us) & move.to_sq())
+        if (!rootNode && pos.non_pawn_material(us) && !(pinned_pieces_attackers & move.to_sq())
             && !is_loss(bestValue))
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
