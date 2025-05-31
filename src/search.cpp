@@ -1353,7 +1353,6 @@ Hit #410: Total 3381914 Hits 2959090 Hit Rate (%) 87.4975
 	    bool CC = !PvNode;
 	    bool CP = CC;
 	    std::vector<bool> C = {
-		    //allNode, PvNode, cutNode,
 		    SETNAME(cutNode),
 		    SETNAME(ss->ttPv),
 		    SETNAME(improving),
@@ -1448,6 +1447,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    CONDITION(givesCheck),
 			    CONDITION(improving),
 			    CONDITION(priorCapture),
+			    
 			    CONDITION((eval > alpha)),
 			    CONDITION((ss->staticEval > alpha)),
 			    CONDITION((eval < ss->staticEval)),
@@ -1456,40 +1456,99 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    CONDITION(ttHit),
 			    CONDITION((prevSq == SQ_NONE)),
 			    CONDITION((prevSq == move.to_sq())),
+			    //CONDITION(more_than_one(pos.checkers())),
+		    };
+
+		    std::vector<Condition> additionalConditions = {
 			    CONDITION(more_than_one(pos.checkers())),
 		    };
 
 		    derivedConditions.clear();
-		    if(true)
+
+		    bool USE_FIXED = false;
+                    bool COMBINE_ADDITIONAL = true;
+                    bool COMBINE_FULL = false;
+		    if(!USE_FIXED)
 		    {
-			    for(int i = 0; i < int(baseConditions.size()); i++) 
+			    if(COMBINE_ADDITIONAL)
 			    {
-				derivedConditions.push_back(baseConditions[i]);
-				derivedConditions.push_back(baseConditions[i].Not());
+			        for(int i = 0; i < int(additionalConditions.size()); i++) 
+			        {
+					derivedConditions.push_back(additionalConditions[i]);
+					derivedConditions.push_back(additionalConditions[i].Not());
 
-				if(false)
-				{
-					for(int j = 0; j < i; j++)
-					{
-					     derivedConditions.push_back(baseConditions[j].And(baseConditions[i]));
-					     derivedConditions.push_back(baseConditions[j].And(baseConditions[i].Not()));
-					     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i]));
-					     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i].Not()));
+			                for(int j = 0; j < int(baseConditions.size()); j++) 
+			                {
+					     derivedConditions.push_back(baseConditions[j].And(additionalConditions[i]));
+					     derivedConditions.push_back(baseConditions[j].And(additionalConditions[i].Not()));
+					     derivedConditions.push_back(baseConditions[j].Not().And(additionalConditions[i]));
+					     derivedConditions.push_back(baseConditions[j].Not().And(additionalConditions[i].Not()));
 
-					     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i]));
-					     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i].Not()));
-					     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i]));
-					     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i].Not()));
-					}
+					     derivedConditions.push_back(baseConditions[j].Or(additionalConditions[i]));
+					     derivedConditions.push_back(baseConditions[j].Or(additionalConditions[i].Not()));
+					     derivedConditions.push_back(baseConditions[j].Not().Or(additionalConditions[i]));
+					     derivedConditions.push_back(baseConditions[j].Not().Or(additionalConditions[i].Not()));
+			                }
 				}
+			    }
+                            else
+			    {
+				    for(int i = 0; i < int(baseConditions.size()); i++) 
+				    {
+					derivedConditions.push_back(baseConditions[i]);
+					derivedConditions.push_back(baseConditions[i].Not());
+
+					if(COMBINE_FULL)
+					{
+						for(int j = 0; j < i; j++)
+						{
+						     derivedConditions.push_back(baseConditions[j].And(baseConditions[i]));
+						     derivedConditions.push_back(baseConditions[j].And(baseConditions[i].Not()));
+						     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i]));
+						     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i].Not()));
+
+						     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i]));
+						     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i].Not()));
+						     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i]));
+						     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i].Not()));
+						}
+					}
+			    	}
 			    }
 		    }
                     else
 		    {
-		        derivedConditions.push_back(CONDITION(more_than_one(pos.checkers())));
-		        derivedConditions.push_back(CONDITION(prevSq == SQ_NONE));
+		        //derivedConditions.push_back(CONDITION(more_than_one(pos.checkers())));
+		        //derivedConditions.push_back(CONDITION(prevSq == SQ_NONE));
+		        //derivedConditions.push_back(CONDITION(ss->ttPv&&ss->inCheck));
+		        //derivedConditions.push_back(CONDITION(allNode&&ttCapture));
+		        //derivedConditions.push_back(CONDITION(depth>=13&&priorCapture));
+			derivedConditions = additionalConditions;
+
 		    }
 
+		    bool USE_REDUCTION = false;
+		    if(USE_REDUCTION && USE_FIXED)
+		    {
+			    auto cc = derivedConditions;
+			    derivedConditions.clear();
+
+			    constexpr int NN = 4;
+			    constexpr int RR[NN] = { 0, 256, 512, 1024 };
+
+			    for(auto c : cc)
+			    {
+				    for(int i = 0; i < NN; i++)
+					    derivedConditions.push_back(Condition(c.name+"[R="+std::to_string(RR[i])+"]", c.value && (nodes % NN == i)));
+			    }
+
+			    int myr = 0;
+			    for(int i = 0; i < int(derivedConditions.size()); i++)
+				    if(derivedConditions[i].value)
+					 myr += RR[i%NN];
+			    //r += myr / int(cc.size());
+			    r += myr;
+		    }
 		    std::cerr << "Use " << derivedConditions.size() << " conditions." << std::endl;
  
   		    for(int i = 0; i < int(derivedConditions.size()); i++) 
@@ -1560,6 +1619,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    for(int i = 0; i <int(RC.size()); i++)
 		        dbg_hit_on(RC[i], 10000+10*i);
 	    }
+
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
