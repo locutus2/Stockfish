@@ -1038,6 +1038,7 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 968;
 
+	bool SEE_PRUNING = true;
 	bool C = false;
 	int V = 0;
         // Step 14. Pruning at shallow depth.
@@ -1068,6 +1069,7 @@ moves_loop:  // When in check, search starts here
                         //C = pos.blockers_for_king(~us) & move.to_sq();
 			//C = pos.blockers_for_king(us) && capture && type_of(movedPiece) == KING;
 			C = false;
+			C = C && !SEE_PRUNING; 
 			V = futilityValue - alpha;
                         if(!C) continue;
 		    }
@@ -1096,7 +1098,9 @@ moves_loop:  // When in check, search starts here
 			//C = givesCheck && capture;
 			//C = givesCheck;
 			//C = capture;
-			//C = false;
+			C = type_of(movedPiece) == KNIGHT 
+			    && more_than_one(attacks_bb<KNIGHT>(move.to_sq()) & pos.pieces(~us, KING, ROOK, QUEEN));
+			C = C && SEE_PRUNING; 
 			V =  -158 * depth - seeHist;
                         if(!C) continue;
 		    }
@@ -1336,9 +1340,16 @@ moves_loop:  // When in check, search starts here
 		bool T = value > alpha;
 		for(int i = 0; i < 30; i++)
 		{
-                     //if (V+100*i > 0)
-		     if(pos.see_ge(move, V - 100*i))
-                          dbg_hit_on (T, i);
+		     if(SEE_PRUNING)
+		     {
+		         if(pos.see_ge(move, V - 100*i))
+                              dbg_hit_on (T, i);
+		     }
+		     else // futility pruning
+		     {
+                         if (V+100*i > 0)
+                              dbg_hit_on (T, i);
+		     }
 		}
 	}
 
