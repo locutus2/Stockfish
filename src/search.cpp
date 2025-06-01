@@ -250,7 +250,7 @@ struct UPN
 
 	std::string infix(const std::vector<std::string>& vars = std::vector<std::string>()) const
 	{
-		std::deque<std::string> stack;
+		std::deque<std::pair<std::string,bool>> stack;
 		for(int i = 0; i < int(code.size()); i++)
 		{
 			if(isVar(code[i]))
@@ -258,35 +258,50 @@ struct UPN
 				int index = varIndex(code[i]);
 				assert(index < n);
 				if(index < int(vars.size()))
-				     stack.push_back(vars[index]);
+				     stack.push_back({vars[index],false});
 				else
-				     stack.push_back(std::string(1, code[i]));
+				     stack.push_back({std::string(1, code[i]),false});
 			}
 			else if(isUnary(code[i]))
 			{
 				assert(int(stack.size()) >= 1);
 				if(code[i] == '!')
 				{
-					*stack.rbegin() = std::string("!(") + stack.back() + ")";
+					if(stack.rbegin()->second)
+					    stack.rbegin()->first = std::string("!(") + stack.back().first + ")";
+					else
+					    stack.rbegin()->first = std::string("!") + stack.back().first;
 				}
 			}
 			else if(isBinary(code[i]))
 			{
 				assert(int(stack.size()) >= 2);
-				std::string b = stack.back();
+				auto b = stack.back();
 				stack.pop_back();
+				std::string result = "";
+				if(stack.back().second)
+					result += "(" + stack.back().first + ")";
+				else
+					result += stack.back().first;
 				if(code[i] == '&')
 				{
-					*stack.rbegin() = std::string("(") + stack.back() + " && " + b + ")";
+					result += " && ";
+					//*stack.rbegin() = std::string("(") + stack.back() + " && " + b + ")";
 				}
 				else if(code[i] == '|')
 				{
-					*stack.rbegin() = std::string("(") + stack.back() + " || " + b + ")";
+					result += " || ";
+					//*stack.rbegin() = std::string("(") + stack.back() + " || " + b + ")";
 				}
+				if(b.second)
+					result += "(" + b.first + ")";
+				else
+					result += b.first;
+				*stack.rbegin() = {result, true};
 			}
 		}
 		assert(int(stack.size()) == 1);
-		return stack.back();
+		return stack.back().first;
 	}
 };
 
