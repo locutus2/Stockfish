@@ -258,7 +258,7 @@ struct UPN
 
 	std::string infix(const std::vector<std::string>& vars = std::vector<std::string>()) const
 	{
-		std::deque<std::tuple<std::string,bool>> stack;
+		std::deque<std::tuple<std::string,bool,char>> stack;
 		for(int i = 0; i < int(code.size()); i++)
 		{
 			if(isVar(code[i]))
@@ -266,9 +266,9 @@ struct UPN
 				int index = varIndex(code[i]);
 				assert(index < n);
 				if(index < int(vars.size()))
-				     stack.push_back({vars[index],false});
+				     stack.push_back({vars[index],false, code[i]});
 				else
-				     stack.push_back({std::string(1, code[i]),false});
+				     stack.push_back({std::string(1, code[i]),false, code[i]});
 			}
 			else if(isUnary(code[i]))
 			{
@@ -276,9 +276,9 @@ struct UPN
 				if(code[i] == '!')
 				{
 					if(std::get<1>(*stack.rbegin()))
-					    *stack.rbegin() = {std::string("!(") + std::get<0>(stack.back()) + ")", false};
+					    *stack.rbegin() = {std::string("!(") + std::get<0>(stack.back()) + ")", false, code[i]};
 					else
-					    *stack.rbegin() = {std::string("!") + std::get<0>(stack.back()), false};
+					    *stack.rbegin() = {std::string("!") + std::get<0>(stack.back()), false, code[i]};
 				}
 			}
 			else if(isBinary(code[i]))
@@ -287,7 +287,7 @@ struct UPN
 				auto b = stack.back();
 				stack.pop_back();
 				std::string result = "";
-				if(std::get<1>(stack.back()))
+				if(std::get<1>(stack.back()) && code[i] != std::get<2>(stack.back()))
 					result += "(" + std::get<0>(stack.back()) + ")";
 				else
 					result += std::get<0>(stack.back());
@@ -301,11 +301,11 @@ struct UPN
 					result += " || ";
 					//*stack.rbegin() = std::string("(") + stack.back() + " || " + b + ")";
 				}
-				if(std::get<1>(b))
+				if(std::get<1>(b) && code[i] != std::get<2>(b))
 					result += "(" + std::get<0>(b) + ")";
 				else
 					result += std::get<0>(b);
-				*stack.rbegin() = {result, true};
+				*stack.rbegin() = {result, true, code[i]};
 			}
 		}
 		assert(int(stack.size()) == 1);
