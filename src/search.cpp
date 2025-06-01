@@ -33,6 +33,7 @@
 #include <string>
 #include <utility>
 #include <fstream>
+#include <random>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -55,8 +56,8 @@ namespace Stockfish {
 constexpr bool USE_UPN = true;
 constexpr double MIN_CONDITION_FREQ = 0.0001;
 
-//constexpr int N_UPN_CONDITIONS = 16;
-constexpr int N_UPN_CONDITIONS = 100;
+constexpr int N_UPN_CONDITIONS = 16;
+//constexpr int N_UPN_CONDITIONS = 100;
 //constexpr int N_UPN_CONDITIONS = 160;
 //constexpr int N_UPN_CONDITIONS = 350;
 constexpr int N_UPN_SIZE = 9;
@@ -113,6 +114,8 @@ void writeResultFile(std::string filename)
 
 struct UPN
 {
+	static constexpr int MAX_VARS = 2*26;
+
 	std::string code;
 	int N;
 
@@ -1763,6 +1766,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    AddBaseCondition((depth >= 13));
 	 	    AddBaseCondition((depth >= 14));
 	 	    AddBaseCondition((depth >= 15));
+	 	    AddBaseCondition((depth >= 16));
 
 	 	    AddBaseCondition((moveCount >= 3));
 	 	    AddBaseCondition((moveCount >= 4));
@@ -1782,12 +1786,61 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    AddBaseCondition((moveCount >= 18));
 	 	    AddBaseCondition((moveCount >= 19));
 	 	    AddBaseCondition((moveCount >= 20));
+	 	    AddBaseCondition((moveCount >= 21));
+	 	    AddBaseCondition((moveCount >= 22));
+	 	    AddBaseCondition((moveCount >= 23));
+	 	    AddBaseCondition((moveCount >= 24));
+	 	    AddBaseCondition((moveCount >= 25));
+	 	    AddBaseCondition((moveCount >= 26));
+	 	    AddBaseCondition((moveCount >= 27));
+	 	    AddBaseCondition((moveCount >= 28));
+	 	    AddBaseCondition((moveCount >= 29));
+	 	    AddBaseCondition((moveCount >= 30));
+	 	    AddBaseCondition((moveCount >= 31));
+	 	    AddBaseCondition((moveCount >= 32));
+	 	    AddBaseCondition((moveCount >= 33));
+	 	    AddBaseCondition((moveCount >= 34));
+	 	    AddBaseCondition((moveCount >= 35));
+	 	    AddBaseCondition((moveCount >= 36));
+	 	    AddBaseCondition((moveCount >= 37));
+	 	    AddBaseCondition((moveCount >= 38));
+	 	    AddBaseCondition((moveCount >= 39));
 
+	 	    AddBaseCondition((r <= -2048));
+	 	    AddBaseCondition((r <= -1024));
 	 	    AddBaseCondition((r >= 0));
+	 	    AddBaseCondition((r >= 1024));
+	 	    AddBaseCondition((r >= 2048));
+	 	    AddBaseCondition((r >= 3072));
+	 	    AddBaseCondition((r >= 4096));
 	 	    AddBaseCondition((ss-1)->inCheck);
-	 	    //AddBaseCondition((ss-1)->ttPv);
-	 	    //AddBaseCondition((ss-1)->ttHit);
-	 	    //AddBaseCondition((ss-1)->isPvNode);
+	 	    AddBaseCondition((ss-1)->ttPv);
+	 	    AddBaseCondition((ss-1)->ttHit);
+	 	    AddBaseCondition((ss-1)->isPvNode);
+	 	    AddBaseCondition(bool((ss-1)->excludedMove));
+	 	    AddBaseCondition((ss-2)->inCheck);
+	 	    AddBaseCondition((ss-2)->ttPv);
+	 	    AddBaseCondition((ss-2)->ttHit);
+	 	    AddBaseCondition((ss-2)->isPvNode);
+	 	    AddBaseCondition(bool((ss-2)->excludedMove));
+
+	 	    AddBaseCondition((ss->ply % 2 == 0));
+	 	    AddBaseCondition((rootDepth % 2 == 0));
+	 	    AddBaseCondition((depth < ss->ply));
+	 	    AddBaseCondition((2 * depth < ss->ply));
+	 	    AddBaseCondition((depth < 2 * ss->ply));
+	 	    AddBaseCondition((depth + ss->ply <= rootDepth));
+	 	    AddBaseCondition((2 * (depth + ss->ply) <= rootDepth));
+	 	    AddBaseCondition((2 * depth < rootDepth));
+	 	    AddBaseCondition((3 * depth < rootDepth));
+	 	    AddBaseCondition((3 * depth < 2 * rootDepth));
+
+	 	    AddBaseCondition((type_of(movedPiece) == PAWN));
+	 	    AddBaseCondition((type_of(movedPiece) == KNIGHT));
+	 	    AddBaseCondition((type_of(movedPiece) == BISHOP));
+	 	    AddBaseCondition((type_of(movedPiece) == ROOK));
+	 	    AddBaseCondition((type_of(movedPiece) == QUEEN));
+	 	    AddBaseCondition((type_of(movedPiece) == KING));
 
 	 	    AddBaseCondition(cutNode);
 		    AddBaseCondition(ss->ttPv);
@@ -1808,6 +1861,17 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseCondition((pos.pinners(us) & move.to_sq()));
 		    AddBaseCondition((pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces())));
 		    AddBaseCondition((pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces())));
+
+		    if(int(baseConditions.size()) > UPN::MAX_VARS)
+		    {
+			    std::random_device rd;
+    			    std::mt19937 g(rd());
+			    std::shuffle(baseConditions.begin(), baseConditions.end(), g);
+			    baseConditions.resize(UPN::MAX_VARS);
+			    std::cerr << "Selected base conditions:" << std::endl;
+			    for(int i = 0; i < int(baseConditions.size()); i++)
+				    std::cerr << baseConditions[i].name << std::endl;
+		    }
 
 		    bool USE_FIXED = false;
 		    if(USE_FIXED)
