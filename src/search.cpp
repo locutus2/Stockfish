@@ -1056,11 +1056,11 @@ moves_loop:  // When in check, search starts here
                   thisThread->captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
 
                 // Futility pruning for captures
-                if (!givesCheck && lmrDepth < 7 && !ss->inCheck
-                    && !(pos.pinners(~us) & move.to_sq()))
+                if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
                     Value futilityValue = ss->staticEval + 232 + 224 * lmrDepth
-                                        + PieceValue[capturedPiece] + 131 * captHist / 1024;
+                                        + PieceValue[capturedPiece] + 131 * captHist / 1024
+                                        + 260 * bool(pos.pinners(~us) & move.to_sq());
                     if (futilityValue <= alpha)
                         continue;
                 }
