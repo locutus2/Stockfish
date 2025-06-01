@@ -359,7 +359,8 @@ void initUPNConditions(const std::vector<Condition>& base)
 
 	std::vector<std::string> varnames;
 	for(int i = 0; i < int(base.size()); i++)
-	    varnames.push_back(base[i].name);
+	    if(selectedConditions[i])
+	        varnames.push_back(base[i].name);
 
 	for(int i = 0; i < int(UPNConditions.size()); i++)
 	    derivedConditions[i].name = UPNConditions[i].infix(varnames);
