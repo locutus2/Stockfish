@@ -56,8 +56,8 @@ constexpr bool USE_UPN = true;
 constexpr double MIN_CONDITION_FREQ = 0.0001;
 
 constexpr int N_UPN_VARS = 16;
-//constexpr int N_UPN_CONDITIONS = 16;
-constexpr int N_UPN_CONDITIONS = 180;
+constexpr int N_UPN_CONDITIONS = 16;
+//constexpr int N_UPN_CONDITIONS = 180;
 constexpr int N_UPN_SIZE = 9;
 
 std::vector<Condition> baseConditions;
@@ -232,7 +232,7 @@ struct UPN
 					}
 					[[fallthrough]];
 				case 1:
-                                        if(count + 2 - n + i > 1 || std::rand()%2)
+                                        if(count + 2 - n + i > 1 || (std::rand()%2 && (i == 0 || code[i-1] != '!')))
 					{
                                             code[i] = getRandomUnary();
 					    break;
