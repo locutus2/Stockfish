@@ -127,6 +127,10 @@ struct UPN
 		cleanup();
 	}
 
+	void simplify()
+	{
+	}
+
 	void cleanup()
 	{
 		for(int i = int(code.size())-1; i >= 0; i--)
@@ -272,9 +276,9 @@ struct UPN
 				if(code[i] == '!')
 				{
 					if(stack.rbegin()->second)
-					    stack.rbegin()->first = std::string("!(") + stack.back().first + ")";
+					    *stack.rbegin() = {std::string("!(") + stack.back().first + ")", false};
 					else
-					    stack.rbegin()->first = std::string("!") + stack.back().first;
+					    *stack.rbegin() = {std::string("!") + stack.back().first, false};
 				}
 			}
 			else if(isBinary(code[i]))
@@ -330,6 +334,7 @@ void initUPNConditions()
 		int size = minSize  + int((N_UPN_SIZE - minSize + 1) * std::sqrt(double(i) / N_UPN_CONDITIONS));
 		UPN upn(N_UPN_VARS);
 		upn.initRandom(size);
+		upn.simplify();
 		UPNConditions.push_back(upn);
 		derivedConditions[i].name = upn.infix();
 		derivedConditions[i].value = false;
