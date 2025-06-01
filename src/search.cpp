@@ -63,12 +63,15 @@ constexpr int N_UPN_CONDITIONS = 16;
 constexpr int N_UPN_SIZE = 9;
 
 std::vector<Condition> baseConditions;
+std::vector<bool> selectedConditions;
 std::vector<Condition> derivedConditions;
 
 #define AddBaseCondition(c) { int baseIndex = baseCount++; \
 	                     if(baseIndex >= int(baseConditions.size())) {\
 				     baseConditions.resize(baseIndex+1); \
+				     selectedConditions.resize(baseIndex+1, true); \
 	                             baseConditions[baseIndex].name = #c; \
+	                             selectedConditions[baseIndex] = (baseIndex < UPN::MAX_VARS); \
 			     } \
 	                     baseConditions[baseIndex].value = (c); }
 
@@ -320,6 +323,7 @@ struct UPN
 	}
 };
 
+bool conditionsSelectionInit = false;
 bool UPNconditionsInit = false;
 std::vector<UPN> UPNConditions;
 
@@ -330,6 +334,8 @@ void initUPNConditions(const std::vector<Condition>& base)
 	if(!USE_UPN) return;
 
 	std::srand(std::time(nullptr));
+
+	int nsize = std::min(UPN::MAX_VARS, int(baseConditions.size()));
 
 	std::cerr << "UPC conditions:" << std::endl;
 	UPNConditions.clear();
@@ -342,7 +348,7 @@ void initUPNConditions(const std::vector<Condition>& base)
 		//int size = minSize  + (N_UPN_SIZE - minSize + 1) * i / N_UPN_CONDITIONS;
 		//int size = minSize  + (N_UPN_SIZE - minSize + 1) * i * i / (N_UPN_CONDITIONS * N_UPN_CONDITIONS);
 		int size = minSize  + int((N_UPN_SIZE - minSize + 1) * std::sqrt(double(i) / N_UPN_CONDITIONS));
-		UPN upn(base.size());
+		UPN upn(nsize);
 		upn.initRandom(size);
 		upn.simplify();
 		UPNConditions.push_back(upn);
@@ -1862,15 +1868,18 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseCondition((pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces())));
 		    AddBaseCondition((pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces())));
 
-		    if(int(baseConditions.size()) > UPN::MAX_VARS)
+		    if(USE_UPN && int(baseConditions.size()) > UPN::MAX_VARS && !conditionsSelectionInit)
 		    {
 			    std::random_device rd;
     			    std::mt19937 g(rd());
-			    std::shuffle(baseConditions.begin(), baseConditions.end(), g);
-			    baseConditions.resize(UPN::MAX_VARS);
+
+			    std::shuffle(selectedConditions.begin(), selectedConditions.end(), g);
+                            conditionsSelectionInit = true;
+
 			    std::cerr << "Selected base conditions:" << std::endl;
 			    for(int i = 0; i < int(baseConditions.size()); i++)
-				    std::cerr << baseConditions[i].name << std::endl;
+				    if(selectedConditions[i])
+				    	std::cerr << baseConditions[i].name << std::endl;
 		    }
 
 		    bool USE_FIXED = false;
@@ -1885,9 +1894,10 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
                                 initUPNConditions(baseConditions);
 			    }
 
-			    std::vector<bool> varvalues(baseConditions.size());
+			    std::vector<bool> varvalues(std::min(UPN::MAX_VARS, int(baseConditions.size())));
 			    for(int i = 0; i < int(baseConditions.size()); i++)
-				    varvalues[i] = baseConditions[i].value;
+				    if(selectedConditions[i])
+				    	varvalues[i] = baseConditions[i].value;
 
 			    for(int i = 0; i < int(UPNConditions.size()); i++)
 				    derivedConditions[i].value = UPNConditions[i](varvalues);
