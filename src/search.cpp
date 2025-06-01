@@ -55,6 +55,11 @@ namespace Stockfish {
 constexpr bool USE_UPN = true;
 constexpr double MIN_CONDITION_FREQ = 0.0001;
 
+constexpr int N_UPN_VARS = 16;
+//constexpr int N_UPN_CONDITIONS = 16;
+constexpr int N_UPN_CONDITIONS = 180;
+constexpr int N_UPN_SIZE = 9;
+
 std::vector<Condition> baseConditions;
 std::vector<Condition> derivedConditions;
 
@@ -74,14 +79,16 @@ std::string formatNumber(double x)
 	return s;
 }
 
-void writeResultFile(const std::string& filename)
+void writeResultFile(std::string filename)
 {
 	const std::string path = "/mnt/c/Users/cng/Documents/";
 	std::string SEP = ";";
 	std::vector<std::string> header = {"Condition","Frequency","Correct(fail low)","True positive rate","Accuracy"};
 
-	std::string filename2 = std::string("lmr_condition_results_") + std::to_string((int)std::time(nullptr)) + ".csv";
-	std::ofstream file(path + filename2);
+	if(filename == "")
+	    filename = std::string("lmr_condition_results_") + std::to_string((int)std::time(nullptr)) + ".csv";
+
+	std::ofstream file(path + filename);
 	
 	for(int i = 0; i < int(header.size()); i++)
 		file << (i ? SEP : "") << header[i];
@@ -103,10 +110,6 @@ void writeResultFile(const std::string& filename)
 	file.close();
 }
 
-constexpr int N_UPN_VARS = 16;
-constexpr int N_UPN_CONDITIONS = 16;
-constexpr int N_UPN_SIZE = 9;
-
 bool UPNnamesInit = false;
 
 struct UPN
@@ -115,10 +118,10 @@ struct UPN
 	int N;
 
 	UPN(int n, const std::string& c = "") : code(c), N(n) {
-		assert(n <= 26);
-		if(n > 26)
+		assert(n <= 2*26);
+		if(n > 2*26)
 		{
-			std::cerr << "ERROR: a maximum of 26 UPN variables allowed!" << std::endl;
+			std::cerr << "ERROR: a maximum of 52 UPN variables allowed!" << std::endl;
 			std::exit(1);
 		}
 		cleanup();
@@ -131,9 +134,14 @@ struct UPN
 			    code.erase(code.begin() + i);
 	}
 
+	int varIndex(char ch) const
+	{
+		return ch >= 'a' && ch <= 'z' ? ch - 'a' : ch - 'A' + 26 ;
+	}
+
 	bool isVar(char ch) const
 	{
-		return ch >= 'a' && ch <= char('a' + N - 1);
+		return ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) && varIndex(ch) < N;
 	}
 
 	bool isUnary(char ch) const
@@ -160,7 +168,7 @@ struct UPN
 		{
 			if(isVar(code[i]))
 			{
-				int index = code[i] - 'a';
+				int index = varIndex(code[i]);
 				assert(index < int(vars.size()));
 				stack.push_back(vars[index]);
 			}
@@ -193,7 +201,8 @@ struct UPN
 
 	char getRandomVar() const
 	{
-                return 'a' + std::rand()%N;
+		int r = std::rand()%N;
+                return r < 26 ? 'a' + r : 'A' + r - 26;
 	}
 
 	char getRandomUnary() const
@@ -244,7 +253,7 @@ struct UPN
 		{
 			if(isVar(code[i]))
 			{
-				int index = code[i] - 'a';
+				int index = varIndex(code[i]);
 				assert(index < n);
 				if(index < int(vars.size()))
 				     stack.push_back(vars[index]);
@@ -1821,7 +1830,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    for(auto c : cc)
 			    {
 				    for(int i = 0; i < NN; i++)
-					    derivedConditions.push_back(Condition(c.name+"[R="+std::to_string(RR[i])+"]", c.value && (nodes % NN == i)));
+					    derivedConditions.push_back(Condition(c.name+"[R="+std::to_string(RR[i])+"]", c.value && (int(nodes) % NN == i)));
 			    }
 
 			    int myr = 0;

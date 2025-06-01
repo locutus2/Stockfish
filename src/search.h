@@ -69,7 +69,7 @@ struct Condition
 
 extern std::vector<Condition> derivedConditions;
 
-void writeResultFile(const std::string& filename = "lmr_condition_results.csv");
+void writeResultFile(std::string filename = "");
 
 // Different node types, used as a template parameter
 enum NodeType {
