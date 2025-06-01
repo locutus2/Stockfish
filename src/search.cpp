@@ -286,6 +286,8 @@ struct UPN
 				assert(int(stack.size()) >= 2);
 				auto b = stack.back();
 				stack.pop_back();
+				if(std::get<0>(b) == std::get<0>(stack.back())) continue;
+
 				std::string result = "";
 				if(std::get<1>(stack.back()) && code[i] != std::get<2>(stack.back()))
 					result += "(" + std::get<0>(stack.back()) + ")";
