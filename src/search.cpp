@@ -55,8 +55,10 @@ namespace Stockfish {
 constexpr bool USE_UPN = true;
 constexpr double MIN_CONDITION_FREQ = 0.0001;
 
-constexpr int N_UPN_CONDITIONS = 16;
+//constexpr int N_UPN_CONDITIONS = 16;
+constexpr int N_UPN_CONDITIONS = 100;
 //constexpr int N_UPN_CONDITIONS = 160;
+//constexpr int N_UPN_CONDITIONS = 350;
 constexpr int N_UPN_SIZE = 9;
 
 std::vector<Condition> baseConditions;
@@ -1783,9 +1785,9 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 
 	 	    AddBaseCondition((r >= 0));
 	 	    AddBaseCondition((ss-1)->inCheck);
-	 	    AddBaseCondition((ss-1)->ttPv);
-	 	    AddBaseCondition((ss-1)->ttHit);
-	 	    AddBaseCondition((ss-1)->isPvNode);
+	 	    //AddBaseCondition((ss-1)->ttPv);
+	 	    //AddBaseCondition((ss-1)->ttHit);
+	 	    //AddBaseCondition((ss-1)->isPvNode);
 
 	 	    AddBaseCondition(cutNode);
 		    AddBaseCondition(ss->ttPv);
