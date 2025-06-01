@@ -236,7 +236,7 @@ struct UPN
 					}
 					[[fallthrough]];
 				case 1:
-                                        if(count + 2 - n + i > 1 || (std::rand()%2 && (i == 0 || code[i-1] != '!')))
+                                        if(count + 2 - n + i > 1 || std::rand()%2)
 					{
                                             code[i] = getRandomUnary();
 					    break;
@@ -248,11 +248,14 @@ struct UPN
 					break;
 			}
 		}
-		if(int(code.size()) >= 2 && *code.rbegin() == '!' && *(code.rbegin()+1) == '!')
+
+		for(int i = 1; i < n; i++)
 		{
-			//code.resize(code.size()-2);
-			*code.rbegin() = getRandomBinary(); 
-			*(code.rbegin()+1) = getRandomVar(); 
+		        if(code[i] == '!' && code[i-1] == '!')
+			{
+			     code[i] = getRandomBinary(); 
+			     code[i-1] = getRandomVar(); 
+			}
 		}
 	}
 
