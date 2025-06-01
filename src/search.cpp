@@ -60,7 +60,7 @@ constexpr int N_UPN_CONDITIONS = 16;
 //constexpr int N_UPN_CONDITIONS = 100;
 //constexpr int N_UPN_CONDITIONS = 160;
 //constexpr int N_UPN_CONDITIONS = 350;
-constexpr int N_UPN_SIZE = 9;
+constexpr int N_UPN_SIZE = 11;
 
 std::vector<Condition> baseConditions;
 std::vector<bool> selectedConditions;
