@@ -244,6 +244,8 @@ struct UPN
 					break;
 			}
 		}
+		if(int(code.size()) >= 2 && *code.rbegin() == '!' && *(code.rbegin()+1) == '!')
+			code.resize(code.size()-2);
 	}
 
 	std::string infix(const std::vector<std::string>& vars = std::vector<std::string>()) const
