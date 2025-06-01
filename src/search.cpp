@@ -53,8 +53,17 @@
 namespace Stockfish {
 
 constexpr bool USE_UPN = true;
+constexpr double MIN_CONDITION_FREQ = 0.0001;
 
+std::vector<Condition> baseConditions;
 std::vector<Condition> derivedConditions;
+
+#define AddBaseCondition(c) { int baseIndex = baseCount++; \
+	                     if(baseIndex >= int(baseConditions.size())) {\
+				     baseConditions.resize(baseIndex+1); \
+	                             baseConditions[baseIndex].name = #c; \
+			     } \
+	                     baseConditions[baseIndex].value = (c); }
 
 std::string formatNumber(double x);
 
@@ -81,6 +90,9 @@ void writeResultFile(const std::string& filename)
 	for(int i = 0; i < int(derivedConditions.size()); i++)
 	{
 		int index = 10000 + 10 * i;
+		double freq = dbg_get_hit_on(index);
+                if(freq < MIN_CONDITION_FREQ) continue;
+
 		file << derivedConditions[i].name
 			<< SEP << formatNumber(dbg_get_hit_on(index))
 			<< SEP << formatNumber(dbg_get_hit_on(index+1))
@@ -94,6 +106,8 @@ void writeResultFile(const std::string& filename)
 constexpr int N_UPN_VARS = 16;
 constexpr int N_UPN_CONDITIONS = 16;
 constexpr int N_UPN_SIZE = 9;
+
+bool UPNnamesInit = false;
 
 struct UPN
 {
@@ -233,7 +247,7 @@ struct UPN
 				int index = code[i] - 'a';
 				assert(index < n);
 				if(index < int(vars.size()))
-				     stack.push_back(vars[i]);
+				     stack.push_back(vars[index]);
 				else
 				     stack.push_back(std::string(1, code[i]));
 			}
@@ -275,14 +289,20 @@ void initUPNConditions()
 
 	std::cerr << "UPC conditions:" << std::endl;
 	UPNConditions.clear();
-	int minSize = (N_UPN_SIZE+1) / 2 ;
+	derivedConditions.resize(N_UPN_CONDITIONS);
+	//int minSize = (N_UPN_SIZE+1) / 2 ;
+	int minSize = (N_UPN_SIZE+2) / 3 ;
 	for(int i = 0; i < N_UPN_CONDITIONS; i++)
 	{
 		//int size = 1 + N_UPN_SIZE * i / N_UPN_CONDITIONS;
-		int size = minSize  + (N_UPN_SIZE - minSize + 1) * i / N_UPN_CONDITIONS;
+		//int size = minSize  + (N_UPN_SIZE - minSize + 1) * i / N_UPN_CONDITIONS;
+		//int size = minSize  + (N_UPN_SIZE - minSize + 1) * i * i / (N_UPN_CONDITIONS * N_UPN_CONDITIONS);
+		int size = minSize  + int((N_UPN_SIZE - minSize + 1) * std::sqrt(double(i) / N_UPN_CONDITIONS));
 		UPN upn(N_UPN_VARS);
 		upn.initRandom(size);
 		UPNConditions.push_back(upn);
+		derivedConditions[i].name = upn.infix();
+		derivedConditions[i].value = false;
 		std::cerr << upn.infix() << std::endl;
 	}
 }
@@ -1608,7 +1628,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 
 	    auto scale = [](double x)->int { return int(x/100*SCALE); };
 
-	    std::vector<Condition> baseConditions;
+	    //std::vector<Condition> baseConditions;
 
 	    //constexpr int TH = 98; // fail low: all conditions
 	    constexpr int TH = 517; // true positive rate: all conditions
@@ -1655,6 +1675,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    //R = ss->inCheck && ttCapture;
 		    //
 
+		    /*
 		    baseConditions = {
 			    CONDITION(cutNode),
 			    CONDITION(ss->ttPv),
@@ -1673,24 +1694,49 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    CONDITION((prevSq == move.to_sq())),
 			    CONDITION(more_than_one(pos.checkers())),
 		    };
+		    */
+		    int baseCount = 0;
+	 	    AddBaseCondition(cutNode);
+		    AddBaseCondition(ss->ttPv);
+		    AddBaseCondition(ss->inCheck);
+		    AddBaseCondition(capture);
+		    AddBaseCondition(givesCheck);
+		    AddBaseCondition(improving);
+		    AddBaseCondition(priorCapture);
+		    AddBaseCondition((eval > alpha));
+		    AddBaseCondition((ss->staticEval > alpha));
+		    AddBaseCondition((eval < ss->staticEval));
+		    AddBaseCondition(bool(excludedMove));
+		    AddBaseCondition((ttData.value > alpha));
+		    AddBaseCondition(ttHit);
+		    AddBaseCondition((prevSq == SQ_NONE));
+		    AddBaseCondition((prevSq == move.to_sq()));
+		    AddBaseCondition(more_than_one(pos.checkers()));
 
 		    bool USE_FIXED = false;
-		    if(USE_UPN)
+		    if(USE_FIXED)
 		    {
-			    std::vector<std::string> varnames;
-			    std::vector<bool> varvalues;
-			    for(int i = 0; i < int(baseConditions.size()); i++)
+		 	   // AddCondition(more_than_one(pos.checkers())),
+		    }
+		    else if(USE_UPN)
+		    {
+	                    if(!UPNnamesInit)
 			    {
+			        std::vector<std::string> varnames;
+			        for(int i = 0; i < int(baseConditions.size()); i++)
 				    varnames.push_back(baseConditions[i].name);
-				    varvalues.push_back(baseConditions[i].value);
+
+			        for(int i = 0; i < int(UPNConditions.size()); i++)
+				    derivedConditions[i].name = UPNConditions[i].infix(varnames);
+	                        UPNnamesInit = true;
 			    }
 
-			    derivedConditions.clear();
+			    std::vector<bool> varvalues(baseConditions.size());
+			    for(int i = 0; i < int(baseConditions.size()); i++)
+				    varvalues[i] = baseConditions[i].value;
+
 			    for(int i = 0; i < int(UPNConditions.size()); i++)
-			    {
-				    Condition c(UPNConditions[i].infix(varnames), UPNConditions[i](varvalues));
-				    derivedConditions.push_back(c);
-			    }
+				    derivedConditions[i].value = UPNConditions[i](varvalues);
 		    }
 		    else
 		    {
@@ -1762,9 +1808,9 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    }
 
 		    }
+
 		    bool USE_REDUCTION = false;
-		    assert(!USE_UPN || !USE_REDUCTION);
-		    if(!USE_UPN && USE_REDUCTION && USE_FIXED)
+		    if(USE_REDUCTION && USE_FIXED)
 		    {
 			    auto cc = derivedConditions;
 			    derivedConditions.clear();
