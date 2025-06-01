@@ -44,6 +44,8 @@
 
 namespace Stockfish {
 
+void initUPNConditions();
+
 struct Condition
 {
         std::string name;

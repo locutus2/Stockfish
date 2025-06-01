@@ -52,6 +52,8 @@
 
 namespace Stockfish {
 
+constexpr bool USE_UPN = true;
+
 std::vector<Condition> derivedConditions;
 
 std::string formatNumber(double x);
@@ -89,12 +91,22 @@ void writeResultFile(const std::string& filename)
 	file.close();
 }
 
+constexpr int N_UPN_VARS = 16;
+constexpr int N_UPN_CONDITIONS = 16;
+constexpr int N_UPN_SIZE = 9;
+
 struct UPN
 {
-	int N;
 	std::string code;
+	int N;
 
 	UPN(int n, const std::string& c = "") : code(c), N(n) {
+		assert(n <= 26);
+		if(n > 26)
+		{
+			std::cerr << "ERROR: a maximum of 26 UPN variables allowed!" << std::endl;
+			std::exit(1);
+		}
 		cleanup();
 	}
 
@@ -122,6 +134,13 @@ struct UPN
 
 	bool operator()(std::vector<bool> vars) const
 	{
+		assert(N == int(vars.size()));
+		if(N != int(vars.size()))
+		{
+			std::cerr << "ERROR: number of UPN variables doesn't match!" << std::endl;
+			std::exit(2);
+		}
+
 		std::deque<bool> stack;
 		for(int i = 0; i < int(code.size()); i++)
 		{
@@ -204,15 +223,19 @@ struct UPN
 		}
 	}
 
-	std::string infix() const
+	std::string infix(const std::vector<std::string>& vars = std::vector<std::string>()) const
 	{
 		std::deque<std::string> stack;
 		for(int i = 0; i < int(code.size()); i++)
 		{
 			if(isVar(code[i]))
 			{
-				assert(index < int(vars.size()));
-				stack.push_back(std::string(1, code[i]));
+				int index = code[i] - 'a';
+				assert(index < n);
+				if(index < int(vars.size()))
+				     stack.push_back(vars[i]);
+				else
+				     stack.push_back(std::string(1, code[i]));
 			}
 			else if(isUnary(code[i]))
 			{
@@ -241,6 +264,28 @@ struct UPN
 		return stack.back();
 	}
 };
+
+std::vector<UPN> UPNConditions;
+
+void initUPNConditions()
+{
+	if(!USE_UPN) return;
+
+	std::srand(std::time(nullptr));
+
+	std::cerr << "UPC conditions:" << std::endl;
+	UPNConditions.clear();
+	int minSize = (N_UPN_SIZE+1) / 2 ;
+	for(int i = 0; i < N_UPN_CONDITIONS; i++)
+	{
+		//int size = 1 + N_UPN_SIZE * i / N_UPN_CONDITIONS;
+		int size = minSize  + (N_UPN_SIZE - minSize + 1) * i / N_UPN_CONDITIONS;
+		UPN upn(N_UPN_VARS);
+		upn.initRandom(size);
+		UPNConditions.push_back(upn);
+		std::cerr << upn.infix() << std::endl;
+	}
+}
 
 namespace TB = Tablebases;
 
@@ -338,6 +383,7 @@ Search::Worker::Worker(SharedState&                    sharedState,
     refreshTable(networks[token]) {
     clear();
 
+    /*
     for(int i = 0; i < 10; i++)
     {
 	    UPN upn(4);
@@ -353,6 +399,7 @@ Search::Worker::Worker(SharedState&                    sharedState,
 				}	
     }
     std::exit(1);
+    */
 }
 
 void Search::Worker::ensure_network_replicated() {
@@ -1609,7 +1656,6 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    //
 
 		    baseConditions = {
-			    /*
 			    CONDITION(cutNode),
 			    CONDITION(ss->ttPv),
 			    CONDITION(ss->inCheck),
@@ -1617,89 +1663,108 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    CONDITION(givesCheck),
 			    CONDITION(improving),
 			    CONDITION(priorCapture),
-			    
 			    CONDITION((eval > alpha)),
 			    CONDITION((ss->staticEval > alpha)),
 			    CONDITION((eval < ss->staticEval)),
 			    CONDITION(bool(excludedMove)),
 			    CONDITION((ttData.value > alpha)),
 			    CONDITION(ttHit),
-			    */
 			    CONDITION((prevSq == SQ_NONE)),
-			    //CONDITION((prevSq == move.to_sq())),
+			    CONDITION((prevSq == move.to_sq())),
 			    CONDITION(more_than_one(pos.checkers())),
 		    };
 
-		    std::vector<Condition> additionalConditions = {
-//			    CONDITION(more_than_one(pos.checkers())),
-		    };
-
-		    derivedConditions.clear();
-
 		    bool USE_FIXED = false;
-                    bool COMBINE_ADDITIONAL = false;
-                    bool COMBINE_FULL = true;
-		    if(!USE_FIXED)
+		    if(USE_UPN)
 		    {
-			    if(COMBINE_ADDITIONAL)
+			    std::vector<std::string> varnames;
+			    std::vector<bool> varvalues;
+			    for(int i = 0; i < int(baseConditions.size()); i++)
 			    {
-			        for(int i = 0; i < int(additionalConditions.size()); i++) 
-			        {
-					derivedConditions.push_back(additionalConditions[i]);
-					derivedConditions.push_back(additionalConditions[i].Not());
-
-			                for(int j = 0; j < int(baseConditions.size()); j++) 
-			                {
-					     derivedConditions.push_back(baseConditions[j].And(additionalConditions[i]));
-					     derivedConditions.push_back(baseConditions[j].And(additionalConditions[i].Not()));
-					     derivedConditions.push_back(baseConditions[j].Not().And(additionalConditions[i]));
-					     derivedConditions.push_back(baseConditions[j].Not().And(additionalConditions[i].Not()));
-
-					     derivedConditions.push_back(baseConditions[j].Or(additionalConditions[i]));
-					     derivedConditions.push_back(baseConditions[j].Or(additionalConditions[i].Not()));
-					     derivedConditions.push_back(baseConditions[j].Not().Or(additionalConditions[i]));
-					     derivedConditions.push_back(baseConditions[j].Not().Or(additionalConditions[i].Not()));
-			                }
-				}
+				    varnames.push_back(baseConditions[i].name);
+				    varvalues.push_back(baseConditions[i].value);
 			    }
-                            else
+
+			    derivedConditions.clear();
+			    for(int i = 0; i < int(UPNConditions.size()); i++)
 			    {
-				    for(int i = 0; i < int(baseConditions.size()); i++) 
+				    Condition c(UPNConditions[i].infix(varnames), UPNConditions[i](varvalues));
+				    derivedConditions.push_back(c);
+			    }
+		    }
+		    else
+		    {
+			    std::vector<Condition> additionalConditions = {
+	//			    CONDITION(more_than_one(pos.checkers())),
+			    };
+
+			    derivedConditions.clear();
+
+			    bool COMBINE_ADDITIONAL = false;
+			    bool COMBINE_FULL = true;
+			    if(!USE_FIXED)
+			    {
+				    if(COMBINE_ADDITIONAL)
 				    {
-					derivedConditions.push_back(baseConditions[i]);
-					derivedConditions.push_back(baseConditions[i].Not());
-
-					if(COMBINE_FULL)
+					for(int i = 0; i < int(additionalConditions.size()); i++) 
 					{
-						for(int j = 0; j < i; j++)
-						{
-						     derivedConditions.push_back(baseConditions[j].And(baseConditions[i]));
-						     derivedConditions.push_back(baseConditions[j].And(baseConditions[i].Not()));
-						     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i]));
-						     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i].Not()));
+						derivedConditions.push_back(additionalConditions[i]);
+						derivedConditions.push_back(additionalConditions[i].Not());
 
-						     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i]));
-						     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i].Not()));
-						     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i]));
-						     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i].Not()));
+						for(int j = 0; j < int(baseConditions.size()); j++) 
+						{
+						     derivedConditions.push_back(baseConditions[j].And(additionalConditions[i]));
+						     derivedConditions.push_back(baseConditions[j].And(additionalConditions[i].Not()));
+						     derivedConditions.push_back(baseConditions[j].Not().And(additionalConditions[i]));
+						     derivedConditions.push_back(baseConditions[j].Not().And(additionalConditions[i].Not()));
+
+						     derivedConditions.push_back(baseConditions[j].Or(additionalConditions[i]));
+						     derivedConditions.push_back(baseConditions[j].Or(additionalConditions[i].Not()));
+						     derivedConditions.push_back(baseConditions[j].Not().Or(additionalConditions[i]));
+						     derivedConditions.push_back(baseConditions[j].Not().Or(additionalConditions[i].Not()));
 						}
 					}
-			    	}
+				    }
+				    else
+				    {
+					    for(int i = 0; i < int(baseConditions.size()); i++) 
+					    {
+						derivedConditions.push_back(baseConditions[i]);
+						derivedConditions.push_back(baseConditions[i].Not());
+
+						if(COMBINE_FULL)
+						{
+							for(int j = 0; j < i; j++)
+							{
+							     derivedConditions.push_back(baseConditions[j].And(baseConditions[i]));
+							     derivedConditions.push_back(baseConditions[j].And(baseConditions[i].Not()));
+							     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i]));
+							     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i].Not()));
+
+							     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i]));
+							     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i].Not()));
+							     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i]));
+							     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i].Not()));
+							}
+						}
+					}
+				    }
 			    }
-		    }
-                    else
-		    {
-		        //derivedConditions.push_back(CONDITION(more_than_one(pos.checkers())));
-		        //derivedConditions.push_back(CONDITION(prevSq == SQ_NONE));
-		        //derivedConditions.push_back(CONDITION(ss->ttPv&&ss->inCheck));
-		        //derivedConditions.push_back(CONDITION(allNode&&ttCapture));
-		        //derivedConditions.push_back(CONDITION(depth>=13&&priorCapture));
-			derivedConditions = additionalConditions;
+			    else
+			    {
+				//derivedConditions.push_back(CONDITION(more_than_one(pos.checkers())));
+				//derivedConditions.push_back(CONDITION(prevSq == SQ_NONE));
+				//derivedConditions.push_back(CONDITION(ss->ttPv&&ss->inCheck));
+				//derivedConditions.push_back(CONDITION(allNode&&ttCapture));
+				//derivedConditions.push_back(CONDITION(depth>=13&&priorCapture));
+				derivedConditions = additionalConditions;
+
+			    }
 
 		    }
-
 		    bool USE_REDUCTION = false;
-		    if(USE_REDUCTION && USE_FIXED)
+		    assert(!USE_UPN || !USE_REDUCTION);
+		    if(!USE_UPN && USE_REDUCTION && USE_FIXED)
 		    {
 			    auto cc = derivedConditions;
 			    derivedConditions.clear();
@@ -1720,7 +1785,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    //r += myr / int(cc.size());
 			    r += myr;
 		    }
-		    std::cerr << "Use " << derivedConditions.size() << " conditions." << std::endl;
+		    //std::cerr << "Use " << derivedConditions.size() << " conditions." << std::endl;
  
   		    for(int i = 0; i < int(derivedConditions.size()); i++) 
 			   RC.push_back(derivedConditions[i].value);

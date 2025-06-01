@@ -243,6 +243,8 @@ void UCIEngine::bench(std::istream& args) {
     num = count_if(list.begin(), list.end(),
                    [](const std::string& s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
+    initUPNConditions();
+
     TimePoint elapsed = now();
 
     for (const auto& cmd : list)
