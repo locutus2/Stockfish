@@ -69,11 +69,12 @@ std::vector<Condition> baseConditions;
 std::vector<bool> selectedConditions;
 std::vector<Condition> derivedConditions;
 
-#define AddBaseCondition(c) { int baseIndex = baseCount++; \
+#define AddBaseCondition(c) AddBaseConditionText(#c, c)
+#define AddBaseConditionText(m, c) { int baseIndex = baseCount++; \
 	                     if(baseIndex >= int(baseConditions.size())) {\
 				     baseConditions.resize(baseIndex+1); \
 				     selectedConditions.resize(baseIndex+1, true); \
-	                             baseConditions[baseIndex].name = #c; \
+	                             baseConditions[baseIndex].name = m; \
 	                             selectedConditions[baseIndex] = (baseIndex < UPN::MAX_VARS); \
 			     } \
 	                     baseConditions[baseIndex].value = (c); }
@@ -1793,9 +1794,11 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    */
 		    int baseCount = 0;
 		    int KEEP_FIRST_N = 0;
-
+/*
+		    AddBaseConditionText("cond_1", (((type_of(pos.captured_piece()) == QUEEN) || (depth >= 16)) \
+				   && !(pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()))));
+*/
 	 	    AddBaseCondition(givesCheck);
-
 	 	    AddBaseCondition((depth >= 3));
 	 	    AddBaseCondition((depth >= 4));
 	 	    AddBaseCondition((depth >= 5));
