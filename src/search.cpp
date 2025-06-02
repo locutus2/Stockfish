@@ -53,14 +53,17 @@
 
 namespace Stockfish {
 
+std::random_device rd;
+std::mt19937 generator(rd());
+
 constexpr bool USE_UPN = true;
 constexpr double MIN_CONDITION_FREQ = 0.0001;
 
-constexpr int N_UPN_CONDITIONS = 16;
-//constexpr int N_UPN_CONDITIONS = 100;
+//constexpr int N_UPN_CONDITIONS = 16;
+constexpr int N_UPN_CONDITIONS = 100;
 //constexpr int N_UPN_CONDITIONS = 160;
 //constexpr int N_UPN_CONDITIONS = 350;
-constexpr int N_UPN_SIZE = 11;
+constexpr int N_UPN_SIZE = 12;
 
 std::vector<Condition> baseConditions;
 std::vector<bool> selectedConditions;
@@ -117,16 +120,16 @@ void writeResultFile(std::string filename)
 
 struct UPN
 {
-	static constexpr int MAX_VARS = 2*26;
+	static constexpr int MAX_VARS = 2*26+10;
 
 	std::string code;
 	int N;
 
 	UPN(int n, const std::string& c = "") : code(c), N(n) {
-		assert(n <= 2*26);
-		if(n > 2*26)
+		assert(n <= MAX_VARS);
+		if(n > MAX_VARS)
 		{
-			std::cerr << "ERROR: a maximum of 52 UPN variables allowed!" << std::endl;
+			std::cerr << "ERROR: a maximum of " << MAX_VARS << " UPN variables allowed!" << std::endl;
 			std::exit(1);
 		}
 		cleanup();
@@ -145,12 +148,14 @@ struct UPN
 
 	int varIndex(char ch) const
 	{
-		return ch >= 'a' && ch <= 'z' ? ch - 'a' : ch - 'A' + 26 ;
+		return ch >= 'a' && ch <= 'z' ? ch - 'a' : 
+		       ch >= 'A' && ch <= 'Z' ? ch - 'A' + 26 
+		                              : ch - '0' + 2 * 26;
 	}
 
 	bool isVar(char ch) const
 	{
-		return ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) && varIndex(ch) < N;
+		return ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')) && varIndex(ch) < N;
 	}
 
 	bool isUnary(char ch) const
@@ -208,10 +213,17 @@ struct UPN
 		return stack.back();
 	}
 
+	char getVar(int i) const
+	{
+                return i < 26   ? 'a' + i : 
+		       i < 2*26 ? 'A' + i - 26
+		                : '0' + i - 2*26;
+	}
+
 	char getRandomVar() const
 	{
 		int r = std::rand()%N;
-                return r < 26 ? 'a' + r : 'A' + r - 26;
+                return getVar(r);
 	}
 
 	char getRandomUnary() const
@@ -224,7 +236,7 @@ struct UPN
 		return std::rand()&1 ? '&' : '|';
 	}
 
-	void initRandom(int n)
+	void initRandom(int n, int keep_first_n = 0)
 	{
 		code.resize(n);
 		int count = 0;
@@ -260,6 +272,25 @@ struct UPN
 			{
 			     code[i] = getRandomBinary(); 
 			     code[i-1] = getRandomVar(); 
+			}
+		}
+
+		if(keep_first_n > 0)
+		{
+			std::vector<int> vars;
+			std::vector<bool> found(keep_first_n, false);
+			for(int i = 0; i < int(code.size()); i++)
+				if(isVar(code[i]))
+				{
+					vars.push_back(i);
+					found[varIndex(code[i])] = true;
+				}
+
+			std::shuffle(vars.begin(), vars.end(), generator);
+			for(int i = 0, j = 0; i < keep_first_n && j < int(vars.size()); i++)
+			{
+				if(!found[i])
+					code[vars[j++]] = getVar(i);
 			}
 		}
 	}
@@ -327,15 +358,20 @@ bool conditionsSelectionInit = false;
 bool UPNconditionsInit = false;
 std::vector<UPN> UPNConditions;
 
-void initUPNConditions(const std::vector<Condition>& baseConditions);
+void initUPNConditions(const std::vector<Condition>& baseConditions, int keep_first_n);
 
-void initUPNConditions(const std::vector<Condition>& base)
+void initUPNConditions(const std::vector<Condition>& base, int keep_first_n)
 {
 	if(!USE_UPN) return;
 
 	std::srand(std::time(nullptr));
 
 	int nsize = std::min(UPN::MAX_VARS, int(baseConditions.size()));
+
+	std::vector<std::string> varnames;
+	for(int i = 0; i < int(base.size()); i++)
+	    if(selectedConditions[i])
+	        varnames.push_back(base[i].name);
 
 	std::cerr << "UPC conditions:" << std::endl;
 	UPNConditions.clear();
@@ -349,21 +385,17 @@ void initUPNConditions(const std::vector<Condition>& base)
 		//int size = minSize  + (N_UPN_SIZE - minSize + 1) * i * i / (N_UPN_CONDITIONS * N_UPN_CONDITIONS);
 		int size = minSize  + int((N_UPN_SIZE - minSize + 1) * std::sqrt(double(i) / N_UPN_CONDITIONS));
 		UPN upn(nsize);
-		upn.initRandom(size);
+		upn.initRandom(size, keep_first_n);
 		upn.simplify();
 		UPNConditions.push_back(upn);
-		derivedConditions[i].name = upn.infix();
+		//derivedConditions[i].name = upn.infix();
+	        derivedConditions[i].name = upn.infix(varnames);
 		derivedConditions[i].value = false;
-		std::cerr << upn.infix() << std::endl;
+		std::cerr << derivedConditions[i].name << std::endl;
 	}
 
-	std::vector<std::string> varnames;
-	for(int i = 0; i < int(base.size()); i++)
-	    if(selectedConditions[i])
-	        varnames.push_back(base[i].name);
-
-	for(int i = 0; i < int(UPNConditions.size()); i++)
-	    derivedConditions[i].name = UPNConditions[i].infix(varnames);
+	//for(int i = 0; i < int(UPNConditions.size()); i++)
+	//    derivedConditions[i].name = UPNConditions[i].infix(varnames);
 
 	UPNconditionsInit = true;
 
@@ -1760,6 +1792,10 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    };
 		    */
 		    int baseCount = 0;
+		    int KEEP_FIRST_N = 0;
+
+	 	    AddBaseCondition(givesCheck);
+
 	 	    AddBaseCondition((depth >= 3));
 	 	    AddBaseCondition((depth >= 4));
 	 	    AddBaseCondition((depth >= 5));
@@ -1820,6 +1856,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    AddBaseCondition((r >= 2048));
 	 	    AddBaseCondition((r >= 3072));
 	 	    AddBaseCondition((r >= 4096));
+
 	 	    AddBaseCondition((ss-1)->inCheck);
 	 	    AddBaseCondition((ss-1)->ttPv);
 	 	    AddBaseCondition((ss-1)->ttHit);
@@ -1830,17 +1867,23 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    AddBaseCondition((ss-2)->ttHit);
 	 	    AddBaseCondition((ss-2)->isPvNode);
 	 	    AddBaseCondition(bool((ss-2)->excludedMove));
+	 	    AddBaseCondition((ss-3)->inCheck);
+	 	    AddBaseCondition((ss-3)->ttPv);
+	 	    AddBaseCondition((ss-3)->ttHit);
+	 	    AddBaseCondition((ss-3)->isPvNode);
+	 	    AddBaseCondition(bool((ss-3)->excludedMove));
 
 	 	    AddBaseCondition((ss->ply % 2 == 0));
 	 	    AddBaseCondition((rootDepth % 2 == 0));
+	 	    AddBaseCondition((depth % 2 == 0));
 	 	    AddBaseCondition((depth < ss->ply));
 	 	    AddBaseCondition((2 * depth < ss->ply));
 	 	    AddBaseCondition((depth < 2 * ss->ply));
 	 	    AddBaseCondition((depth + ss->ply <= rootDepth));
 	 	    AddBaseCondition((2 * (depth + ss->ply) <= rootDepth));
-	 	    AddBaseCondition((2 * depth < rootDepth));
-	 	    AddBaseCondition((3 * depth < rootDepth));
-	 	    AddBaseCondition((3 * depth < 2 * rootDepth));
+	 	    AddBaseCondition((2 * depth <= rootDepth));
+	 	    AddBaseCondition((3 * depth <= rootDepth));
+	 	    AddBaseCondition((3 * depth <= 2 * rootDepth));
 
 	 	    AddBaseCondition((type_of(movedPiece) == PAWN));
 	 	    AddBaseCondition((type_of(movedPiece) == KNIGHT));
@@ -1849,11 +1892,16 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    AddBaseCondition((type_of(movedPiece) == QUEEN));
 	 	    AddBaseCondition((type_of(movedPiece) == KING));
 
+	 	    AddBaseCondition((type_of(pos.captured_piece()) == PAWN));
+	 	    AddBaseCondition((type_of(pos.captured_piece()) == KNIGHT));
+	 	    AddBaseCondition((type_of(pos.captured_piece()) == BISHOP));
+	 	    AddBaseCondition((type_of(pos.captured_piece()) == ROOK));
+	 	    AddBaseCondition((type_of(pos.captured_piece()) == QUEEN));
+
 	 	    AddBaseCondition(cutNode);
 		    AddBaseCondition(ss->ttPv);
 		    AddBaseCondition(ss->inCheck);
 		    AddBaseCondition(capture);
-		    AddBaseCondition(givesCheck);
 		    AddBaseCondition(improving);
 		    AddBaseCondition(priorCapture);
 		    AddBaseCondition((eval > alpha));
@@ -1863,6 +1911,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseCondition((ttData.value > alpha));
 		    AddBaseCondition(ttHit);
 		    AddBaseCondition((prevSq == SQ_NONE));
+		    AddBaseCondition((move.to_sq() == (ss-2)->currentMove.from_sq()));
+		    AddBaseCondition((move.from_sq() == (ss-2)->currentMove.to_sq()));
 		    AddBaseCondition((prevSq == move.to_sq()));
 		    AddBaseCondition(more_than_one(pos.checkers()));
 		    AddBaseCondition((pos.pinners(us) & move.to_sq()));
@@ -1871,10 +1921,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 
 		    if(USE_UPN && int(baseConditions.size()) > UPN::MAX_VARS && !conditionsSelectionInit)
 		    {
-			    std::random_device rd;
-    			    std::mt19937 g(rd());
-
-			    std::shuffle(selectedConditions.begin(), selectedConditions.end(), g);
+			    std::shuffle(selectedConditions.begin() + KEEP_FIRST_N, selectedConditions.end(), generator);
                             conditionsSelectionInit = true;
 
 			    std::cerr << "Selected base conditions:" << std::endl;
@@ -1892,7 +1939,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    {
 	                    if(!UPNconditionsInit)
 			    {
-                                initUPNConditions(baseConditions);
+                                initUPNConditions(baseConditions, KEEP_FIRST_N);
 			    }
 
 			    std::vector<bool> varvalues(std::min(UPN::MAX_VARS, int(baseConditions.size())));
