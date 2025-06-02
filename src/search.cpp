@@ -61,10 +61,12 @@ constexpr bool USE_UPN = true;
 constexpr double MIN_CONDITION_FREQ = 0.0001;
 
 //constexpr int N_UPN_CONDITIONS = 16;
-constexpr int N_UPN_CONDITIONS = 100;
 //constexpr int N_UPN_CONDITIONS = 160;
 //constexpr int N_UPN_CONDITIONS = 350;
 constexpr int N_UPN_SIZE = 9;
+constexpr int N_UPN_CONDITIONS = 100;
+//constexpr int N_UPN_SIZE = 1;//9;
+//constexpr int N_UPN_CONDITIONS = 1;//100;
 
 std::vector<Condition> baseConditions;
 //std::vector<bool> selectedConditions;
@@ -1675,10 +1677,9 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-	       if(!PvNode && false)
+	       if(!PvNode && true)
                {
-                       dbg_hit_on((eval > alpha) || ((moveCount >= 36) && (moveCount >= 15)) || (ss-2)->inCheck || (moveCount >= 11), 100000);
-                       dbg_hit_on((eval > alpha) || (ss-2)->inCheck || (moveCount >= 11), 100001);
+                       dbg_hit_on((depth >= 10) && (moveCount >= 39) && ((r <= -2048) || (moveCount >= 21)), 100000);
                }
 	    /*
 	     * Hit #0: Total 65150829 Hits 61768915 Hit Rate (%) 94.8091
@@ -1860,13 +1861,19 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    */
 		    int baseCount = 0;
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
-		    int KEEP_FIRST_N = 0;
+		    int KEEP_FIRST_N = 1;
 
+		    bool C1 = (depth >= 10) && (moveCount >= 39);
+
+		    AddBaseConditionText("C1",((depth >= 10) && (moveCount >= 39)));
+		    //AddBaseConditionText("C1",((depth >= 10) && (moveCount >= 39) && ((r <= -2048) || (moveCount >= 21))));
 		    //AddBaseConditionText("test",((eval > alpha) || (ss-2)->inCheck || (moveCount >= 11)));
 /*
 		    AddBaseConditionText("cond_1", (((type_of(pos.captured_piece()) == QUEEN) || (depth >= 16)) \
 				   && !(pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()))));
 */
+		    if(true)
+		    {
 		    AddBaseCondition((eval > alpha));
 	 	    AddBaseCondition((ss-2)->inCheck);
 	 	    AddBaseCondition((moveCount >= 11));
@@ -1991,6 +1998,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseCondition((pos.pinners(us) & move.to_sq()));
 		    AddBaseCondition((pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces())));
 		    AddBaseCondition((pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces())));
+		    }
 		    
 		    
 /*
