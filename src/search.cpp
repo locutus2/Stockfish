@@ -67,10 +67,18 @@ constexpr int N_UPN_CONDITIONS = 100;
 constexpr int N_UPN_SIZE = 9;
 
 std::vector<Condition> baseConditions;
-std::vector<bool> selectedConditions;
+//std::vector<bool> selectedConditions;
 std::vector<Condition> derivedConditions;
 
 #define AddBaseCondition(c) AddBaseConditionText(#c, c)
+#define AddBaseConditionText(m, c) { int baseIndex = baseCount++; \
+	                     if(baseIndex >= int(baseConditions.size())) {\
+				     baseConditions.resize(baseIndex+1); \
+	                             baseConditions[baseIndex].name = m; \
+			     } \
+	                     baseConditions[baseIndex].value = (c); }
+
+/*
 #define AddBaseConditionText(m, c) { int baseIndex = baseCount++; \
 	                     if(baseIndex >= int(baseConditions.size())) {\
 				     baseConditions.resize(baseIndex+1); \
@@ -79,6 +87,7 @@ std::vector<Condition> derivedConditions;
 	                             selectedConditions[baseIndex] = (baseIndex < UPN::MAX_VARS); \
 			     } \
 	                     baseConditions[baseIndex].value = (c); }
+			     */
 
 std::string formatNumber(double x);
 
@@ -135,6 +144,8 @@ struct UPN
 
 	std::string code;
 	int N;
+	std::vector<int> varmap;
+	std::vector<int> reversevarmap;
 
 	UPN(int n, const std::string& c = "") : code(c), N(n) {
 		assert(n <= MAX_VARS);
@@ -144,6 +155,16 @@ struct UPN
 			std::exit(1);
 		}
 		cleanup();
+	}
+
+	void setVarMap(const std::vector<int>& vm)
+	{
+		varmap = vm;
+		reversevarmap.resize(vm.size());
+		for(int i = 0; i < int(vm.size()); i++)
+		{
+			reversevarmap[vm[i]] = i;
+		}
 	}
 
 	void simplify()
@@ -181,8 +202,8 @@ struct UPN
 
 	bool operator()(std::vector<bool> vars) const
 	{
-		assert(N == int(vars.size()));
-		if(N != int(vars.size()))
+		assert(N <= int(vars.size()));
+		if(N > int(vars.size()))
 		{
 			std::cerr << "ERROR: number of UPN variables doesn't match!" << std::endl;
 			std::exit(2);
@@ -194,6 +215,7 @@ struct UPN
 			if(isVar(code[i]))
 			{
 				int index = varIndex(code[i]);
+				index = reversevarmap[index];
 				assert(index < int(vars.size()));
 				stack.push_back(vars[index]);
 			}
@@ -341,6 +363,7 @@ struct UPN
 			{
 				int index = varIndex(code[i]);
 				assert(index < n);
+				index = reversevarmap[index];
 				if(index < int(vars.size()))
 				     stack.push_back({vars[index],false, code[i]});
 				else
@@ -391,7 +414,7 @@ struct UPN
 	}
 };
 
-bool conditionsSelectionInit = false;
+//bool conditionsSelectionInit = false;
 bool UPNconditionsInit = false;
 std::vector<UPN> UPNConditions;
 
@@ -406,9 +429,13 @@ void initUPNConditions(const std::vector<Condition>& base, int keep_first_n, int
 	int nsize = std::min(UPN::MAX_VARS, int(baseConditions.size()));
 
 	std::vector<std::string> varnames;
+	std::vector<int> varmap;
 	for(int i = 0; i < int(base.size()); i++)
-	    if(selectedConditions[i])
+	{
+	    //if(selectedConditions[i])
 	        varnames.push_back(base[i].name);
+	        varmap.push_back(i);
+	}
 
 	std::cerr << "=== > UPN conditions:" << std::endl;
 	std::cerr << "keep_first_n:" << keep_first_n << std::endl;
@@ -424,6 +451,8 @@ void initUPNConditions(const std::vector<Condition>& base, int keep_first_n, int
 		//int size = minSize  + (N_UPN_SIZE - minSize + 1) * i * i / (N_UPN_CONDITIONS * N_UPN_CONDITIONS);
 		int size = minSize  + int((N_UPN_SIZE - minSize + 1) * std::sqrt(double(i) / N_UPN_CONDITIONS));
 		UPN upn(nsize);
+		std::shuffle(varmap.begin() + keep_first_n, varmap.end(), generator);
+		upn.setVarMap(varmap);
 		upn.initRandom(size, keep_first_n, use_keeped);
 		upn.simplify();
 		UPNConditions.push_back(upn);
@@ -1970,7 +1999,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseCondition((pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces())));
 		    
 		    
-
+/*
 		    if(USE_UPN && int(baseConditions.size()) > UPN::MAX_VARS && !conditionsSelectionInit)
 		    {
 			    std::shuffle(selectedConditions.begin() + KEEP_FIRST_N, selectedConditions.end(), generator);
@@ -1981,6 +2010,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 				    if(selectedConditions[i])
 				    	std::cerr << baseConditions[i].name << std::endl;
 		    }
+		    */
 
 		    bool USE_FIXED = false;
 		    if(USE_FIXED)
@@ -1994,9 +2024,10 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
                                 initUPNConditions(baseConditions, KEEP_FIRST_N, USE_KEEPED);
 			    }
 
-			    std::vector<bool> varvalues(std::min(UPN::MAX_VARS, int(baseConditions.size())));
+			    //std::vector<bool> varvalues(std::min(UPN::MAX_VARS, int(baseConditions.size())));
+			    std::vector<bool> varvalues(int(baseConditions.size()));
 			    for(int i = 0; i < int(baseConditions.size()); i++)
-				    if(selectedConditions[i])
+				    //if(selectedConditions[i])
 				    	varvalues[i] = baseConditions[i].value;
 
 			    for(int i = 0; i < int(UPNConditions.size()); i++)
