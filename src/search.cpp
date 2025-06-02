@@ -1722,10 +1722,11 @@ moves_loop:  // When in check, search starts here
 		    bool C3 = (moveCount >= 16) && (depth >= 11) && !(r >= 2048);
 		    bool C4 = ((depth >= 13) || ttHit) && (depth >= 11) && (moveCount >= 37);
 		    bool C5 = (depth >= 16) && (r >= 4096) && (ss-1)->inCheck;
+		    bool C6 = (depth >= 3) && (moveCount >= 26) && (ss-1)->isPvNode && C1;
 
 	       if(!PvNode && true)
                {
-                       dbg_hit_on(C5, 100000);
+                       dbg_hit_on(C6, 100000);
                }
 	    /*
 	     * Hit #0: Total 65150829 Hits 61768915 Hit Rate (%) 94.8091
@@ -1907,7 +1908,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    */
 		    int baseCount = 0;
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
-		    int KEEP_FIRST_N = 5;
+		    int KEEP_FIRST_N = 6;
 
 		    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 		    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
@@ -1918,13 +1919,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseConditionText("C3",((moveCount >= 16) && (depth >= 11) && !(r >= 2048)));
 		    AddBaseConditionText("C4",(((depth >= 13) || ttHit) && (depth >= 11) && (moveCount >= 37)));
 		    AddBaseConditionText("C5",((depth >= 16) && (r >= 4096) && (ss-1)->inCheck));
+		    AddBaseConditionText("C6",((depth >= 3) && (moveCount >= 26) && (ss-1)->isPvNode && C1));
 
-		    //AddBaseConditionText("C1",((depth >= 10) && (moveCount >= 39) && ((r <= -2048) || (moveCount >= 21))));
-		    //AddBaseConditionText("test",((eval > alpha) || (ss-2)->inCheck || (moveCount >= 11)));
-/*
-		    AddBaseConditionText("cond_1", (((type_of(pos.captured_piece()) == QUEEN) || (depth >= 16)) \
-				   && !(pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()))));
-*/
 		    if(true)
 		    {
 		    AddBaseCondition(((ss-3)->reduction >= 1));
