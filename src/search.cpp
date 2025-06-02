@@ -1727,9 +1727,10 @@ moves_loop:  // When in check, search starts here
 		    bool C6 = (depth >= 3) && (moveCount >= 26) && (ss-1)->isPvNode && C1;
 		bool C7 = C5 && (moveCount >= 29) && !(pos.pinners(us) & move.to_sq());
 		bool C8 = C3 && !(((ss-2)->reduction >= 2) || (moveCount >= 19));
+		bool C9 = C1 && improving && !(3 * depth <= rootDepth) && !((ss-2)->reduction >= 3);
 	       if(!PvNode && true)
                {
-                       dbg_hit_on(C8, 100000);
+                       dbg_hit_on(C9, 100000);
                }
 	    /*
 	     * Hit #0: Total 65150829 Hits 61768915 Hit Rate (%) 94.8091
@@ -1911,7 +1912,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    */
 		    int baseCount = 0;
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
-		    int KEEP_FIRST_N = 8;
+		    int KEEP_FIRST_N = 9;
 
 		    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 		    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
@@ -1925,6 +1926,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseConditionText("C6",((depth >= 3) && (moveCount >= 26) && (ss-1)->isPvNode && C1));
 		    AddBaseConditionText("C7",(C5 && (moveCount >= 29) && !(pos.pinners(us) & move.to_sq())));
 		    AddBaseConditionText("C8",(C3 && !(((ss-2)->reduction >= 2) || (moveCount >= 19))));
+		    AddBaseConditionText("C9",(C1 && improving && !(3 * depth <= rootDepth) && !((ss-2)->reduction >= 3)));
 
 		    if(true)
 		    {
