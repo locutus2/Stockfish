@@ -1087,8 +1087,10 @@ Value Search::Worker::search(
     // Step 1. Initialize node
     Worker* thisThread = this;
     ss->inCheck        = pos.checkers();
+    bool inDoubleCheck = more_than_one(pos.checkers());
     priorCapture       = pos.captured_piece();
     Color us           = pos.side_to_move();
+    Bitboard pinnedPieces = pos.blockers_for_king(us) & pos.pieces(us);
     ss->moveCount      = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
@@ -1917,6 +1919,9 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 		    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 		    bool double_check = more_than_one(pos.checkers());
+		    bool two_last_piece_moves_aligned = move.from_sq() == (ss-2)->currentMove.to_sq() && aligned(move.from_sq(), move.to_sq(), (ss-2)->currentMove.from_sq());
+		    bool piece_becomes_pinned = pos.blockers_for_king(us) & move.to_sq();
+		    bool piece_is_pinned = pinnedPieces & move.from_sq();
 
 		    AddBaseConditionText("C1",((depth >= 10) && (moveCount >= 39)));
 		    AddBaseConditionText("C2", (!(((moveCount >= 24) || (depth >= 14)) && defend_pinned_piece) && (moveCount >= 39)));
@@ -1930,6 +1935,10 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 
 		    if(true)
 		    {
+		    AddBaseCondition(two_last_piece_moves_aligned);
+		    AddBaseCondition(piece_becomes_pinned);
+		    AddBaseCondition(piece_is_pinned);
+
 		    AddBaseCondition(((ss-3)->reduction >= 1));
 		    AddBaseCondition(((ss-3)->reduction >= 2));
 		    AddBaseCondition(((ss-3)->reduction >= 3));
@@ -2046,11 +2055,18 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    AddBaseCondition((type_of(pos.captured_piece()) == QUEEN));
 
 	 	    AddBaseCondition(cutNode);
+	 	    AddBaseCondition(allNode);
+	 	    AddBaseCondition(PvNode);
 		    AddBaseCondition(ss->ttPv);
 		    AddBaseCondition(ss->inCheck);
+		    AddBaseCondition(inDoubleCheck);
 		    AddBaseCondition(capture);
 		    AddBaseCondition(improving);
 		    AddBaseCondition(priorCapture);
+		    AddBaseCondition(ttCapture);
+		    AddBaseCondition(bool(ttData.move));
+		    AddBaseCondition(ttData.move.to_sq() == move.to_sq());
+		    AddBaseCondition(ttData.move.from_sq() == move.from_sq());
 		    AddBaseCondition((ss->staticEval > alpha));
 		    AddBaseCondition((eval < ss->staticEval));
 		    AddBaseCondition(bool(excludedMove));
