@@ -1254,6 +1254,7 @@ Value Search::Worker::search(
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
         improving             = false;
+        opponentWorsening     = false;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -1922,6 +1923,12 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 */
 		    if(true)
 		    {
+		    AddBaseCondition(((ss-3)->reduction >= 1));
+		    AddBaseCondition(((ss-3)->reduction >= 2));
+		    AddBaseCondition(((ss-3)->reduction >= 3));
+		    AddBaseCondition(((ss-2)->reduction >= 1));
+		    AddBaseCondition(((ss-2)->reduction >= 2));
+		    AddBaseCondition(((ss-2)->reduction >= 3));
 		    AddBaseCondition((priorReduction >= 1));
 		    AddBaseCondition((priorReduction >= 2));
 		    AddBaseCondition((priorReduction >= 3));
