@@ -143,7 +143,9 @@ void writeResultFile(std::string filename)
 		                    double btpr = dbg_get_hit_on(bindex+2);
                                     return atpr > btpr 
 				           || (atpr == btpr && afreq > bfreq)
-				           || (atpr == btpr && afreq == bfreq && afailow > bfailow);
+				           || (atpr == btpr && afreq == bfreq && afailow > bfailow)
+				           || (atpr == btpr && afreq == bfreq && afailow == bfailow
+							    && derivedConditions[a].name.length() < derivedConditions[b].name.length());
 				});
 	}
 
