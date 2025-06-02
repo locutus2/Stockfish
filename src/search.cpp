@@ -145,7 +145,6 @@ struct UPN
 	std::string code;
 	int N;
 	std::vector<int> varmap;
-	std::vector<int> reversevarmap;
 
 	UPN(int n, const std::string& c = "") : code(c), N(n) {
 		assert(n <= MAX_VARS);
@@ -160,11 +159,6 @@ struct UPN
 	void setVarMap(const std::vector<int>& vm)
 	{
 		varmap = vm;
-		reversevarmap.resize(vm.size());
-		for(int i = 0; i < int(vm.size()); i++)
-		{
-			reversevarmap[vm[i]] = i;
-		}
 	}
 
 	void simplify()
@@ -215,7 +209,7 @@ struct UPN
 			if(isVar(code[i]))
 			{
 				int index = varIndex(code[i]);
-				index = reversevarmap[index];
+				index = varmap[index];
 				assert(index < int(vars.size()));
 				stack.push_back(vars[index]);
 			}
@@ -363,7 +357,7 @@ struct UPN
 			{
 				int index = varIndex(code[i]);
 				assert(index < n);
-				index = reversevarmap[index];
+				index = varmap[index];
 				if(index < int(vars.size()))
 				     stack.push_back({vars[index],false, code[i]});
 				else
