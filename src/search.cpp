@@ -1046,7 +1046,7 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 968;
 
-	bool SEE_PRUNING = false;
+	bool SEE_PRUNING = true;
 	bool C = false;
 	int V = 0;
         // Step 14. Pruning at shallow depth.
@@ -1102,14 +1102,15 @@ moves_loop:  // When in check, search starts here
                         //C = pos.blockers_for_king(~us) & move.to_sq();
 			//C = pos.blockers_for_king(us) && capture && type_of(movedPiece) == KING;
 			//C = pos.blockers_for_king(~us) & move.from_sq();
-			C = pos.blockers_for_king(~us) & move.from_sq() && capture;
+			//C = pos.blockers_for_king(~us) & move.from_sq() && capture;
+			C = cutNode;
 			//C = pos.blockers_for_king(~us) & move.from_sq() && givesCheck && capture;
 			//C = givesCheck && capture;
 			//C = givesCheck;
 			//C = capture;
 			//C = type_of(movedPiece) == KNIGHT 
 			   // && more_than_one(attacks_bb<KNIGHT>(move.to_sq()) & pos.pieces(~us, KING, ROOK, QUEEN));
-			C = pinned_pieces_attacker & move.to_sq(); 
+			//C = pinned_pieces_attacker & move.to_sq(); 
 			C = C && SEE_PRUNING; 
 			V =  -158 * depth - seeHist;
                         if(!C) continue;
