@@ -1719,7 +1719,7 @@ moves_loop:  // When in check, search starts here
 	       if(!PvNode && true)
                {
                        dbg_hit_on(
-				       !(((moveCount >= 24) || (depth >= 14)) && (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()))) && (moveCount >= 39)
+				       ((depth >= 13) || ttHit) && (depth >= 11) && (moveCount >= 37)
 				       , 100000);
                }
 	    /*
@@ -1902,15 +1902,17 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    */
 		    int baseCount = 0;
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
-		    int KEEP_FIRST_N = 3;
+		    int KEEP_FIRST_N = 4;
 
 		    bool C1 = (depth >= 10) && (moveCount >= 39);
 		    bool C2 = !(((moveCount >= 24) || (depth >= 14)) && (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()))) && (moveCount >= 39);
 		    bool C3 = (moveCount >= 16) && (depth >= 11) && !(r >= 2048);
+		    bool C4 = ((depth >= 13) || ttHit) && (depth >= 11) && (moveCount >= 37);
 
 		    AddBaseConditionText("C1",((depth >= 10) && (moveCount >= 39)));
 		    AddBaseConditionText("C2", (!(((moveCount >= 24) || (depth >= 14)) && (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()))) && (moveCount >= 39)));
 		    AddBaseConditionText("C3",((moveCount >= 16) && (depth >= 11) && !(r >= 2048)));
+		    AddBaseConditionText("C4",(((depth >= 13) || ttHit) && (depth >= 11) && (moveCount >= 37)));
 
 		    //AddBaseConditionText("C1",((depth >= 10) && (moveCount >= 39) && ((r <= -2048) || (moveCount >= 21))));
 		    //AddBaseConditionText("test",((eval > alpha) || (ss-2)->inCheck || (moveCount >= 11)));
