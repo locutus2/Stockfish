@@ -60,6 +60,7 @@ std::mt19937 generator(rd());
 constexpr bool USE_UPN = true;
 constexpr double MIN_CONDITION_FREQ = 0.0001;
 
+constexpr bool PARETO = true;
 //constexpr int N_UPN_CONDITIONS = 16;
 //constexpr int N_UPN_CONDITIONS = 160;
 //constexpr int N_UPN_CONDITIONS = 350;
@@ -124,13 +125,49 @@ void writeResultFile(std::string filename)
 		file << (i ? SEP : "") << header[i];
 	file << std::endl;
 
+	std::vector<int> dataIndex;
+	for(int i = 0; i < int(derivedConditions.size()); i++)
+		dataIndex.push_back(i);
+
+	if (PARETO)
+	{
+		std::sort(dataIndex.begin(), dataIndex.end(), 
+				[&](int a, int b) {
+		                    int aindex = 10000 + 10 * a;
+		                    int bindex = 10000 + 10 * b;
+		                    double afreq = dbg_get_hit_on(aindex);
+		                    double afailow = dbg_get_hit_on(aindex+1);
+		                    double atpr = dbg_get_hit_on(aindex+2);
+		                    double bfreq = dbg_get_hit_on(bindex);
+		                    double bfailow = dbg_get_hit_on(bindex+1);
+		                    double btpr = dbg_get_hit_on(bindex+2);
+                                    return atpr > btpr 
+				           || (atpr == btpr && afreq > bfreq)
+				           || (atpr == btpr && afreq == bfreq && afailow > bfailow);
+				});
+	}
+
+        double prevfreq;
+	double prevfaillow;
+	double prevtpr;
 	for(int i = 0; i < int(derivedConditions.size()); i++)
 	{
-		int index = 10000 + 10 * i;
+		int index = 10000 + 10 * dataIndex[i];
 		double freq = dbg_get_hit_on(index);
                 if(freq < MIN_CONDITION_FREQ) continue;
 
-		file << derivedConditions[i].name
+		double faillow = dbg_get_hit_on(index+1);
+		double tpr = dbg_get_hit_on(index+2);
+
+		bool skip = PARETO && i > 0 && prevtpr >= tpr && prevfreq >= freq && prevfaillow >= faillow;
+	
+		if(skip) continue;
+
+	        prevfreq = freq;
+	        prevfaillow = faillow;
+	        prevtpr = tpr;
+
+		file << derivedConditions[dataIndex[i]].name
 			<< SEP << formatNumber(dbg_get_hit_on(index))
 			<< SEP << formatNumber(dbg_get_hit_on(index+1))
 			<< SEP << formatNumber(dbg_get_hit_on(index+2))
