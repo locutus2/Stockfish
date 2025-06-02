@@ -26,6 +26,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
+#include <iomanip>
 #include <initializer_list>
 #include <iostream>
 #include <list>
@@ -90,12 +91,21 @@ std::string formatNumber(double x)
 
 void writeResultFile(std::string filename)
 {
+	// Get current time
+    std::time_t now = std::time(nullptr);
+    std::tm* localTime = std::localtime(&now);
+
+    // Format the timestamp
+    std::ostringstream timestamp;
+    timestamp << std::put_time(localTime, "%Y%m%d_%H%M%S");
+
 	const std::string path = "/mnt/c/Users/cng/Documents/";
 	std::string SEP = ";";
 	std::vector<std::string> header = {"Condition","Frequency","Correct(fail low)","True positive rate","Accuracy"};
 
 	if(filename == "")
-	    filename = std::string("lmr_condition_results_") + std::to_string((int)std::time(nullptr)) + ".csv";
+	    filename = std::string("lmr_condition_results_") + timestamp.str() + ".csv";
+	    //filename = std::string("lmr_condition_results_") + std::to_string((int)std::time(nullptr)) + ".csv";
 
 	std::ofstream file(path + filename);
 	
