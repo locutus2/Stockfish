@@ -63,7 +63,7 @@ constexpr double MIN_CONDITION_FREQ = 0.0001;
 constexpr int N_UPN_CONDITIONS = 100;
 //constexpr int N_UPN_CONDITIONS = 160;
 //constexpr int N_UPN_CONDITIONS = 350;
-constexpr int N_UPN_SIZE = 12;
+constexpr int N_UPN_SIZE = 9;
 
 std::vector<Condition> baseConditions;
 std::vector<bool> selectedConditions;
@@ -278,23 +278,35 @@ struct UPN
 
 		if(keep_first_n > 0)
 		{
+			std::cerr << "initRandom: start: " << infix() << std::endl;
 			bool foundAny = false;
 			std::vector<int> vars;
-			std::vector<bool> found(keep_first_n, false);
+			std::vector<bool> found(N, false);
+			std::cerr << "initRandom: check keep_first_n=" << keep_first_n << std::endl;
 			for(int i = 0; i < int(code.size()); i++)
 				if(isVar(code[i]))
 				{
 					vars.push_back(i);
-					found[varIndex(code[i])] = true;
-					foundAny = true;
-					if(!keep_all) break;
+					int index = varIndex(code[i]);
+					found[index] = true;
+					if(index < keep_first_n) 
+					{
+						foundAny = true;
+			                        std::cerr << "initRandom: found=" << index << std::endl;
+					        if(!keep_all) break;
+					}
 				}
 
 			if(!keep_all)
 			{
 				if(!foundAny)
 				{
-					code[vars[std::rand()%vars.size()]] = getVar(std::rand()%keep_first_n);
+					int pos = vars[std::rand()%vars.size()];
+					char oldChar = code[pos];
+					char newChar = getVar(std::rand()%keep_first_n);
+
+			                std::cerr << "initRandom: replace " << oldChar << " => " << newChar << std::endl;
+					code[pos] = newChar;
 				}
 			}
 			else
@@ -306,6 +318,7 @@ struct UPN
 						code[vars[j++]] = getVar(i);
 				}
 			}
+			std::cerr << "initRandom: end: " << infix() << std::endl;
 		}
 	}
 
@@ -387,7 +400,9 @@ void initUPNConditions(const std::vector<Condition>& base, int keep_first_n, boo
 	    if(selectedConditions[i])
 	        varnames.push_back(base[i].name);
 
-	std::cerr << "UPC conditions:" << std::endl;
+	std::cerr << "=== > UPN conditions:" << std::endl;
+	std::cerr << "keep_first_n:" << keep_first_n << std::endl;
+	std::cerr << "keep_all:" << keep_all << std::endl;
 	UPNConditions.clear();
 	derivedConditions.resize(N_UPN_CONDITIONS);
 	//int minSize = (N_UPN_SIZE+1) / 2 ;
@@ -1627,6 +1642,11 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
+	       if(!PvNode && false)
+               {
+                       dbg_hit_on((eval > alpha) || ((moveCount >= 36) && (moveCount >= 15)) || (ss-2)->inCheck || (moveCount >= 11), 100000);
+                       dbg_hit_on((eval > alpha) || (ss-2)->inCheck || (moveCount >= 11), 100001);
+               }
 	    /*
 	     * Hit #0: Total 65150829 Hits 61768915 Hit Rate (%) 94.8091
 Hit #100: Total 38862095 Hits 37877027 Hit Rate (%) 97.4652
@@ -1808,10 +1828,16 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    int baseCount = 0;
 		    bool KEEP_ALL = false;
 		    int KEEP_FIRST_N = 0;
+
+		    //AddBaseConditionText("test",((eval > alpha) || (ss-2)->inCheck || (moveCount >= 11)));
 /*
 		    AddBaseConditionText("cond_1", (((type_of(pos.captured_piece()) == QUEEN) || (depth >= 16)) \
 				   && !(pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()))));
 */
+		    AddBaseCondition((eval > alpha));
+	 	    AddBaseCondition((ss-2)->inCheck);
+	 	    AddBaseCondition((moveCount >= 11));
+		    
 	 	    AddBaseCondition(givesCheck);
 	 	    AddBaseCondition((depth >= 3));
 	 	    AddBaseCondition((depth >= 4));
@@ -1836,7 +1862,6 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    AddBaseCondition((moveCount >= 8));
 	 	    AddBaseCondition((moveCount >= 9));
 	 	    AddBaseCondition((moveCount >= 10));
-	 	    AddBaseCondition((moveCount >= 11));
 	 	    AddBaseCondition((moveCount >= 12));
 	 	    AddBaseCondition((moveCount >= 13));
 	 	    AddBaseCondition((moveCount >= 14));
@@ -1879,7 +1904,6 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    AddBaseCondition((ss-1)->ttHit);
 	 	    AddBaseCondition((ss-1)->isPvNode);
 	 	    AddBaseCondition(bool((ss-1)->excludedMove));
-	 	    AddBaseCondition((ss-2)->inCheck);
 	 	    AddBaseCondition((ss-2)->ttPv);
 	 	    AddBaseCondition((ss-2)->ttHit);
 	 	    AddBaseCondition((ss-2)->isPvNode);
@@ -1921,7 +1945,6 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseCondition(capture);
 		    AddBaseCondition(improving);
 		    AddBaseCondition(priorCapture);
-		    AddBaseCondition((eval > alpha));
 		    AddBaseCondition((ss->staticEval > alpha));
 		    AddBaseCondition((eval < ss->staticEval));
 		    AddBaseCondition(bool(excludedMove));
@@ -1935,6 +1958,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseCondition((pos.pinners(us) & move.to_sq()));
 		    AddBaseCondition((pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces())));
 		    AddBaseCondition((pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces())));
+		    
+		    
 
 		    if(USE_UPN && int(baseConditions.size()) > UPN::MAX_VARS && !conditionsSelectionInit)
 		    {
