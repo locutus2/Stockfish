@@ -1909,8 +1909,12 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
 		    int KEEP_FIRST_N = 5;
 
+		    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
+		    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
+		    bool double_check = more_than_one(pos.checkers());
+
 		    AddBaseConditionText("C1",((depth >= 10) && (moveCount >= 39)));
-		    AddBaseConditionText("C2", (!(((moveCount >= 24) || (depth >= 14)) && (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()))) && (moveCount >= 39)));
+		    AddBaseConditionText("C2", (!(((moveCount >= 24) || (depth >= 14)) && defend_pinned_piece) && (moveCount >= 39)));
 		    AddBaseConditionText("C3",((moveCount >= 16) && (depth >= 11) && !(r >= 2048)));
 		    AddBaseConditionText("C4",(((depth >= 13) || ttHit) && (depth >= 11) && (moveCount >= 37)));
 		    AddBaseConditionText("C5",((depth >= 16) && (r >= 4096) && (ss-1)->inCheck));
@@ -2053,10 +2057,10 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseCondition((move.to_sq() == (ss-2)->currentMove.from_sq()));
 		    AddBaseCondition((move.from_sq() == (ss-2)->currentMove.to_sq()));
 		    AddBaseCondition((prevSq == move.to_sq()));
-		    AddBaseCondition(more_than_one(pos.checkers()));
+		    AddBaseCondition(double_check);
 		    AddBaseCondition((pos.pinners(us) & move.to_sq()));
-		    AddBaseCondition((pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces())));
-		    AddBaseCondition((pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces())));
+		    AddBaseCondition(defend_pinned_piece);
+		    AddBaseCondition(attack_pinned_piece);
 		    }
 		    
 		    
