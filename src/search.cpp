@@ -237,7 +237,7 @@ struct UPN
 		return std::rand()&1 ? '&' : '|';
 	}
 
-	void initRandom(int n, int keep_first_n = 0)
+	void initRandom(int n, int keep_first_n = 0, bool keep_all = false)
 	{
 		code.resize(n);
 		int count = 0;
@@ -278,6 +278,7 @@ struct UPN
 
 		if(keep_first_n > 0)
 		{
+			bool foundAny = false;
 			std::vector<int> vars;
 			std::vector<bool> found(keep_first_n, false);
 			for(int i = 0; i < int(code.size()); i++)
@@ -285,13 +286,25 @@ struct UPN
 				{
 					vars.push_back(i);
 					found[varIndex(code[i])] = true;
+					foundAny = true;
+					if(!keep_all) break;
 				}
 
-			std::shuffle(vars.begin(), vars.end(), generator);
-			for(int i = 0, j = 0; i < keep_first_n && j < int(vars.size()); i++)
+			if(!keep_all)
 			{
-				if(!found[i])
-					code[vars[j++]] = getVar(i);
+				if(!foundAny)
+				{
+					code[vars[std::rand()%vars.size()]] = getVar(std::rand()%keep_first_n);
+				}
+			}
+			else
+			{
+				std::shuffle(vars.begin(), vars.end(), generator);
+				for(int i = 0, j = 0; i < keep_first_n && j < int(vars.size()); i++)
+				{
+					if(!found[i])
+						code[vars[j++]] = getVar(i);
+				}
 			}
 		}
 	}
@@ -359,9 +372,9 @@ bool conditionsSelectionInit = false;
 bool UPNconditionsInit = false;
 std::vector<UPN> UPNConditions;
 
-void initUPNConditions(const std::vector<Condition>& baseConditions, int keep_first_n);
+void initUPNConditions(const std::vector<Condition>& baseConditions, int keep_first_n, bool keep_all);
 
-void initUPNConditions(const std::vector<Condition>& base, int keep_first_n)
+void initUPNConditions(const std::vector<Condition>& base, int keep_first_n, bool keep_all)
 {
 	if(!USE_UPN) return;
 
@@ -386,7 +399,7 @@ void initUPNConditions(const std::vector<Condition>& base, int keep_first_n)
 		//int size = minSize  + (N_UPN_SIZE - minSize + 1) * i * i / (N_UPN_CONDITIONS * N_UPN_CONDITIONS);
 		int size = minSize  + int((N_UPN_SIZE - minSize + 1) * std::sqrt(double(i) / N_UPN_CONDITIONS));
 		UPN upn(nsize);
-		upn.initRandom(size, keep_first_n);
+		upn.initRandom(size, keep_first_n, keep_all);
 		upn.simplify();
 		UPNConditions.push_back(upn);
 		//derivedConditions[i].name = upn.infix();
@@ -1793,6 +1806,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    };
 		    */
 		    int baseCount = 0;
+		    bool KEEP_ALL = false;
 		    int KEEP_FIRST_N = 0;
 /*
 		    AddBaseConditionText("cond_1", (((type_of(pos.captured_piece()) == QUEEN) || (depth >= 16)) \
@@ -1942,7 +1956,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    {
 	                    if(!UPNconditionsInit)
 			    {
-                                initUPNConditions(baseConditions, KEEP_FIRST_N);
+                                initUPNConditions(baseConditions, KEEP_FIRST_N, KEEP_ALL);
 			    }
 
 			    std::vector<bool> varvalues(std::min(UPN::MAX_VARS, int(baseConditions.size())));
