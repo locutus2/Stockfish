@@ -59,6 +59,7 @@ std::mt19937 generator(rd());
 
 constexpr bool USE_UPN = true;
 constexpr double MIN_CONDITION_FREQ = 0.0001;
+constexpr double MAX_CONDITION_FREQ = 0.5;
 
 constexpr bool PARETO = true;
 //constexpr int N_UPN_CONDITIONS = 16;
@@ -157,6 +158,7 @@ void writeResultFile(std::string filename)
 		int index = 10000 + 10 * dataIndex[i];
 		double freq = dbg_get_hit_on(index);
                 if(freq < MIN_CONDITION_FREQ) continue;
+                if(freq > MAX_CONDITION_FREQ) continue;
 
 		double faillow = dbg_get_hit_on(index+1);
 		double tpr = dbg_get_hit_on(index+2);
@@ -1723,10 +1725,11 @@ moves_loop:  // When in check, search starts here
 		    bool C4 = ((depth >= 13) || ttHit) && (depth >= 11) && (moveCount >= 37);
 		    bool C5 = (depth >= 16) && (r >= 4096) && (ss-1)->inCheck;
 		    bool C6 = (depth >= 3) && (moveCount >= 26) && (ss-1)->isPvNode && C1;
-
+		bool C7 = C5 && (moveCount >= 29) && !(pos.pinners(us) & move.to_sq());
+		bool C8 = C3 && !(((ss-2)->reduction >= 2) || (moveCount >= 19));
 	       if(!PvNode && true)
                {
-                       dbg_hit_on(C6, 100000);
+                       dbg_hit_on(C8, 100000);
                }
 	    /*
 	     * Hit #0: Total 65150829 Hits 61768915 Hit Rate (%) 94.8091
@@ -1908,7 +1911,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    */
 		    int baseCount = 0;
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
-		    int KEEP_FIRST_N = 6;
+		    int KEEP_FIRST_N = 8;
 
 		    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 		    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
@@ -1920,6 +1923,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseConditionText("C4",(((depth >= 13) || ttHit) && (depth >= 11) && (moveCount >= 37)));
 		    AddBaseConditionText("C5",((depth >= 16) && (r >= 4096) && (ss-1)->inCheck));
 		    AddBaseConditionText("C6",((depth >= 3) && (moveCount >= 26) && (ss-1)->isPvNode && C1));
+		    AddBaseConditionText("C7",(C5 && (moveCount >= 29) && !(pos.pinners(us) & move.to_sq())));
+		    AddBaseConditionText("C8",(C3 && !(((ss-2)->reduction >= 2) || (moveCount >= 19))));
 
 		    if(true)
 		    {
