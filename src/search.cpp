@@ -1777,6 +1777,11 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
+	    //bool PREDICT_FAIL_LOW = true;
+	    bool PREDICT_FAIL_LOW = false;
+	    bool CC = true;//!PvNode;
+	    bool CP = CC;
+/*
 		    bool C1 = (depth >= 10) && (moveCount >= 39);
 		    bool C2 = !(((moveCount >= 24) || (depth >= 14)) && (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()))) && (moveCount >= 39);
 		    bool C3 = (moveCount >= 16) && (depth >= 11) && !(r >= 2048);
@@ -1794,9 +1799,14 @@ moves_loop:  // When in check, search starts here
 		bool C15 = (!priorCapture && C3) || ((2 * (depth + ss->ply) <= rootDepth) && (depth >= 12));
 		bool C16 = C12 && (moveCount >= 19);
 		bool C17 = ((moveCount >= 26) == (improving == opponentWorsening)) && C14 && ((3 * depth <= rootDepth) || (depth >= 3));
-	       if(!PvNode && true)
+		*/
+
+		bool C1 = (moveCount >= 39) || (moveCount < 4);
+
+	       if(CP && true)
                {
                        dbg_hit_on(C1, 100001);
+		       /*
                        dbg_hit_on(C2, 100002);
                        dbg_hit_on(C3, 100003);
                        dbg_hit_on(C4, 100004);
@@ -1813,6 +1823,7 @@ moves_loop:  // When in check, search starts here
                        dbg_hit_on(C15, 100015);
                        dbg_hit_on(C16, 100016);
                        dbg_hit_on(C17, 100017);
+		       */
                }
 	    /*
 	     * Hit #0: Total 65150829 Hits 61768915 Hit Rate (%) 94.8091
@@ -1883,10 +1894,6 @@ Hit #410: Total 3381914 Hits 2959090 Hit Rate (%) 87.4975
 
 #define SETNAME(x) (name.push_back(#x), (x))
 
-	    //bool PREDICT_FAIL_LOW = true;
-	    bool PREDICT_FAIL_LOW = false;
-	    bool CC = true;//!PvNode;
-	    bool CP = CC;
 	    std::vector<bool> C = {
 		    SETNAME(cutNode),
 		    SETNAME(ss->ttPv),
@@ -2028,6 +2035,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
 		    int KEEP_FIRST_N = 0;
+
+		    AddBaseConditionText("C1",((moveCount >= 39) || (moveCount < 4)));
 
 		    if(true)
 		    {
@@ -2362,7 +2371,6 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    }
 
 		    sum /= N;
-
 
 		    for(int i = 0; i < int(C.size()); i++)
 		    {
