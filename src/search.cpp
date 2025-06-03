@@ -65,9 +65,9 @@ constexpr bool PARETO = true;
 //constexpr int N_UPN_CONDITIONS = 16;
 //constexpr int N_UPN_CONDITIONS = 160;
 //constexpr int N_UPN_CONDITIONS = 350;
-constexpr int N_UPN_SIZE = 9;
+//constexpr int N_UPN_SIZE = 9;
 constexpr int N_UPN_CONDITIONS = 100;
-//constexpr int N_UPN_SIZE = 1;//9;
+constexpr int N_UPN_SIZE = 4;//9;
 //constexpr int N_UPN_CONDITIONS = 1;//100;
 
 std::vector<Condition> baseConditions;
@@ -536,8 +536,8 @@ void initUPNConditions(const std::vector<Condition>& base, int keep_first_n, int
 	std::cerr << "use_keeped:" << use_keeped << std::endl;
 	UPNConditions.clear();
 	derivedConditions.resize(N_UPN_CONDITIONS);
-	//int minSize = (N_UPN_SIZE+1) / 2 ;
-	int minSize = (N_UPN_SIZE+2) / 3 ;
+	int minSize = (N_UPN_SIZE-1) / 2 ;
+	//int minSize = (N_UPN_SIZE+2) / 3 ;
 	for(int i = 0; i < N_UPN_CONDITIONS; i++)
 	{
 		//int size = 1 + N_UPN_SIZE * i / N_UPN_CONDITIONS;
@@ -1778,8 +1778,8 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-	    //bool PREDICT_FAIL_LOW = true;
-	    bool PREDICT_FAIL_LOW = false;
+	    bool PREDICT_FAIL_LOW = true;
+	    //bool PREDICT_FAIL_LOW = false;
 	    bool CC = true;//!PvNode;
 	    bool CP = CC;
 
@@ -1828,6 +1828,7 @@ moves_loop:  // When in check, search starts here
 		bool C5 = (((moveCount >= 19) && captured_pawn) == (moveCount < 36)) && attack_pinned_piece;
 		bool C6 = !((((depth >= 13) ^ (moveCount >= 22)) && (moveCount >= 10)) || (moveCount < 35));
 		bool C7 = ((moveCount < 32) ^ (depth < 16)) && (moveCount >= 31) && (r < 0);
+		bool C8 = opponentWorsening && (moveCount >= 39) && (depth >= 14) && (depth < 16);
 
 	       if(CP && true)
                {
@@ -1838,8 +1839,8 @@ moves_loop:  // When in check, search starts here
                        dbg_hit_on(C5, 100005);
                        dbg_hit_on(C6, 100006);
                        dbg_hit_on(C7, 100007);
-		       /*
                        dbg_hit_on(C8, 100008);
+		       /*
                        dbg_hit_on(C9, 100009);
                        dbg_hit_on(C10, 100010);
                        dbg_hit_on(C11, 100011);
@@ -2055,6 +2056,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
 		    int KEEP_FIRST_N = 0;
 
+		    /*
 		    //AddBaseConditionText("C1",(((moveCount >= 31) && (priorReduction >= 2)) || (captured_bishop && (moveCount >= 30))));
 		    //AddBaseConditionText("C2",piece_is_pinned);
 		    AddBaseConditionText("C3",(captured_bishop && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10)));
@@ -2062,6 +2064,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseConditionText("C5",((((moveCount >= 19) && captured_pawn) == (moveCount < 36)) && attack_pinned_piece));
 		    AddBaseConditionText("C6",(!((((depth >= 13) ^ (moveCount >= 22)) && (moveCount >= 10)) || (moveCount < 35))));
 		    AddBaseConditionText("C7",(((moveCount < 32) ^ (depth < 16)) && (moveCount >= 31) && (r < 0)));
+		    AddBaseConditionText("C8",(opponentWorsening && (moveCount >= 39) && (depth >= 14) && (depth < 16)));
+		    */
 
 		    // isPvNode is currently broken so ignore it
 	 	    //AddBaseCondition((ss-1)->isPvNode);
