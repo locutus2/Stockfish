@@ -150,9 +150,9 @@ void writeResultFile(std::string filename)
 				});
 	}
 
-        double prevfreq;
-	double prevfaillow;
-	double prevtpr;
+        //double prevfreq;
+	//double prevfaillow;
+	//double prevtpr;
 	for(int i = 0; i < int(derivedConditions.size()); i++)
 	{
 		int index = 10000 + 10 * dataIndex[i];
@@ -163,13 +163,24 @@ void writeResultFile(std::string filename)
 		double faillow = dbg_get_hit_on(index+1);
 		double tpr = dbg_get_hit_on(index+2);
 
-		bool skip = PARETO && i > 0 && prevtpr >= tpr && prevfreq >= freq && prevfaillow >= faillow;
-	
+		//bool skip = PARETO && i > 0 && prevtpr >= tpr && prevfreq >= freq && prevfaillow >= faillow;
+                bool skip = false;
+	        if(PARETO)
+		{
+			for(int j = 0; j < i && !skip; j++)
+			{
+		            int index2 = 10000 + 10 * dataIndex[j];
+		            double prevfreq = dbg_get_hit_on(index2);
+		            double prevfaillow = dbg_get_hit_on(index2+1);
+		            double prevtpr = dbg_get_hit_on(index2+2);
+		            skip = prevtpr >= tpr && prevfreq >= freq && prevfaillow >= faillow;
+			}
+		}
 		if(skip) continue;
 
-	        prevfreq = freq;
-	        prevfaillow = faillow;
-	        prevtpr = tpr;
+	        //prevfreq = freq;
+	        //prevfaillow = faillow;
+	        //prevtpr = tpr;
 
 		file << derivedConditions[dataIndex[i]].name
 			<< SEP << formatNumber(dbg_get_hit_on(index))
