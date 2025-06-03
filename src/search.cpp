@@ -1827,6 +1827,7 @@ moves_loop:  // When in check, search starts here
 		bool C4 = (((ss-3)->inCheck && (prevSq == move.to_sq())) == (r >= 3072)) && (moveCount >= 38);
 		bool C5 = (((moveCount >= 19) && captured_pawn) == (moveCount < 36)) && attack_pinned_piece;
 		bool C6 = !((((depth >= 13) ^ (moveCount >= 22)) && (moveCount >= 10)) || (moveCount < 35));
+		bool C7 = ((moveCount < 32) ^ (depth < 16)) && (moveCount >= 31) && (r < 0);
 
 	       if(CP && true)
                {
@@ -1836,8 +1837,8 @@ moves_loop:  // When in check, search starts here
                        dbg_hit_on(C4, 100004);
                        dbg_hit_on(C5, 100005);
                        dbg_hit_on(C6, 100006);
-		       /*
                        dbg_hit_on(C7, 100007);
+		       /*
                        dbg_hit_on(C8, 100008);
                        dbg_hit_on(C9, 100009);
                        dbg_hit_on(C10, 100010);
@@ -2054,12 +2055,13 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
 		    int KEEP_FIRST_N = 0;
 
-		    AddBaseConditionText("C1",(((moveCount >= 31) && (priorReduction >= 2)) || (captured_bishop && (moveCount >= 30))));
+		    //AddBaseConditionText("C1",(((moveCount >= 31) && (priorReduction >= 2)) || (captured_bishop && (moveCount >= 30))));
 		    //AddBaseConditionText("C2",piece_is_pinned);
 		    AddBaseConditionText("C3",(captured_bishop && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10)));
 		    AddBaseConditionText("C4",((((ss-3)->inCheck && (prevSq == move.to_sq())) == (r >= 3072)) && (moveCount >= 38)));
 		    AddBaseConditionText("C5",((((moveCount >= 19) && captured_pawn) == (moveCount < 36)) && attack_pinned_piece));
 		    AddBaseConditionText("C6",(!((((depth >= 13) ^ (moveCount >= 22)) && (moveCount >= 10)) || (moveCount < 35))));
+		    AddBaseConditionText("C7",(((moveCount < 32) ^ (depth < 16)) && (moveCount >= 31) && (r < 0)));
 
 		    // isPvNode is currently broken so ignore it
 	 	    //AddBaseCondition((ss-1)->isPvNode);
