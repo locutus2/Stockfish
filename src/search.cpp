@@ -147,7 +147,7 @@ void writeResultFile(std::string filename)
 		                    double btpr = dbg_get_hit_on(bindex+4);
                                     return atpr > btpr 
 				           || (atnr == btnr && afreq > bfreq)
-				           || (atnr == btnr && atpr == btpr && afreq > bailow)
+				           || (atnr == btnr && atpr == btpr && afreq > bfreq)
 				           || (atnr == btnr && atpr == btpr && afreq == bfreq
 							    && derivedConditions[a].name.length() < derivedConditions[b].name.length());
                                     //return atpr > btpr 
@@ -181,7 +181,7 @@ void writeResultFile(std::string filename)
 			{
 		            int index2 = 10000 + 10 * dataIndex[j];
 		            double prevfreq = dbg_get_hit_on(index2);
-		            double prevfaillow = dbg_get_hit_on(index2+1);
+		            //double prevppv = dbg_get_hit_on(index2+1);
 		            double prevtnr = dbg_get_hit_on(index2+2);
 		            double prevtpr = dbg_get_hit_on(index2+4);
 		            skip = prevtnr >= tnr && prevfreq >= freq && prevtpr >= tpr;
