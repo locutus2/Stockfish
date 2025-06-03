@@ -1815,6 +1815,7 @@ moves_loop:  // When in check, search starts here
 		bool C3 = (type_of(pos.captured_piece()) == BISHOP) && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10);
 		bool C4 = (((ss-3)->inCheck && (prevSq == move.to_sq())) == (r >= 3072)) && (moveCount >= 38);
 		bool C5 = (((moveCount >= 19) && (type_of(pos.captured_piece()) == PAWN)) == (moveCount < 36)) && attack_pinned_piece;
+		bool C6 = !((((depth >= 13) ^ (moveCount >= 22)) && (moveCount >= 10)) || (moveCount < 35));
 
 	       if(CP && true)
                {
@@ -1823,8 +1824,8 @@ moves_loop:  // When in check, search starts here
                        dbg_hit_on(C3, 100003);
                        dbg_hit_on(C4, 100004);
                        dbg_hit_on(C5, 100005);
-		       /*
                        dbg_hit_on(C6, 100006);
+		       /*
                        dbg_hit_on(C7, 100007);
                        dbg_hit_on(C8, 100008);
                        dbg_hit_on(C9, 100009);
@@ -2047,6 +2048,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseConditionText("C3",((type_of(pos.captured_piece()) == BISHOP) && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10)));
 		    AddBaseConditionText("C4",((((ss-3)->inCheck && (prevSq == move.to_sq())) == (r >= 3072)) && (moveCount >= 38)));
 		    AddBaseConditionText("C5",((((moveCount >= 19) && (type_of(pos.captured_piece()) == PAWN)) == (moveCount < 36)) && attack_pinned_piece));
+		    AddBaseConditionText("C6",(!((((depth >= 13) ^ (moveCount >= 22)) && (moveCount >= 10)) || (moveCount < 35))));
 
 		    // isPvNode is currently broken so ignore it
 	 	    //AddBaseCondition((ss-1)->isPvNode);
