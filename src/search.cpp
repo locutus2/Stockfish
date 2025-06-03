@@ -1783,6 +1783,17 @@ moves_loop:  // When in check, search starts here
 	    bool CC = true;//!PvNode;
 	    bool CP = CC;
 
+	    bool pawn_moved = type_of(movedPiece) == PAWN;
+	    bool knight_moved = type_of(movedPiece) == KNIGHT;
+	    bool bishop_moved = type_of(movedPiece) == BISHOP;
+	    bool rook_moved = type_of(movedPiece) == ROOK;
+	    bool queen_moved = type_of(movedPiece) == QUEEN;
+	    bool king_moved = type_of(movedPiece) == KING;
+	    bool captured_pawn = type_of(pos.captured_piece()) == PAWN;
+	    bool captured_knight = type_of(pos.captured_piece()) == KNIGHT;
+	    bool captured_bishop = type_of(pos.captured_piece()) == BISHOP;
+	    bool captured_rook = type_of(pos.captured_piece()) == ROOK;
+	    bool captured_queen = type_of(pos.captured_piece()) == QUEEN;
 	    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 	    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 	    bool double_check = more_than_one(pos.checkers());
@@ -1810,11 +1821,11 @@ moves_loop:  // When in check, search starts here
 		bool C17 = ((moveCount >= 26) == (improving == opponentWorsening)) && C14 && ((3 * depth <= rootDepth) || (depth >= 3));
 		*/
 
-		bool C1 = ((moveCount >= 31) && (priorReduction >= 2)) || ((type_of(pos.captured_piece()) == BISHOP) && (moveCount >= 30));
+		bool C1 = ((moveCount >= 31) && (priorReduction >= 2)) || (captured_bishop && (moveCount >= 30));
 		bool C2 = piece_is_pinned;
-		bool C3 = (type_of(pos.captured_piece()) == BISHOP) && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10);
+		bool C3 = captured_bishop && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10);
 		bool C4 = (((ss-3)->inCheck && (prevSq == move.to_sq())) == (r >= 3072)) && (moveCount >= 38);
-		bool C5 = (((moveCount >= 19) && (type_of(pos.captured_piece()) == PAWN)) == (moveCount < 36)) && attack_pinned_piece;
+		bool C5 = (((moveCount >= 19) && captured_pawn) == (moveCount < 36)) && attack_pinned_piece;
 		bool C6 = !((((depth >= 13) ^ (moveCount >= 22)) && (moveCount >= 10)) || (moveCount < 35));
 
 	       if(CP && true)
@@ -2043,11 +2054,11 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
 		    int KEEP_FIRST_N = 0;
 
-		    AddBaseConditionText("C1",(((moveCount >= 31) && (priorReduction >= 2)) || ((type_of(pos.captured_piece()) == BISHOP) && (moveCount >= 30))));
+		    AddBaseConditionText("C1",(((moveCount >= 31) && (priorReduction >= 2)) || (captured_bishop && (moveCount >= 30))));
 		    //AddBaseConditionText("C2",piece_is_pinned);
-		    AddBaseConditionText("C3",((type_of(pos.captured_piece()) == BISHOP) && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10)));
+		    AddBaseConditionText("C3",(captured_bishop && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10)));
 		    AddBaseConditionText("C4",((((ss-3)->inCheck && (prevSq == move.to_sq())) == (r >= 3072)) && (moveCount >= 38)));
-		    AddBaseConditionText("C5",((((moveCount >= 19) && (type_of(pos.captured_piece()) == PAWN)) == (moveCount < 36)) && attack_pinned_piece));
+		    AddBaseConditionText("C5",((((moveCount >= 19) && captured_pawn) == (moveCount < 36)) && attack_pinned_piece));
 		    AddBaseConditionText("C6",(!((((depth >= 13) ^ (moveCount >= 22)) && (moveCount >= 10)) || (moveCount < 35))));
 
 		    // isPvNode is currently broken so ignore it
@@ -2161,18 +2172,18 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    AddBaseCondition((3 * depth <= rootDepth));
 	 	    AddBaseCondition((3 * depth <= 2 * rootDepth));
 
-	 	    AddBaseCondition((type_of(movedPiece) == PAWN));
-	 	    AddBaseCondition((type_of(movedPiece) == KNIGHT));
-	 	    AddBaseCondition((type_of(movedPiece) == BISHOP));
-	 	    AddBaseCondition((type_of(movedPiece) == ROOK));
-	 	    AddBaseCondition((type_of(movedPiece) == QUEEN));
-	 	    AddBaseCondition((type_of(movedPiece) == KING));
+	 	    AddBaseCondition(pawn_moved);
+	 	    AddBaseCondition(knight_moved);
+	 	    AddBaseCondition(bishop_moved);
+	 	    AddBaseCondition(rook_moved);
+	 	    AddBaseCondition(queen_moved);
+	 	    AddBaseCondition(king_moved);
 
-	 	    AddBaseCondition((type_of(pos.captured_piece()) == PAWN));
-	 	    AddBaseCondition((type_of(pos.captured_piece()) == KNIGHT));
-	 	    AddBaseCondition((type_of(pos.captured_piece()) == BISHOP));
-	 	    AddBaseCondition((type_of(pos.captured_piece()) == ROOK));
-	 	    AddBaseCondition((type_of(pos.captured_piece()) == QUEEN));
+	 	    AddBaseCondition(captured_pawn);
+	 	    AddBaseCondition(captured_knight);
+	 	    AddBaseCondition(captured_bishop);
+	 	    AddBaseCondition(captured_rook);
+	 	    AddBaseCondition(captured_queen);
 
 	 	    AddBaseCondition(cutNode);
 	 	    AddBaseCondition(allNode);
