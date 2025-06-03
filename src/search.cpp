@@ -234,7 +234,7 @@ struct UPN
 
 	bool isBinary(char ch) const
 	{
-		return ch == '&' || ch == '|';
+		return ch == '&' || ch == '|' || ch == '^' | ch == '=';
 	}
 
 	bool operator()(std::vector<bool> vars) const
@@ -277,6 +277,14 @@ struct UPN
 				{
 					*stack.rbegin() = stack.back() || b;
 				}
+				else if(code[i] == '=')
+				{
+					*stack.rbegin() = stack.back() == b;
+				}
+				else if(code[i] == '^')
+				{
+					*stack.rbegin() = stack.back() ^ b;
+				}
 			}
 		}
 		assert(int(stack.size()) == 1);
@@ -303,7 +311,22 @@ struct UPN
 
 	char getRandomBinary() const
 	{
-		return std::rand()&1 ? '&' : '|';
+		switch(std::rand() % 4)
+		{
+			case 0 :
+				return '&';
+				break;
+			case 1 :
+				return '|';
+				break;
+			case 2 :
+				return '=';
+				break;
+			default:
+				return '^';
+				break;
+		}
+		return '?';
 	}
 
 	void initRandom(int n, int keep_first_n = 0, int use_keeped = 0)
@@ -437,6 +460,16 @@ struct UPN
 				else if(code[i] == '|')
 				{
 					result += " || ";
+					//*stack.rbegin() = std::string("(") + stack.back() + " || " + b + ")";
+				}
+				else if(code[i] == '=')
+				{
+					result += " == ";
+					//*stack.rbegin() = std::string("(") + stack.back() + " || " + b + ")";
+				}
+				else if(code[i] == '^')
+				{
+					result += " ^ ";
 					//*stack.rbegin() = std::string("(") + stack.back() + " || " + b + ")";
 				}
 				if(std::get<1>(b) && code[i] != std::get<2>(b))
