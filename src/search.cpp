@@ -165,8 +165,7 @@ void writeResultFile(std::string filename)
 	{
 		int index = 10000 + 10 * dataIndex[i];
 		double freq = dbg_get_hit_on(index);
-                if(freq < MIN_CONDITION_FREQ) continue;
-                if(freq > MAX_CONDITION_FREQ) continue;
+                if(freq < MIN_CONDITION_FREQ || freq > MAX_CONDITION_FREQ) continue;
 
 		double ppv = dbg_get_hit_on(index+1);
 		double tnr = dbg_get_hit_on(index+2);
@@ -181,6 +180,7 @@ void writeResultFile(std::string filename)
 			{
 		            int index2 = 10000 + 10 * dataIndex[j];
 		            double prevfreq = dbg_get_hit_on(index2);
+                            if(prevfreq < MIN_CONDITION_FREQ || prevfreq > MAX_CONDITION_FREQ) continue;
 		            //double prevppv = dbg_get_hit_on(index2+1);
 		            double prevtnr = dbg_get_hit_on(index2+2);
 		            double prevtpr = dbg_get_hit_on(index2+4);
@@ -1782,6 +1782,14 @@ moves_loop:  // When in check, search starts here
 	    bool PREDICT_FAIL_LOW = false;
 	    bool CC = true;//!PvNode;
 	    bool CP = CC;
+
+	    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
+	    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
+	    bool double_check = more_than_one(pos.checkers());
+	    bool two_last_piece_moves_aligned = move.from_sq() == (ss-2)->currentMove.to_sq() && aligned(move.from_sq(), move.to_sq(), (ss-2)->currentMove.from_sq());
+	    bool piece_becomes_pinned = pos.blockers_for_king(us) & move.to_sq();
+	    bool piece_is_pinned = pinnedPieces & move.from_sq();
+
 /*
 		    bool C1 = (depth >= 10) && (moveCount >= 39);
 		    bool C2 = !(((moveCount >= 24) || (depth >= 14)) && (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()))) && (moveCount >= 39);
@@ -1803,12 +1811,13 @@ moves_loop:  // When in check, search starts here
 		*/
 
 		bool C1 = ((moveCount >= 31) && (priorReduction >= 2)) || ((type_of(pos.captured_piece()) == BISHOP) && (moveCount >= 30));
+		bool C2 = piece_is_pinned;
 
 	       if(CP && true)
                {
                        dbg_hit_on(C1, 100001);
-		       /*
                        dbg_hit_on(C2, 100002);
+		       /*
                        dbg_hit_on(C3, 100003);
                        dbg_hit_on(C4, 100004);
                        dbg_hit_on(C5, 100005);
@@ -2004,13 +2013,6 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    */
 		    int baseCount = 0;
 
-		    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
-		    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
-		    bool double_check = more_than_one(pos.checkers());
-		    bool two_last_piece_moves_aligned = move.from_sq() == (ss-2)->currentMove.to_sq() && aligned(move.from_sq(), move.to_sq(), (ss-2)->currentMove.from_sq());
-		    bool piece_becomes_pinned = pos.blockers_for_king(us) & move.to_sq();
-		    bool piece_is_pinned = pinnedPieces & move.from_sq();
-
 		    /*
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
 		    int KEEP_FIRST_N = 17;
@@ -2038,6 +2040,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    int KEEP_FIRST_N = 0;
 
 		    AddBaseConditionText("C1",(((moveCount >= 31) && (priorReduction >= 2)) || ((type_of(pos.captured_piece()) == BISHOP) && (moveCount >= 30))));
+		    AddBaseConditionText("C2",piece_is_pinned);
 
 		    if(true)
 		    {
