@@ -2044,6 +2044,11 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseConditionText("C2",piece_is_pinned);
 		    AddBaseConditionText("C3",((type_of(pos.captured_piece()) == BISHOP) && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10)));
 
+		    // isPvNode is currently broken so ignore it
+	 	    //AddBaseCondition((ss-1)->isPvNode);
+	 	    //AddBaseCondition((ss-2)->isPvNode);
+	 	    //AddBaseCondition((ss-3)->isPvNode);
+		    
 		    if(true)
 		    {
 		    AddBaseCondition(two_last_piece_moves_aligned);
@@ -2129,16 +2134,13 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    AddBaseCondition((ss-1)->inCheck);
 	 	    AddBaseCondition((ss-1)->ttPv);
 	 	    AddBaseCondition((ss-1)->ttHit);
-	 	    AddBaseCondition((ss-1)->isPvNode);
 	 	    AddBaseCondition(bool((ss-1)->excludedMove));
 	 	    AddBaseCondition((ss-2)->ttPv);
 	 	    AddBaseCondition((ss-2)->ttHit);
-	 	    AddBaseCondition((ss-2)->isPvNode);
 	 	    AddBaseCondition(bool((ss-2)->excludedMove));
 	 	    AddBaseCondition((ss-3)->inCheck);
 	 	    AddBaseCondition((ss-3)->ttPv);
 	 	    AddBaseCondition((ss-3)->ttHit);
-	 	    AddBaseCondition((ss-3)->isPvNode);
 	 	    AddBaseCondition(bool((ss-3)->excludedMove));
 
 	 	    AddBaseCondition((ss->ply % 2 == 0));
