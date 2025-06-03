@@ -184,7 +184,8 @@ void writeResultFile(std::string filename)
 		            //double prevppv = dbg_get_hit_on(index2+1);
 		            double prevtnr = dbg_get_hit_on(index2+2);
 		            double prevtpr = dbg_get_hit_on(index2+4);
-		            skip = prevtnr >= tnr && prevfreq >= freq && prevtpr >= tpr;
+		            //skip = prevtnr >= tnr && prevfreq >= freq && prevtpr >= tpr;
+		            skip = prevtnr >= tnr && prevtpr >= tpr;
 			}
 		}
 		if(skip) continue;
