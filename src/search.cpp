@@ -69,6 +69,8 @@ constexpr bool PARETO = true;
 constexpr int N_UPN_CONDITIONS = 100;
 constexpr int N_UPN_SIZE = 4;//9;
 //constexpr int N_UPN_CONDITIONS = 1;//100;
+//constexpr int N_UPN_CONDITIONS = 4;
+//constexpr int N_UPN_SIZE = 1;//9;
 
 std::vector<Condition> baseConditions;
 //std::vector<bool> selectedConditions;
@@ -536,7 +538,7 @@ void initUPNConditions(const std::vector<Condition>& base, int keep_first_n, int
 	std::cerr << "use_keeped:" << use_keeped << std::endl;
 	UPNConditions.clear();
 	derivedConditions.resize(N_UPN_CONDITIONS);
-	int minSize = (N_UPN_SIZE-1) / 2 ;
+	int minSize = std::max(1, (N_UPN_SIZE-1) / 2);
 	//int minSize = (N_UPN_SIZE+2) / 3 ;
 	for(int i = 0; i < N_UPN_CONDITIONS; i++)
 	{
@@ -2071,6 +2073,10 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    //AddBaseCondition((ss-1)->isPvNode);
 	 	    //AddBaseCondition((ss-2)->isPvNode);
 	 	    //AddBaseCondition((ss-3)->isPvNode);
+		    //
+	 	    //AddBaseCondition(((ss-2)->reduction>=2));
+	 	    //AddBaseCondition((((ss-2)->reduction>=2) != double_check));
+	 	    //AddBaseCondition(double_check);
 		    
 		    if(true)
 		    {
