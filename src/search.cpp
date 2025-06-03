@@ -114,7 +114,8 @@ void writeResultFile(std::string filename)
 
 	const std::string path = "/mnt/c/Users/cng/Documents/";
 	std::string SEP = ";";
-	std::vector<std::string> header = {"Condition","Frequency","Correct(fail low)","True positive rate","Accuracy"};
+	//std::vector<std::string> header = {"Condition","Frequency","Correct(fail low)","True positive rate","Accuracy"};
+	std::vector<std::string> header = {"Condition","Frequency","True positive rate","Positive predictive value","True negative rate","Accuracy"};
 
 	if(filename == "")
 	    filename = std::string("lmr_condition_results_") + timestamp.str() + ".csv";
@@ -137,16 +138,23 @@ void writeResultFile(std::string filename)
 		                    int aindex = 10000 + 10 * a;
 		                    int bindex = 10000 + 10 * b;
 		                    double afreq = dbg_get_hit_on(aindex);
-		                    double afailow = dbg_get_hit_on(aindex+1);
-		                    double atpr = dbg_get_hit_on(aindex+2);
+		                    //double appv = dbg_get_hit_on(aindex+1);
+		                    double atnr = dbg_get_hit_on(aindex+2);
+		                    double atpr = dbg_get_hit_on(aindex+4);
 		                    double bfreq = dbg_get_hit_on(bindex);
-		                    double bfailow = dbg_get_hit_on(bindex+1);
-		                    double btpr = dbg_get_hit_on(bindex+2);
+		                    //double bppv = dbg_get_hit_on(bindex+1);
+		                    double btnr = dbg_get_hit_on(bindex+2);
+		                    double btpr = dbg_get_hit_on(bindex+4);
                                     return atpr > btpr 
-				           || (atpr == btpr && afreq > bfreq)
-				           || (atpr == btpr && afreq == bfreq && afailow > bfailow)
-				           || (atpr == btpr && afreq == bfreq && afailow == bfailow
+				           || (atnr == btnr && afreq > bfreq)
+				           || (atnr == btnr && atpr == btpr && afreq > bailow)
+				           || (atnr == btnr && atpr == btpr && afreq == bfreq
 							    && derivedConditions[a].name.length() < derivedConditions[b].name.length());
+                                    //return atpr > btpr 
+				    //       || (atpr == btpr && afreq > bfreq)
+				    //       || (atpr == btpr && afreq == bfreq && afailow > bfailow)
+				    //       || (atpr == btpr && afreq == bfreq && afailow == bfailow
+			//				    && derivedConditions[a].name.length() < derivedConditions[b].name.length());
 				});
 	}
 
@@ -160,8 +168,10 @@ void writeResultFile(std::string filename)
                 if(freq < MIN_CONDITION_FREQ) continue;
                 if(freq > MAX_CONDITION_FREQ) continue;
 
-		double faillow = dbg_get_hit_on(index+1);
-		double tpr = dbg_get_hit_on(index+2);
+		double ppv = dbg_get_hit_on(index+1);
+		double tnr = dbg_get_hit_on(index+2);
+		double auc = dbg_get_hit_on(index+3);
+		double tpr = dbg_get_hit_on(index+4);
 
 		//bool skip = PARETO && i > 0 && prevtpr >= tpr && prevfreq >= freq && prevfaillow >= faillow;
                 bool skip = false;
@@ -172,8 +182,9 @@ void writeResultFile(std::string filename)
 		            int index2 = 10000 + 10 * dataIndex[j];
 		            double prevfreq = dbg_get_hit_on(index2);
 		            double prevfaillow = dbg_get_hit_on(index2+1);
-		            double prevtpr = dbg_get_hit_on(index2+2);
-		            skip = prevtpr >= tpr && prevfreq >= freq && prevfaillow >= faillow;
+		            double prevtnr = dbg_get_hit_on(index2+2);
+		            double prevtpr = dbg_get_hit_on(index2+4);
+		            skip = prevtnr >= tnr && prevfreq >= freq && prevtpr >= tpr;
 			}
 		}
 		if(skip) continue;
@@ -183,10 +194,11 @@ void writeResultFile(std::string filename)
 	        //prevtpr = tpr;
 
 		file << derivedConditions[dataIndex[i]].name
-			<< SEP << formatNumber(dbg_get_hit_on(index))
-			<< SEP << formatNumber(dbg_get_hit_on(index+1))
-			<< SEP << formatNumber(dbg_get_hit_on(index+2))
-			<< SEP << formatNumber(dbg_get_hit_on(index+3))
+			<< SEP << formatNumber(freq)
+			<< SEP << formatNumber(tpr)
+			<< SEP << formatNumber(tnr)
+			<< SEP << formatNumber(ppv)
+			<< SEP << formatNumber(auc)
 			<< std::endl;
 	}
 	file.close();
@@ -2361,9 +2373,9 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 
 	    if(CC)
 	    {
-		    dbg_hit_on(R, 10);
+		    dbg_hit_on(R, 10); // frequency
 		    for(int i = 0; i <int(RC.size()); i++)
-		        dbg_hit_on(RC[i], 10000+10*i);
+		        dbg_hit_on(RC[i], 10000+10*i); // frequency
 	    }
 
 
@@ -2406,23 +2418,25 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	    {
 		    if(R)
 		    {
-			    dbg_hit_on(T, 11);
+			    dbg_hit_on(T, 11); // predictive positive rate
 		    }
 		    //if(!T) dbg_hit_on(R, 12);
-		    if(!T) dbg_hit_on(!R, 12);
+		    if(!T) dbg_hit_on(!R, 12); // true negative rate
+		    if(T) dbg_hit_on(R, 14); // true positive rate
 		    
 		    for(int i = 0; i <int(RC.size()); i++)
 		    {
 			    if(RC[i])
-				    dbg_hit_on(T, 10000+10*i+1);
-			    if(!T) dbg_hit_on(!RC[i], 10000+10*i+2);
+				    dbg_hit_on(T, 10000+10*i+1); // predictive positive rate
+			    if(!T) dbg_hit_on(!RC[i], 10000+10*i+2); // true negative rate
+			    if(T) dbg_hit_on(RC[i], 10000+10*i+4); // true positive rate
 		    }
             }
 	    if(CP)
 	    {
-		    dbg_hit_on(T == R, 13);
+		    dbg_hit_on(T == R, 13); // accuracy
 		    for(int i = 0; i <int(RC.size()); i++)
-		        dbg_hit_on(T == RC[i], 10000+10*i+3);
+		        dbg_hit_on(T == RC[i], 10000+10*i+3); // accuracy
 
 		    for(int i = 0; i < int(C.size()); i++)
 		    {
