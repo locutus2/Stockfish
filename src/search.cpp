@@ -653,11 +653,11 @@ Value Search::Worker::search(
     priorReduction = (ss - 1)->reduction;
     (ss - 1)->reduction = 0;
     ss->statScore       = 0;
-    ss->isPvNode        = PvNode;
+    excludedMove        = ss->excludedMove;
+    ss->isPvNode        = excludedMove ? ss->isPvNode : PvNode;
     (ss + 2)->cutoffCnt = 0;
 
     // Step 4. Transposition table lookup
-    excludedMove                   = ss->excludedMove;
     posKey                         = pos.key();
     auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
     // Need further processing of the saved data
@@ -1128,7 +1128,6 @@ moves_loop:  // When in check, search starts here
             ss->excludedMove = move;
             value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
             ss->excludedMove = Move::none();
-            ss->isPvNode     = PvNode;
 
             if (value < singularBeta)
             {
