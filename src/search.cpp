@@ -1872,8 +1872,8 @@ Hit #410: Total 3381914 Hits 2959090 Hit Rate (%) 87.4975
 #define SETNAME(x) (name.push_back(#x), (x))
 
 	    //bool PREDICT_FAIL_LOW = true;
-	    bool PREDICT_FAIL_LOW = true;
-	    bool CC = !PvNode;
+	    bool PREDICT_FAIL_LOW = false;
+	    bool CC = true;//!PvNode;
 	    bool CP = CC;
 	    std::vector<bool> C = {
 		    SETNAME(cutNode),
@@ -1983,8 +1983,6 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    };
 		    */
 		    int baseCount = 0;
-		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
-		    int KEEP_FIRST_N = 17;
 
 		    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 		    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
@@ -1993,6 +1991,10 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    bool piece_becomes_pinned = pos.blockers_for_king(us) & move.to_sq();
 		    bool piece_is_pinned = pinnedPieces & move.from_sq();
 
+		    /*
+		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
+		    int KEEP_FIRST_N = 17;
+		     
 		    AddBaseConditionText("C1",((depth >= 10) && (moveCount >= 39)));
 		    AddBaseConditionText("C2", (!(((moveCount >= 24) || (depth >= 14)) && defend_pinned_piece) && (moveCount >= 39)));
 		    AddBaseConditionText("C3",((moveCount >= 16) && (depth >= 11) && !(r >= 2048)));
@@ -2010,6 +2012,10 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseConditionText("C15",((!priorCapture && C3) || ((2 * (depth + ss->ply) <= rootDepth) && (depth >= 12))));
 		    AddBaseConditionText("C16",(C12 && (moveCount >= 19)));
 		    AddBaseConditionText("C17",(((moveCount >= 26) == (improving == opponentWorsening)) && C14 && ((3 * depth <= rootDepth) || (depth >= 3))));
+		    */
+
+		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
+		    int KEEP_FIRST_N = 0;
 
 		    if(true)
 		    {
