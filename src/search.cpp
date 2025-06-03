@@ -245,7 +245,7 @@ struct UPN
 
 	bool isBinary(char ch) const
 	{
-		return ch == '&' || ch == '|' || ch == '^' | ch == '=';
+		return ch == '&' || ch == '|' || ch == '^' || ch == '=';
 	}
 
 	bool operator()(std::vector<bool> vars) const
@@ -1777,9 +1777,22 @@ moves_loop:  // When in check, search starts here
 		bool C10 = !(depth % 2 == 0) && (depth >= 13) && (moveCount >= 28);
 		bool C11 = C2 && (r >= 4096) && (depth >= 13);
 		bool C12 = C5 && ((depth < 2 * ss->ply) ^ (depth >= 4));
+		bool C13 = (!(!(moveCount >= 29) || improving) || ((ss-2)->reduction >= 3)) && (ss-2)->ttPv;
 	       if(!PvNode && true)
                {
-                       dbg_hit_on(C12, 100000);
+                       dbg_hit_on(C1, 100001);
+                       dbg_hit_on(C2, 100002);
+                       dbg_hit_on(C3, 100003);
+                       dbg_hit_on(C4, 100004);
+                       dbg_hit_on(C5, 100005);
+                       dbg_hit_on(C6, 100006);
+                       dbg_hit_on(C7, 100007);
+                       dbg_hit_on(C8, 100008);
+                       dbg_hit_on(C9, 100009);
+                       dbg_hit_on(C10, 100010);
+                       dbg_hit_on(C11, 100011);
+                       dbg_hit_on(C12, 100012);
+                       dbg_hit_on(C13, 100013);
                }
 	    /*
 	     * Hit #0: Total 65150829 Hits 61768915 Hit Rate (%) 94.8091
@@ -1961,7 +1974,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    */
 		    int baseCount = 0;
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
-		    int KEEP_FIRST_N = 12;
+		    int KEEP_FIRST_N = 13;
 
 		    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 		    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
@@ -1982,6 +1995,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseConditionText("C10",(!(depth % 2 == 0) && (depth >= 13) && (moveCount >= 28)));
 		    AddBaseConditionText("C11",(C2 && (r >= 4096) && (depth >= 13)));
 		    AddBaseConditionText("C12",(C5 && ((depth < 2 * ss->ply) ^ (depth >= 4))));
+		    AddBaseConditionText("C13",((!(!(moveCount >= 29) || improving) || ((ss-2)->reduction >= 3)) && (ss-2)->ttPv));
 
 		    if(true)
 		    {
