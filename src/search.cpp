@@ -1778,6 +1778,7 @@ moves_loop:  // When in check, search starts here
 		bool C11 = C2 && (r >= 4096) && (depth >= 13);
 		bool C12 = C5 && ((depth < 2 * ss->ply) ^ (depth >= 4));
 		bool C13 = (!(!(moveCount >= 29) || improving) || ((ss-2)->reduction >= 3)) && (ss-2)->ttPv;
+		bool C14 = C1 && (bool(ttData.move) ^ C12);
 	       if(!PvNode && true)
                {
                        dbg_hit_on(C1, 100001);
@@ -1793,6 +1794,7 @@ moves_loop:  // When in check, search starts here
                        dbg_hit_on(C11, 100011);
                        dbg_hit_on(C12, 100012);
                        dbg_hit_on(C13, 100013);
+                       dbg_hit_on(C14, 100014);
                }
 	    /*
 	     * Hit #0: Total 65150829 Hits 61768915 Hit Rate (%) 94.8091
@@ -1974,7 +1976,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    */
 		    int baseCount = 0;
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
-		    int KEEP_FIRST_N = 13;
+		    int KEEP_FIRST_N = 14;
 
 		    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 		    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
@@ -1996,6 +1998,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseConditionText("C11",(C2 && (r >= 4096) && (depth >= 13)));
 		    AddBaseConditionText("C12",(C5 && ((depth < 2 * ss->ply) ^ (depth >= 4))));
 		    AddBaseConditionText("C13",((!(!(moveCount >= 29) || improving) || ((ss-2)->reduction >= 3)) && (ss-2)->ttPv));
+		    AddBaseConditionText("C14",(C1 && (bool(ttData.move) ^ C12)));
 
 		    if(true)
 		    {
