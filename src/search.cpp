@@ -1812,13 +1812,14 @@ moves_loop:  // When in check, search starts here
 
 		bool C1 = ((moveCount >= 31) && (priorReduction >= 2)) || ((type_of(pos.captured_piece()) == BISHOP) && (moveCount >= 30));
 		bool C2 = piece_is_pinned;
+		bool C3 = (type_of(pos.captured_piece()) == BISHOP) && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10);
 
 	       if(CP && true)
                {
                        dbg_hit_on(C1, 100001);
                        dbg_hit_on(C2, 100002);
-		       /*
                        dbg_hit_on(C3, 100003);
+		       /*
                        dbg_hit_on(C4, 100004);
                        dbg_hit_on(C5, 100005);
                        dbg_hit_on(C6, 100006);
@@ -2041,6 +2042,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 
 		    AddBaseConditionText("C1",(((moveCount >= 31) && (priorReduction >= 2)) || ((type_of(pos.captured_piece()) == BISHOP) && (moveCount >= 30))));
 		    AddBaseConditionText("C2",piece_is_pinned);
+		    AddBaseConditionText("C3",((type_of(pos.captured_piece()) == BISHOP) && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10)));
 
 		    if(true)
 		    {
