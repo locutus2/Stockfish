@@ -1781,6 +1781,7 @@ moves_loop:  // When in check, search starts here
 		bool C14 = C1 && (bool(ttData.move) ^ C12);
 		bool C15 = (!priorCapture && C3) || ((2 * (depth + ss->ply) <= rootDepth) && (depth >= 12));
 		bool C16 = C12 && (moveCount >= 19);
+		bool C17 = ((moveCount >= 26) == (improving == opponentWorsening)) && C14 && ((3 * depth <= rootDepth) || (depth >= 3));
 	       if(!PvNode && true)
                {
                        dbg_hit_on(C1, 100001);
@@ -1799,6 +1800,7 @@ moves_loop:  // When in check, search starts here
                        dbg_hit_on(C14, 100014);
                        dbg_hit_on(C15, 100015);
                        dbg_hit_on(C16, 100016);
+                       dbg_hit_on(C17, 100017);
                }
 	    /*
 	     * Hit #0: Total 65150829 Hits 61768915 Hit Rate (%) 94.8091
@@ -1869,6 +1871,8 @@ Hit #410: Total 3381914 Hits 2959090 Hit Rate (%) 87.4975
 
 #define SETNAME(x) (name.push_back(#x), (x))
 
+	    //bool PREDICT_FAIL_LOW = true;
+	    bool PREDICT_FAIL_LOW = true;
 	    bool CC = !PvNode;
 	    bool CP = CC;
 	    std::vector<bool> C = {
@@ -1980,7 +1984,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    */
 		    int baseCount = 0;
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
-		    int KEEP_FIRST_N = 16;
+		    int KEEP_FIRST_N = 17;
 
 		    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 		    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
@@ -2005,6 +2009,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseConditionText("C14",(C1 && (bool(ttData.move) ^ C12)));
 		    AddBaseConditionText("C15",((!priorCapture && C3) || ((2 * (depth + ss->ply) <= rootDepth) && (depth >= 12))));
 		    AddBaseConditionText("C16",(C12 && (moveCount >= 19)));
+		    AddBaseConditionText("C17",(((moveCount >= 26) == (improving == opponentWorsening)) && C14 && ((3 * depth <= rootDepth) || (depth >= 3))));
 
 		    if(true)
 		    {
@@ -2280,7 +2285,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    int myr = 0;
 			    for(int i = 0; i < int(derivedConditions.size()); i++)
 				    if(derivedConditions[i].value)
-					 myr += RR[i%NN];
+					 myr += RR[i%NN] * (PREDICT_FAIL_LOW ? 1 : -1);
 			    //r += myr / int(cc.size());
 			    r += myr;
 		    }
@@ -2390,7 +2395,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
             else if (value > alpha && value < bestValue + 9)
                 newDepth--;
 
-	    bool T = value <= alpha;
+	    bool T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
 	    if(CC)
 	    {
 		    if(R)
