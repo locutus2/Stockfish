@@ -1811,17 +1811,19 @@ moves_loop:  // When in check, search starts here
 		*/
 
 		bool C1 = ((moveCount >= 31) && (priorReduction >= 2)) || ((type_of(pos.captured_piece()) == BISHOP) && (moveCount >= 30));
-		bool C2 = (((moveCount >= 19) && (type_of(pos.captured_piece()) == PAWN)) == (moveCount < 36)) && attack_pinned_piece;
+		bool C2 = piece_is_pinned;
 		bool C3 = (type_of(pos.captured_piece()) == BISHOP) && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10);
+		bool C4 = (((ss-3)->inCheck && (prevSq == move.to_sq())) == (r >= 3072)) && (moveCount >= 38);
+		bool C5 = (((moveCount >= 19) && (type_of(pos.captured_piece()) == PAWN)) == (moveCount < 36)) && attack_pinned_piece;
 
 	       if(CP && true)
                {
                        dbg_hit_on(C1, 100001);
                        dbg_hit_on(C2, 100002);
                        dbg_hit_on(C3, 100003);
-		       /*
                        dbg_hit_on(C4, 100004);
                        dbg_hit_on(C5, 100005);
+		       /*
                        dbg_hit_on(C6, 100006);
                        dbg_hit_on(C7, 100007);
                        dbg_hit_on(C8, 100008);
@@ -2041,8 +2043,10 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    int KEEP_FIRST_N = 0;
 
 		    AddBaseConditionText("C1",(((moveCount >= 31) && (priorReduction >= 2)) || ((type_of(pos.captured_piece()) == BISHOP) && (moveCount >= 30))));
-		    AddBaseConditionText("C2",((((moveCount >= 19) && (type_of(pos.captured_piece()) == PAWN)) == (moveCount < 36)) && attack_pinned_piece));
+		    //AddBaseConditionText("C2",piece_is_pinned);
 		    AddBaseConditionText("C3",((type_of(pos.captured_piece()) == BISHOP) && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10)));
+		    AddBaseConditionText("C4",((((ss-3)->inCheck && (prevSq == move.to_sq())) == (r >= 3072)) && (moveCount >= 38)));
+		    AddBaseConditionText("C5",((((moveCount >= 19) && (type_of(pos.captured_piece()) == PAWN)) == (moveCount < 36)) && attack_pinned_piece));
 
 		    // isPvNode is currently broken so ignore it
 	 	    //AddBaseCondition((ss-1)->isPvNode);
