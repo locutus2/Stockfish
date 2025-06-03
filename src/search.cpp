@@ -115,7 +115,7 @@ void writeResultFile(std::string filename)
 	const std::string path = "/mnt/c/Users/cng/Documents/";
 	std::string SEP = ";";
 	//std::vector<std::string> header = {"Condition","Frequency","Correct(fail low)","True positive rate","Accuracy"};
-	std::vector<std::string> header = {"Condition","Frequency","True positive rate","Positive predictive value","True negative rate","Accuracy"};
+	std::vector<std::string> header = {"Condition","Frequency","True positive rate","True negative rate", "Positive predictive value","Accuracy"};
 
 	if(filename == "")
 	    filename = std::string("lmr_condition_results_") + timestamp.str() + ".csv";
@@ -1802,7 +1802,7 @@ moves_loop:  // When in check, search starts here
 		bool C17 = ((moveCount >= 26) == (improving == opponentWorsening)) && C14 && ((3 * depth <= rootDepth) || (depth >= 3));
 		*/
 
-		bool C1 = (moveCount >= 39) || (moveCount < 4);
+		bool C1 = ((moveCount >= 31) && (priorReduction >= 2)) || ((type_of(pos.captured_piece()) == BISHOP) && (moveCount >= 30));
 
 	       if(CP && true)
                {
@@ -2037,7 +2037,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
 		    int KEEP_FIRST_N = 0;
 
-		    AddBaseConditionText("C1",((moveCount >= 39) || (moveCount < 4)));
+		    AddBaseConditionText("C1",(((moveCount >= 31) && (priorReduction >= 2)) || ((type_of(pos.captured_piece()) == BISHOP) && (moveCount >= 30))));
 
 		    if(true)
 		    {
