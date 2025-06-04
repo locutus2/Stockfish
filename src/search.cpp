@@ -66,11 +66,11 @@ constexpr bool PARETO = true;
 //constexpr int N_UPN_CONDITIONS = 160;
 //constexpr int N_UPN_CONDITIONS = 350;
 //constexpr int N_UPN_SIZE = 9;
-constexpr int N_UPN_CONDITIONS = 100;
-constexpr int N_UPN_SIZE = 4;//9;
-//constexpr int N_UPN_CONDITIONS = 1;//100;
+//constexpr int N_UPN_CONDITIONS = 100;
+//constexpr int N_UPN_SIZE = 4;//9;
+constexpr int N_UPN_CONDITIONS = 6;//100;
 //constexpr int N_UPN_CONDITIONS = 4;
-//constexpr int N_UPN_SIZE = 1;//9;
+constexpr int N_UPN_SIZE = 1;//9;
 
 std::vector<Condition> baseConditions;
 //std::vector<bool> selectedConditions;
@@ -1780,9 +1780,10 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-	    bool PREDICT_FAIL_LOW = true;
-	    //bool PREDICT_FAIL_LOW = false;
-	    bool CC = true;//!PvNode;
+	    //bool PREDICT_FAIL_LOW = true;
+	    bool PREDICT_FAIL_LOW = false;
+	    bool CC = !PvNode;
+	    //bool CC = true;//!PvNode;
 	    bool CP = CC;
 
 	    bool pawn_moved = type_of(movedPiece) == PAWN;
@@ -2077,6 +2078,12 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    //AddBaseCondition(((ss-2)->reduction>=2));
 	 	    //AddBaseCondition((((ss-2)->reduction>=2) != double_check));
 	 	    //AddBaseCondition(double_check);
+
+            KEEP_FIRST_N = 3;
+            USE_KEEPED = 1;
+	 	    AddBaseCondition((depth >= 14 && moveCount >= 22));
+	 	    AddBaseCondition((depth >= 15 && moveCount >= 22));
+	 	    AddBaseCondition((depth >= 14 && moveCount >= 23));
 		    
 		    if(true)
 		    {
