@@ -66,7 +66,7 @@ constexpr bool PARETO = true;
 //constexpr int N_UPN_CONDITIONS = 160;
 //constexpr int N_UPN_CONDITIONS = 350;
 //constexpr int N_UPN_SIZE = 9;
-constexpr int N_UPN_CONDITIONS = 100;
+constexpr int N_UPN_CONDITIONS = 1600;//100;
 constexpr int N_UPN_SIZE = 4;//9;
 //constexpr int N_UPN_CONDITIONS = 10;//100;
 //constexpr int N_UPN_CONDITIONS = 4;
@@ -121,7 +121,8 @@ void writeResultFile(std::string filename)
 	std::vector<std::string> header = {"Condition","Frequency","True positive rate","True negative rate", "Positive predictive value","Accuracy"};
 
 	if(filename == "")
-	    filename = std::string("lmr_condition_results_") + timestamp.str() + ".csv";
+	    filename = std::string("lmr_condition_results_fh_") + timestamp.str() + ".csv";
+	    //filename = std::string("lmr_condition_results_fl_") + timestamp.str() + ".csv";
 	    //filename = std::string("lmr_condition_results_") + std::to_string((int)std::time(nullptr)) + ".csv";
 
 	std::ofstream file(path + filename);
@@ -1769,8 +1770,8 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-	    bool PREDICT_FAIL_LOW = true;
-	    //bool PREDICT_FAIL_LOW = false;
+	    //bool PREDICT_FAIL_LOW = true;
+	    bool PREDICT_FAIL_LOW = false;
 	    bool CC = true;
 	    //bool CC = !PvNode;
 	    //bool CC = true;//!PvNode;
