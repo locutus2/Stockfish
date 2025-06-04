@@ -66,11 +66,11 @@ constexpr bool PARETO = true;
 //constexpr int N_UPN_CONDITIONS = 160;
 //constexpr int N_UPN_CONDITIONS = 350;
 //constexpr int N_UPN_SIZE = 9;
-//constexpr int N_UPN_CONDITIONS = 100;
-//constexpr int N_UPN_SIZE = 4;//9;
-constexpr int N_UPN_CONDITIONS = 6;//100;
+constexpr int N_UPN_CONDITIONS = 200;
+constexpr int N_UPN_SIZE = 4;//9;
+//constexpr int N_UPN_CONDITIONS = 10;//100;
 //constexpr int N_UPN_CONDITIONS = 4;
-constexpr int N_UPN_SIZE = 1;//9;
+//constexpr int N_UPN_SIZE = 1;//9;
 
 std::vector<Condition> baseConditions;
 //std::vector<bool> selectedConditions;
@@ -114,7 +114,8 @@ void writeResultFile(std::string filename)
     std::ostringstream timestamp;
     timestamp << std::put_time(localTime, "%Y%m%d_%H%M%S");
 
-	const std::string path = "/mnt/c/Users/cng/Documents/";
+	//const std::string path = "/mnt/c/Users/cng/Documents/";
+	const std::string path = "../";
 	std::string SEP = ";";
 	//std::vector<std::string> header = {"Condition","Frequency","Correct(fail low)","True positive rate","Accuracy"};
 	std::vector<std::string> header = {"Condition","Frequency","True positive rate","True negative rate", "Positive predictive value","Accuracy"};
@@ -759,6 +760,7 @@ void Search::Worker::start_searching() {
 
     auto bestmove = UCIEngine::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
     main_manager()->updates.onBestmove(bestmove, ponder);
+    //writeResultFile();
 }
 
 // Main iterative deepening loop. It calls search()
@@ -1767,9 +1769,10 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-	    //bool PREDICT_FAIL_LOW = true;
-	    bool PREDICT_FAIL_LOW = false;
-	    bool CC = !PvNode;
+	    bool PREDICT_FAIL_LOW = true;
+	    //bool PREDICT_FAIL_LOW = false;
+	    bool CC = true;
+	    //bool CC = !PvNode;
 	    //bool CC = true;//!PvNode;
 	    bool CP = CC;
 
@@ -2066,11 +2069,11 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	 	    //AddBaseCondition((((ss-2)->reduction>=2) != double_check));
 	 	    //AddBaseCondition(double_check);
 
-            KEEP_FIRST_N = 3;
-            USE_KEEPED = 1;
-	 	    AddBaseCondition((depth >= 14 && moveCount >= 22));
-	 	    AddBaseCondition((depth >= 15 && moveCount >= 22));
-	 	    AddBaseCondition((depth >= 14 && moveCount >= 23));
+            //KEEP_FIRST_N = 3;
+            //USE_KEEPED = 1;
+	 	    //AddBaseCondition((depth >= 14 && moveCount >= 22));
+	 	    //AddBaseCondition((depth >= 13 && moveCount >= 22));
+	 	    //AddBaseCondition((depth >= 14 && moveCount >= 21));
 		    
 		    if(true)
 		    {
@@ -2078,12 +2081,31 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseCondition(piece_becomes_pinned);
 		    AddBaseCondition(piece_is_pinned);
 
+		    AddBaseCondition((ss->pathReduction >= 1));
+		    AddBaseCondition((ss->pathReduction >= 2));
+		    AddBaseCondition((ss->pathReduction >= 3));
+		    AddBaseCondition(((ss-1)->pathReduction >= 1));
+		    AddBaseCondition(((ss-1)->pathReduction >= 2));
+		    AddBaseCondition(((ss-1)->pathReduction >= 3));
+		    AddBaseCondition(((ss-2)->pathReduction >= 1));
+		    AddBaseCondition(((ss-2)->pathReduction >= 2));
+		    AddBaseCondition(((ss-2)->pathReduction >= 3));
+		    AddBaseCondition(((ss-3)->pathReduction >= 1));
+		    AddBaseCondition(((ss-3)->pathReduction >= 2));
+		    AddBaseCondition(((ss-3)->pathReduction >= 3));
+
 		    AddBaseCondition(((ss-3)->reduction >= 1));
 		    AddBaseCondition(((ss-3)->reduction >= 2));
 		    AddBaseCondition(((ss-3)->reduction >= 3));
 		    AddBaseCondition(((ss-2)->reduction >= 1));
 		    AddBaseCondition(((ss-2)->reduction >= 2));
 		    AddBaseCondition(((ss-2)->reduction >= 3));
+		    AddBaseCondition(((ss-1)->reduction >= 1));
+		    AddBaseCondition(((ss-1)->reduction >= 2));
+		    AddBaseCondition(((ss-1)->reduction >= 3));
+		    AddBaseCondition((ss->reduction >= 1));
+		    AddBaseCondition((ss->reduction >= 2));
+		    AddBaseCondition((ss->reduction >= 3));
 		    AddBaseCondition((priorReduction >= 1));
 		    AddBaseCondition((priorReduction >= 2));
 		    AddBaseCondition((priorReduction >= 3));
@@ -2428,6 +2450,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
                     + (ss - 1)->isPvNode;
 
             ss->reduction = newDepth - d;
+            ss->pathReduction = (ss - 1)->pathReduction + ss->reduction;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
