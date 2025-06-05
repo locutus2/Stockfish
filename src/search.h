@@ -44,6 +44,8 @@
 
 namespace Stockfish {
 
+constexpr bool CALCULATE_THRESHOLD_FUNCTION = false;
+
 void initUPNConditions();
 
 struct Condition

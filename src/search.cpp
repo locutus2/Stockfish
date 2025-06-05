@@ -2387,7 +2387,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 
 
 		    static bool init = false;
-		    if(!init)
+		    if(!init && CALCULATE_THRESHOLD_FUNCTION)
 		    {
 			    // print rule
 			    init = true;
@@ -2415,7 +2415,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    std::cerr << "Rule:" << std::endl << rule << std::endl;
 		    }
 
-	    if(CP)
+	    if(CP && CALCULATE_THRESHOLD_FUNCTION)
 	    {
 		    // predict
 		    const int N = int(index.size());
@@ -2508,7 +2508,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    if(!T) dbg_hit_on(!RC[i], 10000+10*i+2); // true negative rate
 			    if(T) dbg_hit_on(RC[i], 10000+10*i+4); // true positive rate
 		    }
-            }
+        }
+
 	    if(CP)
 	    {
 		    dbg_hit_on(T == R, 13); // accuracy
@@ -2519,7 +2520,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    {
 		        if(!C[i]) dbg_hit_on(T, 500+i*10+1);
 		        if(C[i]) dbg_hit_on(T, 500+i*10+5+1);
-			if(!T)
+			if(!T && CALCULATE_THRESHOLD_FUNCTION)
 			{
 		              //dbg_hit_on(!C[i], 500+i*10+2);
 		              //dbg_hit_on(C[i], 500+i*10+5+2);
@@ -2529,23 +2530,27 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    }
 
 		    dbg_hit_on(T, 0);
-		    for(int i = 0; i < (int)C.size(); i++)
-		    {
-			dbg_hit_on(T, (1+C[i])*100+i);
-			if(!T)
-			{
-		              //dbg_hit_on(!C[i], 300+i);
-		              //dbg_hit_on(C[i], 400+i);
-		              dbg_hit_on(!!C[i], 300+i);
-		              dbg_hit_on(!C[i], 400+i);
-			}
-		    }
+			if(CALCULATE_THRESHOLD_FUNCTION)
+            {
+                for(int i = 0; i < (int)C.size(); i++)
+                {
+                    dbg_hit_on(T, (1+C[i])*100+i);
+                    if(!T)
+                    {
+                              //dbg_hit_on(!C[i], 300+i);
+                              //dbg_hit_on(C[i], 400+i);
+                              dbg_hit_on(!!C[i], 300+i);
+                              dbg_hit_on(!C[i], 400+i);
+                    }
+                }
+            }
 
 		    //dbg_correl_of(sum, T);
 		    //dbg_mean_of(sum, 0);
 		    //dbg_stdev_of(sum, 0);
 
-		    sum += SCALE;
+			if(CALCULATE_THRESHOLD_FUNCTION)
+		        sum += SCALE;
 
 		    dbg_hit_on(T, 1000 + sum);
 		    //for(int i = 0; i <= 2*SCALE; i++)
@@ -2564,7 +2569,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 			    dbg_hit_on(sum + SCALE >= i, 10000+i);
 		    }
 		    */
-	    }
+        }
         }
 
         // Step 18. Full-depth search when LMR is skipped

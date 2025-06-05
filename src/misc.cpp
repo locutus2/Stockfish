@@ -403,22 +403,26 @@ void dbg_print() {
             std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << std::endl;
         }
 
-    int64_t N = hit[0][0];
-    int64_t N_FAIL_HIGH = N - hit[0][1];
-    int64_t count = 0;
-    int64_t failLow = 0;
-    constexpr int MIN_INDEX = 1000;
 
-    for(int i = MaxDebugSlots-1; i >= MIN_INDEX; i--)
+    if(CALCULATE_THRESHOLD_FUNCTION)
     {
-            if ((n = hit[i][0]))
-	    {
-		    count += n;
-		    failLow += hit[i][1];
-		    std::cerr << "threshold=" << i - MIN_INDEX - SCALE << " n=" << count << " freq=" << 100.*count/N << "%"
-			      << " faillow=" << 100.*failLow/count << "%" 
-			      << " fpr=" << 100.*(count-failLow)/N_FAIL_HIGH  << "%" << std::endl;
-	    }
+        int64_t N = hit[0][0];
+        int64_t N_FAIL_HIGH = N - hit[0][1];
+        int64_t count = 0;
+        int64_t failLow = 0;
+        constexpr int MIN_INDEX = 1000;
+
+        for(int i = MaxDebugSlots-1; i >= MIN_INDEX; i--)
+        {
+                if ((n = hit[i][0]))
+            {
+                count += n;
+                failLow += hit[i][1];
+                std::cerr << "threshold=" << i - MIN_INDEX - SCALE << " n=" << count << " freq=" << 100.*count/N << "%"
+                      << " faillow=" << 100.*failLow/count << "%" 
+                      << " fpr=" << 100.*(count-failLow)/N_FAIL_HIGH  << "%" << std::endl;
+            }
+        }
     }
 }
 
