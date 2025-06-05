@@ -57,6 +57,9 @@ namespace Stockfish {
 std::random_device rd;
 std::mt19937 generator(rd());
 
+bool PREDICT_FAIL_LOW = true;
+bool INCLUDE_RESEARCH = false;
+
 constexpr bool USE_UPN = true;
 constexpr double MIN_CONDITION_FREQ = 0.0001;
 constexpr double MAX_CONDITION_FREQ = 0.5;
@@ -122,7 +125,12 @@ void writeResultFile(std::string filename)
 	std::vector<std::string> header = {"Condition","Frequency","True positive rate","True negative rate", "Positive predictive value","Accuracy"};
 
 	if(filename == "")
-	    filename = std::string("lmr_condition_results_fh_") + timestamp.str() + ".csv";
+    {
+        if(PREDICT_FAIL_LOW)
+	        filename = std::string("lmr_condition_results_fl_") + timestamp.str() + ".csv";
+        else
+	        filename = std::string("lmr_condition_results_fh_") + timestamp.str() + ".csv";
+    }
 	    //filename = std::string("lmr_condition_results_fl_") + timestamp.str() + ".csv";
 	    //filename = std::string("lmr_condition_results_") + std::to_string((int)std::time(nullptr)) + ".csv";
 
@@ -1771,7 +1779,6 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-	    bool PREDICT_FAIL_LOW = true;
 	    //bool PREDICT_FAIL_LOW = false;
 	    bool CC = true;
 	    //bool CC = !PvNode;
@@ -2441,6 +2448,9 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		        dbg_hit_on(RC[i], 10000+10*i); // frequency
 	    }
 
+	        bool T = false;
+            if(!INCLUDE_RESEARCH)
+                T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
@@ -2456,7 +2466,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-	        bool T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
+            if(INCLUDE_RESEARCH)
+                T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
 
             // Do a full-depth search when reduced LMR search fails high
             // (*Scaler) Usually doing more shallower searches
