@@ -57,7 +57,7 @@ namespace Stockfish {
 std::random_device rd;
 std::mt19937 generator(rd());
 
-bool PREDICT_FAIL_LOW = true;
+bool PREDICT_FAIL_LOW = false;
 bool INCLUDE_RESEARCH = false;
 
 constexpr bool USE_UPN = true;
@@ -2449,9 +2449,6 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	    }
 
 	        bool T = false;
-            if(!INCLUDE_RESEARCH)
-                T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
-
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
@@ -2466,7 +2463,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-            if(INCLUDE_RESEARCH)
+            if(!INCLUDE_RESEARCH)
                 T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
 
             // Do a full-depth search when reduced LMR search fails high
@@ -2489,6 +2486,9 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
             }
             else if (value > alpha && value < bestValue + 9)
                 newDepth--;
+
+            if(INCLUDE_RESEARCH)
+                T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
 
 	    //bool T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
 	    if(CC)
