@@ -66,7 +66,8 @@ constexpr bool PARETO = true;
 //constexpr int N_UPN_CONDITIONS = 160;
 //constexpr int N_UPN_CONDITIONS = 350;
 //constexpr int N_UPN_SIZE = 9;
-constexpr int N_UPN_CONDITIONS = 1600;//100;
+//constexpr int N_UPN_CONDITIONS = 1600;//100;
+constexpr int N_UPN_CONDITIONS = 100;
 constexpr int N_UPN_SIZE = 4;//9;
 //constexpr int N_UPN_CONDITIONS = 10;//100;
 //constexpr int N_UPN_CONDITIONS = 4;
@@ -1770,8 +1771,8 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-	    //bool PREDICT_FAIL_LOW = true;
-	    bool PREDICT_FAIL_LOW = false;
+	    bool PREDICT_FAIL_LOW = true;
+	    //bool PREDICT_FAIL_LOW = false;
 	    bool CC = true;
 	    //bool CC = !PvNode;
 	    //bool CC = true;//!PvNode;
@@ -2455,6 +2456,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
+	        bool T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
+
             // Do a full-depth search when reduced LMR search fails high
             // (*Scaler) Usually doing more shallower searches
             // doesn't scale well to longer TCs
@@ -2476,7 +2479,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
             else if (value > alpha && value < bestValue + 9)
                 newDepth--;
 
-	    bool T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
+	    //bool T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
 	    if(CC)
 	    {
 		    if(R)
