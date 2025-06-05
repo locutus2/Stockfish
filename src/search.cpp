@@ -2233,8 +2233,8 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 		    AddBaseCondition(priorCapture);
 		    AddBaseCondition(ttCapture);
 		    AddBaseCondition(bool(ttData.move));
-		    AddBaseCondition(ttData.move.to_sq() == move.to_sq());
-		    AddBaseCondition(ttData.move.from_sq() == move.from_sq());
+		    AddBaseCondition((ttData.move.to_sq() == move.to_sq()));
+		    AddBaseCondition((ttData.move.from_sq() == move.from_sq()));
 		    AddBaseCondition((ss->staticEval > alpha));
 		    AddBaseCondition((eval < ss->staticEval));
 		    AddBaseCondition(bool(excludedMove));
