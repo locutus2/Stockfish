@@ -1109,6 +1109,7 @@ void Search::Worker::clear() {
 }
 
 #define buildConditions(R, RC) \
+{ \
 		    R =   -427 * cutNode\
 			+ 747 * ss->ttPv\
 			+ -159 * improving\
@@ -1401,7 +1402,7 @@ void Search::Worker::clear() {
  \
   		    for(int i = 0; i < int(derivedConditions.size()); i++) \
 			   RC.push_back(derivedConditions[i].value);\
-
+} 
 
 // Main search function for both PV and non-PV nodes
 template<NodeType nodeType>
