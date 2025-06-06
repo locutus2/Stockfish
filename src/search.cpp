@@ -1230,7 +1230,7 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-            if (more_than_one(pos.checkers()))
+            if (type_of(pos.captured_piece()) == QUEEN)
                 r -= 1024;
 
             // In general we want to cap the LMR depth search at newDepth, but when
