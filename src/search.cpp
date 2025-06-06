@@ -57,7 +57,7 @@ namespace Stockfish {
 std::random_device rd;
 std::mt19937 generator(rd());
 
-bool PREDICT_FAIL_LOW = false;
+bool PREDICT_FAIL_LOW = true;
 bool INCLUDE_RESEARCH = false;
 
 constexpr bool USE_UPN = true;
@@ -70,7 +70,8 @@ constexpr bool PARETO = true;
 //constexpr int N_UPN_CONDITIONS = 350;
 //constexpr int N_UPN_SIZE = 9;
 //constexpr int N_UPN_CONDITIONS = 1600;//100;
-constexpr int N_UPN_CONDITIONS = 100;
+constexpr int N_UPN_CONDITIONS = 400;
+//constexpr int N_UPN_CONDITIONS = 100;
 constexpr int N_UPN_SIZE = 4;//9;
 //constexpr int N_UPN_CONDITIONS = 10;//100;
 //constexpr int N_UPN_CONDITIONS = 4;
@@ -1107,6 +1108,300 @@ void Search::Worker::clear() {
     refreshTable.clear(networks[numaAccessToken]);
 }
 
+#define buildConditions(R, RC) \
+		    R =   -427 * cutNode\
+			+ 747 * ss->ttPv\
+			+ -159 * improving\
+			+ 887 * ss->inCheck\
+			+ 803 * capture\
+			+ 754 * givesCheck\
+			+ 763 * priorCapture\
+			+ 891 * ttCapture\
+			+ -253 * (eval > alpha)\
+			+ -347 * (ss->staticEval > alpha)\
+			+ 768 * (eval < ss->staticEval)\
+			>= 2325;\
+\
+		    int baseCount = 0;\
+\
+		    int USE_KEEPED = 0; \
+		    int KEEP_FIRST_N = 0;\
+\
+		    if(true)\
+		    {\
+		    AddBaseCondition(two_last_piece_moves_aligned);\
+		    AddBaseCondition(piece_becomes_pinned);\
+		    AddBaseCondition(piece_is_pinned);\
+\
+		    AddBaseCondition((ss->pathReduction >= 1));\
+		    AddBaseCondition((ss->pathReduction >= 2));\
+		    AddBaseCondition((ss->pathReduction >= 3));\
+		    AddBaseCondition(((ss-1)->pathReduction >= 1));\
+		    AddBaseCondition(((ss-1)->pathReduction >= 2));\
+		    AddBaseCondition(((ss-1)->pathReduction >= 3));\
+		    AddBaseCondition(((ss-2)->pathReduction >= 1));\
+		    AddBaseCondition(((ss-2)->pathReduction >= 2));\
+		    AddBaseCondition(((ss-2)->pathReduction >= 3));\
+		    AddBaseCondition(((ss-3)->pathReduction >= 1));\
+		    AddBaseCondition(((ss-3)->pathReduction >= 2));\
+		    AddBaseCondition(((ss-3)->pathReduction >= 3));\
+\
+		    AddBaseCondition(((ss-3)->reduction >= 1));\
+		    AddBaseCondition(((ss-3)->reduction >= 2));\
+		    AddBaseCondition(((ss-3)->reduction >= 3));\
+		    AddBaseCondition(((ss-2)->reduction >= 1));\
+		    AddBaseCondition(((ss-2)->reduction >= 2));\
+		    AddBaseCondition(((ss-2)->reduction >= 3));\
+		    AddBaseCondition(((ss-1)->reduction >= 1));\
+		    AddBaseCondition(((ss-1)->reduction >= 2));\
+		    AddBaseCondition(((ss-1)->reduction >= 3));\
+		    AddBaseCondition((ss->reduction >= 1));\
+		    AddBaseCondition((ss->reduction >= 2));\
+		    AddBaseCondition((ss->reduction >= 3));\
+		    AddBaseCondition((priorReduction >= 1));\
+		    AddBaseCondition((priorReduction >= 2));\
+		    AddBaseCondition((priorReduction >= 3));\
+		    AddBaseCondition(opponentWorsening);\
+		    AddBaseCondition((improving == opponentWorsening));\
+		    AddBaseCondition((eval > alpha));\
+	 	    AddBaseCondition((ss-2)->inCheck);\
+	 	    AddBaseCondition((moveCount >= 11));\
+		    \
+	 	    AddBaseCondition(givesCheck);\
+	 	    AddBaseCondition((depth >= 3));\
+	 	    AddBaseCondition((depth >= 4));\
+	 	    AddBaseCondition((depth >= 5));\
+	 	    AddBaseCondition((depth >= 6));\
+	 	    AddBaseCondition((depth >= 7));\
+	 	    AddBaseCondition((depth >= 8));\
+	 	    AddBaseCondition((depth >= 9));\
+	 	    AddBaseCondition((depth >= 10));\
+	 	    AddBaseCondition((depth >= 11));\
+	 	    AddBaseCondition((depth >= 12));\
+	 	    AddBaseCondition((depth >= 13));\
+	 	    AddBaseCondition((depth >= 14));\
+	 	    AddBaseCondition((depth >= 15));\
+	 	    AddBaseCondition((depth >= 16));\
+\
+	 	    AddBaseCondition((moveCount >= 3));\
+	 	    AddBaseCondition((moveCount >= 4));\
+	 	    AddBaseCondition((moveCount >= 5));\
+	 	    AddBaseCondition((moveCount >= 6));\
+	 	    AddBaseCondition((moveCount >= 7));\
+	 	    AddBaseCondition((moveCount >= 8));\
+	 	    AddBaseCondition((moveCount >= 9));\
+	 	    AddBaseCondition((moveCount >= 10));\
+	 	    AddBaseCondition((moveCount >= 12));\
+	 	    AddBaseCondition((moveCount >= 13));\
+	 	    AddBaseCondition((moveCount >= 14));\
+	 	    AddBaseCondition((moveCount >= 15));\
+	 	    AddBaseCondition((moveCount >= 16));\
+	 	    AddBaseCondition((moveCount >= 17));\
+	 	    AddBaseCondition((moveCount >= 18));\
+	 	    AddBaseCondition((moveCount >= 19));\
+	 	    AddBaseCondition((moveCount >= 20));\
+	 	    AddBaseCondition((moveCount >= 21));\
+	 	    AddBaseCondition((moveCount >= 22));\
+	 	    AddBaseCondition((moveCount >= 23));\
+	 	    AddBaseCondition((moveCount >= 24));\
+	 	    AddBaseCondition((moveCount >= 25));\
+	 	    AddBaseCondition((moveCount >= 26));\
+	 	    AddBaseCondition((moveCount >= 27));\
+	 	    AddBaseCondition((moveCount >= 28));\
+	 	    AddBaseCondition((moveCount >= 29));\
+	 	    AddBaseCondition((moveCount >= 30));\
+	 	    AddBaseCondition((moveCount >= 31));\
+	 	    AddBaseCondition((moveCount >= 32));\
+	 	    AddBaseCondition((moveCount >= 33));\
+	 	    AddBaseCondition((moveCount >= 34));\
+	 	    AddBaseCondition((moveCount >= 35));\
+	 	    AddBaseCondition((moveCount >= 36));\
+	 	    AddBaseCondition((moveCount >= 37));\
+	 	    AddBaseCondition((moveCount >= 38));\
+	 	    AddBaseCondition((moveCount >= 39));\
+\
+	 	    AddBaseCondition((r <= -2048));\
+	 	    AddBaseCondition((r <= -1024));\
+	 	    AddBaseCondition((r >= 0));\
+	 	    AddBaseCondition((r >= 1024));\
+	 	    AddBaseCondition((r >= 2048));\
+	 	    AddBaseCondition((r >= 3072));\
+	 	    AddBaseCondition((r >= 4096));\
+\
+	 	    AddBaseCondition((ss-1)->inCheck);\
+	 	    AddBaseCondition((ss-1)->ttPv);\
+	 	    AddBaseCondition((ss-1)->ttHit);\
+	 	    AddBaseCondition(bool((ss-1)->excludedMove));\
+	 	    AddBaseCondition((ss-2)->ttPv);\
+	 	    AddBaseCondition((ss-2)->ttHit);\
+	 	    AddBaseCondition(bool((ss-2)->excludedMove));\
+	 	    AddBaseCondition((ss-3)->inCheck);\
+	 	    AddBaseCondition((ss-3)->ttPv);\
+	 	    AddBaseCondition((ss-3)->ttHit);\
+	 	    AddBaseCondition(bool((ss-3)->excludedMove));\
+\
+	 	    AddBaseCondition((ss->ply % 2 == 0));\
+	 	    AddBaseCondition((rootDepth % 2 == 0));\
+	 	    AddBaseCondition((depth % 2 == 0));\
+	 	    AddBaseCondition((depth < ss->ply));\
+	 	    AddBaseCondition((2 * depth < ss->ply));\
+	 	    AddBaseCondition((depth < 2 * ss->ply));\
+	 	    AddBaseCondition((depth + ss->ply <= rootDepth));\
+	 	    AddBaseCondition((2 * (depth + ss->ply) <= rootDepth));\
+	 	    AddBaseCondition((2 * depth <= rootDepth));\
+	 	    AddBaseCondition((3 * depth <= rootDepth));\
+	 	    AddBaseCondition((3 * depth <= 2 * rootDepth));\
+\
+	 	    AddBaseCondition(pawn_moved);\
+	 	    AddBaseCondition(knight_moved);\
+	 	    AddBaseCondition(bishop_moved);\
+	 	    AddBaseCondition(rook_moved);\
+	 	    AddBaseCondition(queen_moved);\
+	 	    AddBaseCondition(king_moved);\
+\
+	 	    AddBaseCondition(captured_pawn);\
+	 	    AddBaseCondition(captured_knight);\
+	 	    AddBaseCondition(captured_bishop);\
+	 	    AddBaseCondition(captured_rook);\
+	 	    AddBaseCondition(captured_queen);\
+\
+	 	    AddBaseCondition(cutNode);\
+	 	    AddBaseCondition(allNode);\
+	 	    AddBaseCondition(PvNode);\
+		    AddBaseCondition(ss->ttPv);\
+		    AddBaseCondition(ss->inCheck);\
+		    AddBaseCondition(inDoubleCheck);\
+		    AddBaseCondition(capture);\
+		    AddBaseCondition(improving);\
+		    AddBaseCondition(priorCapture);\
+		    AddBaseCondition(ttCapture);\
+		    AddBaseCondition(bool(ttData.move));\
+		    AddBaseCondition((ttData.move.to_sq() == move.to_sq()));\
+		    AddBaseCondition((ttData.move.from_sq() == move.from_sq()));\
+		    AddBaseCondition((ss->staticEval > alpha));\
+		    AddBaseCondition((eval < ss->staticEval));\
+		    AddBaseCondition(bool(excludedMove));\
+		    AddBaseCondition((ttData.value > alpha));\
+		    AddBaseCondition(ttHit);\
+		    AddBaseCondition((prevSq == SQ_NONE));\
+		    AddBaseCondition((move.to_sq() == (ss-2)->currentMove.from_sq()));\
+		    AddBaseCondition((move.from_sq() == (ss-2)->currentMove.to_sq()));\
+		    AddBaseCondition((prevSq == move.to_sq()));\
+		    AddBaseCondition(double_check);\
+		    AddBaseCondition((pos.pinners(us) & move.to_sq()));\
+		    AddBaseCondition(defend_pinned_piece);\
+		    AddBaseCondition(attack_pinned_piece);\
+		    }\
+		    \
+		    \
+		    bool USE_FIXED = false;\
+		    if(USE_FIXED)\
+		    {\
+		    }\
+		    else if(USE_UPN)\
+		    {\
+	                    if(!UPNconditionsInit)\
+			    {\
+                                initUPNConditions(baseConditions, KEEP_FIRST_N, USE_KEEPED);\
+			    }\
+\
+			    std::vector<bool> varvalues(int(baseConditions.size()));\
+			    for(int i = 0; i < int(baseConditions.size()); i++)\
+				    	varvalues[i] = baseConditions[i].value;\
+\
+			    for(int i = 0; i < int(UPNConditions.size()); i++)\
+				    derivedConditions[i].value = UPNConditions[i](varvalues);\
+		    }\
+		    else\
+		    {\
+			    std::vector<Condition> additionalConditions = {\
+			    };\
+\
+			    derivedConditions.clear();\
+\
+			    bool COMBINE_ADDITIONAL = false;\
+			    bool COMBINE_FULL = true;\
+			    if(!USE_FIXED)\
+			    {\
+				    if(COMBINE_ADDITIONAL)\
+				    {\
+					for(int i = 0; i < int(additionalConditions.size()); i++) \
+					{\
+						derivedConditions.push_back(additionalConditions[i]);\
+						derivedConditions.push_back(additionalConditions[i].Not());\
+\
+						for(int j = 0; j < int(baseConditions.size()); j++) \
+						{\
+						     derivedConditions.push_back(baseConditions[j].And(additionalConditions[i]));\
+						     derivedConditions.push_back(baseConditions[j].And(additionalConditions[i].Not()));\
+						     derivedConditions.push_back(baseConditions[j].Not().And(additionalConditions[i]));\
+						     derivedConditions.push_back(baseConditions[j].Not().And(additionalConditions[i].Not()));\
+\
+						     derivedConditions.push_back(baseConditions[j].Or(additionalConditions[i]));\
+						     derivedConditions.push_back(baseConditions[j].Or(additionalConditions[i].Not()));\
+						     derivedConditions.push_back(baseConditions[j].Not().Or(additionalConditions[i]));\
+						     derivedConditions.push_back(baseConditions[j].Not().Or(additionalConditions[i].Not()));\
+						}\
+					}\
+				    }\
+				    else\
+				    {\
+					    for(int i = 0; i < int(baseConditions.size()); i++) \
+					    {\
+						derivedConditions.push_back(baseConditions[i]);\
+						derivedConditions.push_back(baseConditions[i].Not());\
+\
+						if(COMBINE_FULL)\
+						{\
+							for(int j = 0; j < i; j++)\
+							{\
+							     derivedConditions.push_back(baseConditions[j].And(baseConditions[i]));\
+							     derivedConditions.push_back(baseConditions[j].And(baseConditions[i].Not()));\
+							     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i]));\
+							     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i].Not()));\
+\
+							     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i]));\
+							     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i].Not()));\
+							     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i]));\
+							     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i].Not()));\
+							}\
+						}\
+					}\
+				    }\
+			    }\
+			    else\
+			    {\
+				derivedConditions = additionalConditions;\
+\
+			    }\
+\
+		    }\
+\
+		    bool USE_REDUCTION = false;\
+		    if(USE_REDUCTION && USE_FIXED)\
+		    {\
+			    auto cc = derivedConditions;\
+			    derivedConditions.clear();\
+\
+			    constexpr int NN = 4;\
+			    constexpr int RR[NN] = { 0, 256, 512, 1024 };\
+\
+			    for(auto c : cc)\
+			    {\
+				    for(int i = 0; i < NN; i++)\
+					    derivedConditions.push_back(Condition(c.name+"[R="+std::to_string(RR[i])+"]", c.value && (int(nodes) % NN == i)));\
+			    }\
+\
+			    int myr = 0;\
+			    for(int i = 0; i < int(derivedConditions.size()); i++)\
+				    if(derivedConditions[i].value)\
+					 myr += RR[i%NN] * (PREDICT_FAIL_LOW ? 1 : -1);\
+			    r += myr;\
+		    }\
+ \
+  		    for(int i = 0; i < int(derivedConditions.size()); i++) \
+			   RC.push_back(derivedConditions[i].value);\
+
 
 // Main search function for both PV and non-PV nodes
 template<NodeType nodeType>
@@ -1776,14 +2071,15 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
 
+	    bool CC = false;
+	    bool CP = CC;
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-	    //bool PREDICT_FAIL_LOW = false;
-	    bool CC = true;
+	    CC = true;
 	    //bool CC = !PvNode;
 	    //bool CC = true;//!PvNode;
-	    bool CP = CC;
+	    CP = CC;
 
 	    bool pawn_moved = type_of(movedPiece) == PAWN;
 	    bool knight_moved = type_of(movedPiece) == KNIGHT;
@@ -1803,26 +2099,6 @@ moves_loop:  // When in check, search starts here
 	    bool piece_becomes_pinned = pos.blockers_for_king(us) & move.to_sq();
 	    bool piece_is_pinned = pinnedPieces & move.from_sq();
 
-/*
-		    bool C1 = (depth >= 10) && (moveCount >= 39);
-		    bool C2 = !(((moveCount >= 24) || (depth >= 14)) && (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()))) && (moveCount >= 39);
-		    bool C3 = (moveCount >= 16) && (depth >= 11) && !(r >= 2048);
-		    bool C4 = ((depth >= 13) || ttHit) && (depth >= 11) && (moveCount >= 37);
-		    bool C5 = (depth >= 16) && (r >= 4096) && (ss-1)->inCheck;
-		    bool C6 = (depth >= 3) && (moveCount >= 26) && (ss-1)->isPvNode && C1;
-		bool C7 = C5 && (moveCount >= 29) && !(pos.pinners(us) & move.to_sq());
-		bool C8 = C3 && !(((ss-2)->reduction >= 2) || (moveCount >= 19));
-		bool C9 = C1 && improving && !(3 * depth <= rootDepth) && !((ss-2)->reduction >= 3);
-		bool C10 = !(depth % 2 == 0) && (depth >= 13) && (moveCount >= 28);
-		bool C11 = C2 && (r >= 4096) && (depth >= 13);
-		bool C12 = C5 && ((depth < 2 * ss->ply) ^ (depth >= 4));
-		bool C13 = (!(!(moveCount >= 29) || improving) || ((ss-2)->reduction >= 3)) && (ss-2)->ttPv;
-		bool C14 = C1 && (bool(ttData.move) ^ C12);
-		bool C15 = (!priorCapture && C3) || ((2 * (depth + ss->ply) <= rootDepth) && (depth >= 12));
-		bool C16 = C12 && (moveCount >= 19);
-		bool C17 = ((moveCount >= 26) == (improving == opponentWorsening)) && C14 && ((3 * depth <= rootDepth) || (depth >= 3));
-		*/
-
 		bool C1 = ((moveCount >= 31) && (priorReduction >= 2)) || (captured_bishop && (moveCount >= 30));
 		bool C2 = piece_is_pinned;
 		bool C3 = captured_bishop && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10);
@@ -1832,7 +2108,7 @@ moves_loop:  // When in check, search starts here
 		bool C7 = ((moveCount < 32) ^ (depth < 16)) && (moveCount >= 31) && (r < 0);
 		bool C8 = opponentWorsening && (moveCount >= 39) && (depth >= 14) && (depth < 16);
 
-	       if(CP && true)
+	       if(CP)
                {
                        dbg_hit_on(C1, 100001);
                        dbg_hit_on(C2, 100002);
@@ -1854,31 +2130,6 @@ moves_loop:  // When in check, search starts here
                        dbg_hit_on(C17, 100017);
 		       */
                }
-	    /*
-	     * Hit #0: Total 65150829 Hits 61768915 Hit Rate (%) 94.8091
-Hit #100: Total 38862095 Hits 37877027 Hit Rate (%) 97.4652
-Hit #101: Total 49229475 Hits 46304306 Hit Rate (%) 94.0581
-Hit #102: Total 37077952 Hits 35650319 Hit Rate (%) 96.1496
-Hit #103: Total 61544967 Hits 58389777 Hit Rate (%) 94.8734
-Hit #104: Total 57694289 Hits 54677063 Hit Rate (%) 94.7703
-Hit #105: Total 59702899 Hits 56766602 Hit Rate (%) 95.0818
-Hit #106: Total 48524190 Hits 45572427 Hit Rate (%) 93.9169
-Hit #107: Total 60332995 Hits 57170032 Hit Rate (%) 94.7575
-Hit #108: Total 42675526 Hits 41402825 Hit Rate (%) 97.0177
-Hit #109: Total 37501000 Hits 36381808 Hit Rate (%) 97.0156
-Hit #110: Total 51757261 Hits 48798171 Hit Rate (%) 94.2828
-Hit #200: Total 26288734 Hits 23891888 Hit Rate (%) 90.8826
-Hit #201: Total 15921354 Hits 15464609 Hit Rate (%) 97.1312
-Hit #202: Total 28072877 Hits 26118596 Hit Rate (%) 93.0385
-Hit #203: Total 3605862 Hits 3379138 Hit Rate (%) 93.7123
-Hit #204: Total 7456540 Hits 7091852 Hit Rate (%) 95.1092
-Hit #205: Total 5447930 Hits 5002313 Hit Rate (%) 91.8204
-Hit #206: Total 16626639 Hits 16196488 Hit Rate (%) 97.4129
-Hit #207: Total 4817834 Hits 4598883 Hit Rate (%) 95.4554
-Hit #208: Total 22475303 Hits 20366090 Hit Rate (%) 90.6154
-Hit #209: Total 27649829 Hits 25387107 Hit Rate (%) 91.8165
-Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
-	     * */
 	    // fail low CC=!PvNode CP=CC
 	    /*
             constexpr double mean = 94.8091;
@@ -1888,30 +2139,6 @@ Hit #210: Total 13393568 Hits 12970744 Hit Rate (%) 96.8431
 	    };
 	    */
 
-		/*
-		 * Hit #300: Total 3381914 Hits 2396846 Hit Rate (%) 70.8725
-Hit #301: Total 3381914 Hits 456745 Hit Rate (%) 13.5055
-Hit #302: Total 3381914 Hits 1954281 Hit Rate (%) 57.7862
-Hit #303: Total 3381914 Hits 226724 Hit Rate (%) 6.70401
-Hit #304: Total 3381914 Hits 364688 Hit Rate (%) 10.7835
-Hit #305: Total 3381914 Hits 445617 Hit Rate (%) 13.1765
-Hit #306: Total 3381914 Hits 430151 Hit Rate (%) 12.7192
-Hit #307: Total 3381914 Hits 218951 Hit Rate (%) 6.47417
-Hit #308: Total 3381914 Hits 2109213 Hit Rate (%) 62.3674
-Hit #309: Total 3381914 Hits 2262722 Hit Rate (%) 66.9066
-Hit #310: Total 3381914 Hits 422824 Hit Rate (%) 12.5025
-Hit #400: Total 3381914 Hits 985068 Hit Rate (%) 29.1275
-Hit #401: Total 3381914 Hits 2925169 Hit Rate (%) 86.4945
-Hit #402: Total 3381914 Hits 1427633 Hit Rate (%) 42.2138
-Hit #403: Total 3381914 Hits 3155190 Hit Rate (%) 93.296
-Hit #404: Total 3381914 Hits 3017226 Hit Rate (%) 89.2165
-Hit #405: Total 3381914 Hits 2936297 Hit Rate (%) 86.8235
-Hit #406: Total 3381914 Hits 2951763 Hit Rate (%) 87.2808
-Hit #407: Total 3381914 Hits 3162963 Hit Rate (%) 93.5258
-Hit #408: Total 3381914 Hits 1272701 Hit Rate (%) 37.6326
-Hit #409: Total 3381914 Hits 1119192 Hit Rate (%) 33.0934
-Hit #410: Total 3381914 Hits 2959090 Hit Rate (%) 87.4975
-		 */
 	    // true positive CC=!PvNode CP=CC
             constexpr double mean = 0.5;
 	    const std::vector<double> factor[2] ={
@@ -1973,416 +2200,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
 	    // specify tested rule
 	    if(CP)
 	    {
-		    //set rule!!!
-		    //// fail low
-		    /*
-		    R =   -67 * cutNode
-			+ 30 * ss->ttPv
-			+ -31 * improving
-			+ -11 * ss->inCheck
-			+ 3 * capture
-			+ -32 * givesCheck
-			+ 35 * priorCapture
-			+ 6 * ttCapture
-			+ -64 * (eval > alpha)
-			+ -52 * (ss->staticEval > alpha)
-			+ 25 * (eval < ss->staticEval)
-			>= 43;
-			*/
-
-		    // true positive rate
-		    R =   -427 * cutNode
-			+ 747 * ss->ttPv
-			+ -159 * improving
-			+ 887 * ss->inCheck
-			+ 803 * capture
-			+ 754 * givesCheck
-			+ 763 * priorCapture
-			+ 891 * ttCapture
-			+ -253 * (eval > alpha)
-			+ -347 * (ss->staticEval > alpha)
-			+ 768 * (eval < ss->staticEval)
-			>= 2325;
-		    //R = ss->inCheck && allNode;// && !cutNode;
-		    //R = true;
-		    //R = allNode && ttCapture;
-		    //R = depth >= 12 && priorCapture;
-		    //R = ss->inCheck && ttCapture;
-		    //
-
-		    /*
-		    baseConditions = {
-			    CONDITION(cutNode),
-			    CONDITION(ss->ttPv),
-			    CONDITION(ss->inCheck),
-			    CONDITION(capture),
-			    CONDITION(givesCheck),
-			    CONDITION(improving),
-			    CONDITION(priorCapture),
-			    CONDITION((eval > alpha)),
-			    CONDITION((ss->staticEval > alpha)),
-			    CONDITION((eval < ss->staticEval)),
-			    CONDITION(bool(excludedMove)),
-			    CONDITION((ttData.value > alpha)),
-			    CONDITION(ttHit),
-			    CONDITION((prevSq == SQ_NONE)),
-			    CONDITION((prevSq == move.to_sq())),
-			    CONDITION(more_than_one(pos.checkers())),
-		    };
-		    */
-		    int baseCount = 0;
-
-		    /*
-		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
-		    int KEEP_FIRST_N = 17;
-		     
-		    AddBaseConditionText("C1",((depth >= 10) && (moveCount >= 39)));
-		    AddBaseConditionText("C2", (!(((moveCount >= 24) || (depth >= 14)) && defend_pinned_piece) && (moveCount >= 39)));
-		    AddBaseConditionText("C3",((moveCount >= 16) && (depth >= 11) && !(r >= 2048)));
-		    AddBaseConditionText("C4",(((depth >= 13) || ttHit) && (depth >= 11) && (moveCount >= 37)));
-		    AddBaseConditionText("C5",((depth >= 16) && (r >= 4096) && (ss-1)->inCheck));
-		    AddBaseConditionText("C6",((depth >= 3) && (moveCount >= 26) && (ss-1)->isPvNode && C1));
-		    AddBaseConditionText("C7",(C5 && (moveCount >= 29) && !(pos.pinners(us) & move.to_sq())));
-		    AddBaseConditionText("C8",(C3 && !(((ss-2)->reduction >= 2) || (moveCount >= 19))));
-		    AddBaseConditionText("C9",(C1 && improving && !(3 * depth <= rootDepth) && !((ss-2)->reduction >= 3)));
-		    AddBaseConditionText("C10",(!(depth % 2 == 0) && (depth >= 13) && (moveCount >= 28)));
-		    AddBaseConditionText("C11",(C2 && (r >= 4096) && (depth >= 13)));
-		    AddBaseConditionText("C12",(C5 && ((depth < 2 * ss->ply) ^ (depth >= 4))));
-		    AddBaseConditionText("C13",((!(!(moveCount >= 29) || improving) || ((ss-2)->reduction >= 3)) && (ss-2)->ttPv));
-		    AddBaseConditionText("C14",(C1 && (bool(ttData.move) ^ C12)));
-		    AddBaseConditionText("C15",((!priorCapture && C3) || ((2 * (depth + ss->ply) <= rootDepth) && (depth >= 12))));
-		    AddBaseConditionText("C16",(C12 && (moveCount >= 19)));
-		    AddBaseConditionText("C17",(((moveCount >= 26) == (improving == opponentWorsening)) && C14 && ((3 * depth <= rootDepth) || (depth >= 3))));
-		    */
-
-		    int USE_KEEPED = 0; // 0 = no keeped condition have to be used, 1 = at least one have to be used, > 1 = all have to be used
-		    int KEEP_FIRST_N = 0;
-
-		    /*
-		    //AddBaseConditionText("C1",(((moveCount >= 31) && (priorReduction >= 2)) || (captured_bishop && (moveCount >= 30))));
-		    //AddBaseConditionText("C2",piece_is_pinned);
-		    AddBaseConditionText("C3",(captured_bishop && !bool((ss-1)->excludedMove) && (ss-3)->ttHit && (depth >= 10)));
-		    AddBaseConditionText("C4",((((ss-3)->inCheck && (prevSq == move.to_sq())) == (r >= 3072)) && (moveCount >= 38)));
-		    AddBaseConditionText("C5",((((moveCount >= 19) && captured_pawn) == (moveCount < 36)) && attack_pinned_piece));
-		    AddBaseConditionText("C6",(!((((depth >= 13) ^ (moveCount >= 22)) && (moveCount >= 10)) || (moveCount < 35))));
-		    AddBaseConditionText("C7",(((moveCount < 32) ^ (depth < 16)) && (moveCount >= 31) && (r < 0)));
-		    AddBaseConditionText("C8",(opponentWorsening && (moveCount >= 39) && (depth >= 14) && (depth < 16)));
-		    */
-
-		    // isPvNode is currently broken so ignore it
-	 	    //AddBaseCondition((ss-1)->isPvNode);
-	 	    //AddBaseCondition((ss-2)->isPvNode);
-	 	    //AddBaseCondition((ss-3)->isPvNode);
-		    //
-	 	    //AddBaseCondition(((ss-2)->reduction>=2));
-	 	    //AddBaseCondition((((ss-2)->reduction>=2) != double_check));
-	 	    //AddBaseCondition(double_check);
-
-            //KEEP_FIRST_N = 3;
-            //USE_KEEPED = 1;
-	 	    //AddBaseCondition((depth >= 14 && moveCount >= 22));
-	 	    //AddBaseCondition((depth >= 13 && moveCount >= 22));
-	 	    //AddBaseCondition((depth >= 14 && moveCount >= 21));
-		    
-		    if(true)
-		    {
-		    AddBaseCondition(two_last_piece_moves_aligned);
-		    AddBaseCondition(piece_becomes_pinned);
-		    AddBaseCondition(piece_is_pinned);
-
-		    AddBaseCondition((ss->pathReduction >= 1));
-		    AddBaseCondition((ss->pathReduction >= 2));
-		    AddBaseCondition((ss->pathReduction >= 3));
-		    AddBaseCondition(((ss-1)->pathReduction >= 1));
-		    AddBaseCondition(((ss-1)->pathReduction >= 2));
-		    AddBaseCondition(((ss-1)->pathReduction >= 3));
-		    AddBaseCondition(((ss-2)->pathReduction >= 1));
-		    AddBaseCondition(((ss-2)->pathReduction >= 2));
-		    AddBaseCondition(((ss-2)->pathReduction >= 3));
-		    AddBaseCondition(((ss-3)->pathReduction >= 1));
-		    AddBaseCondition(((ss-3)->pathReduction >= 2));
-		    AddBaseCondition(((ss-3)->pathReduction >= 3));
-
-		    AddBaseCondition(((ss-3)->reduction >= 1));
-		    AddBaseCondition(((ss-3)->reduction >= 2));
-		    AddBaseCondition(((ss-3)->reduction >= 3));
-		    AddBaseCondition(((ss-2)->reduction >= 1));
-		    AddBaseCondition(((ss-2)->reduction >= 2));
-		    AddBaseCondition(((ss-2)->reduction >= 3));
-		    AddBaseCondition(((ss-1)->reduction >= 1));
-		    AddBaseCondition(((ss-1)->reduction >= 2));
-		    AddBaseCondition(((ss-1)->reduction >= 3));
-		    AddBaseCondition((ss->reduction >= 1));
-		    AddBaseCondition((ss->reduction >= 2));
-		    AddBaseCondition((ss->reduction >= 3));
-		    AddBaseCondition((priorReduction >= 1));
-		    AddBaseCondition((priorReduction >= 2));
-		    AddBaseCondition((priorReduction >= 3));
-		    AddBaseCondition(opponentWorsening);
-		    AddBaseCondition((improving == opponentWorsening));
-		    AddBaseCondition((eval > alpha));
-	 	    AddBaseCondition((ss-2)->inCheck);
-	 	    AddBaseCondition((moveCount >= 11));
-		    
-	 	    AddBaseCondition(givesCheck);
-	 	    AddBaseCondition((depth >= 3));
-	 	    AddBaseCondition((depth >= 4));
-	 	    AddBaseCondition((depth >= 5));
-	 	    AddBaseCondition((depth >= 6));
-	 	    AddBaseCondition((depth >= 7));
-	 	    AddBaseCondition((depth >= 8));
-	 	    AddBaseCondition((depth >= 9));
-	 	    AddBaseCondition((depth >= 10));
-	 	    AddBaseCondition((depth >= 11));
-	 	    AddBaseCondition((depth >= 12));
-	 	    AddBaseCondition((depth >= 13));
-	 	    AddBaseCondition((depth >= 14));
-	 	    AddBaseCondition((depth >= 15));
-	 	    AddBaseCondition((depth >= 16));
-
-	 	    AddBaseCondition((moveCount >= 3));
-	 	    AddBaseCondition((moveCount >= 4));
-	 	    AddBaseCondition((moveCount >= 5));
-	 	    AddBaseCondition((moveCount >= 6));
-	 	    AddBaseCondition((moveCount >= 7));
-	 	    AddBaseCondition((moveCount >= 8));
-	 	    AddBaseCondition((moveCount >= 9));
-	 	    AddBaseCondition((moveCount >= 10));
-	 	    AddBaseCondition((moveCount >= 12));
-	 	    AddBaseCondition((moveCount >= 13));
-	 	    AddBaseCondition((moveCount >= 14));
-	 	    AddBaseCondition((moveCount >= 15));
-	 	    AddBaseCondition((moveCount >= 16));
-	 	    AddBaseCondition((moveCount >= 17));
-	 	    AddBaseCondition((moveCount >= 18));
-	 	    AddBaseCondition((moveCount >= 19));
-	 	    AddBaseCondition((moveCount >= 20));
-	 	    AddBaseCondition((moveCount >= 21));
-	 	    AddBaseCondition((moveCount >= 22));
-	 	    AddBaseCondition((moveCount >= 23));
-	 	    AddBaseCondition((moveCount >= 24));
-	 	    AddBaseCondition((moveCount >= 25));
-	 	    AddBaseCondition((moveCount >= 26));
-	 	    AddBaseCondition((moveCount >= 27));
-	 	    AddBaseCondition((moveCount >= 28));
-	 	    AddBaseCondition((moveCount >= 29));
-	 	    AddBaseCondition((moveCount >= 30));
-	 	    AddBaseCondition((moveCount >= 31));
-	 	    AddBaseCondition((moveCount >= 32));
-	 	    AddBaseCondition((moveCount >= 33));
-	 	    AddBaseCondition((moveCount >= 34));
-	 	    AddBaseCondition((moveCount >= 35));
-	 	    AddBaseCondition((moveCount >= 36));
-	 	    AddBaseCondition((moveCount >= 37));
-	 	    AddBaseCondition((moveCount >= 38));
-	 	    AddBaseCondition((moveCount >= 39));
-
-	 	    AddBaseCondition((r <= -2048));
-	 	    AddBaseCondition((r <= -1024));
-	 	    AddBaseCondition((r >= 0));
-	 	    AddBaseCondition((r >= 1024));
-	 	    AddBaseCondition((r >= 2048));
-	 	    AddBaseCondition((r >= 3072));
-	 	    AddBaseCondition((r >= 4096));
-
-	 	    AddBaseCondition((ss-1)->inCheck);
-	 	    AddBaseCondition((ss-1)->ttPv);
-	 	    AddBaseCondition((ss-1)->ttHit);
-	 	    AddBaseCondition(bool((ss-1)->excludedMove));
-	 	    AddBaseCondition((ss-2)->ttPv);
-	 	    AddBaseCondition((ss-2)->ttHit);
-	 	    AddBaseCondition(bool((ss-2)->excludedMove));
-	 	    AddBaseCondition((ss-3)->inCheck);
-	 	    AddBaseCondition((ss-3)->ttPv);
-	 	    AddBaseCondition((ss-3)->ttHit);
-	 	    AddBaseCondition(bool((ss-3)->excludedMove));
-
-	 	    AddBaseCondition((ss->ply % 2 == 0));
-	 	    AddBaseCondition((rootDepth % 2 == 0));
-	 	    AddBaseCondition((depth % 2 == 0));
-	 	    AddBaseCondition((depth < ss->ply));
-	 	    AddBaseCondition((2 * depth < ss->ply));
-	 	    AddBaseCondition((depth < 2 * ss->ply));
-	 	    AddBaseCondition((depth + ss->ply <= rootDepth));
-	 	    AddBaseCondition((2 * (depth + ss->ply) <= rootDepth));
-	 	    AddBaseCondition((2 * depth <= rootDepth));
-	 	    AddBaseCondition((3 * depth <= rootDepth));
-	 	    AddBaseCondition((3 * depth <= 2 * rootDepth));
-
-	 	    AddBaseCondition(pawn_moved);
-	 	    AddBaseCondition(knight_moved);
-	 	    AddBaseCondition(bishop_moved);
-	 	    AddBaseCondition(rook_moved);
-	 	    AddBaseCondition(queen_moved);
-	 	    AddBaseCondition(king_moved);
-
-	 	    AddBaseCondition(captured_pawn);
-	 	    AddBaseCondition(captured_knight);
-	 	    AddBaseCondition(captured_bishop);
-	 	    AddBaseCondition(captured_rook);
-	 	    AddBaseCondition(captured_queen);
-
-	 	    AddBaseCondition(cutNode);
-	 	    AddBaseCondition(allNode);
-	 	    AddBaseCondition(PvNode);
-		    AddBaseCondition(ss->ttPv);
-		    AddBaseCondition(ss->inCheck);
-		    AddBaseCondition(inDoubleCheck);
-		    AddBaseCondition(capture);
-		    AddBaseCondition(improving);
-		    AddBaseCondition(priorCapture);
-		    AddBaseCondition(ttCapture);
-		    AddBaseCondition(bool(ttData.move));
-		    AddBaseCondition((ttData.move.to_sq() == move.to_sq()));
-		    AddBaseCondition((ttData.move.from_sq() == move.from_sq()));
-		    AddBaseCondition((ss->staticEval > alpha));
-		    AddBaseCondition((eval < ss->staticEval));
-		    AddBaseCondition(bool(excludedMove));
-		    AddBaseCondition((ttData.value > alpha));
-		    AddBaseCondition(ttHit);
-		    AddBaseCondition((prevSq == SQ_NONE));
-		    AddBaseCondition((move.to_sq() == (ss-2)->currentMove.from_sq()));
-		    AddBaseCondition((move.from_sq() == (ss-2)->currentMove.to_sq()));
-		    AddBaseCondition((prevSq == move.to_sq()));
-		    AddBaseCondition(double_check);
-		    AddBaseCondition((pos.pinners(us) & move.to_sq()));
-		    AddBaseCondition(defend_pinned_piece);
-		    AddBaseCondition(attack_pinned_piece);
-		    }
-		    
-		    
-/*
-		    if(USE_UPN && int(baseConditions.size()) > UPN::MAX_VARS && !conditionsSelectionInit)
-		    {
-			    std::shuffle(selectedConditions.begin() + KEEP_FIRST_N, selectedConditions.end(), generator);
-                            conditionsSelectionInit = true;
-
-			    std::cerr << "Selected base conditions:" << std::endl;
-			    for(int i = 0; i < int(baseConditions.size()); i++)
-				    if(selectedConditions[i])
-				    	std::cerr << baseConditions[i].name << std::endl;
-		    }
-		    */
-
-		    bool USE_FIXED = false;
-		    if(USE_FIXED)
-		    {
-		 	   // AddCondition(more_than_one(pos.checkers())),
-		    }
-		    else if(USE_UPN)
-		    {
-	                    if(!UPNconditionsInit)
-			    {
-                                initUPNConditions(baseConditions, KEEP_FIRST_N, USE_KEEPED);
-			    }
-
-			    //std::vector<bool> varvalues(std::min(UPN::MAX_VARS, int(baseConditions.size())));
-			    std::vector<bool> varvalues(int(baseConditions.size()));
-			    for(int i = 0; i < int(baseConditions.size()); i++)
-				    //if(selectedConditions[i])
-				    	varvalues[i] = baseConditions[i].value;
-
-			    for(int i = 0; i < int(UPNConditions.size()); i++)
-				    derivedConditions[i].value = UPNConditions[i](varvalues);
-		    }
-		    else
-		    {
-			    std::vector<Condition> additionalConditions = {
-	//			    CONDITION(more_than_one(pos.checkers())),
-			    };
-
-			    derivedConditions.clear();
-
-			    bool COMBINE_ADDITIONAL = false;
-			    bool COMBINE_FULL = true;
-			    if(!USE_FIXED)
-			    {
-				    if(COMBINE_ADDITIONAL)
-				    {
-					for(int i = 0; i < int(additionalConditions.size()); i++) 
-					{
-						derivedConditions.push_back(additionalConditions[i]);
-						derivedConditions.push_back(additionalConditions[i].Not());
-
-						for(int j = 0; j < int(baseConditions.size()); j++) 
-						{
-						     derivedConditions.push_back(baseConditions[j].And(additionalConditions[i]));
-						     derivedConditions.push_back(baseConditions[j].And(additionalConditions[i].Not()));
-						     derivedConditions.push_back(baseConditions[j].Not().And(additionalConditions[i]));
-						     derivedConditions.push_back(baseConditions[j].Not().And(additionalConditions[i].Not()));
-
-						     derivedConditions.push_back(baseConditions[j].Or(additionalConditions[i]));
-						     derivedConditions.push_back(baseConditions[j].Or(additionalConditions[i].Not()));
-						     derivedConditions.push_back(baseConditions[j].Not().Or(additionalConditions[i]));
-						     derivedConditions.push_back(baseConditions[j].Not().Or(additionalConditions[i].Not()));
-						}
-					}
-				    }
-				    else
-				    {
-					    for(int i = 0; i < int(baseConditions.size()); i++) 
-					    {
-						derivedConditions.push_back(baseConditions[i]);
-						derivedConditions.push_back(baseConditions[i].Not());
-
-						if(COMBINE_FULL)
-						{
-							for(int j = 0; j < i; j++)
-							{
-							     derivedConditions.push_back(baseConditions[j].And(baseConditions[i]));
-							     derivedConditions.push_back(baseConditions[j].And(baseConditions[i].Not()));
-							     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i]));
-							     derivedConditions.push_back(baseConditions[j].Not().And(baseConditions[i].Not()));
-
-							     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i]));
-							     derivedConditions.push_back(baseConditions[j].Or(baseConditions[i].Not()));
-							     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i]));
-							     derivedConditions.push_back(baseConditions[j].Not().Or(baseConditions[i].Not()));
-							}
-						}
-					}
-				    }
-			    }
-			    else
-			    {
-				//derivedConditions.push_back(CONDITION(more_than_one(pos.checkers())));
-				//derivedConditions.push_back(CONDITION(prevSq == SQ_NONE));
-				//derivedConditions.push_back(CONDITION(ss->ttPv&&ss->inCheck));
-				//derivedConditions.push_back(CONDITION(allNode&&ttCapture));
-				//derivedConditions.push_back(CONDITION(depth>=13&&priorCapture));
-				derivedConditions = additionalConditions;
-
-			    }
-
-		    }
-
-		    bool USE_REDUCTION = false;
-		    if(USE_REDUCTION && USE_FIXED)
-		    {
-			    auto cc = derivedConditions;
-			    derivedConditions.clear();
-
-			    constexpr int NN = 4;
-			    constexpr int RR[NN] = { 0, 256, 512, 1024 };
-
-			    for(auto c : cc)
-			    {
-				    for(int i = 0; i < NN; i++)
-					    derivedConditions.push_back(Condition(c.name+"[R="+std::to_string(RR[i])+"]", c.value && (int(nodes) % NN == i)));
-			    }
-
-			    int myr = 0;
-			    for(int i = 0; i < int(derivedConditions.size()); i++)
-				    if(derivedConditions[i].value)
-					 myr += RR[i%NN] * (PREDICT_FAIL_LOW ? 1 : -1);
-			    //r += myr / int(cc.size());
-			    r += myr;
-		    }
-		    //std::cerr << "Use " << derivedConditions.size() << " conditions." << std::endl;
- 
-  		    for(int i = 0; i < int(derivedConditions.size()); i++) 
-			   RC.push_back(derivedConditions[i].value);
-
+            buildConditions(R, RC);
 	    }
 
 
