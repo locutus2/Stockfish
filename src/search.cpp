@@ -57,7 +57,7 @@ namespace Stockfish {
 std::random_device rd;
 std::mt19937 generator(rd());
 
-bool PREDICT_FAIL_LOW = true;
+bool PREDICT_FAIL_LOW = false;
 bool INCLUDE_RESEARCH = false;
 
 constexpr bool USE_UPN = true;
