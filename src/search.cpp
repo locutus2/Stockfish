@@ -57,7 +57,7 @@ namespace Stockfish {
 std::random_device rd;
 std::mt19937 generator(rd());
 
-bool PREDICT_FAIL_LOW = false;
+bool PREDICT_FAIL_LOW = true;
 bool INCLUDE_RESEARCH = false;
 
 constexpr bool USE_UPN = true;
@@ -72,6 +72,8 @@ constexpr bool PARETO = true;
 //constexpr int N_UPN_CONDITIONS = 1600;//100;
 //constexpr int N_UPN_CONDITIONS = 400;
 constexpr int N_UPN_CONDITIONS = 100;
+//constexpr int N_UPN_CONDITIONS = 2500;
+//constexpr int N_UPN_CONDITIONS = 200;
 constexpr int N_UPN_SIZE = 4;//9;
 //constexpr int N_UPN_CONDITIONS = 10;//100;
 //constexpr int N_UPN_CONDITIONS = 4;
@@ -1133,6 +1135,7 @@ void Search::Worker::clear() {
 		    AddBaseCondition(two_last_piece_moves_aligned);\
 		    AddBaseCondition(piece_becomes_pinned);\
 		    AddBaseCondition(piece_is_pinned);\
+		    AddBaseCondition(rootNode);\
 \
 		    AddBaseCondition((ss->pathReduction >= 1));\
 		    AddBaseCondition((ss->pathReduction >= 2));\
@@ -1271,6 +1274,7 @@ void Search::Worker::clear() {
 	 	    AddBaseCondition(PvNode);\
 		    AddBaseCondition(ss->ttPv);\
 		    AddBaseCondition(ss->inCheck);\
+		    AddBaseCondition(double_check);\
 		    AddBaseCondition(inDoubleCheck);\
 		    AddBaseCondition(capture);\
 		    AddBaseCondition(improving);\
@@ -1288,7 +1292,6 @@ void Search::Worker::clear() {
 		    AddBaseCondition((move.to_sq() == (ss-2)->currentMove.from_sq()));\
 		    AddBaseCondition((move.from_sq() == (ss-2)->currentMove.to_sq()));\
 		    AddBaseCondition((prevSq == move.to_sq()));\
-		    AddBaseCondition(double_check);\
 		    AddBaseCondition((pos.pinners(us) & move.to_sq()));\
 		    AddBaseCondition(defend_pinned_piece);\
 		    AddBaseCondition(attack_pinned_piece);\
