@@ -1163,6 +1163,14 @@ void Search::Worker::clear() {
 		    AddBaseCondition(piece_becomes_pinned);\
 		    AddBaseCondition(piece_is_pinned);\
 		    AddBaseCondition(rootNode);\
+		    AddBaseCondition((ss->statScore > 0));\
+\
+		    AddBaseCondition(((ss+1)->cutoffCnt > 0));\
+		    AddBaseCondition(((ss+1)->cutoffCnt > 1));\
+		    AddBaseCondition(((ss+1)->cutoffCnt > 2));\
+		    AddBaseCondition(((ss+1)->cutoffCnt > 3));\
+		    AddBaseCondition(((ss+1)->cutoffCnt > 4));\
+		    AddBaseCondition(((ss+1)->cutoffCnt > 5));\
 \
 		    AddBaseCondition((ss->pathReduction >= 1));\
 		    AddBaseCondition((ss->pathReduction >= 2));\
@@ -1177,24 +1185,16 @@ void Search::Worker::clear() {
 		    AddBaseCondition(((ss-3)->pathReduction >= 2));\
 		    AddBaseCondition(((ss-3)->pathReduction >= 3));\
 \
-		    AddBaseCondition(((ss-3)->reduction >= 1));\
-		    AddBaseCondition(((ss-3)->reduction >= 2));\
-		    AddBaseCondition(((ss-3)->reduction >= 3));\
-		    AddBaseCondition(((ss-2)->reduction >= 1));\
-		    AddBaseCondition(((ss-2)->reduction >= 2));\
-		    AddBaseCondition(((ss-2)->reduction >= 3));\
-		    AddBaseCondition(((ss-1)->reduction >= 1));\
-		    AddBaseCondition(((ss-1)->reduction >= 2));\
-		    AddBaseCondition(((ss-1)->reduction >= 3));\
-		    AddBaseCondition((ss->reduction >= 1));\
-		    AddBaseCondition((ss->reduction >= 2));\
-		    AddBaseCondition((ss->reduction >= 3));\
 		    AddBaseCondition((priorReduction >= 1));\
 		    AddBaseCondition((priorReduction >= 2));\
 		    AddBaseCondition((priorReduction >= 3));\
 		    AddBaseCondition((priorReduction >= 4));\
 		    AddBaseCondition((priorReduction >= 5));\
 		    AddBaseCondition((priorReduction >= 6));\
+		    AddBaseCondition((priorReduction >= 6));\
+		    AddBaseCondition((priorReduction >= 7));\
+		    AddBaseCondition((priorReduction >= 8));\
+		    AddBaseCondition((priorReduction >= 9));\
 		    AddBaseCondition(opponentWorsening);\
 		    AddBaseCondition((improving == opponentWorsening));\
 		    AddBaseCondition((eval > alpha));\
@@ -1348,6 +1348,7 @@ void Search::Worker::clear() {
 		    AddBaseCondition(double_check);\
 		    AddBaseCondition(inDoubleCheck);\
 		    AddBaseCondition(capture);\
+		    AddBaseCondition((move.type_of() == PROMOTION));\
 		    AddBaseCondition(improving);\
 		    AddBaseCondition(priorCapture);\
 		    AddBaseCondition(ttCapture);\
