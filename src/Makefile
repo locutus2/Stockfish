@@ -162,6 +162,9 @@ arm_version = 0
 lsx = no
 lasx = no
 STRIP = strip
+fail_low = no
+research = no
+n_conditions = 100
 
 ifneq ($(shell which clang-format-20 2> /dev/null),)
 	CLANG-FORMAT = clang-format-20
@@ -623,6 +626,19 @@ ifeq ($(debug),no)
 else
 	CXXFLAGS += -g
 endif
+
+### fail low/high mode
+ifeq ($(fail_low),yes)
+	CXXFLAGS += -DFAIL_LOW
+endif
+
+### research  yes/no
+ifeq ($(research),yes)
+	CXXFLAGS += -DRESEARCH
+endif
+
+### n conditions  default=100
+CXXFLAGS += -DN_CONDITIONS=$(n_conditions)
 
 ### 3.2.2 Debugging with undefined behavior sanitizers
 ifneq ($(sanitize),none)

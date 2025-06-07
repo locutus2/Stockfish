@@ -57,8 +57,23 @@ namespace Stockfish {
 std::random_device rd;
 std::mt19937 generator(rd());
 
+#ifdef FAIL_LOW
+bool PREDICT_FAIL_LOW = true;
+#else
 bool PREDICT_FAIL_LOW = false;
+#endif
+
+#ifdef RESEARCH
+bool INCLUDE_RESEARCH = true;
+#else
 bool INCLUDE_RESEARCH = false;
+#endif
+
+#ifdef N_CONDITIONS
+constexpr int N_UPN_CONDITIONS = N_CONDITIONS;
+#else
+constexpr int N_UPN_CONDITIONS = 100;
+#endif
 
 constexpr bool USE_UPN = true;
 constexpr double MIN_CONDITION_FREQ = 0.0001;
@@ -71,7 +86,6 @@ constexpr bool PARETO = true;
 //constexpr int N_UPN_SIZE = 9;
 //constexpr int N_UPN_CONDITIONS = 1600;//100;
 //constexpr int N_UPN_CONDITIONS = 400;
-constexpr int N_UPN_CONDITIONS = 100;
 //constexpr int N_UPN_CONDITIONS = 2500;
 //constexpr int N_UPN_CONDITIONS = 200;
 constexpr int N_UPN_SIZE = 4;//9;
