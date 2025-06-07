@@ -57,7 +57,7 @@ namespace Stockfish {
 std::random_device rd;
 std::mt19937 generator(rd());
 
-bool PREDICT_FAIL_LOW = false;
+bool PREDICT_FAIL_LOW = true;
 bool INCLUDE_RESEARCH = false;
 
 constexpr bool USE_UPN = true;
@@ -246,7 +246,34 @@ struct UPN
 
 	void simplify()
 	{
+        for(int i = int(code.length())-1; i > 0; i--)
+        {
+            if(code[i] == '!')
+            {
+                if(code[i-1] == '!')
+                {
+                    code.erase(code.begin()+i);
+                    code.erase(code.begin()+(i-1));
+                }
+                else if(code[i-1] == '=')
+                {
+                    code[i-1] = '^';
+                    code.erase(code.begin()+i);
+                }
+                else
+                {
+                    code[i-1] = '=';
+                    code.erase(code.begin()+i);
+                }
+            }
+        }
+
+        deMorgan();
 	}
+
+    void deMorgan()
+    {
+    }
 
 	void cleanup()
 	{
@@ -1189,6 +1216,7 @@ void Search::Worker::clear() {
 	 	    AddBaseCondition((depth >= 14));\
 	 	    AddBaseCondition((depth >= 15));\
 	 	    AddBaseCondition((depth >= 16));\
+	 	    AddBaseCondition((depth >= 17));\
 \
 	 	    AddBaseCondition((moveCount >= 3));\
 	 	    AddBaseCondition((moveCount >= 4));\
@@ -1226,6 +1254,46 @@ void Search::Worker::clear() {
 	 	    AddBaseCondition((moveCount >= 37));\
 	 	    AddBaseCondition((moveCount >= 38));\
 	 	    AddBaseCondition((moveCount >= 39));\
+\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 1));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 2));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 3));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 4));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 5));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 6));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 7));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 8));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 9));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 10));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 12));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 13));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 14));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 15));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 16));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 17));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 18));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 19));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 20));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 21));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 22));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 23));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 24));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 25));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 26));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 27));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 28));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 29));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 30));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 31));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 32));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 33));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 34));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 35));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 36));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 37));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 38));\
+	 	    AddBaseCondition(((ss-1)->moveCount >= 39));\
+\
 \
 	 	    AddBaseCondition((r <= -2048));\
 	 	    AddBaseCondition((r <= -1024));\
