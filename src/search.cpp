@@ -260,7 +260,7 @@ struct UPN
                     code[i-1] = '^';
                     code.erase(code.begin()+i);
                 }
-                else
+                else if(code[i-1] == '^')
                 {
                     code[i-1] = '=';
                     code.erase(code.begin()+i);
@@ -489,7 +489,7 @@ struct UPN
 			if(isVar(code[i]))
 			{
 				int index = varIndex(code[i]);
-				assert(index < n);
+				assert(index < N);
 				index = varmap[index];
 				if(index < int(vars.size()))
 				     stack.push_back({vars[index],false, code[i]});
@@ -1353,16 +1353,16 @@ void Search::Worker::clear() {
 		    AddBaseCondition(priorCapture);\
 		    AddBaseCondition(ttCapture);\
 		    AddBaseCondition(bool(ttData.move));\
-		    AddBaseCondition((ttData.move.to_sq() == move.to_sq()));\
-		    AddBaseCondition((ttData.move.from_sq() == move.from_sq()));\
+		    AddBaseCondition((ttData.move && ttData.move.to_sq() == move.to_sq()));\
+		    AddBaseCondition((ttData.move && ttData.move.from_sq() == move.from_sq()));\
 		    AddBaseCondition((ss->staticEval > alpha));\
 		    AddBaseCondition((eval < ss->staticEval));\
 		    AddBaseCondition(bool(excludedMove));\
 		    AddBaseCondition((ttData.value > alpha));\
 		    AddBaseCondition(ttHit);\
 		    AddBaseCondition((prevSq == SQ_NONE));\
-		    AddBaseCondition((move.to_sq() == (ss-2)->currentMove.from_sq()));\
-		    AddBaseCondition((move.from_sq() == (ss-2)->currentMove.to_sq()));\
+		    AddBaseCondition(((ss-2)->currentMove.is_ok() && move.to_sq() == (ss-2)->currentMove.from_sq()));\
+		    AddBaseCondition(((ss-2)->currentMove.is_ok() && move.from_sq() == (ss-2)->currentMove.to_sq()));\
 		    AddBaseCondition((prevSq == move.to_sq()));\
 		    AddBaseCondition((pos.pinners(us) & move.to_sq()));\
 		    AddBaseCondition(defend_pinned_piece);\
@@ -2168,10 +2168,10 @@ moves_loop:  // When in check, search starts here
 	    bool captured_bishop = type_of(pos.captured_piece()) == BISHOP;
 	    bool captured_rook = type_of(pos.captured_piece()) == ROOK;
 	    bool captured_queen = type_of(pos.captured_piece()) == QUEEN;
-	    bool defend_pinned_piece = (pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
-	    bool attack_pinned_piece = (pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
+	    bool defend_pinned_piece = (type_of(movedPiece) != PAWN && pos.blockers_for_king(us) & pos.pieces(us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
+	    bool attack_pinned_piece = (type_of(movedPiece) != PAWN && pos.blockers_for_king(~us) & pos.pieces(~us) & attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()));
 	    bool double_check = more_than_one(pos.checkers());
-	    bool two_last_piece_moves_aligned = move.from_sq() == (ss-2)->currentMove.to_sq() && aligned(move.from_sq(), move.to_sq(), (ss-2)->currentMove.from_sq());
+	    bool two_last_piece_moves_aligned = (ss-2)->currentMove.is_ok() && move.from_sq() == (ss-2)->currentMove.to_sq() && aligned(move.from_sq(), move.to_sq(), (ss-2)->currentMove.from_sq());
 	    bool piece_becomes_pinned = pos.blockers_for_king(us) & move.to_sq();
 	    bool piece_is_pinned = pinnedPieces & move.from_sq();
 
