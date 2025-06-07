@@ -57,7 +57,7 @@ namespace Stockfish {
 std::random_device rd;
 std::mt19937 generator(rd());
 
-bool PREDICT_FAIL_LOW = true;
+bool PREDICT_FAIL_LOW = false;
 bool INCLUDE_RESEARCH = false;
 
 constexpr bool USE_UPN = true;
@@ -1165,6 +1165,9 @@ void Search::Worker::clear() {
 		    AddBaseCondition((priorReduction >= 1));\
 		    AddBaseCondition((priorReduction >= 2));\
 		    AddBaseCondition((priorReduction >= 3));\
+		    AddBaseCondition((priorReduction >= 4));\
+		    AddBaseCondition((priorReduction >= 5));\
+		    AddBaseCondition((priorReduction >= 6));\
 		    AddBaseCondition(opponentWorsening);\
 		    AddBaseCondition((improving == opponentWorsening));\
 		    AddBaseCondition((eval > alpha));\
@@ -2286,7 +2289,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
             ss->reduction = 0;
 
             if(!INCLUDE_RESEARCH)
-                T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
+                T = PREDICT_FAIL_LOW ? value <= alpha : value > alpha;
 
             // Do a full-depth search when reduced LMR search fails high
             // (*Scaler) Usually doing more shallower searches
@@ -2310,7 +2313,7 @@ Hit #12: Total 3381914 Hits 18642 Hit Rate (%) 0.551226
                 newDepth--;
 
             if(INCLUDE_RESEARCH)
-                T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
+                T = PREDICT_FAIL_LOW ? value <= alpha : value > alpha;
 
 	    //bool T = PREDICT_FAIL_LOW ? value <= alpha : value >= alpha;
 	    if(CC)
