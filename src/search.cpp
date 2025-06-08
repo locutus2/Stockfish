@@ -1194,6 +1194,7 @@ moves_loop:  // When in check, search starts here
         r += 316;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 66;
         r -= std::abs(correctionValue) / 28047;
+        r -= 256 * priorReduction;
 
         // Increase reduction for cut nodes
         if (cutNode)
@@ -1230,8 +1231,6 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-            r -= 256 * priorReduction;
-
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
