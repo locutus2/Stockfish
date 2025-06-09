@@ -57,6 +57,12 @@ namespace Stockfish {
 std::random_device rd;
 std::mt19937 generator(rd());
 
+#ifdef TNR_PNR
+bool PARETO_PPV_TPR = false;
+#else
+bool PARETO_PPV_TPR = true;
+#endif
+
 #ifdef FAIL_LOW
 bool PREDICT_FAIL_LOW = true;
 #else
@@ -77,7 +83,8 @@ constexpr int N_UPN_CONDITIONS = 100;
 
 constexpr bool USE_UPN = true;
 constexpr double MIN_CONDITION_FREQ = 0.0001;
-constexpr double MAX_CONDITION_FREQ = 0.5;
+constexpr double MAX_CONDITION_FREQ = 1.0;
+//constexpr double MAX_CONDITION_FREQ = 0.5;
 
 constexpr bool PARETO = true;
 //constexpr int N_UPN_CONDITIONS = 16;
@@ -168,18 +175,25 @@ void writeResultFile(std::string filename)
 		                    int aindex = 10000 + 10 * a;
 		                    int bindex = 10000 + 10 * b;
 		                    double afreq = dbg_get_hit_on(aindex);
-		                    //double appv = dbg_get_hit_on(aindex+1);
+		                    double appv = dbg_get_hit_on(aindex+1);
 		                    double atnr = dbg_get_hit_on(aindex+2);
 		                    double atpr = dbg_get_hit_on(aindex+4);
 		                    double bfreq = dbg_get_hit_on(bindex);
-		                    //double bppv = dbg_get_hit_on(bindex+1);
+		                    double bppv = dbg_get_hit_on(bindex+1);
 		                    double btnr = dbg_get_hit_on(bindex+2);
 		                    double btpr = dbg_get_hit_on(bindex+4);
+                            if(PARETO_PPV_TPR)
+                                    return appv > bppv 
+                                       || (appv == bppv && atpr > btpr)
+                                       || (appv == bppv && atpr == btpr && atnr > btnr)
+                                       || (appv == bppv && atpr == btpr && atnr == btnr
+                                            && derivedConditions[a].name.length() < derivedConditions[b].name.length());
+                            else
                                     return atpr > btpr 
-				           || (atnr == btnr && afreq > bfreq)
-				           || (atnr == btnr && atpr == btpr && afreq > bfreq)
-				           || (atnr == btnr && atpr == btpr && afreq == bfreq
-							    && derivedConditions[a].name.length() < derivedConditions[b].name.length());
+                                       || (atnr == btnr && atpr > btpr)
+                                       || (atnr == btnr && atpr == btpr && afreq > bfreq)
+                                       || (atnr == btnr && atpr == btpr && afreq == bfreq
+                                            && derivedConditions[a].name.length() < derivedConditions[b].name.length());
                                     //return atpr > btpr 
 				    //       || (atpr == btpr && afreq > bfreq)
 				    //       || (atpr == btpr && afreq == bfreq && afailow > bfailow)
@@ -203,19 +217,22 @@ void writeResultFile(std::string filename)
 		double tpr = dbg_get_hit_on(index+4);
 
 		//bool skip = PARETO && i > 0 && prevtpr >= tpr && prevfreq >= freq && prevfaillow >= faillow;
-                bool skip = false;
-	        if(PARETO)
+        bool skip = false;
+	    if(PARETO)
 		{
 			for(int j = 0; j < i && !skip; j++)
 			{
 		            int index2 = 10000 + 10 * dataIndex[j];
 		            double prevfreq = dbg_get_hit_on(index2);
-                            if(prevfreq < MIN_CONDITION_FREQ || prevfreq > MAX_CONDITION_FREQ) continue;
-		            //double prevppv = dbg_get_hit_on(index2+1);
+                    if(prevfreq < MIN_CONDITION_FREQ || prevfreq > MAX_CONDITION_FREQ) continue;
+		            double prevppv = dbg_get_hit_on(index2+1);
 		            double prevtnr = dbg_get_hit_on(index2+2);
 		            double prevtpr = dbg_get_hit_on(index2+4);
 		            //skip = prevtnr >= tnr && prevfreq >= freq && prevtpr >= tpr;
-		            skip = prevtnr >= tnr && prevtpr >= tpr;
+                    if(PARETO_PPV_TPR)
+		                skip = prevtpr >= tpr && prevppv >= ppv;
+                    else
+		                skip = prevtnr >= tnr && prevtpr >= tpr;
 			}
 		}
 		if(skip) continue;
