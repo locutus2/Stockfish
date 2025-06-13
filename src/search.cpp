@@ -78,7 +78,7 @@ std::vector<std::string> names = {
     "priorCapture", "!priorCapture", // 11 12
     (USE_PV_TTPV?"ss->ttPv":"false"), "!ss->ttPv", // 13 14
     "(ss->statScore>0)", "(ss->statScore<=0)", // 15 16
-    "(extension<0)", "(extension==0)","(extension>0)", // 17 18
+    //"(extension<0)", "(extension==0)","(extension>0)", // 17 18
     "ttCapture", "ttCapture",
     "bool(excludedMove)", "!excludedMove",
     //"(ss->reduction>0)", "(ss->reduction<=0)",
@@ -99,6 +99,24 @@ std::vector<std::string> names = {
     "(depth<10)", "(depth>=10)",
     "(depth<11)", "(depth>=11)",
     "(depth<12)", "(depth>=12)",
+    "(moveCount<3)", "(moveCount>=3)",
+    "(moveCount<4)", "(moveCount>=4)",
+    "(moveCount<5)", "(moveCount>=5)",
+    "(moveCount<6)", "(moveCount>=6)",
+    "(moveCount<7)", "(moveCount>=7)",
+    "(moveCount<8)", "(moveCount>=8)",
+    "(moveCount<9)", "(moveCount>=9)",
+    "(moveCount<10)", "(moveCount>=10)",
+    "(moveCount<11)", "(moveCount>=11)",
+    "(moveCount<12)", "(moveCount>=12)",
+    "(moveCount<13)", "(moveCount>=13)",
+    "(moveCount<14)", "(moveCount>=14)",
+    "(moveCount<15)", "(moveCount>=15)",
+    "(moveCount<16)", "(moveCount>=16)",
+    "(moveCount<17)", "(moveCount>=17)",
+    "(moveCount<18)", "(moveCount>=18)",
+    "(moveCount<19)", "(moveCount>=19)",
+    "(moveCount<20)", "(moveCount>=20)",
     //"(LMRResearches<=0)", "(LMRResearches>0)",
 //    "(successfulLMRResearches<=0)", "(successfulLMRResearches>0)",
     //"(failedLMRResearches<=0)", "(failedLMRResearches>0)",
@@ -1703,7 +1721,7 @@ moves_loop:  // When in check, search starts here
                             priorCapture, !priorCapture, // 11 12
                             (USE_PV_TTPV?ss->ttPv:false), !ss->ttPv, // 13 14
                             ss->statScore>0, ss->statScore<=0, // 15 16
-                            extension<0,extension==0,extension>0,// 17 18
+                            //extension<0,extension==0,extension>0,// 17 18
                             ttCapture,!ttCapture,
                             bool(excludedMove), !excludedMove,
                             //ss->reduction>0, ss->reduction<=0,
@@ -1724,6 +1742,24 @@ moves_loop:  // When in check, search starts here
                             depth<10,depth>=10,
                             depth<11,depth>=11,
                             depth<12,depth>=12,
+                            (moveCount<3), (moveCount>=3),
+                            (moveCount<4), (moveCount>=4),
+                            (moveCount<5), (moveCount>=5),
+                            (moveCount<6), (moveCount>=6),
+                            (moveCount<7), (moveCount>=7),
+                            (moveCount<8), (moveCount>=8),
+                            (moveCount<9), (moveCount>=9),
+                            (moveCount<10), (moveCount>=10),
+                            (moveCount<11), (moveCount>=11),
+                            (moveCount<12), (moveCount>=12),
+                            (moveCount<13), (moveCount>=13),
+                            (moveCount<14), (moveCount>=14),
+                            (moveCount<15), (moveCount>=15),
+                            (moveCount<16), (moveCount>=16),
+                            (moveCount<17), (moveCount>=17),
+                            (moveCount<18), (moveCount>=18),
+                            (moveCount<19), (moveCount>=19),
+                            (moveCount<20), (moveCount>=20),
                             //LMRResearches<=0, LMRResearches>0,
                          //   successfulLMRResearches<=0, successfulLMRResearches>0,
                             //failedLMRResearches<=0, failedLMRResearches>0,
