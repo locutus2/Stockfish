@@ -89,20 +89,20 @@ std::vector<std::string> names = {
     "(ss-2)->ttPv", "!(ss-2)->ttPv", // 13 14
     "(ss-3)->ttPv", "!(ss-3)->ttPv", // 13 14
     "(ss->statScore>0)", "(ss->statScore<=0)", // 15 16
-    "ss->statScore>-10000", "ss->statScore<=-10000", // 15 16
-    "ss->statScore>-20000", "ss->statScore<=-20000", // 15 16
-    "ss->statScore>-30000", "ss->statScore<=-30000", // 15 16
-    "ss->statScore>-40000", "ss->statScore<=-40000", // 15 16
-    "ss->statScore>-50000", "ss->statScore<=-50000", // 15 16
-    "ss->statScore>-60000", "ss->statScore<=-60000", // 15 16
-    "ss->statScore>-70000", "ss->statScore<=-70000", // 15 16
-    "ss->statScore>10000", "ss->statScore<=10000", // 15 16
-    "ss->statScore>20000", "ss->statScore<=20000", // 15 16
-    "ss->statScore>30000", "ss->statScore<=30000", // 15 16
-    "ss->statScore>40000", "ss->statScore<=40000", // 15 16
-    "ss->statScore>50000", "ss->statScore<=50000", // 15 16
-    "ss->statScore>60000", "ss->statScore<=60000", // 15 16
-    "ss->statScore>70000", "ss->statScore<=70000", // 15 16
+    "(ss->statScore>-10000)", "(ss->statScore<=-10000)", // 15 16
+    "(ss->statScore>-20000)", "(ss->statScore<=-20000)", // 15 16
+    "(ss->statScore>-30000)", "(ss->statScore<=-30000)", // 15 16
+    "(ss->statScore>-40000)", "(ss->statScore<=-40000)", // 15 16
+    "(ss->statScore>-50000)", "(ss->statScore<=-50000)", // 15 16
+    "(ss->statScore>-60000)", "(ss->statScore<=-60000)", // 15 16
+    "(ss->statScore>-70000)", "(ss->statScore<=-70000)", // 15 16
+    "(ss->statScore>10000)", "(ss->statScore<=10000)", // 15 16
+    "(ss->statScore>20000)", "(ss->statScore<=20000)", // 15 16
+    "(ss->statScore>30000)", "(ss->statScore<=30000)", // 15 16
+    "(ss->statScore>40000)", "(ss->statScore<=40000)", // 15 16
+    "(ss->statScore>50000)", "(ss->statScore<=50000)", // 15 16
+    "(ss->statScore>60000)", "(ss->statScore<=60000)", // 15 16
+    "(ss->statScore>70000)", "(ss->statScore<=70000)", // 15 16
     //"(extension<0)", "(extension==0)","(extension>0)", // 17 18
     "ttCapture", "ttCapture",
     "bool(excludedMove)", "!excludedMove",
@@ -166,15 +166,24 @@ std::vector<std::string> names = {
     "(moveCount<28)", "(moveCount>=28)",
     "(moveCount<29)", "(moveCount>=29)",
     "(moveCount<30)", "(moveCount>=30)",
-    "type_of(movedPiece) == PAWN", "type_of(movedPiece) != PAWN",
-    "type_of(movedPiece) == KNIGHT", "type_of(movedPiece) != KNIGHT",
-    "type_of(movedPiece) == BISHOP", "type_of(movedPiece) != BISHOP",
-    "type_of(movedPiece) == ROOK", "type_of(movedPiece) != ROOK",
-    "type_of(movedPiece) == QUEEN", "type_of(movedPiece) != QUEEN",
-    "type_of(movedPiece) == KING", "type_of(movedPiece) != KING",
-    "type_of(movedPiece) >= BISHOP", "type_of(movedPiece) < BISHOP",
-    "type_of(movedPiece) >= ROOK", "type_of(movedPiece) < ROOK",
-    "type_of(movedPiece) >= QUEEN", "type_of(movedPiece) < QUEEN",
+    "(type_of(movedPiece) == PAWN)", "(type_of(movedPiece) != PAWN)",
+    "(type_of(movedPiece) == KNIGHT)", "(type_of(movedPiece) != KNIGHT)",
+    "(type_of(movedPiece) == BISHOP)", "(type_of(movedPiece) != BISHOP)",
+    "(type_of(movedPiece) == ROOK)", "(type_of(movedPiece) != ROOK)",
+    "(type_of(movedPiece) == QUEEN)", "(type_of(movedPiece) != QUEEN)",
+    "(type_of(movedPiece) == KING)", "(type_of(movedPiece) != KING)",
+    "(type_of(movedPiece) >= BISHOP)", "(type_of(movedPiece) < BISHOP)",
+    "(type_of(movedPiece) >= ROOK)", "(type_of(movedPiece) < ROOK)",
+    "(type_of(movedPiece) >= QUEEN)", "(type_of(movedPiece) < QUEEN)",
+    "bool(pos.captured_piece())", "!pos.captured_piece()",
+    "(type_of(pos.captured_piece()) == PAWN)", "(type_of(pos.captured_piece()) != PAWN)",
+    "(type_of(pos.captured_piece()) == KNIGHT)", "(type_of(pos.captured_piece()) != KNIGHT)",
+    "(type_of(pos.captured_piece()) == BISHOP)", "(type_of(pos.captured_piece()) != BISHOP)",
+    "(type_of(pos.captured_piece()) == ROOK)", "(type_of(pos.captured_piece()) != ROOK)",
+    "(type_of(pos.captured_piece()) == QUEEN)", "(type_of(pos.captured_piece()) != QUEEN)",
+    "(type_of(pos.captured_piece()) >= KNIGHT)", "(type_of(pos.captured_piece()) < KNIGHT)",
+    "(type_of(pos.captured_piece()) >= BISHOP)", "(type_of(pos.captured_piece()) < BISHOP)",
+    "(type_of(pos.captured_piece()) >= ROOK)", "(type_of(pos.captured_piece()) < ROOK)",
     "more_than_one(pos.checkers())", "!more_than_one(pos.checkers())",
     "bool(pos.pinners(~us) & move.to_sq())", "!(pos.pinners(~us) & move.to_sq())",
     "(givesCheck && !(pos.checkers() & move.to_sq()))", "!(givesCheck && !(pos.checkers() & move.to_sq()))",
@@ -1881,6 +1890,15 @@ moves_loop:  // When in check, search starts here
 			    type_of(movedPiece) >= BISHOP, type_of(movedPiece) < BISHOP,
 			    type_of(movedPiece) >= ROOK, type_of(movedPiece) < ROOK,
 			    type_of(movedPiece) >= QUEEN, type_of(movedPiece) < QUEEN,
+                            bool(pos.captured_piece()), !pos.captured_piece(),
+                            (type_of(pos.captured_piece()) == PAWN), (type_of(pos.captured_piece()) != PAWN),
+                            (type_of(pos.captured_piece()) == KNIGHT), (type_of(pos.captured_piece()) != KNIGHT),
+                            (type_of(pos.captured_piece()) == BISHOP), (type_of(pos.captured_piece()) != BISHOP),
+                            (type_of(pos.captured_piece()) == ROOK), (type_of(pos.captured_piece()) != ROOK),
+                            (type_of(pos.captured_piece()) == QUEEN), (type_of(pos.captured_piece()) != QUEEN),
+                            (type_of(pos.captured_piece()) >= KNIGHT), (type_of(pos.captured_piece()) < KNIGHT),
+                            (type_of(pos.captured_piece()) >= BISHOP), (type_of(pos.captured_piece()) < BISHOP),
+                            (type_of(pos.captured_piece()) >= ROOK), (type_of(pos.captured_piece()) < ROOK),
                             more_than_one(pos.checkers()), !more_than_one(pos.checkers()),
 			    bool(pos.pinners(~us) & move.to_sq()), !(pos.pinners(~us) & move.to_sq()),
                             (givesCheck && !(pos.checkers() & move.to_sq())), !(givesCheck && !(pos.checkers() & move.to_sq())),
