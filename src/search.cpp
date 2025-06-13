@@ -56,11 +56,11 @@ constexpr bool LOSS_ACCURACY_BALANCED = false;
 constexpr bool LOSS_FALSE_NEGATIVE = false;
 constexpr bool LOSS_PRECISION = false; // true is not supported
 
-constexpr bool PAIR_CONDITIONS = true;
+constexpr bool PAIR_CONDITIONS = false;
 
 constexpr double LEARN_MIN_SUPPORT_CONDITION = 0.001; // 0.1%
 constexpr double LEARN_MIN_SUPPORT_RULE = 0.001; // 0.1%
-constexpr bool USE_PV_TTPV = false;
+constexpr bool USE_PV_TTPV = true;
 constexpr bool RESET_DISABLED_WEAK_LEARNER = false;
 
 constexpr bool PRINT_ROUNDED_FORM = false;
@@ -83,7 +83,11 @@ std::vector<std::string> names = {
     "bool(excludedMove)", "!excludedMove",
     //"(ss->reduction>0)", "(ss->reduction<=0)",
     "(priorReduction>0)", "(priorReduction<=0)",
-    "((ss-1)->currentMove==Move::null())", "((ss-1)->currentMove!=Move::null())",
+    "(priorReduction>1)", "(priorReduction<=1)",
+    "(priorReduction>2)", "(priorReduction<=2)",
+    "(priorReduction>3)", "(priorReduction<=3)",
+    //"((ss-1)->currentMove==Move::null())", "((ss-1)->currentMove!=Move::null())",
+    "(prevSq == SQ_NONE)", "(prevSq != SQ_NONE)",
     "ss->ttHit", "!ss->ttHit",
     "(depth<3)", "(depth>=3)",
     "(depth<4)", "(depth>=4)",
@@ -95,9 +99,9 @@ std::vector<std::string> names = {
     "(depth<10)", "(depth>=10)",
     "(depth<11)", "(depth>=11)",
     "(depth<12)", "(depth>=12)",
-    "(LMRResearches<=0)", "(LMRResearches>0)",
+    //"(LMRResearches<=0)", "(LMRResearches>0)",
 //    "(successfulLMRResearches<=0)", "(successfulLMRResearches>0)",
-    "(failedLMRResearches<=0)", "(failedLMRResearches>0)",
+    //"(failedLMRResearches<=0)", "(failedLMRResearches>0)",
 };
 
 std::vector<bool> weak_learner_enabled;
@@ -1587,6 +1591,7 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
 
+        bool CC = false;
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1681,24 +1686,7 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-            // Do a full-depth search when reduced LMR search fails high
-            // (*Scaler) Usually doing more shallower searches
-            // doesn't scale well to longer TCs
-            if (value > alpha && d < newDepth)
-            {
-                // Adjust full-depth search based on LMR results - if the result was
-                // good enough search deeper, if it was bad enough search shallower.
-                const bool doDeeperSearch    = value > (bestValue + 42 + 2 * newDepth);
-                const bool doShallowerSearch = value < bestValue + 9;
-
-                newDepth += doDeeperSearch - doShallowerSearch;
-
-                if (newDepth > d)
-                {
-
-                    value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
-
-                    bool CC = true;
+	    CC = true;
                     if(CC)
                     {
                         bool T = value <= alpha;
@@ -1720,7 +1708,11 @@ moves_loop:  // When in check, search starts here
                             bool(excludedMove), !excludedMove,
                             //ss->reduction>0, ss->reduction<=0,
                             priorReduction>0, priorReduction<=0,
-                            (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
+                            priorReduction>1, priorReduction<=1,
+                            priorReduction>2, priorReduction<=2,
+                            priorReduction>3, priorReduction<=3,
+                           // (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
+                            (prevSq == SQ_NONE), (prevSq != SQ_NONE),
                             ss->ttHit, !ss->ttHit, // 9 10
                             depth<3,depth>=3,
                             depth<4,depth>=4,
@@ -1732,16 +1724,16 @@ moves_loop:  // When in check, search starts here
                             depth<10,depth>=10,
                             depth<11,depth>=11,
                             depth<12,depth>=12,
-                            LMRResearches<=0, LMRResearches>0,
+                            //LMRResearches<=0, LMRResearches>0,
                          //   successfulLMRResearches<=0, successfulLMRResearches>0,
-                            failedLMRResearches<=0, failedLMRResearches>0,
+                            //failedLMRResearches<=0, failedLMRResearches>0,
                         };
 
                         //constexpr double W[2] = {0.265531, 1-0.265531}; // balanced classes
                         //constexpr double W[2] = {1,0}; // Only !T
                         //constexpr double W[2] = {0,1}; // Only T
                         //constexpr double W[2] = {1,1}; // equal weight
-                        constexpr double PT = 0.265531;
+                        constexpr double PT = 0.936783;
                         std::array<double, 2> W;
                         if (LOSS_FALSE_POSITIVE)
                             W = {1,0}; // minimize false positive
@@ -1756,11 +1748,23 @@ moves_loop:  // When in check, search starts here
                         adaboost_learn(T, C, W[T]);
                     }
 
-                    LMRResearches++;
-                    if(value > alpha)
-                        successfulLMRResearches++;
-                    else
-                        failedLMRResearches++;
+            // Do a full-depth search when reduced LMR search fails high
+            // (*Scaler) Usually doing more shallower searches
+            // doesn't scale well to longer TCs
+            if (value > alpha && d < newDepth)
+            {
+                // Adjust full-depth search based on LMR results - if the result was
+                // good enough search deeper, if it was bad enough search shallower.
+                const bool doDeeperSearch    = value > (bestValue + 42 + 2 * newDepth);
+                const bool doShallowerSearch = value < bestValue + 9;
+
+                newDepth += doDeeperSearch - doShallowerSearch;
+
+                if (newDepth > d)
+                {
+
+                    value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+
                 }
 
                 // Post LMR continuation history updates
