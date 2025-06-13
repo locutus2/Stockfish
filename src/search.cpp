@@ -52,7 +52,7 @@
 namespace Stockfish {
 
 constexpr bool LOSS_FALSE_POSITIVE = false;
-constexpr bool LOSS_ACCURACY_BALANCED = false;
+constexpr bool LOSS_ACCURACY_BALANCED = true;
 constexpr bool LOSS_FALSE_NEGATIVE = false;
 constexpr bool LOSS_PRECISION = false; // true is not supported
 
@@ -396,9 +396,9 @@ bool adaboost_print_stats(std::ostream& out)
 
     out << "=> support: " << 100. * support << "%" << std::endl;
     out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && !LOSS_PRECISION ? "*" : "") << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
-    out << (!LOSS_FALSE_POSITIVE && LOSS_ACCURACY_BALANCED ? "*" : "") << "=> balanced accuracy: " << 100. * balancedAccuracy << "%" << std::endl;
-    out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> false positive rate: " << (falsePositiveRate < 0 ? "-" : std::to_string(100. * falsePositiveRate)) << "%" << std::endl;
-    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> false negative rate: " << (falseNegativeRate < 0 ? "-" : std::to_string(100. * falseNegativeRate)) << "%" << std::endl;
+    out << (!LOSS_FALSE_POSITIVE && LOSS_ACCURACY_BALANCED ? "*" : "") << "=> balanced_accuracy: " << 100. * balancedAccuracy << "%" << std::endl;
+    out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> false_positive_rate: " << (falsePositiveRate < 0 ? "-" : std::to_string(100. * falsePositiveRate)) << "%" << std::endl;
+    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> false_negative_rate: " << (falseNegativeRate < 0 ? "-" : std::to_string(100. * falseNegativeRate)) << "%" << std::endl;
     out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && LOSS_PRECISION ? "*" : "") << "=> precision: " << (precision < 0 ? "-" : std::to_string(100. * precision)) << "%" << std::endl;
     //out << "n: " << nStats << std::endl!;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
@@ -1770,6 +1770,7 @@ moves_loop:  // When in check, search starts here
                     if(CC)
                     {
                         bool T = value <= alpha;
+			dbg_hit_on(T, 0);
 
                         std::vector<bool> C = {
                             //true, false,
@@ -1892,7 +1893,7 @@ moves_loop:  // When in check, search starts here
                         //constexpr double W[2] = {1,0}; // Only !T
                         //constexpr double W[2] = {0,1}; // Only T
                         //constexpr double W[2] = {1,1}; // equal weight
-                        constexpr double PT = 0.936783;
+                        constexpr double PT = 0.936783; // CC=true
                         std::array<double, 2> W = { 1.0, 1.0 };
                         if (LOSS_FALSE_POSITIVE)
                             W = {0,1}; // minimize false positive
