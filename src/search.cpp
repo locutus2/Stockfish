@@ -1779,7 +1779,7 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-	    CC = true;
+	    CC = ttCapture;
                     if(CC)
                     {
                         bool T = value <= alpha;
@@ -1915,7 +1915,8 @@ moves_loop:  // When in check, search starts here
                         //constexpr double W[2] = {1,0}; // Only !T
                         //constexpr double W[2] = {0,1}; // Only T
                         //constexpr double W[2] = {1,1}; // equal weight
-                        constexpr double PT = 0.936783; // CC=true
+                        //constexpr double PT = 0.936783; // CC=true
+			constexpr double PT = 0.951193; // CC=ttCapture
                         std::array<double, 2> W = { 1.0, 1.0 };
                         if (LOSS_FALSE_POSITIVE)
                             W = {0,1}; // minimize false positive
