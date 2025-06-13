@@ -67,11 +67,12 @@ constexpr bool PRINT_ROUNDED_FORM = false;
 constexpr bool PRINT_ERROR_OF_ALL_LEARNERS = true;
 
 std::vector<std::string> names = {
-    "true", "false",
+    //"true", "false",
     "allNode", "!allNode", 
     (USE_PV_TTPV?"PvNode":"false"), "!PvNode",
     "cutNode", "!cutNode",
     "improving", "!improving", // 3 4
+    "opponentWorsening", "!opponentWorsening",
     "capture", "!capture", // 5 6
     "givesCheck", "!givesCheck", // 7 8
     "ss->inCheck", "!ss->inCheck", // 9 10
@@ -1154,6 +1155,7 @@ Value Search::Worker::search(
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
         improving             = false;
+        opponentWorsening     = false;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -1710,11 +1712,12 @@ moves_loop:  // When in check, search starts here
                         bool T = value <= alpha;
 
                         std::vector<bool> C = {
-                            true, false,
+                            //true, false,
                             allNode, !allNode, // 0 1 2
                             (USE_PV_TTPV?PvNode:false), !PvNode, // 0 1 2
                             cutNode, !cutNode, // 0 1 2
                             improving, !improving, // 3 4
+                            opponentWorsening, !opponentWorsening,
                             capture, !capture, // 5 6
                             givesCheck, !givesCheck, // 7 8
                             ss->inCheck, !ss->inCheck, // 9 10
