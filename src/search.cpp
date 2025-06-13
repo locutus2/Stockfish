@@ -397,8 +397,10 @@ bool adaboost_print_stats(std::ostream& out)
     double support = double(nConf[0][1] + nConf[1][1]) / nStats;
     double accuracy = double(nConf[0][0] + nConf[1][1]) / nStats;
     double balancedAccuracy = double(nConf[0][0] * wn + nConf[1][1] * wp) / nWStats;
-    double falseNegativeRate =  nn > 0 ? double(nConf[0][1]) / nn : -1.0;
-    double falsePositiveRate =  np > 0 ? double(nConf[1][0]) / np : -1.0;
+    //double falseNegativeRate =  nn > 0 ? double(nConf[0][1]) / nn : -1.0;
+    double trueNegativeRate =  nn > 0 ? double(nConf[0][0]) / nn : -1.0;
+    //double falsePositiveRate =  np > 0 ? double(nConf[1][0]) / np : -1.0;
+    double truePositiveRate =  np > 0 ? double(nConf[1][1]) / np : -1.0;
 
     int nPrec = nConf[0][1] + nConf[1][1];
     double precision =  nPrec > 0 ? double(nConf[1][1]) / nPrec : -1.0;
@@ -406,8 +408,10 @@ bool adaboost_print_stats(std::ostream& out)
     out << "=> support: " << 100. * support << "%" << std::endl;
     out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && !LOSS_PRECISION ? "*" : "") << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
     out << (!LOSS_FALSE_POSITIVE && LOSS_ACCURACY_BALANCED ? "*" : "") << "=> balanced_accuracy: " << 100. * balancedAccuracy << "%" << std::endl;
-    out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> false_positive_rate: " << (falsePositiveRate < 0 ? "-" : std::to_string(100. * falsePositiveRate)) << "%" << std::endl;
-    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> false_negative_rate: " << (falseNegativeRate < 0 ? "-" : std::to_string(100. * falseNegativeRate)) << "%" << std::endl;
+    out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> true_positive_rate: " << (truePositiveRate < 0 ? "-" : std::to_string(100. * truePositiveRate)) << "%" << std::endl;
+    //out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> false_positive_rate: " << (falsePositiveRate < 0 ? "-" : std::to_string(100. * falsePositiveRate)) << "%" << std::endl;
+    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> true_negative_rate: " << (trueNegativeRate < 0 ? "-" : std::to_string(100. * trueNegativeRate)) << "%" << std::endl;
+    //out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> false_negative_rate: " << (falseNegativeRate < 0 ? "-" : std::to_string(100. * falseNegativeRate)) << "%" << std::endl;
     out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && LOSS_PRECISION ? "*" : "") << "=> precision: " << (precision < 0 ? "-" : std::to_string(100. * precision)) << "%" << std::endl;
     //out << "n: " << nStats << std::endl!;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
