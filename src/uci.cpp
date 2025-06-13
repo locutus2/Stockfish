@@ -304,6 +304,7 @@ void UCIEngine::learn(std::istream& args) {
         std::cerr << "=== Iteration " << it+1 << " Total time (ms) : " << elapsed << std::endl;
         adaboost_print_model();
 
+        dbg_print();
     }
 
 
