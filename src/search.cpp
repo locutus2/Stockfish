@@ -376,8 +376,8 @@ bool adaboost_print_stats(std::ostream& out)
     double support = double(nConf[0][1] + nConf[1][1]) / nStats;
     double accuracy = double(nConf[0][0] + nConf[1][1]) / nStats;
     double balancedAccuracy = double(nConf[0][0] * wn + nConf[1][1] * wp) / nWStats;
-    double falsePositiveRate =  nn > 0 ? double(nConf[0][1]) / nn : -1.0;
-    double falseNegativeRate =  np > 0 ? double(nConf[1][0]) / np : -1.0;
+    double falseNegativeRate =  nn > 0 ? double(nConf[0][1]) / nn : -1.0;
+    double falsePositiveRate =  np > 0 ? double(nConf[1][0]) / np : -1.0;
 
     int nPrec = nConf[0][1] + nConf[1][1];
     double precision =  nPrec > 0 ? double(nConf[1][1]) / nPrec : -1.0;
