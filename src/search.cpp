@@ -70,15 +70,39 @@ std::vector<std::string> names = {
     //"true", "false",
     "allNode", "!allNode", 
     (USE_PV_TTPV?"PvNode":"false"), "!PvNode",
+    "ss->isPvNode", "!ss->isPvNode",
+    "(ss-1)->isPvNode", "!(ss-1)->isPvNode",
+    "(ss-2)->isPvNode", "!(ss-2)->isPvNode",
+    "(ss-3)->isPvNode", "!(ss-3)->isPvNode",
     "cutNode", "!cutNode",
     "improving", "!improving", // 3 4
     "opponentWorsening", "!opponentWorsening",
     "capture", "!capture", // 5 6
     "givesCheck", "!givesCheck", // 7 8
     "ss->inCheck", "!ss->inCheck", // 9 10
+    "(ss-1)->inCheck", "!(ss-1)->inCheck", // 9 10
+    "(ss-2)->inCheck", "!(ss-2)->inCheck", // 9 10
+    "(ss-3)->inCheck", "!(ss-3)->inCheck", // 9 10
     "priorCapture", "!priorCapture", // 11 12
     (USE_PV_TTPV?"ss->ttPv":"false"), "!ss->ttPv", // 13 14
+    "(ss-1)->ttPv", "!(ss-1)->ttPv", // 13 14
+    "(ss-2)->ttPv", "!(ss-2)->ttPv", // 13 14
+    "(ss-3)->ttPv", "!(ss-3)->ttPv", // 13 14
     "(ss->statScore>0)", "(ss->statScore<=0)", // 15 16
+    "ss->statScore>-10000", "ss->statScore<=-10000", // 15 16
+    "ss->statScore>-20000", "ss->statScore<=-20000", // 15 16
+    "ss->statScore>-30000", "ss->statScore<=-30000", // 15 16
+    "ss->statScore>-40000", "ss->statScore<=-40000", // 15 16
+    "ss->statScore>-50000", "ss->statScore<=-50000", // 15 16
+    "ss->statScore>-60000", "ss->statScore<=-60000", // 15 16
+    "ss->statScore>-70000", "ss->statScore<=-70000", // 15 16
+    "ss->statScore>10000", "ss->statScore<=10000", // 15 16
+    "ss->statScore>20000", "ss->statScore<=20000", // 15 16
+    "ss->statScore>30000", "ss->statScore<=30000", // 15 16
+    "ss->statScore>40000", "ss->statScore<=40000", // 15 16
+    "ss->statScore>50000", "ss->statScore<=50000", // 15 16
+    "ss->statScore>60000", "ss->statScore<=60000", // 15 16
+    "ss->statScore>70000", "ss->statScore<=70000", // 15 16
     //"(extension<0)", "(extension==0)","(extension>0)", // 17 18
     "ttCapture", "ttCapture",
     "bool(excludedMove)", "!excludedMove",
@@ -87,9 +111,18 @@ std::vector<std::string> names = {
     "(priorReduction>1)", "(priorReduction<=1)",
     "(priorReduction>2)", "(priorReduction<=2)",
     "(priorReduction>3)", "(priorReduction<=3)",
+    "(priorReduction>4)", "(priorReduction<=4)",
+    "(priorReduction>5)", "(priorReduction<=5)",
+    "(priorReduction>6)", "(priorReduction<=6)",
+    "(priorReduction>7)", "(priorReduction<=7)",
+    "(priorReduction>8)", "(priorReduction<=8)",
+    "(priorReduction>9)", "(priorReduction<=9)",
     //"((ss-1)->currentMove==Move::null())", "((ss-1)->currentMove!=Move::null())",
     "(prevSq == SQ_NONE)", "(prevSq != SQ_NONE)",
-    "ss->ttHit", "!ss->ttHit",
+    "ttHit", "!ttHit",
+    "(ss-1)->ttHit", "!(ss-1)->ttHit",
+    "(ss-2)->ttHit", "!(ss-2)->ttHit",
+    "(ss-3)->ttHit", "!(ss-3)->ttHit",
     "(depth<3)", "(depth>=3)",
     "(depth<4)", "(depth>=4)",
     "(depth<5)", "(depth>=5)",
@@ -100,6 +133,11 @@ std::vector<std::string> names = {
     "(depth<10)", "(depth>=10)",
     "(depth<11)", "(depth>=11)",
     "(depth<12)", "(depth>=12)",
+    "(depth<13)", "(depth>=13)",
+    "(depth<14)", "(depth>=14)",
+    "(depth<15)", "(depth>=15)",
+    "(depth<16)", "(depth>=16)",
+    "(depth<17)", "(depth>=17)",
     "(moveCount<3)", "(moveCount>=3)",
     "(moveCount<4)", "(moveCount>=4)",
     "(moveCount<5)", "(moveCount>=5)",
@@ -118,6 +156,16 @@ std::vector<std::string> names = {
     "(moveCount<18)", "(moveCount>=18)",
     "(moveCount<19)", "(moveCount>=19)",
     "(moveCount<20)", "(moveCount>=20)",
+    "(moveCount<21)", "(moveCount>=21)",
+    "(moveCount<22)", "(moveCount>=22)",
+    "(moveCount<23)", "(moveCount>=23)",
+    "(moveCount<24)", "(moveCount>=24)",
+    "(moveCount<25)", "(moveCount>=25)",
+    "(moveCount<26)", "(moveCount>=26)",
+    "(moveCount<27)", "(moveCount>=27)",
+    "(moveCount<28)", "(moveCount>=28)",
+    "(moveCount<29)", "(moveCount>=29)",
+    "(moveCount<30)", "(moveCount>=30)",
     //"(LMRResearches<=0)", "(LMRResearches>0)",
 //    "(successfulLMRResearches<=0)", "(successfulLMRResearches>0)",
     //"(failedLMRResearches<=0)", "(failedLMRResearches>0)",
@@ -1715,15 +1763,39 @@ moves_loop:  // When in check, search starts here
                             //true, false,
                             allNode, !allNode, // 0 1 2
                             (USE_PV_TTPV?PvNode:false), !PvNode, // 0 1 2
+			    ss->isPvNode, !ss->isPvNode,
+			    (ss-1)->isPvNode, !(ss-1)->isPvNode,
+			    (ss-2)->isPvNode, !(ss-2)->isPvNode,
+			    (ss-3)->isPvNode, !(ss-3)->isPvNode,
                             cutNode, !cutNode, // 0 1 2
                             improving, !improving, // 3 4
                             opponentWorsening, !opponentWorsening,
                             capture, !capture, // 5 6
                             givesCheck, !givesCheck, // 7 8
                             ss->inCheck, !ss->inCheck, // 9 10
+                            (ss-1)->inCheck, !(ss-1)->inCheck, // 9 10
+                            (ss-2)->inCheck, !(ss-2)->inCheck, // 9 10
+                            (ss-3)->inCheck, !(ss-3)->inCheck, // 9 10
                             priorCapture, !priorCapture, // 11 12
                             (USE_PV_TTPV?ss->ttPv:false), !ss->ttPv, // 13 14
+                            (ss-1)->ttPv, !(ss-1)->ttPv, // 13 14
+                            (ss-2)->ttPv, !(ss-2)->ttPv, // 13 14
+                            (ss-3)->ttPv, !(ss-3)->ttPv, // 13 14
                             ss->statScore>0, ss->statScore<=0, // 15 16
+                            ss->statScore>-10000, ss->statScore<=-10000, // 15 16
+                            ss->statScore>-20000, ss->statScore<=-20000, // 15 16
+                            ss->statScore>-30000, ss->statScore<=-30000, // 15 16
+                            ss->statScore>-40000, ss->statScore<=-40000, // 15 16
+                            ss->statScore>-50000, ss->statScore<=-50000, // 15 16
+                            ss->statScore>-60000, ss->statScore<=-60000, // 15 16
+                            ss->statScore>-70000, ss->statScore<=-70000, // 15 16
+                            ss->statScore>10000, ss->statScore<=10000, // 15 16
+                            ss->statScore>20000, ss->statScore<=20000, // 15 16
+                            ss->statScore>30000, ss->statScore<=30000, // 15 16
+                            ss->statScore>40000, ss->statScore<=40000, // 15 16
+                            ss->statScore>50000, ss->statScore<=50000, // 15 16
+                            ss->statScore>60000, ss->statScore<=60000, // 15 16
+                            ss->statScore>70000, ss->statScore<=70000, // 15 16
                             //extension<0,extension==0,extension>0,// 17 18
                             ttCapture,!ttCapture,
                             bool(excludedMove), !excludedMove,
@@ -1732,9 +1804,18 @@ moves_loop:  // When in check, search starts here
                             priorReduction>1, priorReduction<=1,
                             priorReduction>2, priorReduction<=2,
                             priorReduction>3, priorReduction<=3,
+                            priorReduction>4, priorReduction<=4,
+                            priorReduction>5, priorReduction<=5,
+                            priorReduction>6, priorReduction<=6,
+                            priorReduction>7, priorReduction<=7,
+                            priorReduction>8, priorReduction<=8,
+                            priorReduction>9, priorReduction<=9,
                            // (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
                             (prevSq == SQ_NONE), (prevSq != SQ_NONE),
-                            ss->ttHit, !ss->ttHit, // 9 10
+                            ttHit, !ttHit, // 9 10
+                            (ss-1)->ttHit, !(ss-1)->ttHit, // 9 10
+                            (ss-2)->ttHit, !(ss-2)->ttHit, // 9 10
+                            (ss-3)->ttHit, !(ss-3)->ttHit, // 9 10
                             depth<3,depth>=3,
                             depth<4,depth>=4,
                             depth<5,depth>=5,
@@ -1745,6 +1826,11 @@ moves_loop:  // When in check, search starts here
                             depth<10,depth>=10,
                             depth<11,depth>=11,
                             depth<12,depth>=12,
+                            depth<13,depth>=13,
+                            depth<14,depth>=14,
+                            depth<15,depth>=15,
+                            depth<16,depth>=16,
+                            depth<17,depth>=17,
                             (moveCount<3), (moveCount>=3),
                             (moveCount<4), (moveCount>=4),
                             (moveCount<5), (moveCount>=5),
@@ -1763,6 +1849,16 @@ moves_loop:  // When in check, search starts here
                             (moveCount<18), (moveCount>=18),
                             (moveCount<19), (moveCount>=19),
                             (moveCount<20), (moveCount>=20),
+                            (moveCount<21), (moveCount>=21),
+                            (moveCount<22), (moveCount>=22),
+                            (moveCount<23), (moveCount>=23),
+                            (moveCount<24), (moveCount>=24),
+                            (moveCount<25), (moveCount>=25),
+                            (moveCount<26), (moveCount>=26),
+                            (moveCount<27), (moveCount>=27),
+                            (moveCount<28), (moveCount>=28),
+                            (moveCount<29), (moveCount>=29),
+                            (moveCount<30), (moveCount>=30),
                             //LMRResearches<=0, LMRResearches>0,
                          //   successfulLMRResearches<=0, successfulLMRResearches>0,
                             //failedLMRResearches<=0, failedLMRResearches>0,
