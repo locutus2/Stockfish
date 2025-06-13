@@ -1891,13 +1891,13 @@ moves_loop:  // When in check, search starts here
                         //constexpr double W[2] = {0,1}; // Only T
                         //constexpr double W[2] = {1,1}; // equal weight
                         constexpr double PT = 0.936783;
-                        std::array<double, 2> W;
+                        std::array<double, 2> W = { 1.0, 1.0 };
                         if (LOSS_FALSE_POSITIVE)
-                            W = {1,0}; // minimize false positive
+                            W = {0,1}; // minimize false positive
                         else if (LOSS_ACCURACY_BALANCED)
                             W = {PT,1-PT}; // minimize error rate on balanced classes
                         else if (LOSS_FALSE_NEGATIVE)
-                            W = {0,1}; // minimize false negative
+                            W = {1,0}; // minimize false negative
                         else // accuracy
                             W = {1,1}; // minimize error rate
 
