@@ -51,6 +51,27 @@
 
 namespace Stockfish {
 
+struct Condition
+{
+        std::string name;
+        bool value;
+        Condition(const std::string& n = "?", bool v = false) : name(n), value(v) {}
+
+        Condition Not() const {
+                return Condition(std::string("!(") + name + ")", !value);
+        }
+
+        Condition And(const Condition& c) const {
+                return Condition(std::string("(") + name + " && " + c.name + ")", value && c.value);
+        }
+
+        Condition Or(const Condition& c) const {
+                return Condition(std::string("(") + name + " || " + c.name + ")", value || c.value);
+        }
+};
+
+#define CONDITION(c) Condition(#c, (c))
+
 std::vector<Condition> baseConditions;
 std::vector<Condition> derivedConditions;
 
@@ -61,6 +82,7 @@ std::vector<Condition> derivedConditions;
                                      baseConditions[baseIndex].name = m; \
                              } \
                              baseConditions[baseIndex].value = (c); }
+#define AddBaseConditionPlusNot(c) AddBaseCondition(c); AddBaseCondition(!c)
 
 constexpr bool LOSS_FALSE_POSITIVE = false;
 constexpr bool LOSS_ACCURACY_BALANCED = true;
@@ -77,6 +99,7 @@ constexpr bool RESET_DISABLED_WEAK_LEARNER = false;
 constexpr bool PRINT_ROUNDED_FORM = false;
 constexpr bool PRINT_ERROR_OF_ALL_LEARNERS = true;
 
+/*
 std::vector<std::string> names = {
     //"true", "false",
     "allNode", "!allNode", 
@@ -202,6 +225,7 @@ std::vector<std::string> names = {
 //    "(successfulLMRResearches<=0)", "(successfulLMRResearches>0)",
     //"(failedLMRResearches<=0)", "(failedLMRResearches>0)",
 };
+*/
 
 std::vector<bool> weak_learner_enabled;
 
@@ -225,6 +249,7 @@ void adaboost_init()
 
     if (PAIR_CONDITIONS)
     {
+	    /*
         auto old_names = names;
         names.clear();
         for(int i = 0; i < int(old_names.size()); i++)
@@ -237,6 +262,7 @@ void adaboost_init()
                 else
                     names.push_back(old_names[i]); 
             }
+	    */
     }
 }
 
@@ -268,7 +294,7 @@ bool adaboost_predict_class(const std::vector<bool>& C)
     return adaboost_predict_margin(C) > 0;
 }
 
-void adaboost_learn(bool T, const std::vector<bool>& C0, double W)
+void adaboost_learn(bool T, const std::vector<Condition>& C0, double W)
 {
        std::vector<bool> C;
        if (PAIR_CONDITIONS)
@@ -277,17 +303,19 @@ void adaboost_learn(bool T, const std::vector<bool>& C0, double W)
                 for(int j = 0; j < int(C0.size()); j++)
                 {
                     if(i < j)
-                        C.push_back(C0[i] && C0[j]); 
+                        C.push_back(C0[i].value && C0[j].value); 
                     else if (i > j)
                         C.push_back(false); 
                     else
-                        C.push_back(C0[i]); 
+                        C.push_back(C0[i].value); 
                 }
        }
        else
-           C = C0;
-
-       assert(name.size() == C.size());
+       {
+	    C.resize(C0.size());
+            for(int i = 0; i < int(C0.size()); i++)
+                C[i] = C0[i].value;
+       }
 
        weak_learner_stats.resize(C.size(), {0,0});
        weak_learner_support.resize(C.size(), {0, 0});
@@ -346,11 +374,13 @@ bool adaboost_add_learner()
         for (int i = 0; i < int(weak_learner_stats.size()); i++)
         {
             //std::cerr << "C[" << i << "] = " << weak_learner_stats[i][0] << " | " << weak_learner_stats[i][1] << std::endl;
-            if (weak_learner_support[index[i]][1] > 0)
+            if (weak_learner_enabled[index[i]]
+		&& weak_learner_support[index[i]][1] > 0
+		&& weak_learner_stats[index[i]][0] < weak_learner_stats[index[i]][1])
             {
                 std::cerr << "=> error=" <<  weak_learner_stats[index[i]][0] / (weak_learner_stats[index[i]][0] +  weak_learner_stats[index[i]][1])
                     << " support=" << 100.0*weak_learner_support[index[i]][1] /weak_learner_support[index[i]][0] << "%"
-                          << " " << (index[i] < int(names.size()) ? names[index[i]] : std::string("C[") + std::to_string(index[i]) + "]") << std::endl;
+                          << " " << (index[i] < int(baseConditions.size()) ? baseConditions[index[i]].name : std::string("C[") + std::to_string(index[i]) + "]") << std::endl;
             }
         }
     }
@@ -369,7 +399,7 @@ bool adaboost_add_learner()
         return false;
 }
 
-void adaboost_collect_stats(bool T, const std::vector<bool>& C0)
+void adaboost_collect_stats(bool T, const std::vector<Condition>& C0)
 {
    std::vector<bool> C;
    if (PAIR_CONDITIONS)
@@ -378,17 +408,19 @@ void adaboost_collect_stats(bool T, const std::vector<bool>& C0)
             for(int j = 0; j < int(C0.size()); j++)
             {
                 if(i < j)
-                    C.push_back(C0[i] && C0[j]); 
+                    C.push_back(C0[i].value && C0[j].value); 
                 else if (i > j)
                     C.push_back(false); 
                 else
-                    C.push_back(C0[i]); 
+                    C.push_back(C0[i].value); 
             }
    }
    else
-       C = C0;
-
-   assert(name.size() == C.size());
+   {
+	C.resize(C0.size());
+        for(int i = 0; i < int(C0.size()); i++)
+            C[i] = C0[i].value;
+   }
 
     bool P = adaboost_predict_class(C);
 
@@ -482,7 +514,7 @@ void adaboost_print_model(std::ostream& out)
         for(int i = 0; i < int(l.size()); i++)
         {
             if(i>0) out << " + ";
-            out << w[i] << " * " << (l[i] < int(names.size()) ? names[l[i]] : std::string("C[") + std::to_string(l[i]) + "]");
+            out << w[i] << " * " << (l[i] < int(baseConditions.size()) ? baseConditions[l[i]].name : std::string("C[") + std::to_string(l[i]) + "]");
         }
         out << " > " << sum/2 << std::endl;
 
@@ -495,7 +527,7 @@ void adaboost_print_model(std::ostream& out)
                 for(int i = 0; i < int(l.size()); i++)
                 {
                     if(i>0) out << " + ";
-                    out << int(std::floor(w[i]/m*S + 0.5)) << " * " << (l[i] < int(names.size()) ? names[l[i]] : std::string("C[") + std::to_string(l[i]) + "]");
+                    out << int(std::floor(w[i]/m*S + 0.5)) << " * " << (l[i] < int(baseConditions.size()) ? baseConditions[l[i]].name : std::string("C[") + std::to_string(l[i]) + "]");
                 }
                 out << " > " << int(std::floor(sum/2/m*S + 0.5)) << std::endl;
             }
@@ -507,7 +539,7 @@ void adaboost_print_model(std::ostream& out)
         {
             sum += learner_weight[i];
             if(i>0) out << " + ";
-            out << learner_weight[i] << " * " << (learner_index[i] < int(names.size()) ? names[learner_index[i]] : std::string("C[") + std::to_string(learner_index[i]) + "]");
+            out << learner_weight[i] << " * " << (learner_index[i] < int(baseConditions.size()) ? baseConditions[learner_index[i]].name : std::string("C[") + std::to_string(learner_index[i]) + "]");
         }
         out << " > " << sum/2 << std::endl;
     }
@@ -1439,9 +1471,9 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
-    int LMRResearches = 0;
-    int failedLMRResearches = 0;
-    int successfulLMRResearches = 0;
+    //int LMRResearches = 0;
+    //int failedLMRResearches = 0;
+    //int successfulLMRResearches = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1796,6 +1828,13 @@ moves_loop:  // When in check, search starts here
                         bool T = value <= alpha;
 			dbg_hit_on(T, 0);
 
+                        int baseCount = 0;
+
+			AddBaseConditionPlusNot(allNode);
+			AddBaseConditionPlusNot(PvNode);
+			AddBaseConditionPlusNot(cutNode);
+			AddBaseConditionPlusNot(ss->ttPv);
+			/*
                         std::vector<bool> C = {
                             //true, false,
                             allNode, !allNode, // 0 1 2
@@ -1921,6 +1960,7 @@ moves_loop:  // When in check, search starts here
                          //   successfulLMRResearches<=0, successfulLMRResearches>0,
                             //failedLMRResearches<=0, failedLMRResearches>0,
                         };
+		    */
 
                         //constexpr double W[2] = {0.265531, 1-0.265531}; // balanced classes
                         //constexpr double W[2] = {1,0}; // Only !T
@@ -1938,8 +1978,8 @@ moves_loop:  // When in check, search starts here
                         else // accuracy
                             W = {1,1}; // minimize error rate
 
-                        adaboost_collect_stats(T, C);
-                        adaboost_learn(T, C, W[T]);
+                        adaboost_collect_stats(T, baseConditions);
+                        adaboost_learn(T, baseConditions, W[T]);
                     }
 
             // Do a full-depth search when reduced LMR search fails high
