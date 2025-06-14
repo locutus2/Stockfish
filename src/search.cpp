@@ -343,7 +343,7 @@ bool adaboost_print_stats(std::ostream& out)
         learner_index.pop_back();
         learner_error.pop_back();
         learner_weight.pop_back();
-        out << "=> REMOVE last added weak learner because of support < " << 100* LEARN_MIN_SUPPORT_RULE << "%" << std::endl;
+        out << "=> REMOVE last added weak learner because of support < " << 100* LEARN_MIN_SUPPORT_RULE << "%:" << std::endl;
     }
     else if(RESET_DISABLED_WEAK_LEARNER)
     {
@@ -1697,10 +1697,11 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
 
-	    CC = ttCapture;
+	    CC = ss->inCheck;
                     if(CC)
                     {
-                        bool T = value <= alpha;
+                        bool T = value > alpha;
+                        //bool T = value <= alpha;
 			dbg_hit_on(T, 0);
 
                         int baseCount = 0;
@@ -1976,7 +1977,8 @@ moves_loop:  // When in check, search starts here
                         //constexpr double W[2] = {0,1}; // Only T
                         //constexpr double W[2] = {1,1}; // equal weight
                         //constexpr double PT = 0.936783; // CC=true
-			constexpr double PT = 0.951193; // CC=ttCapture
+			//constexpr double PT = 0.951193; // CC=ttCapture
+			constexpr double PT = 0.0716138; // CC=ss->inCheck
                         std::array<double, 2> W = { 1.0, 1.0 };
                         if (LOSS_FALSE_POSITIVE)
                             W = {0,1}; // minimize false positive
