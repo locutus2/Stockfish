@@ -93,139 +93,10 @@ constexpr bool PAIR_CONDITIONS = false;
 
 constexpr double LEARN_MIN_SUPPORT_CONDITION = 0.001; // 0.1%
 constexpr double LEARN_MIN_SUPPORT_RULE = 0.001; // 0.1%
-constexpr bool USE_PV_TTPV = true;
 constexpr bool RESET_DISABLED_WEAK_LEARNER = false;
 
 constexpr bool PRINT_ROUNDED_FORM = false;
 constexpr bool PRINT_ERROR_OF_ALL_LEARNERS = true;
-
-/*
-std::vector<std::string> names = {
-    //"true", "false",
-    "allNode", "!allNode", 
-    (USE_PV_TTPV?"PvNode":"false"), "!PvNode",
-    "ss->isPvNode", "!ss->isPvNode",
-    "(ss-1)->isPvNode", "!(ss-1)->isPvNode",
-    "(ss-2)->isPvNode", "!(ss-2)->isPvNode",
-    "(ss-3)->isPvNode", "!(ss-3)->isPvNode",
-    "cutNode", "!cutNode",
-    "improving", "!improving", // 3 4
-    "opponentWorsening", "!opponentWorsening",
-    "capture", "!capture", // 5 6
-    "givesCheck", "!givesCheck", // 7 8
-    "ss->inCheck", "!ss->inCheck", // 9 10
-    "(ss-1)->inCheck", "!(ss-1)->inCheck", // 9 10
-    "(ss-2)->inCheck", "!(ss-2)->inCheck", // 9 10
-    "(ss-3)->inCheck", "!(ss-3)->inCheck", // 9 10
-    "priorCapture", "!priorCapture", // 11 12
-    (USE_PV_TTPV?"ss->ttPv":"false"), "!ss->ttPv", // 13 14
-    "(ss-1)->ttPv", "!(ss-1)->ttPv", // 13 14
-    "(ss-2)->ttPv", "!(ss-2)->ttPv", // 13 14
-    "(ss-3)->ttPv", "!(ss-3)->ttPv", // 13 14
-    "(ss->statScore>0)", "(ss->statScore<=0)", // 15 16
-    "(ss->statScore>-10000)", "(ss->statScore<=-10000)", // 15 16
-    "(ss->statScore>-20000)", "(ss->statScore<=-20000)", // 15 16
-    "(ss->statScore>-30000)", "(ss->statScore<=-30000)", // 15 16
-    "(ss->statScore>-40000)", "(ss->statScore<=-40000)", // 15 16
-    "(ss->statScore>-50000)", "(ss->statScore<=-50000)", // 15 16
-    "(ss->statScore>-60000)", "(ss->statScore<=-60000)", // 15 16
-    "(ss->statScore>-70000)", "(ss->statScore<=-70000)", // 15 16
-    "(ss->statScore>10000)", "(ss->statScore<=10000)", // 15 16
-    "(ss->statScore>20000)", "(ss->statScore<=20000)", // 15 16
-    "(ss->statScore>30000)", "(ss->statScore<=30000)", // 15 16
-    "(ss->statScore>40000)", "(ss->statScore<=40000)", // 15 16
-    "(ss->statScore>50000)", "(ss->statScore<=50000)", // 15 16
-    "(ss->statScore>60000)", "(ss->statScore<=60000)", // 15 16
-    "(ss->statScore>70000)", "(ss->statScore<=70000)", // 15 16
-    //"(extension<0)", "(extension==0)","(extension>0)", // 17 18
-    "ttCapture", "ttCapture",
-    "bool(excludedMove)", "!excludedMove",
-    //"(ss->reduction>0)", "(ss->reduction<=0)",
-    "(priorReduction>0)", "(priorReduction<=0)",
-    "(priorReduction>1)", "(priorReduction<=1)",
-    "(priorReduction>2)", "(priorReduction<=2)",
-    "(priorReduction>3)", "(priorReduction<=3)",
-    "(priorReduction>4)", "(priorReduction<=4)",
-    "(priorReduction>5)", "(priorReduction<=5)",
-    "(priorReduction>6)", "(priorReduction<=6)",
-    "(priorReduction>7)", "(priorReduction<=7)",
-    "(priorReduction>8)", "(priorReduction<=8)",
-    "(priorReduction>9)", "(priorReduction<=9)",
-    //"((ss-1)->currentMove==Move::null())", "((ss-1)->currentMove!=Move::null())",
-    "(prevSq == SQ_NONE)", "(prevSq != SQ_NONE)",
-    "ttHit", "!ttHit",
-    "(ss-1)->ttHit", "!(ss-1)->ttHit",
-    "(ss-2)->ttHit", "!(ss-2)->ttHit",
-    "(ss-3)->ttHit", "!(ss-3)->ttHit",
-    "(depth<3)", "(depth>=3)",
-    "(depth<4)", "(depth>=4)",
-    "(depth<5)", "(depth>=5)",
-    "(depth<6)", "(depth>=6)",
-    "(depth<7)", "(depth>=7)",
-    "(depth<8)", "(depth>=8)",
-    "(depth<9)", "(depth>=9)",
-    "(depth<10)", "(depth>=10)",
-    "(depth<11)", "(depth>=11)",
-    "(depth<12)", "(depth>=12)",
-    "(depth<13)", "(depth>=13)",
-    "(depth<14)", "(depth>=14)",
-    "(depth<15)", "(depth>=15)",
-    "(depth<16)", "(depth>=16)",
-    "(depth<17)", "(depth>=17)",
-    "(moveCount<3)", "(moveCount>=3)",
-    "(moveCount<4)", "(moveCount>=4)",
-    "(moveCount<5)", "(moveCount>=5)",
-    "(moveCount<6)", "(moveCount>=6)",
-    "(moveCount<7)", "(moveCount>=7)",
-    "(moveCount<8)", "(moveCount>=8)",
-    "(moveCount<9)", "(moveCount>=9)",
-    "(moveCount<10)", "(moveCount>=10)",
-    "(moveCount<11)", "(moveCount>=11)",
-    "(moveCount<12)", "(moveCount>=12)",
-    "(moveCount<13)", "(moveCount>=13)",
-    "(moveCount<14)", "(moveCount>=14)",
-    "(moveCount<15)", "(moveCount>=15)",
-    "(moveCount<16)", "(moveCount>=16)",
-    "(moveCount<17)", "(moveCount>=17)",
-    "(moveCount<18)", "(moveCount>=18)",
-    "(moveCount<19)", "(moveCount>=19)",
-    "(moveCount<20)", "(moveCount>=20)",
-    "(moveCount<21)", "(moveCount>=21)",
-    "(moveCount<22)", "(moveCount>=22)",
-    "(moveCount<23)", "(moveCount>=23)",
-    "(moveCount<24)", "(moveCount>=24)",
-    "(moveCount<25)", "(moveCount>=25)",
-    "(moveCount<26)", "(moveCount>=26)",
-    "(moveCount<27)", "(moveCount>=27)",
-    "(moveCount<28)", "(moveCount>=28)",
-    "(moveCount<29)", "(moveCount>=29)",
-    "(moveCount<30)", "(moveCount>=30)",
-    "(type_of(movedPiece) == PAWN)", "(type_of(movedPiece) != PAWN)",
-    "(type_of(movedPiece) == KNIGHT)", "(type_of(movedPiece) != KNIGHT)",
-    "(type_of(movedPiece) == BISHOP)", "(type_of(movedPiece) != BISHOP)",
-    "(type_of(movedPiece) == ROOK)", "(type_of(movedPiece) != ROOK)",
-    "(type_of(movedPiece) == QUEEN)", "(type_of(movedPiece) != QUEEN)",
-    "(type_of(movedPiece) == KING)", "(type_of(movedPiece) != KING)",
-    "(type_of(movedPiece) >= BISHOP)", "(type_of(movedPiece) < BISHOP)",
-    "(type_of(movedPiece) >= ROOK)", "(type_of(movedPiece) < ROOK)",
-    "(type_of(movedPiece) >= QUEEN)", "(type_of(movedPiece) < QUEEN)",
-    "bool(pos.captured_piece())", "!pos.captured_piece()",
-    "(type_of(pos.captured_piece()) == PAWN)", "(type_of(pos.captured_piece()) != PAWN)",
-    "(type_of(pos.captured_piece()) == KNIGHT)", "(type_of(pos.captured_piece()) != KNIGHT)",
-    "(type_of(pos.captured_piece()) == BISHOP)", "(type_of(pos.captured_piece()) != BISHOP)",
-    "(type_of(pos.captured_piece()) == ROOK)", "(type_of(pos.captured_piece()) != ROOK)",
-    "(type_of(pos.captured_piece()) == QUEEN)", "(type_of(pos.captured_piece()) != QUEEN)",
-    "(type_of(pos.captured_piece()) >= KNIGHT)", "(type_of(pos.captured_piece()) < KNIGHT)",
-    "(type_of(pos.captured_piece()) >= BISHOP)", "(type_of(pos.captured_piece()) < BISHOP)",
-    "(type_of(pos.captured_piece()) >= ROOK)", "(type_of(pos.captured_piece()) < ROOK)",
-    "more_than_one(pos.checkers())", "!more_than_one(pos.checkers())",
-    "bool(pos.pinners(~us) & move.to_sq())", "!(pos.pinners(~us) & move.to_sq())",
-    "(givesCheck && !(pos.checkers() & move.to_sq()))", "!(givesCheck && !(pos.checkers() & move.to_sq()))",
-    //"(LMRResearches<=0)", "(LMRResearches>0)",
-//    "(successfulLMRResearches<=0)", "(successfulLMRResearches>0)",
-    //"(failedLMRResearches<=0)", "(failedLMRResearches>0)",
-};
-*/
 
 std::vector<bool> weak_learner_enabled;
 
@@ -1846,6 +1717,7 @@ moves_loop:  // When in check, search starts here
 			AddBaseConditionPlusNot(ttCapture);
 			AddBaseConditionPlusNot(ttHit);
 			AddBaseConditionPlusNot((prevSq == SQ_NONE));
+			AddBaseConditionPlusNot((prevSq == move.to_sq()));
 			AddBaseConditionPlusNot((givesCheck && !(pos.checkers() & move.to_sq())));
 			AddBaseConditionPlusNot(more_than_one(pos.checkers()));
 			AddBaseConditionPlusNot((pos.pinners(us) & move.to_sq()));
@@ -1853,6 +1725,15 @@ moves_loop:  // When in check, search starts here
 			AddBaseConditionPlusNot(bool(excludedMove));
 			AddBaseConditionPlusNot(bool(ttData.move));
 			AddBaseConditionPlusNot((ttData.move == move));
+			AddBaseConditionPlusNot((opponentWorsening == improving));
+			AddBaseConditionPlusNot((ss->ply % 2 == 0));
+			AddBaseConditionPlusNot((depth % 2 == 0));
+			AddBaseConditionPlusNot((rootDepth % 2 == 0));
+			AddBaseConditionPlusNot((rootDepth % 2 == depth % 2));
+			AddBaseConditionPlusNot((rootDepth % 2 == ss->ply % 2));
+			AddBaseConditionPlusNot((depth % 2 == ss->ply % 2));
+			AddBaseConditionPlusNot((depth + ss->ply < rootDepth));
+			AddBaseConditionPlusNot((depth < ss->ply));
 			AddBaseConditionPlusNot(ss->ttPv);
 			AddBaseConditionPlusNot(ss->isPvNode);
 			AddBaseConditionPlusNot(ss->inCheck);
@@ -2089,133 +1970,6 @@ moves_loop:  // When in check, search starts here
 			AddBaseConditionPlusNot(((ss-2)->moveCount >= 37));
 			AddBaseConditionPlusNot(((ss-2)->moveCount >= 38));
 			AddBaseConditionPlusNot(((ss-2)->moveCount >= 39));
-			/*
-                        std::vector<bool> C = {
-                            //true, false,
-                            allNode, !allNode, // 0 1 2
-                            (USE_PV_TTPV?PvNode:false), !PvNode, // 0 1 2
-			    ss->isPvNode, !ss->isPvNode,
-			    (ss-1)->isPvNode, !(ss-1)->isPvNode,
-			    (ss-2)->isPvNode, !(ss-2)->isPvNode,
-			    (ss-3)->isPvNode, !(ss-3)->isPvNode,
-                            cutNode, !cutNode, // 0 1 2
-                            improving, !improving, // 3 4
-                            opponentWorsening, !opponentWorsening,
-                            capture, !capture, // 5 6
-                            givesCheck, !givesCheck, // 7 8
-                            ss->inCheck, !ss->inCheck, // 9 10
-                            (ss-1)->inCheck, !(ss-1)->inCheck, // 9 10
-                            (ss-2)->inCheck, !(ss-2)->inCheck, // 9 10
-                            (ss-3)->inCheck, !(ss-3)->inCheck, // 9 10
-                            priorCapture, !priorCapture, // 11 12
-                            (USE_PV_TTPV?ss->ttPv:false), !ss->ttPv, // 13 14
-                            (ss-1)->ttPv, !(ss-1)->ttPv, // 13 14
-                            (ss-2)->ttPv, !(ss-2)->ttPv, // 13 14
-                            (ss-3)->ttPv, !(ss-3)->ttPv, // 13 14
-                            ss->statScore>0, ss->statScore<=0, // 15 16
-                            ss->statScore>-10000, ss->statScore<=-10000, // 15 16
-                            ss->statScore>-20000, ss->statScore<=-20000, // 15 16
-                            ss->statScore>-30000, ss->statScore<=-30000, // 15 16
-                            ss->statScore>-40000, ss->statScore<=-40000, // 15 16
-                            ss->statScore>-50000, ss->statScore<=-50000, // 15 16
-                            ss->statScore>-60000, ss->statScore<=-60000, // 15 16
-                            ss->statScore>-70000, ss->statScore<=-70000, // 15 16
-                            ss->statScore>10000, ss->statScore<=10000, // 15 16
-                            ss->statScore>20000, ss->statScore<=20000, // 15 16
-                            ss->statScore>30000, ss->statScore<=30000, // 15 16
-                            ss->statScore>40000, ss->statScore<=40000, // 15 16
-                            ss->statScore>50000, ss->statScore<=50000, // 15 16
-                            ss->statScore>60000, ss->statScore<=60000, // 15 16
-                            ss->statScore>70000, ss->statScore<=70000, // 15 16
-                            //extension<0,extension==0,extension>0,// 17 18
-                            ttCapture,!ttCapture,
-                            bool(excludedMove), !excludedMove,
-                            //ss->reduction>0, ss->reduction<=0,
-                            priorReduction>0, priorReduction<=0,
-                            priorReduction>1, priorReduction<=1,
-                            priorReduction>2, priorReduction<=2,
-                            priorReduction>3, priorReduction<=3,
-                            priorReduction>4, priorReduction<=4,
-                            priorReduction>5, priorReduction<=5,
-                            priorReduction>6, priorReduction<=6,
-                            priorReduction>7, priorReduction<=7,
-                            priorReduction>8, priorReduction<=8,
-                            priorReduction>9, priorReduction<=9,
-                           // (ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
-                            (prevSq == SQ_NONE), (prevSq != SQ_NONE),
-                            ttHit, !ttHit, // 9 10
-                            (ss-1)->ttHit, !(ss-1)->ttHit, // 9 10
-                            (ss-2)->ttHit, !(ss-2)->ttHit, // 9 10
-                            (ss-3)->ttHit, !(ss-3)->ttHit, // 9 10
-                            depth<3,depth>=3,
-                            depth<4,depth>=4,
-                            depth<5,depth>=5,
-                            depth<6,depth>=6,
-                            depth<7,depth>=7,
-                            depth<8,depth>=8,
-                            depth<9,depth>=9,
-                            depth<10,depth>=10,
-                            depth<11,depth>=11,
-                            depth<12,depth>=12,
-                            depth<13,depth>=13,
-                            depth<14,depth>=14,
-                            depth<15,depth>=15,
-                            depth<16,depth>=16,
-                            depth<17,depth>=17,
-                            (moveCount<3), (moveCount>=3),
-                            (moveCount<4), (moveCount>=4),
-                            (moveCount<5), (moveCount>=5),
-                            (moveCount<6), (moveCount>=6),
-                            (moveCount<7), (moveCount>=7),
-                            (moveCount<8), (moveCount>=8),
-                            (moveCount<9), (moveCount>=9),
-                            (moveCount<10), (moveCount>=10),
-                            (moveCount<11), (moveCount>=11),
-                            (moveCount<12), (moveCount>=12),
-                            (moveCount<13), (moveCount>=13),
-                            (moveCount<14), (moveCount>=14),
-                            (moveCount<15), (moveCount>=15),
-                            (moveCount<16), (moveCount>=16),
-                            (moveCount<17), (moveCount>=17),
-                            (moveCount<18), (moveCount>=18),
-                            (moveCount<19), (moveCount>=19),
-                            (moveCount<20), (moveCount>=20),
-                            (moveCount<21), (moveCount>=21),
-                            (moveCount<22), (moveCount>=22),
-                            (moveCount<23), (moveCount>=23),
-                            (moveCount<24), (moveCount>=24),
-                            (moveCount<25), (moveCount>=25),
-                            (moveCount<26), (moveCount>=26),
-                            (moveCount<27), (moveCount>=27),
-                            (moveCount<28), (moveCount>=28),
-                            (moveCount<29), (moveCount>=29),
-                            (moveCount<30), (moveCount>=30),
-			    type_of(movedPiece) == PAWN, type_of(movedPiece) != PAWN,
-			    type_of(movedPiece) == KNIGHT, type_of(movedPiece) != KNIGHT,
-			    type_of(movedPiece) == BISHOP, type_of(movedPiece) != BISHOP,
-			    type_of(movedPiece) == ROOK, type_of(movedPiece) != ROOK,
-			    type_of(movedPiece) == QUEEN, type_of(movedPiece) != QUEEN,
-			    type_of(movedPiece) == KING, type_of(movedPiece) != KING,
-			    type_of(movedPiece) >= BISHOP, type_of(movedPiece) < BISHOP,
-			    type_of(movedPiece) >= ROOK, type_of(movedPiece) < ROOK,
-			    type_of(movedPiece) >= QUEEN, type_of(movedPiece) < QUEEN,
-                            bool(pos.captured_piece()), !pos.captured_piece(),
-                            (type_of(pos.captured_piece()) == PAWN), (type_of(pos.captured_piece()) != PAWN),
-                            (type_of(pos.captured_piece()) == KNIGHT), (type_of(pos.captured_piece()) != KNIGHT),
-                            (type_of(pos.captured_piece()) == BISHOP), (type_of(pos.captured_piece()) != BISHOP),
-                            (type_of(pos.captured_piece()) == ROOK), (type_of(pos.captured_piece()) != ROOK),
-                            (type_of(pos.captured_piece()) == QUEEN), (type_of(pos.captured_piece()) != QUEEN),
-                            (type_of(pos.captured_piece()) >= KNIGHT), (type_of(pos.captured_piece()) < KNIGHT),
-                            (type_of(pos.captured_piece()) >= BISHOP), (type_of(pos.captured_piece()) < BISHOP),
-                            (type_of(pos.captured_piece()) >= ROOK), (type_of(pos.captured_piece()) < ROOK),
-                            more_than_one(pos.checkers()), !more_than_one(pos.checkers()),
-			    bool(pos.pinners(~us) & move.to_sq()), !(pos.pinners(~us) & move.to_sq()),
-                            (givesCheck && !(pos.checkers() & move.to_sq())), !(givesCheck && !(pos.checkers() & move.to_sq())),
-                            //LMRResearches<=0, LMRResearches>0,
-                         //   successfulLMRResearches<=0, successfulLMRResearches>0,
-                            //failedLMRResearches<=0, failedLMRResearches>0,
-                        };
-		    */
 
                         //constexpr double W[2] = {0.265531, 1-0.265531}; // balanced classes
                         //constexpr double W[2] = {1,0}; // Only !T
