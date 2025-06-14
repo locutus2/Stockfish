@@ -100,7 +100,7 @@ constexpr bool PRINT_ERROR_OF_ALL_LEARNERS = true;
 
 std::vector<bool> weak_learner_enabled;
 
-std::vector<std::vector<double>> weak_learner_stats;
+std::vector<std::vector<std::vector<double>>> weak_learner_stats;
 std::vector<std::vector<double>> weak_learner_support;
 std::vector<std::vector<double>> weak_learner_rule_support;
 std::vector<int> learner_index;
@@ -167,9 +167,10 @@ bool adaboost_predict_class(const std::vector<bool>& C)
     return adaboost_predict_margin(C) > 0;
 }
 
-void adaboost_learn(bool T, const std::vector<Condition>& C0, double W);
+void adaboost_learn(bool T, const std::vector<Condition>& C0);
 
-void adaboost_learn(bool T, const std::vector<Condition>& C0, double W)
+//void adaboost_learn(bool T, const std::vector<Condition>& C0, double W)
+void adaboost_learn(bool T, const std::vector<Condition>& C0)
 {
        std::vector<bool> C;
        if (PAIR_CONDITIONS)
@@ -192,16 +193,17 @@ void adaboost_learn(bool T, const std::vector<Condition>& C0, double W)
                 C[i] = C0[i].value;
        }
 
-       weak_learner_stats.resize(C.size(), {0,0});
+       weak_learner_stats.resize(C.size(), {{0,0},{0,0}});
        weak_learner_support.resize(C.size(), {0, 0});
        weak_learner_rule_support.resize(C.size(), {0, 0});
        weak_learner_enabled.resize(C.size(), true);
 
        double F = adaboost_predict_margin(C);
-       double weight = W * std::exp(-(2 * T - 1) * F);
+       //double weight = W * std::exp(-(2 * T - 1) * F);
+       double weight = std::exp(-(2 * T - 1) * F);
        for (int i = 0; i < int(C.size()); i++)
        {
-           weak_learner_stats[i][T == C[i]] += weight;
+           weak_learner_stats[i][T][T == C[i]] += weight;
            weak_learner_support[i][0] += weight;
            if(C[i]) weak_learner_support[i][1] += weight;
        } 
@@ -222,19 +224,31 @@ bool adaboost_add_learner()
 {
     int bestLearner = -1;
     double bestValue = -1;
+    std::array<double, 2> CW = {1, 1}; // accuraccy
+
+    if (LOSS_FALSE_POSITIVE)
+        CW = {0,1}; // minimize false positive
+    else if (LOSS_ACCURACY_BALANCED)
+    {
+        const double PT = double(nClass[1]) / nStats;
+        CW = {PT,1-PT}; // minimize error rate on balanced classes
+    }
+    else if (LOSS_FALSE_NEGATIVE)
+        CW = {1,0}; // minimize false negative
 
     //std::cerr << "C[" << 0 << "] = " << weak_learner_stats[0][0] << " | " << weak_learner_stats[0][1] << std::endl;
     for (int i = 0; i < int(weak_learner_stats.size()); i++)
     {
         //std::cerr << "C[" << i << "] = " << weak_learner_stats[i][0] << " | " << weak_learner_stats[i][1] << std::endl;
         if (weak_learner_enabled[i]
-            && weak_learner_stats[i][0] > 0
-            && weak_learner_stats[i][0] < weak_learner_stats[i][1]
+            && weak_learner_stats[i][0][0] * CW[0] +  weak_learner_stats[i][1][0] * CW[1] > 0
+            && weak_learner_stats[i][0][0] * CW[0] + weak_learner_stats[i][1][0] * CW[1] 
+	        < weak_learner_stats[i][0][1] * CW[0] + weak_learner_stats[i][1][1] * CW[1]
             && weak_learner_support[i][1] >= LEARN_MIN_SUPPORT_CONDITION * weak_learner_support[i][0]
-            && (bestValue < 0 || weak_learner_stats[i][0] < bestValue))
+            && (bestValue < 0 || weak_learner_stats[i][0][0] * CW[0] + weak_learner_stats[i][1][0] * CW[1] < bestValue))
         {
             bestLearner = i;
-            bestValue = weak_learner_stats[i][0];
+            bestValue = weak_learner_stats[i][0][0] * CW[0] + weak_learner_stats[i][1][0] * CW[1];
         }
     }
     //std::cerr << "select " << bestLearner << std::endl;
@@ -244,16 +258,21 @@ bool adaboost_add_learner()
         std::vector<int> index;
         for (int i = 0; i < int(weak_learner_stats.size()); i++)
             index.push_back(i);
-        std::stable_sort(index.begin(), index.end(), [&](int a, int b) { return  weak_learner_stats[a][0] < weak_learner_stats[b][0]; });
+        std::stable_sort(index.begin(), index.end(), [&](int a, int b) { 
+			return  weak_learner_stats[a][0][0] * CW[0] + weak_learner_stats[a][1][0] * CW[1] 
+			      < weak_learner_stats[b][0][0] * CW[0] + weak_learner_stats[b][1][0] * CW[1]; });
 
         for (int i = 0; i < int(weak_learner_stats.size()); i++)
         {
             //std::cerr << "C[" << i << "] = " << weak_learner_stats[i][0] << " | " << weak_learner_stats[i][1] << std::endl;
             if (weak_learner_enabled[index[i]]
 		&& weak_learner_support[index[i]][1] > 0
-		&& weak_learner_stats[index[i]][0] < weak_learner_stats[index[i]][1])
+		&& weak_learner_stats[index[i]][0][0] * CW[0] + weak_learner_stats[index[i]][1][0] * CW[1] 
+		 < weak_learner_stats[index[i]][0][1] * CW[0] + weak_learner_stats[index[i]][1][1] * CW[1])
             {
-                std::cerr << "=> error=" <<  weak_learner_stats[index[i]][0] / (weak_learner_stats[index[i]][0] +  weak_learner_stats[index[i]][1])
+                std::cerr << "=> error=" << (weak_learner_stats[index[i]][0][0] * CW[0] + weak_learner_stats[index[i]][1][0] * CW[1])
+			                  / (  weak_learner_stats[index[i]][0][0] * CW[0] + weak_learner_stats[index[i]][1][0] * CW[1]
+					     + weak_learner_stats[index[i]][0][1] * CW[0] + weak_learner_stats[index[i]][1][1] * CW[1])
                     << " support=" << 100.0*weak_learner_support[index[i]][1] /weak_learner_support[index[i]][0] << "%"
                           << " " << (index[i] < int(baseConditions.size()) ? baseConditions[index[i]].name : std::string("C[") + std::to_string(index[i]) + "]") << std::endl;
             }
@@ -262,7 +281,9 @@ bool adaboost_add_learner()
 
     if(bestLearner >= 0)
     {
-        double error = weak_learner_stats[bestLearner][0] / (weak_learner_stats[bestLearner][0] + weak_learner_stats[bestLearner][1]);
+        double error = (weak_learner_stats[bestLearner][0][0] * CW[0] + weak_learner_stats[bestLearner][1][0] * CW[1])
+		     / (  weak_learner_stats[bestLearner][0][0] * CW[0] + weak_learner_stats[bestLearner][1][0] * CW[1]  
+			+ weak_learner_stats[bestLearner][0][1] * CW[0] + weak_learner_stats[bestLearner][1][1] * CW[1]);
         double alpha = 0.5 * std::log((1 - error) / error);
 
         learner_index.push_back(bestLearner);
@@ -314,6 +335,7 @@ bool adaboost_print_stats(std::ostream& out)
     double wp = 1.0/np;
     double wn = 1.0/nn;
     double nWStats = nn * wn + np * wp;
+    double prob = double(nClass[1]) / nStats;
     double support = double(nConf[0][1] + nConf[1][1]) / nStats;
     double accuracy = double(nConf[0][0] + nConf[1][1]) / nStats;
     double balancedAccuracy = double(nConf[0][0] * wn + nConf[1][1] * wp) / nWStats;
@@ -325,6 +347,7 @@ bool adaboost_print_stats(std::ostream& out)
     int nPrec = nConf[0][1] + nConf[1][1];
     double precision =  nPrec > 0 ? double(nConf[1][1]) / nPrec : -1.0;
 
+    out << "=> true_class_probability: " << 100. * prob << "%" << std::endl;
     out << "=> support: " << 100. * support << "%" << std::endl;
     out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && !LOSS_PRECISION ? "*" : "") << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
     out << (!LOSS_FALSE_POSITIVE && LOSS_ACCURACY_BALANCED ? "*" : "") << "=> balanced_accuracy: " << 100. * balancedAccuracy << "%" << std::endl;
@@ -1974,6 +1997,7 @@ moves_loop:  // When in check, search starts here
 			AddBaseConditionPlusNot(((ss-2)->moveCount >= 38));
 			AddBaseConditionPlusNot(((ss-2)->moveCount >= 39));
 
+			/*
                         //constexpr double W[2] = {0.265531, 1-0.265531}; // balanced classes
                         //constexpr double W[2] = {1,0}; // Only !T
                         //constexpr double W[2] = {0,1}; // Only T
@@ -1991,8 +2015,10 @@ moves_loop:  // When in check, search starts here
                         else // accuracy
                             W = {1,1}; // minimize error rate
 
+			    */
                         adaboost_collect_stats(T, baseConditions);
-                        adaboost_learn(T, baseConditions, W[T]);
+                        adaboost_learn(T, baseConditions);
+                        //adaboost_learn(T, baseConditions, W[T]);
                     }
 
             // Do a full-depth search when reduced LMR search fails high
