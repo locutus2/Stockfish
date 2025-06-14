@@ -285,6 +285,15 @@ bool adaboost_add_learner()
 		     / (  weak_learner_stats[bestLearner][0][0] * CW[0] + weak_learner_stats[bestLearner][1][0] * CW[1]  
 			+ weak_learner_stats[bestLearner][0][1] * CW[0] + weak_learner_stats[bestLearner][1][1] * CW[1]);
         double alpha = 0.5 * std::log((1 - error) / error);
+	double support = weak_learner_support[bestLearner][1] /weak_learner_support[bestLearner][0];
+        std::string name = (bestLearner < int(baseConditions.size()) ? baseConditions[bestLearner].name : std::string("C[") + std::to_string(bestLearner) + "]"); 
+
+	std::cerr << "=> select condition: "
+		  << " " << name
+		  << " alpha=" << alpha 
+		  << " error=" << error
+	          << " support=" << 100.0*support << "%"
+		  << std::endl;
 
         learner_index.push_back(bestLearner);
         learner_error.push_back(error);
