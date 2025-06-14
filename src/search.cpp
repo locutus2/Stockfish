@@ -1833,7 +1833,29 @@ moves_loop:  // When in check, search starts here
 			AddBaseConditionPlusNot(allNode);
 			AddBaseConditionPlusNot(PvNode);
 			AddBaseConditionPlusNot(cutNode);
+			AddBaseConditionPlusNot(improving);
+			AddBaseConditionPlusNot(givesCheck);
+			AddBaseConditionPlusNot(capture);
+			AddBaseConditionPlusNot(priorCapture);
+			AddBaseConditionPlusNot(opponentWorsening);
+			AddBaseConditionPlusNot(improving);
+			AddBaseConditionPlusNot(ttCapture);
+			AddBaseConditionPlusNot(ttHit);
 			AddBaseConditionPlusNot(ss->ttPv);
+			AddBaseConditionPlusNot(ss->isPvNode);
+			AddBaseConditionPlusNot(ss->inCheck);
+			AddBaseConditionPlusNot((ss-1)->ttPv);
+			AddBaseConditionPlusNot((ss-1)->isPvNode);
+			AddBaseConditionPlusNot((ss-1)->inCheck);
+			AddBaseConditionPlusNot((ss-1)->ttHit);
+			AddBaseConditionPlusNot((ss-2)->ttPv);
+			AddBaseConditionPlusNot((ss-2)->isPvNode);
+			AddBaseConditionPlusNot((ss-2)->inCheck);
+			AddBaseConditionPlusNot((ss-2)->ttHit);
+			AddBaseConditionPlusNot((ss-3)->ttPv);
+			AddBaseConditionPlusNot((ss-3)->isPvNode);
+			AddBaseConditionPlusNot((ss-3)->inCheck);
+			AddBaseConditionPlusNot((ss-3)->ttHit);
 			/*
                         std::vector<bool> C = {
                             //true, false,
