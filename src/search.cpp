@@ -1727,17 +1727,9 @@ moves_loop:  // When in check, search starts here
                 }
             }
             */
-            ss->reduction = newDepth - d;
-            value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
-            ss->reduction = 0;
-
 	    CC = ss->inCheck;
                     if(CC)
                     {
-                        bool T = value > alpha;
-                        //bool T = value <= alpha;
-			dbg_hit_on(T, 0);
-
                         int baseCount = 0;
 
 			AddBaseConditionPlusNot(allNode);
@@ -2025,10 +2017,22 @@ moves_loop:  // When in check, search starts here
                             W = {1,1}; // minimize error rate
 
 			    */
-                        adaboost_collect_stats(T, baseConditions);
-                        adaboost_learn(T, baseConditions);
                         //adaboost_learn(T, baseConditions, W[T]);
                     }
+
+            ss->reduction = newDepth - d;
+            value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+            ss->reduction = 0;
+
+            if(CC)
+            {
+                        bool T = value > alpha;
+                        //bool T = value <= alpha;
+			            dbg_hit_on(T, 0);
+
+                        adaboost_collect_stats(T, baseConditions);
+                        adaboost_learn(T, baseConditions);
+            }
 
             // Do a full-depth search when reduced LMR search fails high
             // (*Scaler) Usually doing more shallower searches
