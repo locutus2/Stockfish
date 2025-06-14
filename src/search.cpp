@@ -294,6 +294,8 @@ bool adaboost_predict_class(const std::vector<bool>& C)
     return adaboost_predict_margin(C) > 0;
 }
 
+void adaboost_learn(bool T, const std::vector<Condition>& C0, double W);
+
 void adaboost_learn(bool T, const std::vector<Condition>& C0, double W)
 {
        std::vector<bool> C;
@@ -398,6 +400,8 @@ bool adaboost_add_learner()
     else
         return false;
 }
+
+void adaboost_collect_stats(bool T, const std::vector<Condition>& C0);
 
 void adaboost_collect_stats(bool T, const std::vector<Condition>& C0)
 {
@@ -1841,6 +1845,13 @@ moves_loop:  // When in check, search starts here
 			AddBaseConditionPlusNot(improving);
 			AddBaseConditionPlusNot(ttCapture);
 			AddBaseConditionPlusNot(ttHit);
+			AddBaseConditionPlusNot((givesCheck && !(pos.checkers() & move.to_sq())));
+			AddBaseConditionPlusNot(more_than_one(pos.checkers()));
+			AddBaseConditionPlusNot((pos.pinners(us) & move.to_sq()));
+			AddBaseConditionPlusNot((move.type_of() == PROMOTION));
+			AddBaseConditionPlusNot(bool(excludedMove));
+			AddBaseConditionPlusNot(bool(ttData.move));
+			AddBaseConditionPlusNot((ttData.move == move));
 			AddBaseConditionPlusNot(ss->ttPv);
 			AddBaseConditionPlusNot(ss->isPvNode);
 			AddBaseConditionPlusNot(ss->inCheck);
@@ -1848,14 +1859,82 @@ moves_loop:  // When in check, search starts here
 			AddBaseConditionPlusNot((ss-1)->isPvNode);
 			AddBaseConditionPlusNot((ss-1)->inCheck);
 			AddBaseConditionPlusNot((ss-1)->ttHit);
+			AddBaseConditionPlusNot(bool((ss-1)->excludedMove));
 			AddBaseConditionPlusNot((ss-2)->ttPv);
 			AddBaseConditionPlusNot((ss-2)->isPvNode);
 			AddBaseConditionPlusNot((ss-2)->inCheck);
 			AddBaseConditionPlusNot((ss-2)->ttHit);
-			AddBaseConditionPlusNot((ss-3)->ttPv);
-			AddBaseConditionPlusNot((ss-3)->isPvNode);
-			AddBaseConditionPlusNot((ss-3)->inCheck);
-			AddBaseConditionPlusNot((ss-3)->ttHit);
+			AddBaseConditionPlusNot(bool((ss-2)->excludedMove));
+			AddBaseConditionPlusNot((ss->statScore > -10000));
+			AddBaseConditionPlusNot((ss->statScore > -20000));
+			AddBaseConditionPlusNot((ss->statScore > -30000));
+			AddBaseConditionPlusNot((ss->statScore > -40000));
+			AddBaseConditionPlusNot((ss->statScore > -50000));
+			AddBaseConditionPlusNot((ss->statScore > -60000));
+			AddBaseConditionPlusNot((ss->statScore > -70000));
+			AddBaseConditionPlusNot((ss->statScore > 0));
+			AddBaseConditionPlusNot((ss->statScore > 10000));
+			AddBaseConditionPlusNot((ss->statScore > 20000));
+			AddBaseConditionPlusNot((ss->statScore > 30000));
+			AddBaseConditionPlusNot((ss->statScore > 40000));
+			AddBaseConditionPlusNot((ss->statScore > 50000));
+			AddBaseConditionPlusNot((ss->statScore > 60000));
+			AddBaseConditionPlusNot((ss->statScore > 70000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > -10000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > -20000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > -30000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > -40000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > -50000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > -60000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > -70000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > 0));
+			AddBaseConditionPlusNot(((ss-1)->statScore > 10000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > 20000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > 30000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > 40000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > 50000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > 60000));
+			AddBaseConditionPlusNot(((ss-1)->statScore > 70000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -10000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -20000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -30000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -40000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -50000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -60000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -70000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 0));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 10000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 20000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 30000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 40000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 50000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 60000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 70000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -10000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -20000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -30000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -40000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -50000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -60000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > -70000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 0));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 10000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 20000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 30000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 40000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 50000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 60000));
+			AddBaseConditionPlusNot(((ss-2)->statScore > 70000));
+			AddBaseConditionPlusNot((priorReduction >= 1));
+			AddBaseConditionPlusNot((priorReduction >= 2));
+			AddBaseConditionPlusNot((priorReduction >= 3));
+			AddBaseConditionPlusNot((priorReduction >= 4));
+			AddBaseConditionPlusNot((priorReduction >= 5));
+			AddBaseConditionPlusNot((priorReduction >= 6));
+			AddBaseConditionPlusNot((priorReduction >= 7));
+			AddBaseConditionPlusNot((priorReduction >= 8));
+			AddBaseConditionPlusNot((priorReduction >= 9));
+			AddBaseConditionPlusNot((priorReduction >= 10));
 			/*
                         std::vector<bool> C = {
                             //true, false,
