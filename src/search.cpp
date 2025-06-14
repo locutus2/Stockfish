@@ -139,6 +139,8 @@ void adaboost_init()
 
 void adaboost_init_step()
 {
+    dbg_clear();
+
     weak_learner_stats.clear();
     weak_learner_support.clear();
     weak_learner_rule_support.clear();
