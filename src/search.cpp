@@ -51,6 +51,17 @@
 
 namespace Stockfish {
 
+std::vector<Condition> baseConditions;
+std::vector<Condition> derivedConditions;
+
+#define AddBaseCondition(c) AddBaseConditionText(#c, c)
+#define AddBaseConditionText(m, c) { int baseIndex = baseCount++; \
+                             if(baseIndex >= int(baseConditions.size())) {\
+                                     baseConditions.resize(baseIndex+1); \
+                                     baseConditions[baseIndex].name = m; \
+                             } \
+                             baseConditions[baseIndex].value = (c); }
+
 constexpr bool LOSS_FALSE_POSITIVE = false;
 constexpr bool LOSS_ACCURACY_BALANCED = true;
 constexpr bool LOSS_FALSE_NEGATIVE = false;
