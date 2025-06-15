@@ -147,8 +147,8 @@ void MovePicker::score() {
 
         if constexpr (Type == CAPTURES)
             m.value = (*captureHistory)[pc][to][type_of(capturedPiece)]
-                    + 5 * int(PieceValue[capturedPiece]) + 1024 * bool(pos.check_squares(pt) & to)
-                    + 2 * std::max(PieceValue[capturedPiece] - PieceValue[pt], 0);
+                    + 7 * int(PieceValue[capturedPiece]) + 1024 * bool(pos.check_squares(pt) & to)
+                    + std::max(PieceValue[capturedPiece] - PieceValue[pt], 0);
 
         else if constexpr (Type == QUIETS)
         {
