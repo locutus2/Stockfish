@@ -285,15 +285,15 @@ bool adaboost_add_learner()
 		     / (  weak_learner_stats[bestLearner][0][0] * CW[0] + weak_learner_stats[bestLearner][1][0] * CW[1]  
 			+ weak_learner_stats[bestLearner][0][1] * CW[0] + weak_learner_stats[bestLearner][1][1] * CW[1]);
         double alpha = 0.5 * std::log((1 - error) / error);
-	double support = weak_learner_support[bestLearner][1] /weak_learner_support[bestLearner][0];
+	    double support = weak_learner_support[bestLearner][1] /weak_learner_support[bestLearner][0];
         std::string name = (bestLearner < int(baseConditions.size()) ? baseConditions[bestLearner].name : std::string("C[") + std::to_string(bestLearner) + "]"); 
 
-	std::cerr << "=> select condition: "
-		  << " " << name
-		  << " alpha=" << alpha 
-		  << " error=" << error
-	          << " support=" << 100.0*support << "%"
-		  << std::endl;
+        std::cerr << "=> select condition: "
+              << " " << name
+              << " alpha=" << alpha 
+              << " error=" << error
+              << " support=" << 100.0*support << "%"
+              << std::endl;
 
         learner_index.push_back(bestLearner);
         learner_error.push_back(error);
@@ -423,22 +423,22 @@ void adaboost_print_model(std::ostream& out)
         for(int i = 0; i < int(l.size()); i++)
         {
             if(i>0) out << " + ";
-            out << w[i] << " * " << (l[i] < int(baseConditions.size()) ? baseConditions[l[i]].name : std::string("C[") + std::to_string(l[i]) + "]");
+            out << 2*w[i] << " * " << (l[i] < int(baseConditions.size()) ? baseConditions[l[i]].name : std::string("C[") + std::to_string(l[i]) + "]");
         }
-        out << " > " << sum/2 << std::endl;
+        out << " > " << sum << std::endl;
 
         if (PRINT_ROUNDED_FORM)
         {
-            double m = std::min(sum/2, *std::min_element(w.begin(), w.end()));
+            double m = std::min(sum, 2 * *std::min_element(w.begin(), w.end()));
             for(int S = 1; S <= 64; S *= 2)
             {
                 out << "Rounded S=" << S << ": ";
                 for(int i = 0; i < int(l.size()); i++)
                 {
                     if(i>0) out << " + ";
-                    out << int(std::floor(w[i]/m*S + 0.5)) << " * " << (l[i] < int(baseConditions.size()) ? baseConditions[l[i]].name : std::string("C[") + std::to_string(l[i]) + "]");
+                    out << int(std::floor(2*w[i]/m*S + 0.5)) << " * " << (l[i] < int(baseConditions.size()) ? baseConditions[l[i]].name : std::string("C[") + std::to_string(l[i]) + "]");
                 }
-                out << " > " << int(std::floor(sum/2/m*S + 0.5)) << std::endl;
+                out << " > " << int(std::floor(sum/m*S + 0.5)) << std::endl;
             }
         }
     }
@@ -1727,10 +1727,10 @@ moves_loop:  // When in check, search starts here
                 }
             }
             */
-	    CC = ss->inCheck;
-                    if(CC)
-                    {
-                        int baseCount = 0;
+	        CC = !ttHit;
+            if(CC)
+            {
+            int baseCount = 0;
 
 			AddBaseConditionPlusNot(allNode);
 			AddBaseConditionPlusNot(PvNode);
@@ -2018,7 +2018,7 @@ moves_loop:  // When in check, search starts here
 
 			    */
                         //adaboost_learn(T, baseConditions, W[T]);
-                    }
+            }
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
