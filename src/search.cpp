@@ -811,7 +811,7 @@ Value Search::Worker::search(
             int bonus = PieceValue[pos.captured_piece()] - PieceValue[pos.piece_on(prevSq)];
             if (bonus > 0)
                 thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(pos.captured_piece())]
-                  << bonus;
+                  << bonus / 2;
         }
 
         // Use static evaluation difference to improve quiet move ordering
