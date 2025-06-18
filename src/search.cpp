@@ -32,6 +32,7 @@
 #include <ratio>
 #include <string>
 #include <utility>
+#include <fstream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -97,6 +98,8 @@ constexpr bool RESET_DISABLED_WEAK_LEARNER = false;
 
 constexpr bool PRINT_ROUNDED_FORM = false;
 constexpr bool PRINT_ERROR_OF_ALL_LEARNERS = true;
+constexpr bool OUTPUT_DATA = false;
+constexpr bool USE_VALIDATION = true;
 
 std::vector<bool> weak_learner_enabled;
 
@@ -111,6 +114,10 @@ int64_t nStats;
 int64_t nClass[2];
 int64_t nPrediction[2];
 int64_t nConf[2][2];
+int64_t nStatsValidation;
+int64_t nClassValidation[2];
+int64_t nPredictionValidation[2];
+int64_t nConfValidation[2][2];
 
 void adaboost_init()
 {
@@ -150,6 +157,12 @@ void adaboost_init_step()
     nPrediction[0] = nPrediction[1] = 0;
     nConf[0][0] = nConf[0][1] = 0;
     nConf[1][0] = nConf[1][1] = 0;
+
+    nStatsValidation = 0;
+    nClassValidation[0] = nClassValidation[1] = 0;
+    nPredictionValidation[0] = nPredictionValidation[1] = 0;
+    nConfValidation[0][0] = nConfValidation[0][1] = 0;
+    nConfValidation[1][0] = nConfValidation[1][1] = 0;
 }
 
 double adaboost_predict_margin(const std::vector<bool>& C)
@@ -168,6 +181,8 @@ bool adaboost_predict_class(const std::vector<bool>& C)
 }
 
 void adaboost_learn(bool T, const std::vector<Condition>& C0);
+
+std::ofstream file("data_lmr_fh.csv");
 
 //void adaboost_learn(bool T, const std::vector<Condition>& C0, double W)
 void adaboost_learn(bool T, const std::vector<Condition>& C0)
@@ -206,7 +221,18 @@ void adaboost_learn(bool T, const std::vector<Condition>& C0)
            weak_learner_stats[i][T][T == C[i]] += weight;
            weak_learner_support[i][0] += weight;
            if(C[i]) weak_learner_support[i][1] += weight;
-       } 
+       }
+
+       if(OUTPUT_DATA && std::rand()%10 == 0)
+       {
+           file << int(T);
+           for (int i = 0; i < int(C.size()); i++)
+           {
+               file << ';' << int(C[i]);
+           }
+           file << std::endl;
+       }
+
        
        //dbg_hit_on(T, 0);
        //   //dbg_hit_on(F > 0, 10);
@@ -304,9 +330,9 @@ bool adaboost_add_learner()
         return false;
 }
 
-void adaboost_collect_stats(bool T, const std::vector<Condition>& C0);
+void adaboost_collect_stats(bool T, const std::vector<Condition>& C0, bool isValidation);
 
-void adaboost_collect_stats(bool T, const std::vector<Condition>& C0)
+void adaboost_collect_stats(bool T, const std::vector<Condition>& C0, bool isValidation)
 {
    std::vector<bool> C;
    if (PAIR_CONDITIONS)
@@ -331,47 +357,94 @@ void adaboost_collect_stats(bool T, const std::vector<Condition>& C0)
 
     bool P = adaboost_predict_class(C);
 
-    nStats++;
-    nClass[T]++;
-    nPrediction[P]++;
-    nConf[T][P]++;
+    if(isValidation)
+    {
+        nStatsValidation++;
+        nClassValidation[T]++;
+        nPredictionValidation[P]++;
+        nConfValidation[T][P]++;
+    }
+    else
+    {
+        nStats++;
+        nClass[T]++;
+        nPrediction[P]++;
+        nConf[T][P]++;
+    }
 }
 
 bool adaboost_print_stats(std::ostream& out)
 {
-    int np = nConf[1][1] + nConf[1][0];
-    int nn = nConf[0][1] + nConf[0][0];
-    double wp = 1.0/np;
-    double wn = 1.0/nn;
-    double nWStats = nn * wn + np * wp;
-    double prob = double(nClass[1]) / nStats;
-    double support = double(nConf[0][1] + nConf[1][1]) / nStats;
-    double accuracy = double(nConf[0][0] + nConf[1][1]) / nStats;
-    double balancedAccuracy = double(nConf[0][0] * wn + nConf[1][1] * wp) / nWStats;
-    //double falseNegativeRate =  nn > 0 ? double(nConf[0][1]) / nn : -1.0;
-    double trueNegativeRate =  nn > 0 ? double(nConf[0][0]) / nn : -1.0;
-    //double falsePositiveRate =  np > 0 ? double(nConf[1][0]) / np : -1.0;
-    double truePositiveRate =  np > 0 ? double(nConf[1][1]) / np : -1.0;
+    double support_learner;
+    {
+        int np = nConf[1][1] + nConf[1][0];
+        int nn = nConf[0][1] + nConf[0][0];
+        double wp = 1.0/np;
+        double wn = 1.0/nn;
+        double nWStats = nn * wn + np * wp;
+        double prob = double(nClass[1]) / nStats;
+        double support = double(nConf[0][1] + nConf[1][1]) / nStats;
+        double accuracy = double(nConf[0][0] + nConf[1][1]) / nStats;
+        double balancedAccuracy = double(nConf[0][0] * wn + nConf[1][1] * wp) / nWStats;
+        //double falseNegativeRate =  nn > 0 ? double(nConf[0][1]) / nn : -1.0;
+        double trueNegativeRate =  nn > 0 ? double(nConf[0][0]) / nn : -1.0;
+        //double falsePositiveRate =  np > 0 ? double(nConf[1][0]) / np : -1.0;
+        double truePositiveRate =  np > 0 ? double(nConf[1][1]) / np : -1.0;
 
-    int nPrec = nConf[0][1] + nConf[1][1];
-    double precision =  nPrec > 0 ? double(nConf[1][1]) / nPrec : -1.0;
+        int nPrec = nConf[0][1] + nConf[1][1];
+        double precision =  nPrec > 0 ? double(nConf[1][1]) / nPrec : -1.0;
 
-    out << "=> true_class_probability: " << 100. * prob << "%" << std::endl;
-    out << "=> support: " << 100. * support << "%" << std::endl;
-    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && !LOSS_PRECISION ? "*" : "") << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
-    out << (!LOSS_FALSE_POSITIVE && LOSS_ACCURACY_BALANCED ? "*" : "") << "=> balanced_accuracy: " << 100. * balancedAccuracy << "%" << std::endl;
-    out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> true_positive_rate: " << (truePositiveRate < 0 ? "-" : std::to_string(100. * truePositiveRate)) << "%" << std::endl;
-    //out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> false_positive_rate: " << (falsePositiveRate < 0 ? "-" : std::to_string(100. * falsePositiveRate)) << "%" << std::endl;
-    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> true_negative_rate: " << (trueNegativeRate < 0 ? "-" : std::to_string(100. * trueNegativeRate)) << "%" << std::endl;
-    //out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> false_negative_rate: " << (falseNegativeRate < 0 ? "-" : std::to_string(100. * falseNegativeRate)) << "%" << std::endl;
-    out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && LOSS_PRECISION ? "*" : "") << "=> precision: " << (precision < 0 ? "-" : std::to_string(100. * precision)) << "%" << std::endl;
+        support_learner = support;
+
+        out << "Training stats:" << std::endl;
+        out << "=> true_class_probability: " << 100. * prob << "%" << std::endl;
+        out << "=> support: " << 100. * support << "%" << std::endl;
+        out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && !LOSS_PRECISION ? "*" : "") << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
+        out << (!LOSS_FALSE_POSITIVE && LOSS_ACCURACY_BALANCED ? "*" : "") << "=> balanced_accuracy: " << 100. * balancedAccuracy << "%" << std::endl;
+        out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> true_positive_rate: " << (truePositiveRate < 0 ? "-" : std::to_string(100. * truePositiveRate)) << "%" << std::endl;
+        //out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> false_positive_rate: " << (falsePositiveRate < 0 ? "-" : std::to_string(100. * falsePositiveRate)) << "%" << std::endl;
+        out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> true_negative_rate: " << (trueNegativeRate < 0 ? "-" : std::to_string(100. * trueNegativeRate)) << "%" << std::endl;
+        //out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> false_negative_rate: " << (falseNegativeRate < 0 ? "-" : std::to_string(100. * falseNegativeRate)) << "%" << std::endl;
+        out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && LOSS_PRECISION ? "*" : "") << "=> precision: " << (precision < 0 ? "-" : std::to_string(100. * precision)) << "%" << std::endl;
     //out << "n: " << nStats << std::endl!;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
     //out << "Conf true x predicted:" << std::endl;
     //out << nConf[0][0] << "\t" << nConf[0][1] << std::endl;
     //out << nConf[1][0] << "\t" << nConf[1][1] << std::endl;
-    //
-    if(support < LEARN_MIN_SUPPORT_RULE && !learner_index.empty())
+    }
+   
+    if(USE_VALIDATION)
+    {
+        int np = nConfValidation[1][1] + nConfValidation[1][0];
+        int nn = nConfValidation[0][1] + nConfValidation[0][0];
+        double wp = 1.0/np;
+        double wn = 1.0/nn;
+        double nWStats = nn * wn + np * wp;
+        double prob = double(nClassValidation[1]) / nStatsValidation;
+        double support = double(nConfValidation[0][1] + nConfValidation[1][1]) / nStatsValidation;
+        double accuracy = double(nConfValidation[0][0] + nConfValidation[1][1]) / nStatsValidation;
+        double balancedAccuracy = double(nConfValidation[0][0] * wn + nConfValidation[1][1] * wp) / nWStats;
+        //double falseNegativeRate =  nn > 0 ? double(nConf[0][1]) / nn : -1.0;
+        double trueNegativeRate =  nn > 0 ? double(nConfValidation[0][0]) / nn : -1.0;
+        //double falsePositiveRate =  np > 0 ? double(nConf[1][0]) / np : -1.0;
+        double truePositiveRate =  np > 0 ? double(nConfValidation[1][1]) / np : -1.0;
+
+        int nPrec = nConfValidation[0][1] + nConfValidation[1][1];
+        double precision =  nPrec > 0 ? double(nConfValidation[1][1]) / nPrec : -1.0;
+
+        out << "Validation stats:" << std::endl;
+        out << "=> true_class_probability: " << 100. * prob << "%" << std::endl;
+        out << "=> support: " << 100. * support << "%" << std::endl;
+        out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && !LOSS_PRECISION ? "*" : "") << "=> accuracy: " << 100. * accuracy << "%" << std::endl;
+        out << (!LOSS_FALSE_POSITIVE && LOSS_ACCURACY_BALANCED ? "*" : "") << "=> balanced_accuracy: " << 100. * balancedAccuracy << "%" << std::endl;
+        out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> true_positive_rate: " << (truePositiveRate < 0 ? "-" : std::to_string(100. * truePositiveRate)) << "%" << std::endl;
+        //out << (LOSS_FALSE_POSITIVE ? "*" : "") << "=> false_positive_rate: " << (falsePositiveRate < 0 ? "-" : std::to_string(100. * falsePositiveRate)) << "%" << std::endl;
+        out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> true_negative_rate: " << (trueNegativeRate < 0 ? "-" : std::to_string(100. * trueNegativeRate)) << "%" << std::endl;
+        //out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> false_negative_rate: " << (falseNegativeRate < 0 ? "-" : std::to_string(100. * falseNegativeRate)) << "%" << std::endl;
+        out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && LOSS_PRECISION ? "*" : "") << "=> precision: " << (precision < 0 ? "-" : std::to_string(100. * precision)) << "%" << std::endl;
+    }
+
+    if(support_learner < LEARN_MIN_SUPPORT_RULE && !learner_index.empty())
     {
         weak_learner_enabled[learner_index[int(learner_index.size())-1]] = false;
         learner_index.pop_back();
@@ -1727,7 +1800,7 @@ moves_loop:  // When in check, search starts here
                 }
             }
             */
-	        CC = !ttHit;
+	        CC = true;
             if(CC)
             {
             int baseCount = 0;
@@ -2026,12 +2099,14 @@ moves_loop:  // When in check, search starts here
 
             if(CC)
             {
-                        bool T = value > alpha;
-                        //bool T = value <= alpha;
+                        //bool T = value > alpha;
+                        bool T = value <= alpha;
 			            dbg_hit_on(T, 0);
 
-                        adaboost_collect_stats(T, baseConditions);
-                        adaboost_learn(T, baseConditions);
+                        bool isValidation = USE_VALIDATION && (nodes&1);
+
+                        adaboost_collect_stats(T, baseConditions, isValidation);
+                        if(!isValidation) adaboost_learn(T, baseConditions);
             }
 
             // Do a full-depth search when reduced LMR search fails high
