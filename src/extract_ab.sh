@@ -11,8 +11,10 @@ sed 's/balanced accuracy/balanced_accuracy/; s/false positive rate/false_negativ
 	$2 ~ /false_positive/ { pos[count] = (100-($3 + 0)) "%"; } \
 	$2 ~ /false_negative/ { neg[count] = (100-($3 + 0)) "%"; } \
 	$2 ~ /precision/ { prec[count] = $3; } \
-	END { print "Iteration Support Accuracy BalancedAccuracy TruePositiveRate TrueNegativeRate Precision"; \
+	$2 ~ /F1/ { F1[count] = $3; } \
+	$2 ~ /MCC/ { MCC[count] = $3; } \
+	END { print "Iteration Support Accuracy BalancedAccuracy TruePositiveRate TrueNegativeRate Precision F1-Score MCC"; \
 		for(c in acc) {\
-		print c, sup[c], acc[c], balacc[c], pos[c], neg[c], prec[c]; \
+		print c, sup[c], acc[c], balacc[c], pos[c], neg[c], prec[c], F1[c], MCC[c]; \
 		} } \
      ' | tr '. ' ',;'
