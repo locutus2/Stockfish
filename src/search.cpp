@@ -393,6 +393,8 @@ bool adaboost_print_stats(std::ostream& out)
 
         int nPrec = nConf[0][1] + nConf[1][1];
         double precision =  nPrec > 0 ? double(nConf[1][1]) / nPrec : -1.0;
+        //int nNpv = nConf[0][0] + nConf[1][0];
+        //double npv =  nNpv > 0 ? double(nConf[0][0]) / nNpv : -1.0; // negative predictive value
         double F1Score = 2 / (1/precision+1/truePositiveRate);
 
         //Matthews correlation coefficient (MCC) 
@@ -1838,6 +1840,9 @@ moves_loop:  // When in check, search starts here
 			AddBaseConditionPlusNot(improving);
 			AddBaseConditionPlusNot(ttCapture);
 			AddBaseConditionPlusNot(ttHit);
+			AddBaseConditionPlusNot((ss->staticEval > alpha));
+			AddBaseConditionPlusNot((eval > alpha));
+			AddBaseConditionPlusNot((ss->staticEval < eval));
 			AddBaseConditionPlusNot((prevSq == SQ_NONE));
 			AddBaseConditionPlusNot((prevSq == move.to_sq()));
 			AddBaseConditionPlusNot((givesCheck && !(pos.checkers() & move.to_sq())));
