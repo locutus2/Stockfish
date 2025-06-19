@@ -393,6 +393,15 @@ bool adaboost_print_stats(std::ostream& out)
 
         int nPrec = nConf[0][1] + nConf[1][1];
         double precision =  nPrec > 0 ? double(nConf[1][1]) / nPrec : -1.0;
+        double F1Score = 2 / (1/precision+1/truePositiveRate);
+
+        //Matthews correlation coefficient (MCC) 
+        double MCC = (nConf[1][1]/double(nStats) * nConf[0][0]/double(nStats) - nConf[0][1]/double(nStats) * nConf[1][0]/double(nStats)) 
+                     / std::sqrt((nConf[1][1]/double(nStats) + nConf[1][0]/double(nStats))
+                             * (nConf[1][1]/double(nStats) + nConf[0][1]/double(nStats))
+                             * (nConf[0][0]/double(nStats) + nConf[0][1]/double(nStats))
+                             * (nConf[0][0]/double(nStats) + nConf[1][0]/double(nStats))); 
+        double MCCnorm = (MCC+1)/2;
 
         support_learner = support;
 
@@ -406,6 +415,8 @@ bool adaboost_print_stats(std::ostream& out)
         out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> true_negative_rate: " << (trueNegativeRate < 0 ? "-" : std::to_string(100. * trueNegativeRate)) << "%" << std::endl;
         //out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> false_negative_rate: " << (falseNegativeRate < 0 ? "-" : std::to_string(100. * falseNegativeRate)) << "%" << std::endl;
         out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && LOSS_PRECISION ? "*" : "") << "=> precision: " << (precision < 0 ? "-" : std::to_string(100. * precision)) << "%" << std::endl;
+        out << "=> F1_score: " << 100. * F1Score << "%" << std::endl;
+        out << "=> MCCnorm: " << 100. * MCCnorm << "%" << std::endl;
     //out << "n: " << nStats << std::endl!;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
     //out << "Conf true x predicted:" << std::endl;
@@ -431,6 +442,15 @@ bool adaboost_print_stats(std::ostream& out)
 
         int nPrec = nConfValidation[0][1] + nConfValidation[1][1];
         double precision =  nPrec > 0 ? double(nConfValidation[1][1]) / nPrec : -1.0;
+        double F1Score = 2 / (1/precision+1/truePositiveRate);
+
+        //Matthews correlation coefficient (MCC) 
+        double MCC = (nConfValidation[1][1]/double(nStatsValidation) * nConfValidation[0][0]/double(nStatsValidation) - nConfValidation[0][1]/double(nStatsValidation) * nConfValidation[1][0]/double(nStatsValidation)) 
+                     / std::sqrt((nConfValidation[1][1]/double(nStatsValidation) + nConfValidation[1][0]/double(nStatsValidation))
+                             * (nConfValidation[1][1]/double(nStatsValidation) + nConfValidation[0][1]/double(nStatsValidation))
+                             * (nConfValidation[0][0]/double(nStatsValidation) + nConfValidation[0][1]/double(nStatsValidation))
+                             * (nConfValidation[0][0]/double(nStatsValidation) + nConfValidation[1][0]/double(nStatsValidation))); 
+        double MCCnorm = (MCC+1)/2;
 
         out << "Validation stats:" << std::endl;
         out << "=> true_class_probability: " << 100. * prob << "%" << std::endl;
@@ -442,6 +462,8 @@ bool adaboost_print_stats(std::ostream& out)
         out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> true_negative_rate: " << (trueNegativeRate < 0 ? "-" : std::to_string(100. * trueNegativeRate)) << "%" << std::endl;
         //out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && LOSS_FALSE_NEGATIVE ? "*" : "") << "=> false_negative_rate: " << (falseNegativeRate < 0 ? "-" : std::to_string(100. * falseNegativeRate)) << "%" << std::endl;
         out << (!LOSS_FALSE_POSITIVE && !LOSS_ACCURACY_BALANCED && !LOSS_FALSE_NEGATIVE && LOSS_PRECISION ? "*" : "") << "=> precision: " << (precision < 0 ? "-" : std::to_string(100. * precision)) << "%" << std::endl;
+        out << "=> F1_score: " << 100. * F1Score << "%" << std::endl;
+        out << "=> MCCnorm: " << 100. * MCCnorm << "%" << std::endl;
     }
 
     if(support_learner < LEARN_MIN_SUPPORT_RULE && !learner_index.empty())
