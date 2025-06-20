@@ -86,7 +86,7 @@ std::vector<Condition> derivedConditions;
 #define AddBaseConditionPlusNot(c) AddBaseCondition(c); AddBaseCondition(!c)
 
 constexpr bool LOSS_FALSE_POSITIVE = false;
-constexpr bool LOSS_ACCURACY_BALANCED = true;
+constexpr bool LOSS_ACCURACY_BALANCED = false;
 constexpr bool LOSS_FALSE_NEGATIVE = false;
 constexpr bool LOSS_PRECISION = false; // true is not supported
 
@@ -1840,6 +1840,20 @@ moves_loop:  // When in check, search starts here
 			AddBaseConditionPlusNot(improving);
 			AddBaseConditionPlusNot(ttCapture);
 			AddBaseConditionPlusNot(ttHit);
+			AddBaseConditionPlusNot(bool(pos.attacks_by<PAWN>(us) & move.to_sq()));
+			AddBaseConditionPlusNot(bool(pos.attacks_by<KNIGHT>(us) & move.to_sq()));
+			AddBaseConditionPlusNot(bool(pos.attacks_by<BISHOP>(us) & move.to_sq()));
+			AddBaseConditionPlusNot(bool(pos.attacks_by<ROOK>(us) & move.to_sq()));
+			AddBaseConditionPlusNot(bool(pos.attacks_by<QUEEN>(us) & move.to_sq()));
+			AddBaseConditionPlusNot(bool(pos.attacks_by<KING>(us) & move.to_sq()));
+			AddBaseConditionPlusNot(bool(pos.attacks_by<PAWN>(~us) & move.to_sq()));
+			AddBaseConditionPlusNot(bool(pos.attacks_by<KNIGHT>(~us) & move.to_sq()));
+			AddBaseConditionPlusNot(bool(pos.attacks_by<BISHOP>(~us) & move.to_sq()));
+			AddBaseConditionPlusNot(bool(pos.attacks_by<ROOK>(~us) & move.to_sq()));
+			AddBaseConditionPlusNot(bool(pos.attacks_by<QUEEN>(~us) & move.to_sq()));
+			AddBaseConditionPlusNot(bool(pos.attacks_by<KING>(~us) & move.to_sq()));
+			AddBaseConditionPlusNot(pos.attackers_to_exist(move.to_sq(), pos.pieces(), us));
+			AddBaseConditionPlusNot(pos.attackers_to_exist(move.to_sq(), pos.pieces(), ~us));
 			AddBaseConditionPlusNot((ss->staticEval > alpha));
 			AddBaseConditionPlusNot((ss->staticEval > alpha - 30));
 			AddBaseConditionPlusNot((ss->staticEval > alpha - 20));
@@ -1863,7 +1877,7 @@ moves_loop:  // When in check, search starts here
 			AddBaseConditionPlusNot((ss->staticEval < eval + 30));
 			AddBaseConditionPlusNot((prevSq == SQ_NONE));
 			AddBaseConditionPlusNot((prevSq == move.to_sq()));
-			AddBaseConditionPlusNot((givesCheck && !(pos.checkers() & move.to_sq())));
+			AddBaseConditionPlusNot((givesCheck && !(pos.checkers() & move.to_sq()))); // discovered check
 			AddBaseConditionPlusNot(more_than_one(pos.checkers()));
 			AddBaseConditionPlusNot((pos.pinners(us) & move.to_sq()));
 			AddBaseConditionPlusNot((move.type_of() == PROMOTION));
