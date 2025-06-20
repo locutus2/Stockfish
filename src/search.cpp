@@ -86,7 +86,7 @@ std::vector<Condition> derivedConditions;
 #define AddBaseConditionPlusNot(c) AddBaseCondition(c); AddBaseCondition(!c)
 
 constexpr bool LOSS_FALSE_POSITIVE = false;
-constexpr bool LOSS_ACCURACY_BALANCED = false;
+constexpr bool LOSS_ACCURACY_BALANCED = true;
 constexpr bool LOSS_FALSE_NEGATIVE = false;
 constexpr bool LOSS_PRECISION = false; // true is not supported
 
