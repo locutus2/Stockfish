@@ -1455,7 +1455,8 @@ moves_loop:  // When in check, search starts here
     {
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
-        thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 1080;
+        int capBonus = 1080 + std::max(PieceValue[capturedPiece] - PieceValue[pos.piece_on(prevSq)], 0);
+        thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << capBonus;
     }
 
     if (PvNode)
@@ -1865,7 +1866,8 @@ void update_all_stats(const Position&      pos,
     {
         // Increase stats for the best move in case it was a capture move
         capturedPiece = type_of(pos.piece_on(bestMove.to_sq()));
-        captureHistory[movedPiece][bestMove.to_sq()][capturedPiece] << bonus * 1213 / 1024;
+        int capBonus = bonus + std::max(PieceValue[capturedPiece] - PieceValue[movedPiece], 0);
+        captureHistory[movedPiece][bestMove.to_sq()][capturedPiece] << capBonus * 1213 / 1024;
     }
 
     // Extra penalty for a quiet early move that was not a TT move in
