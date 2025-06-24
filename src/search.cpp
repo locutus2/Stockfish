@@ -51,8 +51,42 @@
 
 namespace Stockfish {
 
+struct Condition
+{
+        std::string name;
+        bool value;
+        Condition(const std::string& n = "?", bool v = false) : name(n), value(v) {}
+
+        Condition Not() const {
+                return Condition(std::string("!(") + name + ")", !value);
+        }
+
+        Condition And(const Condition& c) const {
+                return Condition(std::string("(") + name + " && " + c.name + ")", value && c.value);
+        }
+
+        Condition Or(const Condition& c) const {
+                return Condition(std::string("(") + name + " || " + c.name + ")", value || c.value);
+        }
+};
+
+#define CONDITION(c) Condition(#c, (c))
+
+std::vector<Condition> baseConditions;
+std::vector<Condition> derivedConditions;
+
+#define AddBaseCondition(c) AddBaseConditionText(#c, c)
+#define AddBaseConditionText(m, c) { int baseIndex = baseCount++; \
+                             if(baseIndex >= int(baseConditions.size())) {\
+                                     baseConditions.resize(baseIndex+1); \
+                                     baseConditions[baseIndex].name = m; \
+                             } \
+                             baseConditions[baseIndex].value = (c); }
+#define AddBaseConditionPlusNot(c) AddBaseCondition(c); AddBaseCondition(!c)
+
 namespace Learn {
 
+    bool enabled = false;
     TimePoint elapsed;
 
     void init(std::ostream& out)
@@ -63,11 +97,17 @@ namespace Learn {
     {
         elapsed = now();
         dbg_clear();
+        enabled = true;
     }
 
     void finishIteration(int it, std::ostream& out)
     {
          elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
+    }
+
+    void finish(std::ostream& out)
+    {
+        enabled = false;
     }
 
 } // namespace Learn
@@ -582,6 +622,311 @@ void Search::Worker::clear() {
     refreshTable.clear(networks[numaAccessToken]);
 }
 
+#define GenerateConditions() \
+     { \
+            int baseCount = 0; \
+ \
+			AddBaseConditionPlusNot(allNode); \
+			AddBaseConditionPlusNot(PvNode); \
+			AddBaseConditionPlusNot(cutNode); \
+			AddBaseConditionPlusNot(improving); \
+			AddBaseConditionPlusNot(givesCheck); \
+			AddBaseConditionPlusNot(capture); \
+			AddBaseConditionPlusNot(priorCapture); \
+			AddBaseConditionPlusNot(opponentWorsening); \
+			AddBaseConditionPlusNot(improving); \
+			AddBaseConditionPlusNot(ttCapture); \
+			AddBaseConditionPlusNot(ttHit); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<PAWN>(us) & move.to_sq())); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<KNIGHT>(us) & move.to_sq())); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<BISHOP>(us) & move.to_sq())); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<ROOK>(us) & move.to_sq())); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<QUEEN>(us) & move.to_sq())); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<KING>(us) & move.to_sq())); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<PAWN>(~us) & move.to_sq())); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<KNIGHT>(~us) & move.to_sq())); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<BISHOP>(~us) & move.to_sq())); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<ROOK>(~us) & move.to_sq())); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<QUEEN>(~us) & move.to_sq())); \
+			AddBaseConditionPlusNot(bool(pos.attacks_by<KING>(~us) & move.to_sq())); \
+			AddBaseConditionPlusNot(pos.attackers_to_exist(move.to_sq(), pos.pieces(), us)); \
+			AddBaseConditionPlusNot(pos.attackers_to_exist(move.to_sq(), pos.pieces(), ~us)); \
+			AddBaseConditionPlusNot((ss->staticEval > alpha)); \
+			AddBaseConditionPlusNot((ss->staticEval > alpha - 30)); \
+			AddBaseConditionPlusNot((ss->staticEval > alpha - 20)); \
+			AddBaseConditionPlusNot((ss->staticEval > alpha - 10)); \
+			AddBaseConditionPlusNot((ss->staticEval > alpha + 10)); \
+			AddBaseConditionPlusNot((ss->staticEval > alpha + 20)); \
+			AddBaseConditionPlusNot((ss->staticEval > alpha + 30)); \
+			AddBaseConditionPlusNot((eval > alpha)); \
+			AddBaseConditionPlusNot((eval > alpha - 30)); \
+			AddBaseConditionPlusNot((eval > alpha - 20)); \
+			AddBaseConditionPlusNot((eval > alpha - 10)); \
+			AddBaseConditionPlusNot((eval > alpha + 10)); \
+			AddBaseConditionPlusNot((eval > alpha + 20)); \
+			AddBaseConditionPlusNot((eval > alpha + 30)); \
+			AddBaseConditionPlusNot((ss->staticEval < eval)); \
+			AddBaseConditionPlusNot((ss->staticEval < eval - 30)); \
+			AddBaseConditionPlusNot((ss->staticEval < eval - 20)); \
+			AddBaseConditionPlusNot((ss->staticEval < eval - 10)); \
+			AddBaseConditionPlusNot((ss->staticEval < eval + 10)); \
+			AddBaseConditionPlusNot((ss->staticEval < eval + 20)); \
+			AddBaseConditionPlusNot((ss->staticEval < eval + 30)); \
+			AddBaseConditionPlusNot((prevSq == SQ_NONE)); \
+			AddBaseConditionPlusNot((prevSq == move.to_sq())); \
+			AddBaseConditionPlusNot((givesCheck && !(pos.checkers() & move.to_sq()))); /* discovered check */ \
+			AddBaseConditionPlusNot(more_than_one(pos.checkers())); \
+			AddBaseConditionPlusNot((pos.pinners(us) & move.to_sq())); \
+			AddBaseConditionPlusNot((move.type_of() == PROMOTION)); \
+			AddBaseConditionPlusNot(bool(excludedMove)); \
+			AddBaseConditionPlusNot(bool(ttData.move)); \
+			AddBaseConditionPlusNot((ttData.move == move)); \
+			AddBaseConditionPlusNot((opponentWorsening == improving)); \
+			AddBaseConditionPlusNot((ss->ply % 2 == 0)); \
+			AddBaseConditionPlusNot((depth % 2 == 0)); \
+			AddBaseConditionPlusNot((rootDepth % 2 == 0)); \
+			AddBaseConditionPlusNot((rootDepth % 2 == depth % 2)); \
+			AddBaseConditionPlusNot((rootDepth % 2 == ss->ply % 2)); \
+			AddBaseConditionPlusNot((depth % 2 == ss->ply % 2)); \
+			AddBaseConditionPlusNot((depth + ss->ply < rootDepth)); \
+			AddBaseConditionPlusNot((depth < ss->ply)); \
+			AddBaseConditionPlusNot(ss->ttPv); \
+			AddBaseConditionPlusNot(ss->isPvNode); \
+			AddBaseConditionPlusNot(ss->inCheck); \
+			AddBaseConditionPlusNot((ss-1)->ttPv); \
+			AddBaseConditionPlusNot((ss-1)->isPvNode); \
+			AddBaseConditionPlusNot((ss-1)->inCheck); \
+			AddBaseConditionPlusNot((ss-1)->ttHit); \
+			AddBaseConditionPlusNot(bool((ss-1)->excludedMove)); \
+			AddBaseConditionPlusNot((ss-2)->ttPv); \
+			AddBaseConditionPlusNot((ss-2)->isPvNode); \
+			AddBaseConditionPlusNot((ss-2)->inCheck); \
+			AddBaseConditionPlusNot((ss-2)->ttHit); \
+			AddBaseConditionPlusNot(bool((ss-2)->excludedMove)); \
+			AddBaseConditionPlusNot((ss-2)->currentMove.is_ok()); \
+			AddBaseConditionPlusNot((type_of(movedPiece) == PAWN)); \
+			AddBaseConditionPlusNot((type_of(movedPiece) == KNIGHT)); \
+			AddBaseConditionPlusNot((type_of(movedPiece) == BISHOP)); \
+			AddBaseConditionPlusNot((type_of(movedPiece) == ROOK)); \
+			AddBaseConditionPlusNot((type_of(movedPiece) == QUEEN)); \
+			AddBaseConditionPlusNot((type_of(movedPiece) == KING)); \
+			AddBaseConditionPlusNot((type_of(movedPiece) >= BISHOP)); \
+			AddBaseConditionPlusNot((type_of(movedPiece) >= ROOK)); \
+			AddBaseConditionPlusNot((type_of(movedPiece) >= QUEEN)); \
+			AddBaseConditionPlusNot(bool(pos.captured_piece())); \
+			AddBaseConditionPlusNot((type_of(pos.captured_piece()) == PAWN)); \
+			AddBaseConditionPlusNot((type_of(pos.captured_piece()) == KNIGHT)); \
+			AddBaseConditionPlusNot((type_of(pos.captured_piece()) == BISHOP)); \
+			AddBaseConditionPlusNot((type_of(pos.captured_piece()) == ROOK)); \
+			AddBaseConditionPlusNot((type_of(pos.captured_piece()) == QUEEN)); \
+			AddBaseConditionPlusNot((type_of(pos.captured_piece()) >= KNIGHT)); \
+			AddBaseConditionPlusNot((type_of(pos.captured_piece()) >= BISHOP)); \
+			AddBaseConditionPlusNot((type_of(pos.captured_piece()) >= ROOK)); \
+			AddBaseConditionPlusNot((ss->statScore > -10000)); \
+			AddBaseConditionPlusNot((ss->statScore > -20000)); \
+			AddBaseConditionPlusNot((ss->statScore > -30000)); \
+			AddBaseConditionPlusNot((ss->statScore > -40000)); \
+			AddBaseConditionPlusNot((ss->statScore > -50000)); \
+			AddBaseConditionPlusNot((ss->statScore > -60000)); \
+			AddBaseConditionPlusNot((ss->statScore > -70000)); \
+			AddBaseConditionPlusNot((ss->statScore > 0)); \
+			AddBaseConditionPlusNot((ss->statScore > 10000)); \
+			AddBaseConditionPlusNot((ss->statScore > 20000)); \
+			AddBaseConditionPlusNot((ss->statScore > 30000)); \
+			AddBaseConditionPlusNot((ss->statScore > 40000)); \
+			AddBaseConditionPlusNot((ss->statScore > 50000)); \
+			AddBaseConditionPlusNot((ss->statScore > 60000)); \
+			AddBaseConditionPlusNot((ss->statScore > 70000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > -10000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > -20000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > -30000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > -40000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > -50000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > -60000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > -70000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > 0)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > 10000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > 20000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > 30000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > 40000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > 50000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > 60000)); \
+			AddBaseConditionPlusNot(((ss-1)->statScore > 70000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -10000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -20000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -30000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -40000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -50000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -60000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -70000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 0)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 10000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 20000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 30000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 40000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 50000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 60000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 70000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -10000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -20000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -30000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -40000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -50000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -60000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > -70000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 0)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 10000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 20000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 30000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 40000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 50000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 60000)); \
+			AddBaseConditionPlusNot(((ss-2)->statScore > 70000)); \
+			AddBaseConditionPlusNot((priorReduction >= 1)); \
+			AddBaseConditionPlusNot((priorReduction >= 2)); \
+			AddBaseConditionPlusNot((priorReduction >= 3)); \
+			AddBaseConditionPlusNot((priorReduction >= 4)); \
+			AddBaseConditionPlusNot((priorReduction >= 5)); \
+			AddBaseConditionPlusNot((priorReduction >= 6)); \
+			AddBaseConditionPlusNot((priorReduction >= 7)); \
+			AddBaseConditionPlusNot((priorReduction >= 8)); \
+			AddBaseConditionPlusNot((priorReduction >= 9)); \
+			AddBaseConditionPlusNot((priorReduction >= 10)); \
+			AddBaseConditionPlusNot((depth >= 2)); \
+			AddBaseConditionPlusNot((depth >= 3)); \
+			AddBaseConditionPlusNot((depth >= 4)); \
+			AddBaseConditionPlusNot((depth >= 5)); \
+			AddBaseConditionPlusNot((depth >= 6)); \
+			AddBaseConditionPlusNot((depth >= 7)); \
+			AddBaseConditionPlusNot((depth >= 8)); \
+			AddBaseConditionPlusNot((depth >= 9)); \
+			AddBaseConditionPlusNot((depth >= 10)); \
+			AddBaseConditionPlusNot((depth >= 11)); \
+			AddBaseConditionPlusNot((depth >= 12)); \
+			AddBaseConditionPlusNot((depth >= 13)); \
+			AddBaseConditionPlusNot((depth >= 14)); \
+			AddBaseConditionPlusNot((depth >= 15)); \
+			AddBaseConditionPlusNot((depth >= 16)); \
+			AddBaseConditionPlusNot((depth >= 17)); \
+			AddBaseConditionPlusNot((depth >= 18)); \
+			AddBaseConditionPlusNot((depth >= 19)); \
+			AddBaseConditionPlusNot((moveCount >= 2)); \
+			AddBaseConditionPlusNot((moveCount >= 3)); \
+			AddBaseConditionPlusNot((moveCount >= 4)); \
+			AddBaseConditionPlusNot((moveCount >= 5)); \
+			AddBaseConditionPlusNot((moveCount >= 6)); \
+			AddBaseConditionPlusNot((moveCount >= 7)); \
+			AddBaseConditionPlusNot((moveCount >= 8)); \
+			AddBaseConditionPlusNot((moveCount >= 9)); \
+			AddBaseConditionPlusNot((moveCount >= 10)); \
+			AddBaseConditionPlusNot((moveCount >= 11)); \
+			AddBaseConditionPlusNot((moveCount >= 12)); \
+			AddBaseConditionPlusNot((moveCount >= 13)); \
+			AddBaseConditionPlusNot((moveCount >= 14)); \
+			AddBaseConditionPlusNot((moveCount >= 15)); \
+			AddBaseConditionPlusNot((moveCount >= 16)); \
+			AddBaseConditionPlusNot((moveCount >= 17)); \
+			AddBaseConditionPlusNot((moveCount >= 18)); \
+			AddBaseConditionPlusNot((moveCount >= 19)); \
+			AddBaseConditionPlusNot((moveCount >= 20)); \
+			AddBaseConditionPlusNot((moveCount >= 21)); \
+			AddBaseConditionPlusNot((moveCount >= 22)); \
+			AddBaseConditionPlusNot((moveCount >= 23)); \
+			AddBaseConditionPlusNot((moveCount >= 24)); \
+			AddBaseConditionPlusNot((moveCount >= 25)); \
+			AddBaseConditionPlusNot((moveCount >= 26)); \
+			AddBaseConditionPlusNot((moveCount >= 27)); \
+			AddBaseConditionPlusNot((moveCount >= 28)); \
+			AddBaseConditionPlusNot((moveCount >= 29)); \
+			AddBaseConditionPlusNot((moveCount >= 30)); \
+			AddBaseConditionPlusNot((moveCount >= 31)); \
+			AddBaseConditionPlusNot((moveCount >= 32)); \
+			AddBaseConditionPlusNot((moveCount >= 33)); \
+			AddBaseConditionPlusNot((moveCount >= 34)); \
+			AddBaseConditionPlusNot((moveCount >= 35)); \
+			AddBaseConditionPlusNot((moveCount >= 36)); \
+			AddBaseConditionPlusNot((moveCount >= 37)); \
+			AddBaseConditionPlusNot((moveCount >= 38)); \
+			AddBaseConditionPlusNot((moveCount >= 39)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 1)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 2)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 3)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 4)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 5)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 6)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 7)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 8)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 9)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 10)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 11)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 12)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 13)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 14)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 15)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 16)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 17)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 18)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 19)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 20)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 21)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 22)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 23)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 24)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 25)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 26)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 27)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 28)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 29)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 30)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 31)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 32)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 33)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 34)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 35)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 36)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 37)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 38)); \
+			AddBaseConditionPlusNot(((ss-1)->moveCount >= 39)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 1)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 2)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 3)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 4)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 5)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 6)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 7)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 8)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 9)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 10)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 11)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 12)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 13)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 14)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 15)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 16)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 17)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 18)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 19)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 20)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 21)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 22)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 23)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 24)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 25)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 26)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 27)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 28)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 29)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 30)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 31)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 32)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 33)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 34)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 35)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 36)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 37)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 38)); \
+			AddBaseConditionPlusNot(((ss-2)->moveCount >= 39)); \
+    }
 
 // Main search function for both PV and non-PV nodes
 template<NodeType nodeType>
@@ -796,6 +1141,7 @@ Value Search::Worker::search(
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
         improving             = false;
+		opponentWorsening     = false;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -1251,6 +1597,12 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
+            bool CC = Learn::enabled;
+            if(CC)
+            {
+                GenerateConditions();
+            }
+
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.

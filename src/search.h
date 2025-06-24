@@ -45,10 +45,10 @@
 namespace Stockfish {
 
     namespace Learn {
-
             void init(std::ostream& out = std::cerr);
             void initIteration(int it, std::ostream& out = std::cerr);
             void finishIteration(int it, std::ostream& out = std::cerr);
+            void finish(std::ostream& out = std::cerr);
 
     } // namespace Learn
 
