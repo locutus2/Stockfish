@@ -113,6 +113,14 @@ namespace Learn {
         enabled = false;
     }
 
+    void learn(bool T, int I, const std::vector<Condition>& C, std::ostream& out = std::cerr)
+    {
+        for(int i = 0; i < int(C.size()); i++)
+        {
+            dbg_hit_on(T, 100* i + I);
+        }
+    }
+
 } // namespace Learn
 
 namespace TB = Tablebases;
@@ -1648,10 +1656,7 @@ moves_loop:  // When in check, search starts here
             if(CC)
             {
                 bool T = value > alpha;
-                for(int i = 0; i < int(baseConditions.size()); i++)
-                {
-                    dbg_hit_on(T, 100 * i + I);
-                }
+                Learn::learn(T, I, baseConditions);
             }
         }
 
@@ -2359,7 +2364,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        dbg_print();
+        //dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI

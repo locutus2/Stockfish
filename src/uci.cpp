@@ -285,6 +285,7 @@ void UCIEngine::learn(std::istream& args) {
                 engine.search_clear();  // search_clear may take a while
         }
         Learn::finishIteration(it);
+        break;
     }
     Learn::finish();
 
