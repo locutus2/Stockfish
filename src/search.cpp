@@ -98,14 +98,15 @@ namespace Learn {
 
     void initIteration(int it, std::ostream& out)
     {
-        elapsed = now();
         dbg_clear();
+        elapsed = now();
         enabled = true;
     }
 
     void finishIteration(int it, std::ostream& out)
     {
          elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
+         dbg_print();
     }
 
     void finish(std::ostream& out)
