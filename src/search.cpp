@@ -86,6 +86,9 @@ std::vector<Condition> derivedConditions;
 
 namespace Learn {
 
+    constexpr bool MORE_REDUCTION = true;
+    constexpr int REDUCTION_BASE = 1024;
+
     bool enabled = false;
     TimePoint elapsed;
 
@@ -1597,10 +1600,15 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
+            constexpr int K = 16;
+            constexpr int Rbase = (2 * Learn::MORE_REDUCTION - 1) * Learn::REDUCTION_BASE / K;
+            int I = pos.key() % (K+1);
             bool CC = Learn::enabled;
             if(CC)
             {
                 GenerateConditions();
+
+                r += Rbase * I;
             }
 
             // In general we want to cap the LMR depth search at newDepth, but when
@@ -1636,6 +1644,15 @@ moves_loop:  // When in check, search starts here
             }
             else if (value > alpha && value < bestValue + 9)
                 newDepth--;
+
+            if(CC)
+            {
+                bool T = value > alpha;
+                for(int i = 0; i < int(baseConditions.size()); i++)
+                {
+                    dbg_hit_on(T, 100 * i + I);
+                }
+            }
         }
 
         // Step 18. Full-depth search when LMR is skipped
