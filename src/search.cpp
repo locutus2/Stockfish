@@ -1455,7 +1455,7 @@ moves_loop:  // When in check, search starts here
     {
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
-        int capBonus = 1080 + std::max(PieceValue[capturedPiece] - PieceValue[pos.piece_on(prevSq)], 0);
+        int capBonus = 1080 + std::max(PieceValue[capturedPiece] - PieceValue[pos.piece_on(prevSq)], 0) / 2;
         thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << capBonus;
     }
 
@@ -1866,7 +1866,7 @@ void update_all_stats(const Position&      pos,
     {
         // Increase stats for the best move in case it was a capture move
         capturedPiece = type_of(pos.piece_on(bestMove.to_sq()));
-        int capBonus = bonus + std::max(PieceValue[capturedPiece] - PieceValue[movedPiece], 0);
+        int capBonus = bonus + std::max(PieceValue[capturedPiece] - PieceValue[movedPiece], 0) / 2;
         captureHistory[movedPiece][bestMove.to_sq()][capturedPiece] << capBonus * 1213 / 1024;
     }
 
