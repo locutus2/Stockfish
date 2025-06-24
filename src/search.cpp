@@ -51,6 +51,27 @@
 
 namespace Stockfish {
 
+namespace Learn {
+
+    TimePoint elapsed;
+
+    void init(std::ostream& out)
+    {
+    }
+
+    void initIteration(int it, std::ostream& out)
+    {
+        elapsed = now();
+        dbg_clear();
+    }
+
+    void finishIteration(int it, std::ostream& out)
+    {
+         elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
+    }
+
+} // namespace Learn
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,

@@ -44,6 +44,14 @@
 
 namespace Stockfish {
 
+    namespace Learn {
+
+            void init(std::ostream& out = std::cerr);
+            void initIteration(int it, std::ostream& out = std::cerr);
+            void finishIteration(int it, std::ostream& out = std::cerr);
+
+    } // namespace Learn
+
 // Different node types, used as a template parameter
 enum NodeType {
     NonPV,
