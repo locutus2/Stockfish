@@ -86,6 +86,7 @@ std::vector<Condition> derivedConditions;
 
 namespace Learn {
 
+    constexpr int K = 16;
     constexpr bool MORE_REDUCTION = true;
     constexpr int REDUCTION_BASE = 1024;
 
@@ -107,6 +108,26 @@ namespace Learn {
     {
          elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
          dbg_print();
+
+         double best = -1;
+         int besti = 0, bestj = 0;
+         for(int i = 0; i < int(baseConditions.size()); i++)
+         {
+            double p0 = dbg_get_hit_on(100* i);
+            for(int j = 1; j <= K; j++)
+            {
+                double p = dbg_get_hit_on(100* i + j);
+                double diff = std::abs(p - p0);
+                if(diff > best)
+                {
+                    best = diff;
+                    besti = i;
+                    bestj = j;
+                    //out << "new best: " << diff << " (" << i << "," << j << ")" << std::endl;
+                }
+            }
+         }
+         out << "best: " << best << " (" << besti << "," << bestj << ")" << std::endl;
     }
 
     void finish(std::ostream& out)
@@ -1609,9 +1630,8 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-            constexpr int K = 16;
-            constexpr int Rbase = (2 * Learn::MORE_REDUCTION - 1) * Learn::REDUCTION_BASE / K;
-            int I = pos.key() % (K+1);
+            constexpr int Rbase = (2 * Learn::MORE_REDUCTION - 1) * Learn::REDUCTION_BASE / Learn::K;
+            int I = pos.key() % (Learn::K+1);
             bool CC = Learn::enabled;
             if(CC)
             {
