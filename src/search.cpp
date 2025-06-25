@@ -89,6 +89,7 @@ namespace Learn {
     constexpr int K = 16;
     constexpr bool MORE_REDUCTION = true;
     constexpr int REDUCTION_BASE = 1024;
+    constexpr int Rbase = (2 * MORE_REDUCTION - 1) * REDUCTION_BASE / K;
 
     bool enabled = false;
     TimePoint elapsed;
@@ -111,13 +112,17 @@ namespace Learn {
 
          double best = -1;
          int besti = 0, bestj = 0;
+         double diff0[K+1];
+         for(int k = 0; k <= K; k++)
+             diff0[k] = dbg_get_hit_on(k) - dbg_get_hit_on(0);
+
          for(int i = 0; i < int(baseConditions.size()); i++)
          {
-            double p0 = dbg_get_hit_on(100* i);
+            double p0 = dbg_get_hit_on(100* (i + 1));
             for(int j = 1; j <= K; j++)
             {
-                double p = dbg_get_hit_on(100* i + j);
-                double diff = std::abs(p - p0);
+                double p = dbg_get_hit_on(100 * (i + 1) + j);
+                double diff = std::abs(p - p0 - diff0[j]);
                 if(diff > best)
                 {
                     best = diff;
@@ -127,7 +132,8 @@ namespace Learn {
                 }
             }
          }
-         out << "best: " << best << " (" << besti << "," << bestj << ")" << std::endl;
+         //out << "best: " << best << " (" << besti << "," << bestj << ")" << std::endl;
+         out << "best: " << best << " (" << baseConditions[besti].name << " R=" << Rbase*bestj << ")" << std::endl;
     }
 
     void finish(std::ostream& out)
@@ -137,9 +143,10 @@ namespace Learn {
 
     void learn(bool T, int I, const std::vector<Condition>& C, std::ostream& out = std::cerr)
     {
+        dbg_hit_on(T, I);
         for(int i = 0; i < int(C.size()); i++)
         {
-            dbg_hit_on(T, 100* i + I);
+            if(C[i].value) dbg_hit_on(T, 100* (i+1) + I);
         }
     }
 
@@ -1630,14 +1637,13 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-            constexpr int Rbase = (2 * Learn::MORE_REDUCTION - 1) * Learn::REDUCTION_BASE / Learn::K;
             int I = pos.key() % (Learn::K+1);
             bool CC = Learn::enabled;
             if(CC)
             {
                 GenerateConditions();
 
-                r += Rbase * I;
+                r += Learn::Rbase * I;
             }
 
             // In general we want to cap the LMR depth search at newDepth, but when
