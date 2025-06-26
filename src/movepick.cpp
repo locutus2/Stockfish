@@ -161,7 +161,9 @@ void MovePicker::score() {
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            m.value += 2 * (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            //m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            //m.value += bool(pos.check_squares(pt) & to) * 1024;
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
@@ -202,10 +204,14 @@ Move MovePicker::select(Pred filter) {
     return Move::none();
 }
 
+bool MovePicker::isQuiet(const ExtMove& m) const {
+     return (stage == GOOD_QUIET || stage == BAD_QUIET) && m.value >= -3560 * depth;
+}
+
 // This is the most important method of the MovePicker class. We emit one
 // new pseudo-legal move on every call until there are no more moves left,
 // picking the move with the highest score from a list of generated moves.
-Move MovePicker::next_move() {
+ExtMove MovePicker::next_move() {
 
 top:
     switch (stage)

@@ -974,10 +974,15 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    ExtMove extmove;
+    int countC[2] = {0,0};
+    int prevValueC[2] = {0,0};
+    int firstValueC[2] = {0,0};
+    bool isFirstValueC[2] = {true,true};
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move()) != Move::none())
+    while ((move = extmove = mp.next_move()) != Move::none())
     {
         assert(move.is_ok());
 
@@ -1295,6 +1300,52 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+        bool CC = mp.isQuiet(extmove);
+        if(CC)
+        {
+            bool C = pos.check_squares(type_of(movedPiece)) & move.to_sq();
+            bool T = value > alpha;
+
+            if(T)
+            {
+                constexpr int K = 100;
+                constexpr int M = 99;
+                if(C)
+                {
+                    if(!isFirstValueC[!C])
+                    {
+                       //int bonus = std::max(firstValueC[!C] - extmove.value + 1, 0);
+                       int bonus = std::max(prevValueC[!C] - extmove.value + 1, 0);
+                       dbg_mean_of(bonus, 0);
+                       int index = std::clamp(bonus/K, -M, M);
+                       for(int i = -M; i <= M; i++)
+                       {
+                           dbg_hit_on(i == index, i + M);
+                       }
+                    }
+                }
+                else
+                {
+                    if(!isFirstValueC[C])
+                    {
+                       //int bonus = std::max(firstValueC[!C] - extmove.value + 1, 0);
+                       int bonus = -std::max(prevValueC[C] - extmove.value + 1, 0);
+                       dbg_mean_of(bonus, 1);
+                       int index = std::clamp((bonus-K+1)/K, -M, M);
+                       for(int i = -M; i <= M; i++)
+                       {
+                           dbg_hit_on(i == index, i + M);
+                       }
+                    }
+                }
+            }
+
+            if(isFirstValueC[C]) firstValueC[C] = extmove.value;
+            isFirstValueC[C] = false;
+            ++countC[C];
+            prevValueC[C] = extmove.value;
+        }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1969,7 +2020,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        dbg_print();
+        //dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI
