@@ -55,7 +55,7 @@ namespace Learn {
     bool enabled = false;
     int iteration = 0;
     constexpr double ALPHA = 0.00001;
-    constexpr double BETA = 0.00001;
+    constexpr double BETA = 0.001;
     constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
     int nBatch = 0;
 
