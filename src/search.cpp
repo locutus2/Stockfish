@@ -57,9 +57,10 @@ namespace Learn {
     double beta = 0;
     double totalError = 0;
     //constexpr double ALPHA = 0.00001;
-    constexpr double ALPHA = 0.000001;
+    //constexpr double ALPHA = 0.000001;
+    constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
-    constexpr double BETA1 = 0;//0.9;
+    constexpr double BETA1 = 0.9;
     constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
     int nBatch = 0;
     int nTrainsEpoche = 0;
