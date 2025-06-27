@@ -55,7 +55,7 @@ namespace Learn {
     bool enabled = false;
     int iteration = 0;
     constexpr double ALPHA = 0.00001;
-    constexpr double BETA = 0.001;
+    constexpr double BETA = 0.99;
     constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
     int nBatch = 0;
 
@@ -91,7 +91,7 @@ namespace Learn {
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
             PARAMS[i] += (momentum[i] + gradiant[i]) * weight;
-            momentum[i] += BETA * (gradiant[i] - momentum[i]);
+            if(BETA > 0) momentum[i] = BETA * momentum[i] + gradiant[i];
             gradiant[i] = 0;
         }
 
