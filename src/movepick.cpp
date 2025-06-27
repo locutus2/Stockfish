@@ -156,6 +156,30 @@ void MovePicker::score() {
 
         else if constexpr (Type == QUIETS)
         {
+             m.conditions = std::vector<int>{
+                 //gives_check(m),
+                               pt == PAWN,
+                               pt == KNIGHT,
+                               pt == BISHOP,
+                               pt == ROOK,
+                               pt == QUEEN,
+                               pt == KING,
+                               /*
+                               pieces(QUEEN) && type_of(moved_piece(m)) == PAWN,
+                               pieces(QUEEN) && type_of(moved_piece(m)) == KNIGHT,
+                               pieces(QUEEN) && type_of(moved_piece(m)) == BISHOP,
+                               pieces(QUEEN) && type_of(moved_piece(m)) == ROOK,
+                               pieces(QUEEN) && type_of(moved_piece(m)) == QUEEN,
+                               pieces(QUEEN) && type_of(moved_piece(m)) == KING,
+                               !pieces(QUEEN) && type_of(moved_piece(m)) == PAWN,
+                               !pieces(QUEEN) && type_of(moved_piece(m)) == KNIGHT,
+                               !pieces(QUEEN) && type_of(moved_piece(m)) == BISHOP,
+                               !pieces(QUEEN) && type_of(moved_piece(m)) == ROOK,
+                               !pieces(QUEEN) && type_of(moved_piece(m)) == QUEEN,
+                               !pieces(QUEEN) && type_of(moved_piece(m)) == KING,
+                               */
+             };
+
             // histories
             m.value = 2 * (*mainHistory)[us][m.from_to()];
             m.value += 2 * (*pawnHistory)[pawn_structure_index(pos)][pc][to];
@@ -182,9 +206,8 @@ void MovePicker::score() {
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply);
 
-            std::vector<bool> C = pos.getConditions(m);
             for(int i = 0; i < int(Learn::PARAMS.size()); i++)
-                m.value += Learn::PARAMS[i] * C[i];
+                m.value += Learn::PARAMS[i] * m.conditions[i];
         }
 
         else  // Type == EVASIONS

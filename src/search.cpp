@@ -59,7 +59,7 @@ namespace Learn {
     //constexpr double ALPHA = 0.00001;
     constexpr double ALPHA = 0.000001;
     constexpr double BETA0 = 0.5;
-    constexpr double BETA1 = 0.9;
+    constexpr double BETA1 = 0;//0.9;
     constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
     int nBatch = 0;
     int nTrainsEpoche = 0;
@@ -117,7 +117,7 @@ namespace Learn {
         nBatch = 0;
     }
 
-    void learn(int value, int target, const std::vector<bool>& C, int margin)
+    void learn(int value, int target, const std::vector<int>& C, int margin)
     {
 
         const int N = C.size();
@@ -125,15 +125,12 @@ namespace Learn {
         gradiant.resize(N, 0);
         momentum.resize(N, 0);
 
-        double error = target -  value;
+        double error = target - value;
         totalError += std::pow(error, 2);
         ++nTrainsEpoche;
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
-                if(C[i])
-                {
-                    gradiant[i] += ALPHA * error;
-                }
+            gradiant[i] += ALPHA * error * C[i];
         }
         nBatch++;
 
@@ -1106,7 +1103,7 @@ moves_loop:  // When in check, search starts here
     bool isFirstValue = true;
     int lastValue = 0;
     int lastMargin = 0;
-    std::vector<bool> lastC;
+    std::vector<int> lastC;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1433,19 +1430,17 @@ moves_loop:  // When in check, search starts here
         bool CC = Learn::enabled && mp.isQuiet(extmove, margin);
         if(CC)
         {
-            std::vector<bool> C = pos.getConditions(move);
             bool T = value > alpha;
-
             if(T && !isFirstValue)
             {
-                Learn::learn(extmove.value, lastValue + 1, C, margin);
+                Learn::learn(extmove.value, lastValue + 1, extmove.conditions, margin);
                 Learn::learn(lastValue, extmove.value - 1, lastC, lastMargin);
             }
 
             isFirstValue = false;
             lastValue = extmove.value;
             lastMargin = margin;
-            lastC = C;
+            lastC = extmove.conditions;
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
