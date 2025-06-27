@@ -55,11 +55,13 @@ namespace Learn {
     bool enabled = false;
     int iteration = 0;
     constexpr double ALPHA = 0.00001;
+    constexpr double BETA = 0.00001;
     constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
     int nBatch = 0;
 
     std::vector<double> PARAMS;
     std::vector<double> gradiant;
+    std::vector<double> momentum;
 
     void init()
     {
@@ -68,6 +70,7 @@ namespace Learn {
         nBatch = 0;
         PARAMS.clear();
         gradiant.clear();
+        momentum.clear();
     }
 
     void finish()
@@ -87,7 +90,8 @@ namespace Learn {
         double weight = (BATCH_SIZE <= 0 ? 1.0 : nBatch/double(BATCH_SIZE));
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
-            PARAMS[i] += gradiant[i] * weight;
+            PARAMS[i] += (momentum[i] + gradiant[i]) * weight;
+            momentum[i] += BETA * (gradiant[i] - momentum[i]);
             gradiant[i] = 0;
         }
 
@@ -100,6 +104,7 @@ namespace Learn {
         const int N = C.size();
         PARAMS.resize(N, 0);
         gradiant.resize(N, 0);
+        momentum.resize(N, 0);
 
         if(!T) return;
        
@@ -124,6 +129,7 @@ namespace Learn {
     {
         out << "=> Iteration: " << iteration << std::endl;
         out << "=> ALPHA: " << ALPHA << std::endl;
+        out << "=> BETA: " << BETA << std::endl;
         out << "=> BATCH_SIZE: " << BATCH_SIZE << std::endl;
         out << "=> PARAMS:";
         for(int i = 0; i < int(PARAMS.size()); i++)
@@ -131,6 +137,16 @@ namespace Learn {
             out << " " << PARAMS[i];
         }
         out << std::endl;
+
+        if(BETA > 0)
+        {
+            out << "=> MOMENTUM:";
+            for(int i = 0; i < int(momentum.size()); i++)
+            {
+                out << " " << momentum[i];
+            }
+            out << std::endl;
+        }
     }
 
     void finishIteration()
