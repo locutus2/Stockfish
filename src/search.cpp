@@ -57,7 +57,7 @@ namespace Learn {
     double beta = 0;
     constexpr double ALPHA = 0.00001;
     constexpr double BETA0 = 0.5;
-    constexpr double BETA1 = 0.9;
+    constexpr double BETA1 = 0;//0.9;
     constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
     int nBatch = 0;
 
@@ -136,9 +136,12 @@ namespace Learn {
     {
         out << "=> Iteration: " << iteration << std::endl;
         out << "=> ALPHA: " << ALPHA << std::endl;
-        out << "=> BETA0: " << BETA0 << std::endl;
-        out << "=> BETA1: " << BETA1 << std::endl;
-        out << "=> BETA*: " << beta << std::endl;
+        if(BETA1 > 0)
+        {
+            out << "=> BETA0: " << BETA0 << std::endl;
+            out << "=> BETA1: " << BETA1 << std::endl;
+            out << "=> BETA*: " << beta << std::endl;
+        }
         out << "=> BATCH_SIZE: " << BATCH_SIZE << std::endl;
         out << "=> PARAMS:";
         for(int i = 0; i < int(PARAMS.size()); i++)
