@@ -54,8 +54,10 @@ namespace Stockfish {
 namespace Learn {
     bool enabled = false;
     int iteration = 0;
+    double beta = 0;
     constexpr double ALPHA = 0.00001;
-    constexpr double BETA = 0.99;
+    constexpr double BETA0 = 0.5;
+    constexpr double BETA1 = 0.9;
     constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
     int nBatch = 0;
 
@@ -88,10 +90,20 @@ namespace Learn {
         if(nBatch <= 0) return;
 
         double weight = (BATCH_SIZE <= 0 ? 1.0 : nBatch/double(BATCH_SIZE));
+        beta = (BETA0 + BETA1 * iteration) / (iteration+1);
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
-            PARAMS[i] += (momentum[i] + gradiant[i]) * weight;
-            if(BETA > 0) momentum[i] = BETA * momentum[i] + gradiant[i];
+            double g = 0;
+            if(BETA1 > 0) 
+            {
+                momentum[i] = beta * momentum[i] + gradiant[i];
+                g = momentum[i];
+            }
+            else
+            {
+                g = gradiant[i];
+            }
+            PARAMS[i] += g * weight;
             gradiant[i] = 0;
         }
 
@@ -129,7 +141,9 @@ namespace Learn {
     {
         out << "=> Iteration: " << iteration << std::endl;
         out << "=> ALPHA: " << ALPHA << std::endl;
-        out << "=> BETA: " << BETA << std::endl;
+        out << "=> BETA0: " << BETA0 << std::endl;
+        out << "=> BETA1: " << BETA1 << std::endl;
+        out << "=> BETA*: " << beta << std::endl;
         out << "=> BATCH_SIZE: " << BATCH_SIZE << std::endl;
         out << "=> PARAMS:";
         for(int i = 0; i < int(PARAMS.size()); i++)
@@ -138,7 +152,7 @@ namespace Learn {
         }
         out << std::endl;
 
-        if(BETA > 0)
+        if(BETA1 > 0)
         {
             out << "=> MOMENTUM:";
             for(int i = 0; i < int(momentum.size()); i++)
