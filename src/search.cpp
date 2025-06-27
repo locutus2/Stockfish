@@ -90,7 +90,7 @@ namespace Learn {
         if(nBatch <= 0) return;
 
         double weight = (BATCH_SIZE <= 0 ? 1.0 : nBatch/double(BATCH_SIZE));
-        beta = (BETA0 + BETA1 * iteration) / (iteration+1);
+        beta = (BETA0 + BETA1 * (iteration - 1)) / iteration;
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
             double g = 0;
