@@ -122,6 +122,8 @@ class Position {
     template<PieceType Pt>
     Bitboard attacks_by(Color c) const;
 
+    std::vector<bool> getConditions(const Move& m) const;
+
     // Properties of moves
     bool  legal(Move m) const;
     bool  pseudo_legal(const Move m) const;

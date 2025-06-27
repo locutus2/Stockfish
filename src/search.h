@@ -44,6 +44,16 @@
 
 namespace Stockfish {
 
+namespace Learn {
+    void init();
+
+    void initIteration();
+
+    void finish();
+
+    void finishIteration();
+}
+
 // Different node types, used as a template parameter
 enum NodeType {
     NonPV,

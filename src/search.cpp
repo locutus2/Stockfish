@@ -51,6 +51,71 @@
 
 namespace Stockfish {
 
+namespace Learn {
+    bool enabled = false;
+    int iteration = 0;
+
+    std::vector<double> PARAMS;
+
+    void init()
+    {
+        enabled = true;
+        iteration = 0;
+        PARAMS.clear();
+    }
+
+    void finish()
+    {
+        enabled = false;
+    }
+
+    void initIteration()
+    {
+        ++iteration;
+    }
+
+    void learn(bool T, int moveCount, const std::vector<bool>& C)
+    {
+        constexpr double ALPHA = 0.0001;
+
+        const int N = C.size();
+        PARAMS.resize(N, 0);
+
+        if(!T) return;
+       
+        for(int i = 0; i < int(PARAMS.size()); i++)
+        {
+            for(int k = 0; k < int(C.size()); k++)
+            {
+                if(C[k])
+                {
+                    PARAMS[i] += ALPHA * moveCount;
+                }
+                else
+                {
+                    PARAMS[i] -= ALPHA * moveCount;
+                }
+            }
+        }
+    }
+
+    void print(std::ostream& out = std::cerr)
+    {
+        out << "=> Iteration: " << iteration << std::endl;
+        out << "=> PARAMS:";
+        for(int i = 0; i < int(PARAMS.size()); i++)
+        {
+            out << " " << PARAMS[i];
+        }
+        out << std::endl;
+    }
+
+    void finishIteration()
+    {
+        print();
+    }
+}
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1301,9 +1366,15 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        bool CC = mp.isQuiet(extmove);
+        bool CC = Learn::enabled && mp.isQuiet(extmove);
         if(CC)
         {
+            std::vector<bool> C = pos.getConditions(move);
+
+            bool T = value > alpha;
+            if(T) Learn::learn(T, moveCount, C);
+
+            /*
             bool C = pos.check_squares(type_of(movedPiece)) & move.to_sq();
             bool T = value > alpha;
 
@@ -1345,6 +1416,7 @@ moves_loop:  // When in check, search starts here
             isFirstValueC[C] = false;
             ++countC[C];
             prevValueC[C] = extmove.value;
+            */
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);

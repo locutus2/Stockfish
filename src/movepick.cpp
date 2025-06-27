@@ -28,6 +28,10 @@
 
 namespace Stockfish {
 
+namespace Learn {
+    //extern std::vector<bool> PARAMS;
+}
+
 namespace {
 
 enum Stages {
@@ -87,7 +91,8 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
-                       int                          pl) :
+                       int                          pl)
+    :
     pos(p),
     mainHistory(mh),
     lowPlyHistory(lph),
@@ -176,6 +181,10 @@ void MovePicker::score() {
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply);
+
+            std::vector<bool> C = pos.getConditions(m);
+            for(int i = 0; i < int(Learn::PARAMS.size()); i++)
+                m.value += Learn::PARAMS[i] * C[i];
         }
 
         else  // Type == EVASIONS

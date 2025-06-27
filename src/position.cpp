@@ -1314,4 +1314,16 @@ bool Position::pos_is_ok() const {
     return true;
 }
 
+std::vector<bool> Position::getConditions(const Move& m) const {
+     return { 
+         gives_check(m),
+         type_of(moved_piece(m)) == PAWN, 
+         type_of(moved_piece(m)) == KNIGHT, 
+         type_of(moved_piece(m)) == BISHOP, 
+         type_of(moved_piece(m)) == ROOK, 
+         type_of(moved_piece(m)) == QUEEN, 
+         type_of(moved_piece(m)) == KING, 
+     };
+}
+
 }  // namespace Stockfish
