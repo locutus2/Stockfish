@@ -54,14 +54,19 @@ namespace Stockfish {
 namespace Learn {
     bool enabled = false;
     int iteration = 0;
+    constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
+    int nBatch = 0;
 
     std::vector<double> PARAMS;
+    std::vector<double> gradiant;
 
     void init()
     {
         enabled = true;
         iteration = 0;
+        nBatch = 0;
         PARAMS.clear();
+        gradiant.clear();
     }
 
     void finish()
@@ -74,12 +79,27 @@ namespace Learn {
         ++iteration;
     }
 
+    void learnBatch()
+    {
+        if(nBatch <= 0) return;
+
+        double weight = (BATCH_SIZE <= 0 ? 1.0 : nBatch/double(BATCH_SIZE));
+        for(int i = 0; i < int(PARAMS.size()); i++)
+        {
+            PARAMS[i] += gradiant[i] * weight;
+            gradiant[i] = 0;
+        }
+
+        nBatch = 0;
+    }
+
     void learn(bool T, int moveCount, const std::vector<bool>& C)
     {
         constexpr double ALPHA = 0.0001;
 
         const int N = C.size();
         PARAMS.resize(N, 0);
+        gradient.resize(N, 0);
 
         if(!T) return;
        
@@ -87,13 +107,17 @@ namespace Learn {
         {
                 if(C[i])
                 {
-                    PARAMS[i] += ALPHA * moveCount;
+                    gradiant[i] += ALPHA * moveCount;
                 }
                 else
                 {
-                    PARAMS[i] -= ALPHA * moveCount;
+                    gradiant[i] -= ALPHA * moveCount;
                 }
         }
+        nBatch++;
+
+        if(BATCH_SIZE > 0 && nBatch % BATCH_SIZE == 0)
+            learnBatch();
     }
 
     void print(std::ostream& out = std::cerr)
@@ -109,6 +133,8 @@ namespace Learn {
 
     void finishIteration()
     {
+        learn_batch();
+
         print();
     }
 }
