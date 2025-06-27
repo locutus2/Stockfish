@@ -160,7 +160,7 @@ void MovePicker::score() {
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
 
-            static constexpr int PieceBonus[] = { 0, 513, -2220, -1853, 3675, -2379, -1482 };
+            static constexpr int PieceBonus[] = { 0, 2623, -5317, 2114, 942, -3489, 3127 };
             m.value += PieceBonus[pt];
 
             // bonus for checks
