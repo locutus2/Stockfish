@@ -85,9 +85,7 @@ namespace Learn {
        
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
-            for(int k = 0; k < int(C.size()); k++)
-            {
-                if(C[k])
+                if(C[i])
                 {
                     PARAMS[i] += ALPHA * moveCount;
                 }
@@ -95,7 +93,6 @@ namespace Learn {
                 {
                     PARAMS[i] -= ALPHA * moveCount;
                 }
-            }
         }
     }
 
