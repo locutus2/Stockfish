@@ -110,8 +110,7 @@ namespace Learn {
         nBatch = 0;
     }
 
-    void learn(bool T, int diff, const std::vector<bool>& C, int margin)
-    //void learn(bool T, const std::vector<bool>& C, int margin)
+    void learn(int value, int target, const std::vector<bool>& C, int margin)
     {
 
         const int N = C.size();
@@ -119,26 +118,12 @@ namespace Learn {
         gradiant.resize(N, 0);
         momentum.resize(N, 0);
 
-        if(!T) return;
-      
-        double pos = 0, neg = 0;
-        for(int i = 0; i < int(PARAMS.size()); i++)
-                if(C[i])
-                    pos += ALPHA * diff;
-                else
-                    neg += ALPHA * diff;
-
-        double negFactor = std::min(1.0, (margin + pos) / std::max(neg, 1.0));
-
+        double error = target -  value;
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
                 if(C[i])
                 {
-                    gradiant[i] += ALPHA * diff;
-                }
-                else
-                {
-                    gradiant[i] -= ALPHA * diff * negFactor;
+                    gradiant[i] += ALPHA * error;
                 }
         }
         nBatch++;
@@ -1105,10 +1090,10 @@ moves_loop:  // When in check, search starts here
 
     int moveCount = 0;
     ExtMove extmove;
-    int countC[2] = {0,0};
-    int prevValueC[2] = {0,0};
-    int firstValueC[2] = {0,0};
-    bool isFirstValueC[2] = {true,true};
+    bool isFirstValue = true;
+    int lastValue = 0;
+    int lastMargin = 0;
+    std::vector<bool> lastC;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1436,54 +1421,18 @@ moves_loop:  // When in check, search starts here
         if(CC)
         {
             std::vector<bool> C = pos.getConditions(move);
-
-            bool T = value > alpha;
-            if(T) Learn::learn(T, moveCount, C, margin);
-            //Learn::learn(T, C, margin);
-
-            /*
-            bool C = pos.check_squares(type_of(movedPiece)) & move.to_sq();
             bool T = value > alpha;
 
-            if(T)
+            if(T && !isFirstValue)
             {
-                constexpr int K = 100;
-                constexpr int M = 99;
-                if(C)
-                {
-                    if(!isFirstValueC[!C])
-                    {
-                       //int bonus = std::max(firstValueC[!C] - extmove.value + 1, 0);
-                       int bonus = std::max(prevValueC[!C] - extmove.value + 1, 0);
-                       dbg_mean_of(bonus, 0);
-                       int index = std::clamp(bonus/K, -M, M);
-                       for(int i = -M; i <= M; i++)
-                       {
-                           dbg_hit_on(i == index, i + M);
-                       }
-                    }
-                }
-                else
-                {
-                    if(!isFirstValueC[C])
-                    {
-                       //int bonus = std::max(firstValueC[!C] - extmove.value + 1, 0);
-                       int bonus = -std::max(prevValueC[C] - extmove.value + 1, 0);
-                       dbg_mean_of(bonus, 1);
-                       int index = std::clamp((bonus-K+1)/K, -M, M);
-                       for(int i = -M; i <= M; i++)
-                       {
-                           dbg_hit_on(i == index, i + M);
-                       }
-                    }
-                }
+                Learn::learn(extmove.value, lastValue + 1, C, margin);
+                Learn::learn(lastValue, extmove.value - 1, lastC, lastMargin);
             }
 
-            if(isFirstValueC[C]) firstValueC[C] = extmove.value;
-            isFirstValueC[C] = false;
-            ++countC[C];
-            prevValueC[C] = extmove.value;
-            */
+            isFirstValue = false;
+            lastValue = extmove.value;
+            lastMargin = margin;
+            lastC = C;
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
