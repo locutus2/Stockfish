@@ -57,7 +57,7 @@ namespace Learn {
     double beta = 0;
     double totalError = 0;
     //constexpr double ALPHA = 0.00001;
-    constexpr double ALPHA = 0.000001;
+    constexpr double ALPHA = 1e-6 * 1e-4;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
     constexpr double BETA1 = 0;//0.9;
