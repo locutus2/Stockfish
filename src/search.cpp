@@ -110,7 +110,8 @@ namespace Learn {
         nBatch = 0;
     }
 
-    void learn(bool T, int moveCount, const std::vector<bool>& C)
+    void learn(bool T, int diff, const std::vector<bool>& C, int margin)
+    //void learn(bool T, const std::vector<bool>& C, int margin)
     {
 
         const int N = C.size();
@@ -119,16 +120,25 @@ namespace Learn {
         momentum.resize(N, 0);
 
         if(!T) return;
-       
+      
+        double pos = 0, neg = 0;
+        for(int i = 0; i < int(PARAMS.size()); i++)
+                if(C[i])
+                    pos += ALPHA * diff;
+                else
+                    neg += ALPHA * diff;
+
+        double negFactor = std::min(1.0, (margin + pos) / std::max(neg, 1.0));
+
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
                 if(C[i])
                 {
-                    gradiant[i] += ALPHA * moveCount;
+                    gradiant[i] += ALPHA * diff;
                 }
                 else
                 {
-                    gradiant[i] -= ALPHA * moveCount;
+                    gradiant[i] -= ALPHA * diff * negFactor;
                 }
         }
         nBatch++;
@@ -1421,13 +1431,15 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        bool CC = Learn::enabled && mp.isQuiet(extmove);
+        int margin = 0;
+        bool CC = Learn::enabled && mp.isQuiet(extmove, margin);
         if(CC)
         {
             std::vector<bool> C = pos.getConditions(move);
 
             bool T = value > alpha;
-            if(T) Learn::learn(T, moveCount, C);
+            if(T) Learn::learn(T, moveCount, C, margin);
+            //Learn::learn(T, C, margin);
 
             /*
             bool C = pos.check_squares(type_of(movedPiece)) & move.to_sq();

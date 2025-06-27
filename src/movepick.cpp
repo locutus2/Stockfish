@@ -213,8 +213,10 @@ Move MovePicker::select(Pred filter) {
     return Move::none();
 }
 
-bool MovePicker::isQuiet(const ExtMove& m) const {
-     return (stage == GOOD_QUIET || stage == BAD_QUIET) && m.value >= -3560 * depth;
+bool MovePicker::isQuiet(const ExtMove& m, int& margin) const {
+     margin = m.value + 3560 * depth;
+     return stage == GOOD_QUIET && margin >= 0;
+     //return (stage == GOOD_QUIET || stage == BAD_QUIET) && margin >= 0;
 }
 
 // This is the most important method of the MovePicker class. We emit one
