@@ -1880,7 +1880,8 @@ void update_all_stats(const Position&      pos,
     {
         movedPiece    = pos.moved_piece(move);
         capturedPiece = type_of(pos.piece_on(move.to_sq()));
-        captureHistory[movedPiece][move.to_sq()][capturedPiece] << -malus * 1388 / 1024;
+        int capMalus = -malus + std::max(PieceValue[capturedPiece] - PieceValue[movedPiece], 0) / 4;
+        captureHistory[movedPiece][move.to_sq()][capturedPiece] << capMalus * 1388 / 1024;
     }
 }
 
