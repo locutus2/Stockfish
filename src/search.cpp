@@ -140,6 +140,7 @@ namespace Learn {
     void learn(int value, int target, const std::vector<int>& C, double W = 1)
     {
 
+        dbg_mean_of(C.size(), 1);
         const int N = C.size();
         PARAMS.resize(N, 0);
         gradiant.resize(N, 0);
@@ -189,7 +190,7 @@ namespace Learn {
         }
         out << "=> BATCH_SIZE: " << BATCH_SIZE << std::endl;
         out << "=> ERROR: " << std::sqrt(totalError/nTrainsEpoche) << std::endl;
-        out << "=> PARAMS:";
+        out << "=> PARAMS[" << PARAMS.size() << "]:";
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
             out << " " << PARAMS[i];
@@ -1482,18 +1483,24 @@ moves_loop:  // When in check, search starts here
 
         int margin = 0;
         bool CC = Learn::enabled && mp.isQuiet(extmove, margin);
+        dbg_hit_on(CC, 0);
         if(CC)
         {
             bool T = value > alpha;
+            dbg_hit_on(T, 1);
+            dbg_hit_on(T && !prevExtmoves.empty(), 2);
             if(T && !prevExtmoves.empty())
             {
                 for(auto prev : prevExtmoves)
                 {
+                    //dbg_hit_on(true, 4);
                     double W = 1.0 / prevExtmoves.size();
                     //Learn::learn(extmove.value, prev.value + 1, extmove.conditions, W);
                     //Learn::learn(prev.value, extmove.value - 1, prev.conditions);
                     double target = (extmove.value + prev.value) / 2.0;
+                    dbg_mean_of(extmove.conditions.size(), 0);
                     Learn::learn(extmove.value, target + 1, extmove.conditions, W);
+                    dbg_mean_of(prev.conditions.size(), 0);
                     Learn::learn(prev.value, target, prev.conditions);
                 }
             }
@@ -2174,7 +2181,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        //dbg_print();
+        dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI
