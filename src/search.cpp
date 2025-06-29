@@ -62,7 +62,7 @@ namespace Learn {
     //constexpr double ALPHA = 0.00001;
     //constexpr double ALPHA = 1e-6;
     //constexpr double ALPHA = 1e-7;
-    constexpr double ALPHA = USE_ADAM ? 1e-2 : 1e-5;
+    constexpr double ALPHA = USE_ADAM ? 1e-6 : 1e-5;
     //constexpr double ALPHA = 1e-6 * 1e-5;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
@@ -144,6 +144,7 @@ namespace Learn {
         PARAMS.resize(N, 0);
         gradiant.resize(N, 0);
         momentum.resize(N, 0);
+        momentum2.resize(N, 0);
 
         double error = W * (target - value);
         totalError += W * std::pow(error, 2);
