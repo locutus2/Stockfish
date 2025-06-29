@@ -58,7 +58,8 @@ namespace Learn {
     double totalError = 0;
     //constexpr double ALPHA = 0.00001;
     //constexpr double ALPHA = 1e-6;
-    constexpr double ALPHA = 1e-7;
+    //constexpr double ALPHA = 1e-7;
+    constexpr double ALPHA = 1e-5;
     //constexpr double ALPHA = 1e-6 * 1e-5;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
@@ -1434,11 +1435,12 @@ moves_loop:  // When in check, search starts here
         if(CC)
         {
             bool T = value > alpha;
-            if(T)
+            if(T && !prevExtmoves.empty())
             {
+                Learn::learn(extmove.value, prevExtmoves[0].value + 1, extmove.conditions);
                 for(auto prev : prevExtmoves)
                 {
-                    Learn::learn(extmove.value, prev.value + 1, extmove.conditions);
+                    //Learn::learn(extmove.value, prev.value + 1, extmove.conditions);
                     Learn::learn(prev.value, extmove.value - 1, prev.conditions);
                 }
             }
