@@ -57,10 +57,10 @@ namespace Learn {
     double beta = 0;
     double totalError = 0;
     //constexpr double ALPHA = 0.00001;
-    constexpr double ALPHA = 1e-6 * 1e-4;
+    constexpr double ALPHA = 1e-6 * 1e-5;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
-    constexpr double BETA1 = 0;//0.9;
+    constexpr double BETA1 = 0.9;
     constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
     int nBatch = 0;
     int nTrainsEpoche = 0;
@@ -118,7 +118,7 @@ namespace Learn {
         nBatch = 0;
     }
 
-    void learn(int value, int target, const std::vector<int>& C, int margin)
+    void learn(int value, int target, const std::vector<int>& C)
     {
 
         const int N = C.size();
@@ -1101,10 +1101,10 @@ moves_loop:  // When in check, search starts here
 
     int moveCount = 0;
     ExtMove extmove;
-    bool isFirstValue = true;
-    int lastValue = 0;
-    int lastMargin = 0;
-    std::vector<int> lastC;
+    //bool isFirstValue = true;
+    //int lastValue = 0;
+    //int lastMargin = 0;
+    std::vector<ExtMove> prevExtmoves;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1432,16 +1432,13 @@ moves_loop:  // When in check, search starts here
         if(CC)
         {
             bool T = value > alpha;
-            if(T && !isFirstValue)
+            if(T && !prevExtmoves.empty())
             {
-                Learn::learn(extmove.value, lastValue + 1, extmove.conditions, margin);
-                Learn::learn(lastValue, extmove.value - 1, lastC, lastMargin);
+                Learn::learn(extmove.value, prevExtmoves.rbegin()->value + 1, extmove.conditions);
+                Learn::learn(prevExtmoves.rbegin()->value, extmove.value - 1, prevExtmoves.rbegin()->conditions);
             }
 
-            isFirstValue = false;
-            lastValue = extmove.value;
-            lastMargin = margin;
-            lastC = extmove.conditions;
+            prevExtmoves.push_back(extmove);
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
