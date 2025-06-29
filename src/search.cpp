@@ -159,7 +159,7 @@ namespace Learn {
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
             //gradiant[i] += error * C[i];
-            gradiant[i] -= error * C[i] + REG_L2 * PARAMS[i];
+            gradiant[i] += -error * C[i] + REG_L2 * PARAMS[i];
             //gradiant[i] += ALPHA * error * C[i];
         }
         nBatch++;
