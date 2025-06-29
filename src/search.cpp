@@ -69,7 +69,7 @@ namespace Learn {
     constexpr double BETA1 = USE_ADAM ? 0.9 : 0.0;//0.9;
     constexpr double BETA2 = 0.999;
     constexpr double EPS = 1e-8;
-    constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
+    constexpr bool BATCH_SIZE = 1024; // 0 = all in one batch
     int nBatch = 0;
     double nTrainsEpoche = 0;
     int tIter = 0;
