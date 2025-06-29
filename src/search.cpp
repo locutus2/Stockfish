@@ -120,7 +120,7 @@ namespace Learn {
         nBatch = 0;
     }
 
-    void learn(int value, int target, const std::vector<int>& C)
+    void learn(int value, int target, const std::vector<int>& C, double W = 1)
     {
 
         const int N = C.size();
@@ -133,7 +133,7 @@ namespace Learn {
         ++nTrainsEpoche;
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
-            gradiant[i] += error * C[i];
+            gradiant[i] += error * C[i] * W;
             //gradiant[i] += ALPHA * error * C[i];
         }
         nBatch++;
@@ -1437,10 +1437,12 @@ moves_loop:  // When in check, search starts here
             bool T = value > alpha;
             if(T && !prevExtmoves.empty())
             {
-                Learn::learn(extmove.value, prevExtmoves[0].value + 1, extmove.conditions);
+                //Learn::learn(extmove.value, prevExtmoves[0].value + 1, extmove.conditions);
                 for(auto prev : prevExtmoves)
                 {
                     //Learn::learn(extmove.value, prev.value + 1, extmove.conditions);
+                    double W = 1.0 / prevExtmoves.size();
+                    Learn::learn(extmove.value, prev.value + 1, extmove.conditions, W);
                     Learn::learn(prev.value, extmove.value - 1, prev.conditions);
                 }
             }
