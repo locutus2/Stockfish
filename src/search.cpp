@@ -57,16 +57,16 @@ namespace Learn {
     double beta = 0;
     double totalError = 0;
     //constexpr double ALPHA = 0.00001;
-    //constexpr double ALPHA = 1e-6;
+    constexpr double ALPHA = 1e-6;
     //constexpr double ALPHA = 1e-7;
-    constexpr double ALPHA = 1e-5;
+    //constexpr double ALPHA = 1e-5;
     //constexpr double ALPHA = 1e-6 * 1e-5;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
     constexpr double BETA1 = 0;//0.9;
     constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
     int nBatch = 0;
-    int nTrainsEpoche = 0;
+    double nTrainsEpoche = 0;
 
     std::vector<double> PARAMS;
     std::vector<double> gradiant;
@@ -128,12 +128,12 @@ namespace Learn {
         gradiant.resize(N, 0);
         momentum.resize(N, 0);
 
-        double error = target - value;
-        totalError += std::pow(error, 2);
-        ++nTrainsEpoche;
+        double error = W * (target - value);
+        totalError += W * std::pow(error, 2);
+        nTrainsEpoche += W;
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
-            gradiant[i] += error * C[i] * W;
+            gradiant[i] += error * C[i];
             //gradiant[i] += ALPHA * error * C[i];
         }
         nBatch++;
