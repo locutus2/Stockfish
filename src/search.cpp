@@ -58,11 +58,12 @@ namespace Learn {
     double totalError = 0;
 
     constexpr bool USE_ADAM = true;
+    constexpr bool USE_MIDDLE_TARGET = true;
 
     //constexpr double ALPHA = 0.00001;
     //constexpr double ALPHA = 1e-6;
     //constexpr double ALPHA = 1e-7;
-    constexpr double ALPHA = USE_ADAM ? 1e-2 : 1e-5;
+    constexpr double ALPHA = USE_ADAM ? 1e-1 : 1e-5;
     //constexpr double ALPHA = 1e-6 * 1e-5;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
@@ -1493,15 +1494,21 @@ moves_loop:  // When in check, search starts here
             {
                 for(auto prev : prevExtmoves)
                 {
-                    //dbg_hit_on(true, 4);
-                    double W = 1.0 / prevExtmoves.size();
-                    //Learn::learn(extmove.value, prev.value + 1, extmove.conditions, W);
-                    //Learn::learn(prev.value, extmove.value - 1, prev.conditions);
-                    double target = (extmove.value + prev.value) / 2.0;
                     dbg_mean_of(extmove.conditions.size(), 0);
-                    Learn::learn(extmove.value, target + 1, extmove.conditions, W);
                     dbg_mean_of(prev.conditions.size(), 0);
-                    Learn::learn(prev.value, target, prev.conditions);
+
+                    double W = 1.0 / prevExtmoves.size();
+                    if(Learn::USE_MIDDLE_TARGET)
+                    {
+                        double target = (extmove.value + prev.value) / 2.0;
+                        Learn::learn(extmove.value, target + 1, extmove.conditions, W);
+                        Learn::learn(prev.value, target, prev.conditions);
+                    }
+                    else
+                    {
+                        Learn::learn(extmove.value, prev.value + 1, extmove.conditions, W);
+                        Learn::learn(prev.value, extmove.value - 1, prev.conditions);
+                    }
                 }
             }
 
