@@ -204,10 +204,10 @@ namespace Learn {
                 out << " " << momentum[i];
             }
             out << std::endl;
-            out << "=> MOMENTUM2:";
+            out << "=> SQRT(MOMENTUM2):";
             for(int i = 0; i < int(momentum2.size()); i++)
             {
-                out << " " << momentum2[i];
+                out << " " << std::sqrt(momentum2[i]);
             }
             out << std::endl;
         }
