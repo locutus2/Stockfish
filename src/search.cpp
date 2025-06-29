@@ -60,7 +60,7 @@ namespace Learn {
     constexpr double ALPHA = 1e-6 * 1e-5;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
-    constexpr double BETA1 = 0.9;
+    constexpr double BETA1 = 0;//0.9;
     constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
     int nBatch = 0;
     int nTrainsEpoche = 0;
@@ -1432,10 +1432,13 @@ moves_loop:  // When in check, search starts here
         if(CC)
         {
             bool T = value > alpha;
-            if(T && !prevExtmoves.empty())
+            if(T)
             {
-                Learn::learn(extmove.value, prevExtmoves.rbegin()->value + 1, extmove.conditions);
-                Learn::learn(prevExtmoves.rbegin()->value, extmove.value - 1, prevExtmoves.rbegin()->conditions);
+                for(auto prev : prevExtmoves)
+                {
+                    Learn::learn(extmove.value, prev.value + 1, extmove.conditions);
+                    Learn::learn(prev.value, extmove.value - 1, prev.conditions);
+                }
             }
 
             prevExtmoves.push_back(extmove);
