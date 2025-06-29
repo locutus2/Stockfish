@@ -56,21 +56,28 @@ namespace Learn {
     int iteration = 0;
     double beta = 0;
     double totalError = 0;
+
+    constexpr bool USE_ADAM = true;
+
     //constexpr double ALPHA = 0.00001;
-    constexpr double ALPHA = 1e-6;
+    //constexpr double ALPHA = 1e-6;
     //constexpr double ALPHA = 1e-7;
-    //constexpr double ALPHA = 1e-5;
+    constexpr double ALPHA = USE_ADAM ? 1e-2 : 1e-5;
     //constexpr double ALPHA = 1e-6 * 1e-5;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
-    constexpr double BETA1 = 0;//0.9;
+    constexpr double BETA1 = USE_ADAM ? 0.9 : 0.0;//0.9;
+    constexpr double BETA2 = 0.999;
+    constexpr double EPS = 1e-8;
     constexpr bool BATCH_SIZE = 0; // 0 = all in one batch
     int nBatch = 0;
     double nTrainsEpoche = 0;
+    int tIter = 0;
 
     std::vector<double> PARAMS;
     std::vector<double> gradiant;
     std::vector<double> momentum;
+    std::vector<double> momentum2;
 
     void init()
     {
@@ -82,6 +89,7 @@ namespace Learn {
         PARAMS.clear();
         gradiant.clear();
         momentum.clear();
+        momentum2.clear();
     }
 
     void finish()
@@ -100,12 +108,21 @@ namespace Learn {
     {
         if(nBatch <= 0) return;
 
+        ++tIter;
+
         double weight = (BATCH_SIZE <= 0 ? 1.0 : nBatch/double(BATCH_SIZE));
         beta = (BETA0 + BETA1 * (iteration - 1)) / iteration;
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
             double g = 0;
-            if(BETA1 > 0) 
+            if(USE_ADAM)
+            {
+                momentum[i] = BETA1 * momentum[i] + (1-BETA1) * gradiant[i];
+                momentum2[i] = BETA2 * momentum2[i] + (1-BETA2) * gradiant[i] * gradiant[i];
+                g  = -ALPHA *  (momentum[i] / (1 - std::pow(BETA1, tIter))) 
+                            / (std::sqrt(momentum2[i] / (1 - std::pow(BETA2, tIter))) + EPS);
+            }
+            else if(BETA1 > 0) 
             {
                 g = momentum[i] = beta * momentum[i] - ALPHA * gradiant[i];
             }
@@ -146,12 +163,28 @@ namespace Learn {
     void print(std::ostream& out = std::cerr)
     {
         out << "=> Iteration: " << iteration << std::endl;
-        out << "=> ALPHA: " << ALPHA << std::endl;
-        if(BETA1 > 0)
+        if(USE_ADAM)
         {
-            out << "=> BETA0: " << BETA0 << std::endl;
+            out << "=> USE ADAM: " << std::endl;
+            out << "=> ALPHA: " << ALPHA << std::endl;
             out << "=> BETA1: " << BETA1 << std::endl;
-            out << "=> BETA*: " << beta << std::endl;
+            out << "=> BETA2: " << BETA2 << std::endl;
+            out << "=> EPS: " << EPS << std::endl;
+        }
+        else
+        {
+            if (BETA1 > 0)
+                out << "=> USE SGD: " << ALPHA << std::endl;
+            else
+                out << "=> USE SGD WITH MOMENTUM: " << ALPHA << std::endl;
+
+            out << "=> ALPHA: " << ALPHA << std::endl;
+            if(BETA1 > 0)
+            {
+                out << "=> BETA0: " << BETA0 << std::endl;
+                out << "=> BETA1: " << BETA1 << std::endl;
+                out << "=> BETA*: " << beta << std::endl;
+            }
         }
         out << "=> BATCH_SIZE: " << BATCH_SIZE << std::endl;
         out << "=> ERROR: " << std::sqrt(totalError/nTrainsEpoche) << std::endl;
@@ -162,7 +195,22 @@ namespace Learn {
         }
         out << std::endl;
 
-        if(BETA1 > 0)
+        if(USE_ADAM)
+        {
+            out << "=> MOMENTUM:";
+            for(int i = 0; i < int(momentum.size()); i++)
+            {
+                out << " " << momentum[i];
+            }
+            out << std::endl;
+            out << "=> MOMENTUM2:";
+            for(int i = 0; i < int(momentum2.size()); i++)
+            {
+                out << " " << momentum2[i];
+            }
+            out << std::endl;
+        }
+        else if(BETA1 > 0)
         {
             out << "=> MOMENTUM:";
             for(int i = 0; i < int(momentum.size()); i++)
