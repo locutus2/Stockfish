@@ -71,6 +71,7 @@ namespace Learn {
     constexpr double BETA2 = 0.999;
     constexpr double EPS = 1e-8;
     constexpr int BATCH_SIZE = 1024; // 0 = all in one batch
+    constexpr double REG_L2 = 0.1;
     int nBatch = 0;
     double nTrainsEpoche = 0;
     int tIter = 0;
@@ -148,13 +149,17 @@ namespace Learn {
         momentum.resize(N, 0);
         momentum2.resize(N, 0);
 
+        double W2sum = 0;
+        for(int i = 0; i < int(PARAMS.size()); i++)
+            W2sum += std::pow(PARAMS[i], 2);
+
         double error = W * (target - value);
-        totalError += W * std::pow(error, 2);
+        totalError += W * (std::pow(error, 2) + REG_L2 * W2sum);
         nTrainsEpoche += W;
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
             //gradiant[i] += error * C[i];
-            gradiant[i] -= error * C[i];
+            gradiant[i] -= error * C[i] + REG_L2 * PARAMS[i];
             //gradiant[i] += ALPHA * error * C[i];
         }
         nBatch++;
