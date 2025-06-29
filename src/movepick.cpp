@@ -216,8 +216,10 @@ void MovePicker::score() {
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply);
 
+            double x = 0;
             for(int i = 0; i < int(Learn::PARAMS.size()); i++)
-                m.value += Learn::PARAMS[i] * m.conditions[i];
+                x += Learn::PARAMS[i] * m.conditions[i];
+            m.value += x;
         }
 
         else  // Type == EVASIONS
