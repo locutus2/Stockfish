@@ -62,14 +62,14 @@ namespace Learn {
     //constexpr double ALPHA = 0.00001;
     //constexpr double ALPHA = 1e-6;
     //constexpr double ALPHA = 1e-7;
-    constexpr double ALPHA = USE_ADAM ? 1e-6 : 1e-5;
+    constexpr double ALPHA = USE_ADAM ? 1e-2 : 1e-5;
     //constexpr double ALPHA = 1e-6 * 1e-5;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
     constexpr double BETA1 = USE_ADAM ? 0.9 : 0.0;//0.9;
     constexpr double BETA2 = 0.999;
     constexpr double EPS = 1e-8;
-    constexpr bool BATCH_SIZE = 1024; // 0 = all in one batch
+    constexpr int BATCH_SIZE = 1024; // 0 = all in one batch
     int nBatch = 0;
     double nTrainsEpoche = 0;
     int tIter = 0;
@@ -163,7 +163,7 @@ namespace Learn {
 
     void print(std::ostream& out = std::cerr)
     {
-        out << "=> Iteration: " << iteration << std::endl;
+        out << "=> Iteration: " << iteration << "/" << tIter << std::endl;
         if(USE_ADAM)
         {
             out << "=> USE ADAM: " << std::endl;
@@ -1487,13 +1487,14 @@ moves_loop:  // When in check, search starts here
             bool T = value > alpha;
             if(T && !prevExtmoves.empty())
             {
-                //Learn::learn(extmove.value, prevExtmoves[0].value + 1, extmove.conditions);
                 for(auto prev : prevExtmoves)
                 {
-                    //Learn::learn(extmove.value, prev.value + 1, extmove.conditions);
                     double W = 1.0 / prevExtmoves.size();
-                    Learn::learn(extmove.value, prev.value + 1, extmove.conditions, W);
-                    Learn::learn(prev.value, extmove.value - 1, prev.conditions);
+                    //Learn::learn(extmove.value, prev.value + 1, extmove.conditions, W);
+                    //Learn::learn(prev.value, extmove.value - 1, prev.conditions);
+                    double target = (extmove.value + prev.value) / 2.0;
+                    Learn::learn(extmove.value, target + 1, extmove.conditions, W);
+                    Learn::learn(prev.value, target, prev.conditions);
                 }
             }
 
