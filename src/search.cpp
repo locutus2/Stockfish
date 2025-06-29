@@ -57,7 +57,9 @@ namespace Learn {
     double beta = 0;
     double totalError = 0;
     //constexpr double ALPHA = 0.00001;
-    constexpr double ALPHA = 1e-6 * 1e-5;
+    //constexpr double ALPHA = 1e-6;
+    constexpr double ALPHA = 1e-7;
+    //constexpr double ALPHA = 1e-6 * 1e-5;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
     constexpr double BETA1 = 0;//0.9;
@@ -104,12 +106,11 @@ namespace Learn {
             double g = 0;
             if(BETA1 > 0) 
             {
-                momentum[i] = beta * momentum[i] + gradiant[i];
-                g = momentum[i];
+                g = momentum[i] = beta * momentum[i] + ALPHA * gradiant[i];
             }
             else
             {
-                g = gradiant[i];
+                g = ALPHA * gradiant[i];
             }
             PARAMS[i] += g * weight;
             gradiant[i] = 0;
@@ -131,7 +132,8 @@ namespace Learn {
         ++nTrainsEpoche;
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
-            gradiant[i] += ALPHA * error * C[i];
+            gradiant[i] += error * C[i];
+            //gradiant[i] += ALPHA * error * C[i];
         }
         nBatch++;
 
