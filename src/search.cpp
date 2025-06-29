@@ -107,11 +107,11 @@ namespace Learn {
             double g = 0;
             if(BETA1 > 0) 
             {
-                g = momentum[i] = beta * momentum[i] + ALPHA * gradiant[i];
+                g = momentum[i] = beta * momentum[i] - ALPHA * gradiant[i];
             }
             else
             {
-                g = ALPHA * gradiant[i];
+                g = -ALPHA * gradiant[i];
             }
             PARAMS[i] += g * weight;
             gradiant[i] = 0;
@@ -133,7 +133,8 @@ namespace Learn {
         nTrainsEpoche += W;
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
-            gradiant[i] += error * C[i];
+            //gradiant[i] += error * C[i];
+            gradiant[i] -= error * C[i];
             //gradiant[i] += ALPHA * error * C[i];
         }
         nBatch++;
