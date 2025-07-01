@@ -157,7 +157,6 @@ void MovePicker::score() {
         else if constexpr (Type == QUIETS)
         {
              m.conditions = std::vector<int>{
-                 /*
                 (*mainHistory)[us][m.from_to()],
                 (*pawnHistory)[pawn_structure_index(pos)][pc][to],
                 (*continuationHistory[0])[pc][to],
@@ -166,14 +165,15 @@ void MovePicker::score() {
                 (*continuationHistory[3])[pc][to],
                 (*continuationHistory[4])[pc][to],
                 (*continuationHistory[5])[pc][to],
-                */
                  //gives_check(m),
+                 /*
                                pt == PAWN,
                                pt == KNIGHT,
                                pt == BISHOP,
                                pt == ROOK,
                                pt == QUEEN,
                                pt == KING,
+                               */
                                /*
                                pieces(QUEEN) && type_of(moved_piece(m)) == PAWN,
                                pieces(QUEEN) && type_of(moved_piece(m)) == KNIGHT,
@@ -219,6 +219,7 @@ void MovePicker::score() {
             double x = 0;
             for(int i = 0; i < int(Learn::PARAMS.size()); i++)
                 x += Learn::PARAMS[i] * m.conditions[i];
+                //x += Learn::PARAMS[i] * m.conditions[i] / 256;
             m.value += x;
         }
 

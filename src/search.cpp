@@ -1,5 +1,5 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Stockfish, a UCI chess playing engine derived from Glaurung 2.1 \
   Copyright (C) 2004-2025 The Stockfish developers (see AUTHORS file)
 
   Stockfish is free software: you can redistribute it and/or modify
@@ -70,12 +70,17 @@ namespace Learn {
     constexpr double BETA1 = USE_ADAM ? 0.9 : 0.0;//0.9;
     constexpr double BETA2 = 0.999;
     constexpr double EPS = 1e-8;
-    constexpr int BATCH_SIZE = 1024; // 0 = all in one batch
+    constexpr int BATCH_SIZE = 0; // 0 = all in one batch
     constexpr double REG_L2 = 0;//0.1;
     constexpr double REG_L1 = 0;//0.1;
     int nBatch = 0;
     double nTrainsEpoche = 0;
     int tIter = 0;
+    int nParams = 0;
+    int stepSize = 1;
+    int stepDir = -1;
+    int nSkipped = 0;
+    bool iterationStart = true;
 
     std::vector<double> PARAMS;
     std::vector<double> gradiant;
@@ -89,6 +94,10 @@ namespace Learn {
         totalError = 0;
         nTrainsEpoche = 0;
         nBatch = 0;
+        nParams = 0;
+        stepSize = 1;
+        stepDir = -1;
+        nSkipped = 0;
         PARAMS.clear();
         gradiant.clear();
         momentum.clear();
@@ -105,6 +114,13 @@ namespace Learn {
         ++iteration;
         totalError = 0;
         nTrainsEpoche = 0;
+
+        iterationStart = true;
+    }
+
+    double sign(double x)
+    {
+        return (x > 0 ? 1 : x < 0 ? -1 : 0);
     }
 
     void learnBatch()
@@ -134,13 +150,57 @@ namespace Learn {
                 g = -ALPHA * gradiant[i];
             }
             PARAMS[i] += g * weight;
+            //PARAMS[i] += sign(gradiant[i]);
             gradiant[i] = 0;
         }
 
         nBatch = 0;
+        //std::exit(1);
     }
 
-    void learn(int value, int target, const std::vector<int>& C, double W = 1)
+    void learn2(int value, int target, const std::vector<int>& Cv, const std::vector<int>& Ct, double W = 1, std::ostream& out = std::cerr)
+    {
+
+        dbg_mean_of(Ct.size(), 1);
+        const int N = Ct.size();
+        PARAMS.resize(N, 0);
+        gradiant.resize(N, 0);
+        momentum.resize(N, 0);
+        momentum2.resize(N, 0);
+
+        if(iterationStart)
+        {
+            PARAMS[nParams] += stepDir * stepSize;
+            iterationStart = false;
+        }
+
+        double W1sum = 0;
+        double W2sum = 0;
+        for(int i = 0; i < int(PARAMS.size()); i++)
+        {
+            W1sum += std::abs(PARAMS[i]);
+            W2sum += std::pow(PARAMS[i], 2);
+        }
+
+        double error = (target - value);
+        totalError += W * (std::pow(error, 2) + REG_L1 * W1sum + REG_L2 * W2sum);
+        nTrainsEpoche += W;
+        //out << "W=" << W << " target=" << target << " value=" << value << " error=" << error;
+        for(int i = 0; i < int(PARAMS.size()); i++)
+        {
+            //out << " [i=" << i << ",Ct=" << Ct[i] << ",Cv=" << Cv[i] << ",grad=" << error*(Ct[i]-Cv[i]) << "]";
+            //gradiant[i] += error * C[i];
+            gradiant[i] += W * (error * (Ct[i] - Cv[i]) + REG_L1 * (PARAMS[i] >= 0 ? 1 : -1) + REG_L2 * PARAMS[i]);
+            //gradiant[i] += ALPHA * error * C[i];
+        }
+        out << std::endl;
+        nBatch++;
+
+        if(BATCH_SIZE > 0 && nBatch % BATCH_SIZE == 0)
+            learnBatch();
+    }
+
+    void learn(int value, int target, const std::vector<int>& C, double W = 1, std::ostream& out = std::cerr)
     {
 
         dbg_mean_of(C.size(), 1);
@@ -149,6 +209,12 @@ namespace Learn {
         gradiant.resize(N, 0);
         momentum.resize(N, 0);
         momentum2.resize(N, 0);
+
+        if(iterationStart)
+        {
+            PARAMS[nParams] += stepDir * stepSize;
+            iterationStart = false;
+        }
 
         double W1sum = 0;
         double W2sum = 0;
@@ -161,12 +227,15 @@ namespace Learn {
         double error = W * (target - value);
         totalError += W * (std::pow(error, 2) + REG_L1 * W1sum + REG_L2 * W2sum);
         nTrainsEpoche += W;
+        out << "W=" << W << " target=" << target << " value=" << value << " error=" << error;
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
+            out << " [i=" << i << ",C=" << C[i] << ",grad=" << -error*C[i] << "]";
             //gradiant[i] += error * C[i];
             gradiant[i] += -error * C[i] + REG_L1 * (PARAMS[i] >= 0 ? 1 : -1) + REG_L2 * PARAMS[i];
             //gradiant[i] += ALPHA * error * C[i];
         }
+        out << std::endl;
         nBatch++;
 
         if(BATCH_SIZE > 0 && nBatch % BATCH_SIZE == 0)
@@ -239,8 +308,25 @@ namespace Learn {
     void finishIteration()
     {
         learnBatch();
-
         print();
+
+        PARAMS[nParams] -= stepDir * stepSize;
+
+        if(nSkipped >= 2 * int(PARAMS.size()))
+        {
+            nSkipped = 0;
+            stepSize *= 2;
+        }
+
+        if(stepDir < 0)
+        {
+            stepDir = 1;
+        }
+        else
+        {
+            stepDir = -1;
+            nParams = (nParams + 1) % PARAMS.size();
+        }
     }
 }
 
@@ -1509,6 +1595,8 @@ moves_loop:  // When in check, search starts here
                     dbg_mean_of(extmove.conditions.size(), 0);
                     dbg_mean_of(prev.conditions.size(), 0);
 
+                    Learn::learn2(extmove.value, prev.value, extmove.conditions, prev.conditions);
+                    /*
                     double W = 1.0 / prevExtmoves.size();
                     if(Learn::USE_MIDDLE_TARGET)
                     {
@@ -1521,6 +1609,7 @@ moves_loop:  // When in check, search starts here
                         Learn::learn(extmove.value, prev.value + 1, extmove.conditions, W);
                         Learn::learn(prev.value, extmove.value - 1, prev.conditions);
                     }
+                    */
                 }
             }
 
