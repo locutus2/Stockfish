@@ -186,6 +186,9 @@ namespace Learn {
         totalError += W * (std::pow(error, 2) + REG_L1 * W1sum + REG_L2 * W2sum);
         nTrainsEpoche += W;
         //out << "W=" << W << " target=" << target << " value=" << value << " error=" << error;
+        assert(PARAMS.size() == Ct.size());
+        assert(PARAMS.size() == Cv.size());
+        assert(PARAMS.size() == gradiant.size());
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
             //out << " [i=" << i << ",Ct=" << Ct[i] << ",Cv=" << Cv[i] << ",grad=" << error*(Ct[i]-Cv[i]) << "]";
@@ -193,7 +196,7 @@ namespace Learn {
             gradiant[i] += W * (error * (Ct[i] - Cv[i]) + REG_L1 * (PARAMS[i] >= 0 ? 1 : -1) + REG_L2 * PARAMS[i]);
             //gradiant[i] += ALPHA * error * C[i];
         }
-        out << std::endl;
+        //out << std::endl;
         nBatch++;
 
         if(BATCH_SIZE > 0 && nBatch % BATCH_SIZE == 0)
@@ -1595,7 +1598,11 @@ moves_loop:  // When in check, search starts here
                     dbg_mean_of(extmove.conditions.size(), 0);
                     dbg_mean_of(prev.conditions.size(), 0);
 
-                    Learn::learn2(extmove.value, prev.value, extmove.conditions, prev.conditions);
+                    std::vector<int> C1(extmove.conditions.begin(), extmove.conditions.end());
+                    std::vector<int> C2(prev.conditions.begin(), prev.conditions.end());
+                    //assert(extmove.conditions.size() == prev.conditions.size());
+                    Learn::learn2(extmove.value, prev.value, C1, C2);
+                    //Learn::learn2(extmove.value, prev.value, extmove.conditions, prev.conditions);
                     /*
                     double W = 1.0 / prevExtmoves.size();
                     if(Learn::USE_MIDDLE_TARGET)
@@ -1613,6 +1620,7 @@ moves_loop:  // When in check, search starts here
                 }
             }
 
+            //assert(extmove.conditions.size() == 8);
             prevExtmoves.push_back(extmove);
         }
 

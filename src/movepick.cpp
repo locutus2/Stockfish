@@ -156,7 +156,7 @@ void MovePicker::score() {
 
         else if constexpr (Type == QUIETS)
         {
-             m.conditions = std::vector<int>{
+             m.conditions = std::array<int, 8>{
                 (*mainHistory)[us][m.from_to()],
                 (*pawnHistory)[pawn_structure_index(pos)][pc][to],
                 (*continuationHistory[0])[pc][to],
