@@ -58,7 +58,8 @@ namespace Learn {
     double totalError = 0;
 
     constexpr bool USE_ADAM = true;
-    constexpr bool USE_MIDDLE_TARGET = true;
+    constexpr bool USE_DIFF_TARGET = true;
+    constexpr bool USE_MIDDLE_TARGET = false;
 
     //constexpr double ALPHA = 0.00001;
     //constexpr double ALPHA = 1e-6;
@@ -271,6 +272,7 @@ namespace Learn {
                 out << "=> BETA*: " << beta << std::endl;
             }
         }
+        out << "=> TARGET: " << (USE_DIFF_TARGET ? "DIFFERENCE" : USE_MIDDLE_TARGET ? "MIDDLE" : "FULL") << std::endl;
         out << "=> BATCH_SIZE: " << BATCH_SIZE << std::endl;
         out << "=> REG_L1: " << REG_L1 << std::endl;
         out << "=> REG_L2: " << REG_L2 << std::endl;
@@ -1595,28 +1597,29 @@ moves_loop:  // When in check, search starts here
             {
                 for(auto prev : prevExtmoves)
                 {
-                    dbg_mean_of(extmove.conditions.size(), 0);
-                    dbg_mean_of(prev.conditions.size(), 0);
+                    //dbg_mean_of(extmove.conditions.size(), 0);
+                    //dbg_mean_of(prev.conditions.size(), 0);
 
+                    double W = 1.0 / prevExtmoves.size();
                     std::vector<int> C1(extmove.conditions.begin(), extmove.conditions.end());
                     std::vector<int> C2(prev.conditions.begin(), prev.conditions.end());
-                    //assert(extmove.conditions.size() == prev.conditions.size());
-                    Learn::learn2(extmove.value, prev.value, C1, C2);
-                    //Learn::learn2(extmove.value, prev.value, extmove.conditions, prev.conditions);
-                    /*
-                    double W = 1.0 / prevExtmoves.size();
-                    if(Learn::USE_MIDDLE_TARGET)
+                    if (Learn::USE_DIFF_TARGET)
+                    {
+                        //assert(extmove.conditions.size() == prev.conditions.size());
+                        Learn::learn2(extmove.value, prev.value, C1, C2);
+                        //Learn::learn2(extmove.value, prev.value, extmove.conditions, prev.conditions);
+                    }
+                    else if(Learn::USE_MIDDLE_TARGET)
                     {
                         double target = (extmove.value + prev.value) / 2.0;
-                        Learn::learn(extmove.value, target + 1, extmove.conditions, W);
-                        Learn::learn(prev.value, target, prev.conditions);
+                        Learn::learn(extmove.value, target + 1, C1, W);
+                        Learn::learn(prev.value, target, C2);
                     }
                     else
                     {
-                        Learn::learn(extmove.value, prev.value + 1, extmove.conditions, W);
-                        Learn::learn(prev.value, extmove.value - 1, prev.conditions);
+                        Learn::learn(extmove.value, prev.value + 1, C1, W);
+                        Learn::learn(prev.value, extmove.value - 1, C2);
                     }
-                    */
                 }
             }
 
