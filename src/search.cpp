@@ -64,7 +64,7 @@ namespace Learn {
     //constexpr double ALPHA = 0.00001;
     //constexpr double ALPHA = 1e-6;
     //constexpr double ALPHA = 1e-7;
-    constexpr double ALPHA = USE_ADAM ? 1e-1 : 1e-5;
+    constexpr double ALPHA = USE_ADAM ? 1e-4 : 1e-5;
     //constexpr double ALPHA = 1e-6 * 1e-5;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
@@ -73,7 +73,7 @@ namespace Learn {
     constexpr double EPS = 1e-8;
     constexpr int BATCH_SIZE = 0; // 0 = all in one batch
     constexpr double REG_L2 = 0;//0.1;
-    constexpr double REG_L1 = 0;//0.1;
+    constexpr double REG_L1 = 1;
     int nBatch = 0;
     double nTrainsEpoche = 0;
     int tIter = 0;
