@@ -64,7 +64,7 @@ namespace Learn {
     //constexpr double ALPHA = 0.00001;
     //constexpr double ALPHA = 1e-6;
     //constexpr double ALPHA = 1e-7;
-    constexpr double ALPHA = USE_ADAM ? 1e-4 : 1e-5;
+    constexpr double ALPHA = USE_ADAM ? 1e-0 : 1e-5;
     //constexpr double ALPHA = 1e-6 * 1e-5;
     //constexpr double ALPHA = 0.0000001;
     constexpr double BETA0 = 0.5;
@@ -73,7 +73,7 @@ namespace Learn {
     constexpr double EPS = 1e-8;
     constexpr int BATCH_SIZE = 0; // 0 = all in one batch
     constexpr double REG_L2 = 0;//0.1;
-    constexpr double REG_L1 = 1;
+    constexpr double REG_L1 = 0;
     int nBatch = 0;
     double nTrainsEpoche = 0;
     int tIter = 0;
@@ -87,6 +87,7 @@ namespace Learn {
     std::vector<double> gradiant;
     std::vector<double> momentum;
     std::vector<double> momentum2;
+    std::vector<double> lastGradiant;
 
     void init()
     {
@@ -132,11 +133,14 @@ namespace Learn {
 
         double weight = (BATCH_SIZE <= 0 ? 1.0 : nBatch/double(BATCH_SIZE));
         beta = (BETA0 + BETA1 * (iteration - 1)) / iteration;
+        lastGradiant = gradiant;
         for(int i = 0; i < int(PARAMS.size()); i++)
         {
+            lastGradiant[i] = -gradiant[i] / nBatch; 
             double g = 0;
             if(USE_ADAM)
             {
+                //momentum[i] = BETA1 * momentum[i] + (1-BETA1) * gradiant[i];
                 momentum[i] = BETA1 * momentum[i] + (1-BETA1) * gradiant[i];
                 momentum2[i] = BETA2 * momentum2[i] + (1-BETA2) * gradiant[i] * gradiant[i];
                 g  = -ALPHA *  (momentum[i] / (1 - std::pow(BETA1, tIter))) 
@@ -283,6 +287,12 @@ namespace Learn {
             out << " " << PARAMS[i];
         }
         out << std::endl;
+        out << "=> LAST_GRADIANT[" << lastGradiant.size() << "]:";
+        for(int i = 0; i < int(lastGradiant.size()); i++)
+        {
+            out << " " << lastGradiant[i];
+        }
+        out << std::endl;
 
         if(USE_ADAM)
         {
@@ -314,6 +324,7 @@ namespace Learn {
     {
         learnBatch();
         print();
+        std::exit(0);
 
         PARAMS[nParams] -= stepDir * stepSize;
 
