@@ -76,6 +76,7 @@ struct Stack {
     int                         cutoffCnt;
     int                         reduction;
     bool                        isPvNode;
+    bool                        priorCapture;
     int                         quietMoveStreak;
 };
 
@@ -284,7 +285,7 @@ class Worker {
     ButterflyHistory mainHistory;
     LowPlyHistory    lowPlyHistory;
 
-    CapturePieceToHistory captureHistory;
+    CapturePieceToHistory captureHistory[2];
     ContinuationHistory   continuationHistory[2][2];
     PawnHistory           pawnHistory;
 

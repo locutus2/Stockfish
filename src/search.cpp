@@ -539,7 +539,8 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(67);
-    captureHistory.fill(-688);
+    captureHistory[0].fill(-688);
+    captureHistory[1].fill(-688);
     pawnHistory.fill(-1287);
     pawnCorrectionHistory.fill(5);
     minorPieceCorrectionHistory.fill(0);
@@ -614,7 +615,7 @@ Value Search::Worker::search(
     // Step 1. Initialize node
     Worker* thisThread = this;
     ss->inCheck        = pos.checkers();
-    priorCapture       = pos.captured_piece();
+    ss->priorCapture   = priorCapture       = pos.captured_piece();
     Color us           = pos.side_to_move();
     ss->moveCount      = 0;
     bestValue          = -VALUE_INFINITE;
@@ -913,7 +914,7 @@ Value Search::Worker::search(
     {
         assert(probCutBeta < VALUE_INFINITE && probCutBeta > beta);
 
-        MovePicker mp(pos, ttData.move, probCutBeta - ss->staticEval, &thisThread->captureHistory);
+        MovePicker mp(pos, ttData.move, probCutBeta - ss->staticEval, &thisThread->captureHistory[priorCapture]);
         Depth      probCutDepth = std::max(depth - 5, 0);
 
         while ((move = mp.next_move()) != Move::none())
@@ -971,7 +972,7 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->lowPlyHistory,
-                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory, ss->ply);
+                  &thisThread->captureHistory[priorCapture], contHist, &thisThread->pawnHistory, ss->ply);
 
     value = bestValue;
 
@@ -1043,7 +1044,7 @@ moves_loop:  // When in check, search starts here
             {
                 Piece capturedPiece = pos.piece_on(move.to_sq());
                 int   captHist =
-                  thisThread->captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
+                  thisThread->captureHistory[priorCapture][movedPiece][move.to_sq()][type_of(capturedPiece)];
 
                 // Futility pruning for captures
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
@@ -1218,7 +1219,7 @@ moves_loop:  // When in check, search starts here
         if (capture)
             ss->statScore =
               826 * int(PieceValue[pos.captured_piece()]) / 128
-              + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
+              + thisThread->captureHistory[priorCapture][movedPiece][move.to_sq()][type_of(pos.captured_piece())]
               - 5030;
         else
             ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
@@ -1456,7 +1457,7 @@ moves_loop:  // When in check, search starts here
     {
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
-        thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 1080;
+        thisThread->captureHistory[(ss - 1)->priorCapture][pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 1080;
     }
 
     if (PvNode)
@@ -1619,7 +1620,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
     MovePicker mp(pos, ttData.move, DEPTH_QS, &thisThread->mainHistory, &thisThread->lowPlyHistory,
-                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory, ss->ply);
+                  &thisThread->captureHistory[bool(pos.captured_piece())], contHist, &thisThread->pawnHistory, ss->ply);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.
@@ -1847,7 +1848,7 @@ void update_all_stats(const Position& pos,
                       Move            ttMove,
                       int             moveCount) {
 
-    CapturePieceToHistory& captureHistory = workerThread.captureHistory;
+    CapturePieceToHistory& captureHistory = workerThread.captureHistory[bool(pos.captured_piece())];
     Piece                  movedPiece     = pos.moved_piece(bestMove);
     PieceType              capturedPiece;
 
