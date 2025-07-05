@@ -152,7 +152,7 @@ void MovePicker::score() {
         if constexpr (Type == CAPTURES)
             m.value = (*captureHistory)[pc][to][type_of(capturedPiece)]
                     + (*captureContinuationHistory)[pc][to][type_of(capturedPiece)]
-                    + 7 * int(PieceValue[capturedPiece]) + 1024 * bool(pos.check_squares(pt) & to);
+                    + 14 * int(PieceValue[capturedPiece]) + 2048 * bool(pos.check_squares(pt) & to);
 
         else if constexpr (Type == QUIETS)
         {
@@ -237,7 +237,7 @@ top:
 
     case GOOD_CAPTURE :
         if (select([&]() {
-                if (pos.see_ge(*cur, -cur->value / 18))
+                if (pos.see_ge(*cur, -cur->value / 36))
                     return true;
                 std::swap(*endBadCaptures++, *cur);
                 return false;
