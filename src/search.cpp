@@ -1231,7 +1231,7 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-            r += 914 - 1024 * capture;
+            r += 1024 * capture - 914;
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
