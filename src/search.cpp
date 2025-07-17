@@ -1082,7 +1082,10 @@ moves_loop:  // When in check, search starts here
                 V = history;
                 // Continuation history based pruning
                 if (history < -4229 * depth)
+                {
+                    //if (PvNode) continue;
                     CC = true; //continue;
+                }
 
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
 
@@ -1302,8 +1305,11 @@ moves_loop:  // When in check, search starts here
 
         if(CC)
         {
-            bool C = ss->inCheck;
-            int C2 = !ss->ttPv + cutNode + improving;
+            bool C = type_of(movedPiece) == QUEEN;
+            //int C2 = !ss->ttPv + cutNode + improving;
+            //int C2 = !ss->ttPv + 2 * cutNode + 4 * improving;
+            //int C2 = 2 * cutNode * (1-2*ss->ttPv) + ss->ttPv + 1;
+            int C2 = (2 * cutNode * (1-2*ss->ttPv) + ss->ttPv + 1) + 4*improving;
             bool T = value > alpha;
             dbg_hit_on(T, 0);
             dbg_hit_on(T, 10+C);
