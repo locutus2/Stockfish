@@ -1308,12 +1308,22 @@ moves_loop:  // When in check, search starts here
         if(CC)
         {
             //bool C = type_of(movedPiece) == QUEEN;
-            bool C = ss->ttPv;
+            bool C = true;//ss->ttPv;
             //int C2 = !ss->ttPv + cutNode + improving;
             //int C2 = !ss->ttPv + 2 * cutNode + 4 * improving;
             //int C2 = 2 * cutNode * (1-2*ss->ttPv) + ss->ttPv + 1;
             //int C2 = (2 * cutNode * (1-2*ss->ttPv) + ss->ttPv + 1) + 4*improving;
-            int C2 = allNode + 2 * priorCapture;
+            //int C2 = ss->ttPv;
+            //int C2 = cutNode;
+            //int C2 = improving;
+            //int C2 = ss->incheck;
+            //int C2 = allNode;
+            //int C2 = priorCapture;
+            //int C2 = ttHit;
+            //int C2 = PvNode;
+            //int C2 = (type_of(movedPiece) == PAWN);
+            //int C2 = cutNode + 2 * (type_of(movedPiece) == PAWN);
+            int C2 = ss->inCheck + 2 * priorCapture;
             bool T = value > alpha;
             dbg_hit_on(T, 0);
             dbg_hit_on(T, 10+C);
