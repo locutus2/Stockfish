@@ -1079,7 +1079,7 @@ moves_loop:  // When in check, search starts here
                   + (*contHist[1])[movedPiece][move.to_sq()]
                   + thisThread->pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
-                constexpr int M = 256;
+                constexpr int M = 512;
                 V = history;
                 // Continuation history based pruning
                 if (history < -4229 * depth - M)
@@ -1309,7 +1309,7 @@ moves_loop:  // When in check, search starts here
         if(CC)
         {
             //bool C = type_of(movedPiece) == QUEEN;
-            bool C = cutNode;//ss->ttPv;
+            bool C = priorCapture;//ss->ttPv;
             //int C2 = !ss->ttPv + cutNode + improving;
             //int C2 = !ss->ttPv + 2 * cutNode + 4 * improving;
             //int C2 = 2 * cutNode * (1-2*ss->ttPv) + ss->ttPv + 1;
@@ -1324,7 +1324,7 @@ moves_loop:  // When in check, search starts here
             //int C2 = PvNode;
             //int C2 = (type_of(movedPiece) == PAWN);
             //int C2 = cutNode + 2 * (type_of(movedPiece) == PAWN);
-            int C2 = cutNode + 2 * ttHit;
+            int C2 = improving + 2 * ss->ttPv;
             bool T = value > alpha;
             dbg_hit_on(T, 0);
             dbg_hit_on(T, 10+C);
