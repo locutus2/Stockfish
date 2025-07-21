@@ -44,6 +44,8 @@
 
 namespace Stockfish {
 
+void finalStats(std::ostream& out = std::cerr);
+
 // Different node types, used as a template parameter
 enum NodeType {
     NonPV,

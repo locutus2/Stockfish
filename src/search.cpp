@@ -32,6 +32,7 @@
 #include <ratio>
 #include <string>
 #include <utility>
+#include <bitset>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -50,6 +51,73 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+
+constexpr int N = 8;
+
+void stats(bool T, const std::vector<bool>& C)
+{
+    assert(N == int(C.size()));
+    if(N != int(C.size())) std::exit(1);
+
+    int index = 0;
+    for(int i = 0; i < N; i++)
+        index = 2 * index + C[i];
+    dbg_hit_on(T, index);
+}
+
+void finalStats(std::ostream& out)
+{
+    int M = 1 << N;
+    std::vector<int> coeff(M, 0);
+    std::vector<int> index;
+    for(int i = 0; i < M; i++)
+        index.push_back(i);
+
+    std::sort(index.begin(), index.end(), [&](int a, int b) { return dbg_get_hit_on(a) < dbg_get_hit_on(b); });
+
+    for(int i = 0; i < M; i++)
+    {
+        for(int j = 0; j < M; j++)
+        {
+            if((index[i] & j) == index[i])
+            {
+                int k = j & ~index[i];
+                coeff[j] += i * (popcount(k) % 2 == 0 ? 1 : -1);
+            }
+        }    
+    }
+
+    std::vector<std::string> C = {
+                "PvNode",
+                "cutNode",
+                "allNode",
+                "improving",
+                "ss->ttPv",
+                "ss->inCheck",
+                "ttHit",
+                "priorCapture",
+    };
+
+    out << "T =";
+    bool firstT = true;
+    for(int i = 0; i < M; i++)
+    {
+        if(coeff[i])
+        {
+            out << " " << (firstT ? " " : coeff[i] < 0 ? "- " : "+ ") << std::abs(coeff[i]);
+            for(int k = 0; k < N; ++k)
+            {
+                if(i & (1 << k))
+                {
+                    out << (std::abs(coeff[i]) == 1 ? "" : " * ") << C[k];
+                }
+            }
+
+            firstT = false;
+        }
+    }
+    out << std::endl;
+}
 
 namespace TB = Tablebases;
 
@@ -1309,30 +1377,21 @@ moves_loop:  // When in check, search starts here
         if(CC)
         {
             //bool C = type_of(movedPiece) == QUEEN;
-            bool C = priorCapture;//ss->ttPv;
-            //int C2 = !ss->ttPv + cutNode + improving;
-            //int C2 = !ss->ttPv + 2 * cutNode + 4 * improving;
-            //int C2 = 2 * cutNode * (1-2*ss->ttPv) + ss->ttPv + 1;
-            //int C2 = (2 * cutNode * (1-2*ss->ttPv) + ss->ttPv + 1) + 4*improving;
-            //int C2 = ss->ttPv;
-            //int C2 = cutNode;
-            //int C2 = improving;
-            //int C2 = ss->incheck;
-            //int C2 = allNode;
-            //int C2 = priorCapture;
-            //int C2 = ttHit;
-            //int C2 = PvNode;
-            //int C2 = (type_of(movedPiece) == PAWN);
-            //int C2 = cutNode + 2 * (type_of(movedPiece) == PAWN);
-            int C2 = improving + 2 * ss->ttPv;
-            bool T = value > alpha;
-            dbg_hit_on(T, 0);
-            dbg_hit_on(T, 10+C);
-            dbg_mean_of(V, T);
-            dbg_mean_of(V, 5+C);
-            dbg_mean_of(V, 10*(C+1)+T);
+            std::vector<bool> C = {
+                PvNode,
+                cutNode,
+                allNode,
+                improving,
+                ss->ttPv,
+                ss->inCheck,
+                ttHit,
+                priorCapture,
+            };
 
-            dbg_hit_on(T, 1000+C2);
+            bool T = value > alpha;
+            int index = 240 - 79 * PvNode - 78 * cutNode + 80 * PvNode * cutNode - 76 * allNode + 80 * PvNode * allNode + 80 * cutNode * allNode - 80 * PvNode * cutNode * allNode - 72 * improving + 80 * PvNode * improving + 80 * cutNode * improving - 80 * PvNode * cutNode * improving + 80 * allNode * improving - 80 * PvNode * allNode * improving - 80 * cutNode * allNode * improving + 80 * PvNode * cutNode * allNode * improving - 80 * ss->ttPv + 96 * PvNode * ss->ttPv + 96 * cutNode * ss->ttPv - 96 * PvNode * cutNode * ss->ttPv + 96 * allNode * ss->ttPv - 96 * PvNode * allNode * ss->ttPv - 96 * cutNode * allNode * ss->ttPv + 96 * PvNode * cutNode * allNode * ss->ttPv + 96 * improving * ss->ttPv - 96 * PvNode * improving * ss->ttPv - 96 * cutNode * improving * ss->ttPv + 96 * PvNode * cutNode * improving * ss->ttPv - 96 * allNode * improving * ss->ttPv + 96 * PvNode * allNode * improving * ss->ttPv + 96 * cutNode * allNode * improving * ss->ttPv - 96 * PvNode * cutNode * allNode * improving * ss->ttPv - 96 * ss->inCheck + 64 * PvNode * ss->inCheck + 64 * cutNode * ss->inCheck - 64 * PvNode * cutNode * ss->inCheck + 64 * allNode * ss->inCheck - 64 * PvNode * allNode * ss->inCheck - 64 * cutNode * allNode * ss->inCheck + 64 * PvNode * cutNode * allNode * ss->inCheck + 64 * improving * ss->inCheck - 64 * PvNode * improving * ss->inCheck - 64 * cutNode * improving * ss->inCheck + 64 * PvNode * cutNode * improving * ss->inCheck - 64 * allNode * improving * ss->inCheck + 64 * PvNode * allNode * improving * ss->inCheck + 64 * cutNode * allNode * improving * ss->inCheck - 64 * PvNode * cutNode * allNode * improving * ss->inCheck + 64 * ss->ttPv * ss->inCheck - 64 * PvNode * ss->ttPv * ss->inCheck - 64 * cutNode * ss->ttPv * ss->inCheck + 64 * PvNode * cutNode * ss->ttPv * ss->inCheck - 64 * allNode * ss->ttPv * ss->inCheck + 64 * PvNode * allNode * ss->ttPv * ss->inCheck + 64 * cutNode * allNode * ss->ttPv * ss->inCheck - 64 * PvNode * cutNode * allNode * ss->ttPv * ss->inCheck - 64 * improving * ss->ttPv * ss->inCheck + 64 * PvNode * improving * ss->ttPv * ss->inCheck + 64 * cutNode * improving * ss->ttPv * ss->inCheck - 64 * PvNode * cutNode * improving * ss->ttPv * ss->inCheck + 64 * allNode * improving * ss->ttPv * ss->inCheck - 64 * PvNode * allNode * improving * ss->ttPv * ss->inCheck - 64 * cutNode * allNode * improving * ss->ttPv * ss->inCheck + 64 * PvNode * cutNode * allNode * improving * ss->ttPv * ss->inCheck - 64 * ttHit + 128 * PvNode * ttHit + 128 * cutNode * ttHit - 128 * PvNode * cutNode * ttHit + 128 * allNode * ttHit - 128 * PvNode * allNode * ttHit - 128 * cutNode * allNode * ttHit + 128 * PvNode * cutNode * allNode * ttHit + 128 * improving * ttHit - 128 * PvNode * improving * ttHit - 128 * cutNode * improving * ttHit + 128 * PvNode * cutNode * improving * ttHit - 128 * allNode * improving * ttHit + 128 * PvNode * allNode * improving * ttHit + 128 * cutNode * allNode * improving * ttHit - 128 * PvNode * cutNode * allNode * improving * ttHit + 128 * ss->ttPv * ttHit - 128 * PvNode * ss->ttPv * ttHit - 128 * cutNode * ss->ttPv * ttHit + 128 * PvNode * cutNode * ss->ttPv * ttHit - 128 * allNode * ss->ttPv * ttHit + 128 * PvNode * allNode * ss->ttPv * ttHit + 128 * cutNode * allNode * ss->ttPv * ttHit - 128 * PvNode * cutNode * allNode * ss->ttPv * ttHit - 128 * improving * ss->ttPv * ttHit + 128 * PvNode * improving * ss->ttPv * ttHit + 128 * cutNode * improving * ss->ttPv * ttHit - 128 * PvNode * cutNode * improving * ss->ttPv * ttHit + 128 * allNode * improving * ss->ttPv * ttHit - 128 * PvNode * allNode * improving * ss->ttPv * ttHit - 128 * cutNode * allNode * improving * ss->ttPv * ttHit + 128 * PvNode * cutNode * allNode * improving * ss->ttPv * ttHit + 128 * ss->inCheck * ttHit - 128 * PvNode * ss->inCheck * ttHit - 128 * cutNode * ss->inCheck * ttHit + 128 * PvNode * cutNode * ss->inCheck * ttHit - 128 * allNode * ss->inCheck * ttHit + 128 * PvNode * allNode * ss->inCheck * ttHit + 128 * cutNode * allNode * ss->inCheck * ttHit - 128 * PvNode * cutNode * allNode * ss->inCheck * ttHit - 128 * improving * ss->inCheck * ttHit + 128 * PvNode * improving * ss->inCheck * ttHit + 128 * cutNode * improving * ss->inCheck * ttHit - 128 * PvNode * cutNode * improving * ss->inCheck * ttHit + 128 * allNode * improving * ss->inCheck * ttHit - 128 * PvNode * allNode * improving * ss->inCheck * ttHit - 128 * cutNode * allNode * improving * ss->inCheck * ttHit + 128 * PvNode * cutNode * allNode * improving * ss->inCheck * ttHit - 128 * ss->ttPv * ss->inCheck * ttHit + 128 * PvNode * ss->ttPv * ss->inCheck * ttHit + 128 * cutNode * ss->ttPv * ss->inCheck * ttHit - 128 * PvNode * cutNode * ss->ttPv * ss->inCheck * ttHit + 128 * allNode * ss->ttPv * ss->inCheck * ttHit - 128 * PvNode * allNode * ss->ttPv * ss->inCheck * ttHit - 128 * cutNode * allNode * ss->ttPv * ss->inCheck * ttHit + 128 * PvNode * cutNode * allNode * ss->ttPv * ss->inCheck * ttHit + 128 * improving * ss->ttPv * ss->inCheck * ttHit - 128 * PvNode * improving * ss->ttPv * ss->inCheck * ttHit - 128 * cutNode * improving * ss->ttPv * ss->inCheck * ttHit + 128 * PvNode * cutNode * improving * ss->ttPv * ss->inCheck * ttHit - 128 * allNode * improving * ss->ttPv * ss->inCheck * ttHit + 128 * PvNode * allNode * improving * ss->ttPv * ss->inCheck * ttHit + 128 * cutNode * allNode * improving * ss->ttPv * ss->inCheck * ttHit - 128 * PvNode * cutNode * allNode * improving * ss->ttPv * ss->inCheck * ttHit - 128 * priorCapture;
+            //stats(T, C);
+            dbg_hit_on(T, index);
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
