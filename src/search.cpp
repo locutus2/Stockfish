@@ -1170,8 +1170,16 @@ moves_loop:  // When in check, search starts here
                   + (*contHist[1])[movedPiece][move.to_sq()]
                   + thisThread->pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
-                constexpr int M = 512;
-                V = history;
+                constexpr int M = 12800*512;
+                //V = (*contHist[3])[movedPiece][move.to_sq()] + 30000;
+                //V = thisThread->mainHistory[us][move.from_to()] + 7183;
+                //V = -std::abs(thisThread->mainHistory[us][move.from_to()]) + 7183;
+                //V = -std::abs(thisThread->mainHistory[us][move.from_to()]) + 7183
+                //    + (*contHist[3])[movedPiece][move.to_sq()] + 30000;
+                //V = thisThread->mainHistory[us][move.from_to()] + 7183
+                //    + (*contHist[3])[movedPiece][move.to_sq()] + 30000;
+                V = (*contHist[3])[movedPiece][move.to_sq()] + 30000
+                    + (*contHist[5])[movedPiece][move.to_sq()] + 30000;
                 // Continuation history based pruning
                 if (history < -4229 * depth - M)
                     continue;
@@ -1416,8 +1424,17 @@ moves_loop:  // When in check, search starts here
             if(!VERIFY)
             {
                 std::vector<bool> C;
-                ADD_CONDITION(C, PvNode);
-                ADD_CONDITION(C, improving);
+                //ADD_CONDITION(C, improving);
+                //ADD_CONDITION(C, priorCapture);
+                //ADD_CONDITION(C, (type_of(movedPiece) == PAWN));
+                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<PAWN>(~us)));
+                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<KNIGHT>(~us)));
+                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<BISHOP>(~us)));
+                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<ROOK>(~us)));
+                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<QUEEN>(~us)));
+                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<KING>(~us)));
+                ADD_CONDITION(C, (type_of(movedPiece) == KNIGHT));
+                ADD_CONDITION(C, more_than_one(pos.pieces(~us, QUEEN, ROOK, KING) & attacks_bb<KNIGHT>(move.to_sq())));
 
                 stats(T, C);
             }
@@ -1425,6 +1442,11 @@ moves_loop:  // When in check, search starts here
             {
                 int index = PvNode + 2 * improving;
                 //int index = 4 - 4 * priorCapture + improving + improving * priorCapture - PvNode + 2 * PvNode * priorCapture + 3 * PvNode * improving;
+                //int index = V / 5000;
+                //int index = V / 1000;
+                //int index = V / 500;
+                //int index = V / 5000;
+                //int index = V / 5000;
                 dbg_hit_on(T, index);
             }
         }
