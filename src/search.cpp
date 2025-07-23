@@ -1325,7 +1325,7 @@ moves_loop:  // When in check, search starts here
             //int C2 = (type_of(movedPiece) == PAWN);
             //int C2 = cutNode + 2 * (type_of(movedPiece) == PAWN);
             bool T = value > alpha;
-            bool C0 = type_of(movedPiece) == BISHOP;
+            bool C0 = type_of(movedPiece) == KING;
             std::vector<bool> C = {
                 allNode,
                 cutNode,
@@ -1338,6 +1338,9 @@ moves_loop:  // When in check, search starts here
                 ttHit,
                 type_of(movedPiece) == PAWN,
                 type_of(movedPiece) == KNIGHT,
+                type_of(movedPiece) == BISHOP,
+                type_of(movedPiece) == ROOK,
+                type_of(movedPiece) == QUEEN,
             };
             dbg_hit_on(T, 0);
             dbg_hit_on(T, 10+C0);
