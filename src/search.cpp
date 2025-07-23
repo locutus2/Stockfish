@@ -1309,7 +1309,7 @@ moves_loop:  // When in check, search starts here
         if(CC)
         {
             //bool C = type_of(movedPiece) == QUEEN;
-            bool C = priorCapture;//ss->ttPv;
+            //bool C = priorCapture;//ss->ttPv;
             //int C2 = !ss->ttPv + cutNode + improving;
             //int C2 = !ss->ttPv + 2 * cutNode + 4 * improving;
             //int C2 = 2 * cutNode * (1-2*ss->ttPv) + ss->ttPv + 1;
@@ -1324,15 +1324,32 @@ moves_loop:  // When in check, search starts here
             //int C2 = PvNode;
             //int C2 = (type_of(movedPiece) == PAWN);
             //int C2 = cutNode + 2 * (type_of(movedPiece) == PAWN);
-            int C2 = improving + 2 * ss->ttPv;
             bool T = value > alpha;
+            bool C0 = type_of(movedPiece) == BISHOP;
+            std::vector<bool> C = {
+                allNode,
+                cutNode,
+                PvNode,
+                priorCapture,
+                ss->inCheck,
+                bool(excludedMove),
+                improving,
+                ss->ttPv,
+                ttHit,
+                type_of(movedPiece) == PAWN,
+                type_of(movedPiece) == KNIGHT,
+            };
             dbg_hit_on(T, 0);
-            dbg_hit_on(T, 10+C);
+            dbg_hit_on(T, 10+C0);
             dbg_mean_of(V, T);
-            dbg_mean_of(V, 5+C);
-            dbg_mean_of(V, 10*(C+1)+T);
+            dbg_mean_of(V, 5+C0);
+            dbg_mean_of(V, 10*(C0+1)+T);
 
-            dbg_hit_on(T, 1000+C2);
+            for(int i = 0; i < int(C.size()); i++)
+            {
+                int C2 = C[i] + 2 * C0;
+                dbg_hit_on(T, 1000+10*i+C2);
+            }
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
