@@ -607,6 +607,8 @@ Value Search::Worker::search(
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
+    int probCutBetaOrig;
+    int M;
 
     SearchedList capturesSearched;
     SearchedList quietsSearched;
@@ -670,6 +672,9 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+
+    bool CC = false;
+    bool P = false;
 
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
@@ -904,7 +909,9 @@ Value Search::Worker::search(
     // Step 11. ProbCut
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 201 - 58 * improving;
+    probCutBetaOrig = beta + 201 - 58 * improving;
+    M = 64;
+    probCutBeta = beta + 201 - 58 * improving - M;
     if (depth >= 3
         && !is_decisive(beta)
         // If value from transposition table is lower than probCutBeta, don't attempt
@@ -916,6 +923,7 @@ Value Search::Worker::search(
         MovePicker mp(pos, ttData.move, probCutBeta - ss->staticEval, &thisThread->captureHistory);
         Depth      probCutDepth = std::max(depth - 5, 0);
 
+        CC = (is_valid(ttData.value) && ttData.value < probCutBetaOrig);
         while ((move = mp.next_move()) != Move::none())
         {
             assert(move.is_ok());
@@ -952,7 +960,10 @@ Value Search::Worker::search(
                                probCutDepth + 1, move, unadjustedStaticEval, tt.generation());
 
                 if (!is_decisive(value))
-                    return value - (probCutBeta - beta);
+                {
+                    P = true;
+                    if(!CC) return value - (probCutBeta - beta);
+                }
             }
         }
     }
@@ -1028,8 +1039,6 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 968;
 
-        bool CC = false;
-        int V = 0;
         // Step 14. Pruning at shallow depth.
         // Depth conditions are important for mate finding.
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
@@ -1079,16 +1088,9 @@ moves_loop:  // When in check, search starts here
                   + (*contHist[1])[movedPiece][move.to_sq()]
                   + thisThread->pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
-                constexpr int M = 512;
-                V = history;
                 // Continuation history based pruning
-                if (history < -4229 * depth - M)
-                    continue;
-
                 if (history < -4229 * depth)
-                {
-                    CC = true;
-                }
+                    continue;
 
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
 
@@ -1306,56 +1308,6 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        if(CC)
-        {
-            //bool C = type_of(movedPiece) == QUEEN;
-            //bool C = priorCapture;//ss->ttPv;
-            //int C2 = !ss->ttPv + cutNode + improving;
-            //int C2 = !ss->ttPv + 2 * cutNode + 4 * improving;
-            //int C2 = 2 * cutNode * (1-2*ss->ttPv) + ss->ttPv + 1;
-            //int C2 = (2 * cutNode * (1-2*ss->ttPv) + ss->ttPv + 1) + 4*improving;
-            //int C2 = ss->ttPv;
-            //int C2 = cutNode;
-            //int C2 = improving;
-            //int C2 = ss->incheck;
-            //int C2 = allNode;
-            //int C2 = priorCapture;
-            //int C2 = ttHit;
-            //int C2 = PvNode;
-            //int C2 = (type_of(movedPiece) == PAWN);
-            //int C2 = cutNode + 2 * (type_of(movedPiece) == PAWN);
-            bool T = value > alpha;
-            bool C0 = ss->ply % 2;
-            std::vector<bool> C = {
-                allNode,
-                cutNode,
-                PvNode,
-                priorCapture,
-                ss->inCheck,
-                bool(excludedMove),
-                improving,
-                ss->ttPv,
-                ttHit,
-                type_of(movedPiece) == PAWN,
-                type_of(movedPiece) == KNIGHT,
-                type_of(movedPiece) == BISHOP,
-                type_of(movedPiece) == ROOK,
-                type_of(movedPiece) == QUEEN,
-                type_of(movedPiece) == KING,
-            };
-            dbg_hit_on(T, 0);
-            dbg_hit_on(T, 10+C0);
-            dbg_mean_of(V, T);
-            dbg_mean_of(V, 5+C0);
-            dbg_mean_of(V, 10*(C0+1)+T);
-
-            for(int i = 0; i < int(C.size()); i++)
-            {
-                int C2 = C[i] + 2 * C0;
-                dbg_hit_on(T, 1000+10*i+C2);
-            }
-        }
-
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
         // Step 20. Check for a new best move
@@ -1467,6 +1419,39 @@ moves_loop:  // When in check, search starts here
     // return a fail low score.
 
     assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
+
+    if(CC && P)
+    {
+        bool T = bestValue >= beta;
+        //bool C0 = ss->ply % 2;
+        bool C0 = improving;
+        std::vector<bool> C = {
+            allNode,
+            cutNode,
+            PvNode,
+            priorCapture,
+            bool(excludedMove),
+            /*
+            improving,
+            ss->ttPv,
+            ttHit,
+            type_of(movedPiece) == PAWN,
+            type_of(movedPiece) == KNIGHT,
+            type_of(movedPiece) == BISHOP,
+            type_of(movedPiece) == ROOK,
+            type_of(movedPiece) == QUEEN,
+            type_of(movedPiece) == KING,
+            */
+        };
+        dbg_hit_on(T, 0);
+        dbg_hit_on(T, 10+C0);
+
+        for(int i = 0; i < int(C.size()); i++)
+        {
+            int C2 = C[i] + 2 * C0;
+            dbg_hit_on(T, 1000+10*i+C2);
+        }
+    }
 
     // Adjust best value for fail high cases
     if (bestValue >= beta && !is_decisive(bestValue) && !is_decisive(alpha))
