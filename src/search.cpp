@@ -897,7 +897,7 @@ Value Search::Worker::search(
     // Step 11. ProbCut
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 201 - 58 * improving - 32 * (cutNode && !priorCapture);
+    probCutBeta = beta + 201 - 58 * improving - 16 * (cutNode && !priorCapture);
     if (depth >= 3
         && !is_decisive(beta)
         // If value from transposition table is lower than probCutBeta, don't attempt
