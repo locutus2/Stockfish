@@ -1067,7 +1067,7 @@ moves_loop:  // When in check, search starts here
                             + pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
-                if (history < -4361 * depth)
+                if (history < 128 * !PvNode - 4361 * depth)
                     continue;
 
                 history += 71 * mainHistory[us][move.from_to()] / 32;
