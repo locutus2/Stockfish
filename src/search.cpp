@@ -719,8 +719,8 @@ Value Search::Worker::search(
         }
     }
 
-    if (ttHit && depth < ttData.depth - 10)
-        depth++;
+    if (ttHit && depth < ttData.depth - 10 && depth > 1)
+        depth--;
 
     // Step 5. Tablebases probe
     if (!rootNode && !excludedMove && tbConfig.cardinality)
