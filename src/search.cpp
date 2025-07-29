@@ -719,7 +719,7 @@ Value Search::Worker::search(
         }
     }
 
-    if (ttHit && depth < ttData.depth - 10 && depth > 1)
+    if (ttHit && depth < ttData.depth - 9 && depth > 1)
         depth--;
 
     // Step 5. Tablebases probe
