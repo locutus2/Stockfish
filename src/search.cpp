@@ -53,12 +53,16 @@
 namespace Stockfish {
 
 constexpr bool VERIFY = false;
-constexpr bool PARTITION = true;
+constexpr bool PARTITION = false;
+constexpr bool SINGLE_CONDITION = true;
 
 int N;
 std::vector<std::string> CNames;
+std::vector<int> Cgroup;
 
-#define ADD_CONDITION(c, x) { (c).push_back((x)); if ((c).size() > CNames.size()) { CNames.push_back(#x);  N = CNames.size(); }  }
+#define ADD_CONDITION(c, x) ADD_CONDITION_G(c, x, (PARTITION ? 0 : -1))
+#define ADD_CONDITION_G(c, x, g) { int group = ((g) < 0 ? (Cgroup.empty() ? 0 : *std::max(Cgroup.begin(),Cgroup.end()) + 1) : (g)); \
+                                 (c).push_back((x)); if ((c).size() > CNames.size()) { CNames.push_back(#x);  Cgroup.push_back((group)); N = CNames.size(); }  }
 
 void initStats()
 {
@@ -70,17 +74,41 @@ void stats(bool T, const std::vector<bool>& C)
     assert(N == int(C.size()));
     if(N != int(C.size())) std::exit(1);
 
-    int index = 0;
-    for(int i = 0; i < N; i++)
-        index = 2 * index + C[i];
-    dbg_hit_on(T, index);
+    if(SINGLE_CONDITION)
+    {
+        for(int i = 0; i < N; i++)
+            if(C[i])
+                dbg_hit_on(T, i);
+    }
+    else
+    {
+        int index = 0;
+        for(int i = 0; i < N; i++)
+            index = 2 * index + C[i];
+        dbg_hit_on(T, index);
+    }
+}
+
+bool containsDisjunctGroups(int index)
+{
+    std::set<int> foundGroup;
+    for(int k = 0; k < N; ++k)
+    {
+        if(index & (1 << (N-1-k)))
+        {
+              if(foundGroup.find(Cgroup[k]) != foundGroup.end())
+                  return true;
+              foundGroup.insert(Cgroup[k]);
+        }
+    }
+    return false;
 }
 
 void finalStats(std::ostream& out)
 {
     if(VERIFY) return;
 
-    int M = 1 << N;
+    int M = (SINGLE_CONDITION ? N : 1 << N);
     std::vector<int> coeff(M, 0);
     std::vector<int> index;
     for(int i = 0; i < M; i++)
@@ -88,45 +116,56 @@ void finalStats(std::ostream& out)
 
     std::sort(index.begin(), index.end(), [&](int a, int b) { return dbg_get_hit_on(a) < dbg_get_hit_on(b); });
 
-    for(int i = 0, I = 0; i < M; i++)
+    if(SINGLE_CONDITION)
     {
-        if(dbg_get_hit_on(index[i]) <= 0.0) continue;
-        out << index[i] << " ";
-        for(int j = 0; j < M; j++)
+        for(int i = 0; i < N; i++)
         {
-            if((index[i] & j) == index[i])
-            {
-                int k = j & ~index[i];
-                //constexpr int B = 8;
-                //out << i << ": " << std::bitset<B>(index[i]) << " p=" << dbg_get_hit_on(index[i]) << "% j=" << std::bitset<B>(j) << " k=" << std::bitset<B>(k) << " " << (popcount(k) % 2 == 0 ? 1 : -1) << std::endl; 
-                coeff[j] += I * (popcount(k) % 2 == 0 ? 1 : -1);
-            }
-        }    
-        I++;
-    }
-    out << std::endl;
-
-    out << "T =";
-    bool firstT = true;
-    for(int i = 0; i < M; i++)
-    {
-        if(coeff[i] && (!PARTITION || !more_than_one(i)))
-        {
-            out << " " << (firstT ? " " : coeff[i] < 0 ? "- " : "+ ") << (std::abs(coeff[i]) == 1 ? "" : std::to_string(std::abs(coeff[i])));
-            bool firstC = std::abs(coeff[i]) == 1;
-            for(int k = 0; k < N; ++k)
-            {
-                if(i & (1 << (N-1-k)))
-                {
-                    out << (firstC ? "" : " * ") << CNames[k];
-                    firstC = false;
-                }
-            }
-
-            firstT = false;
+            out << i << "[" << index[i] << "]: " << CNames[index[i]] << " => " << dbg_get_hit_on(index[i]) << std::endl;
         }
     }
-    out << std::endl;
+    else
+    {
+        for(int i = 0, I = 0; i < M; i++)
+        {
+            if(dbg_get_hit_on(index[i]) <= 0.0) continue;
+            //out << index[i] << " ";
+            for(int j = 0; j < M; j++)
+            {
+                if((index[i] & j) == index[i])
+                {
+                    int k = j & ~index[i];
+                    //constexpr int B = 8;
+                    //out << i << ": " << std::bitset<B>(index[i]) << " p=" << dbg_get_hit_on(index[i]) << "% j=" << std::bitset<B>(j) << " k=" << std::bitset<B>(k) << " " << (popcount(k) % 2 == 0 ? 1 : -1) << std::endl; 
+                    coeff[j] += I * (popcount(k) % 2 == 0 ? 1 : -1);
+                }
+            }    
+            I++;
+        }
+        out << std::endl;
+
+        out << "T =";
+        bool firstT = true;
+        for(int i = 0; i < M; i++)
+        {
+            //if(coeff[i] && (!PARTITION || !more_than_one(i)))
+            if(coeff[i] &&!containsDisjunctGroups(i))
+            {
+                out << " " << (firstT ? " " : coeff[i] < 0 ? "- " : "+ ") << (std::abs(coeff[i]) == 1 ? "" : std::to_string(std::abs(coeff[i])));
+                bool firstC = std::abs(coeff[i]) == 1;
+                for(int k = 0; k < N; ++k)
+                {
+                    if(i & (1 << (N-1-k)))
+                    {
+                        out << (firstC ? "" : " * ") << CNames[k];
+                        firstC = false;
+                    }
+                }
+
+                firstT = false;
+            }
+        }
+        out << std::endl;
+    }
 }
 
 namespace TB = Tablebases;
@@ -1152,7 +1191,6 @@ moves_loop:  // When in check, search starts here
                             + (*contHist[1])[movedPiece][move.to_sq()]
                             + pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
-                constexpr int M = 4096;
                 //V = (*contHist[3])[movedPiece][move.to_sq()] + 30000;
                 //V = thisThread->mainHistory[us][move.from_to()] + 7183;
                 //V = -std::abs(thisThread->mainHistory[us][move.from_to()]) + 7183;
@@ -1162,13 +1200,21 @@ moves_loop:  // When in check, search starts here
                 //    + (*contHist[3])[movedPiece][move.to_sq()] + 30000;
                 V = (*contHist[3])[movedPiece][move.to_sq()] + 30000
                     + (*contHist[5])[movedPiece][move.to_sq()] + 30000;
+                constexpr int M = 0;
+                constexpr int MD = -512;
                 // Continuation history based pruning
-                if (history < -4361 * depth - M)
+                if (history < (-4361 - 0*512 * improving + std::min(MD, 0)) * depth + std::min(M, 0))
                     continue;
 
-                if (history < -4361 * depth)
+                if (history < (-4361 - 0*512 * improving + std::max(MD, 0)) * depth + std::max(M, 0))
                 {
-                    CC = !ss->inCheck;
+                    //CC = !ss->inCheck;
+                    //CC = true;
+                    CC = improving;
+                    //CC = cutNode;
+                    //CC = cutNode && (move.to_sq() & pos.attacks_by<QUEEN>(~us));
+                    //CC = cutNode && (move.to_sq() & pos.attacks_by<QUEEN>(~us)) && (type_of(movedPiece) == BISHOP);
+                    //CC = cutNode && (move.to_sq() & pos.attacks_by<QUEEN>(~us)) && (type_of(movedPiece) == BISHOP) && !ttHit;
                     if(!CC) continue;
                 }
 
@@ -1378,8 +1424,24 @@ moves_loop:  // When in check, search starts here
             if(!VERIFY)
             {
                 std::vector<bool> C;
-                //ADD_CONDITION(C, improving);
-                //ADD_CONDITION(C, priorCapture);
+                ADD_CONDITION(C, improving);
+                ADD_CONDITION(C, !improving);
+                ADD_CONDITION(C, ttHit);
+                ADD_CONDITION(C, !ttHit);
+                ADD_CONDITION(C, bool(excludedMove));
+                ADD_CONDITION(C, !excludedMove);
+                ADD_CONDITION(C, priorCapture);
+                ADD_CONDITION(C, !priorCapture);
+                ADD_CONDITION_G(C, cutNode, 100);
+                ADD_CONDITION_G(C, allNode, 100);
+                ADD_CONDITION_G(C, PvNode, 100);
+                ADD_CONDITION_G(C, !cutNode, 100);
+                ADD_CONDITION_G(C, !allNode, 100);
+                ADD_CONDITION_G(C, !PvNode, 100);
+                ADD_CONDITION(C, ss->inCheck);
+                ADD_CONDITION(C, !ss->inCheck);
+                ADD_CONDITION(C, ss->ttPv);
+                ADD_CONDITION(C, !ss->ttPv);
                 //ADD_CONDITION(C, (type_of(movedPiece) == PAWN));
                 //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<PAWN>(~us)));
                 //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<KNIGHT>(~us)));
@@ -1387,18 +1449,30 @@ moves_loop:  // When in check, search starts here
                 //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<ROOK>(~us)));
                 //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<QUEEN>(~us)));
                 //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<KING>(~us)));
-                ADD_CONDITION(C, (type_of(movedPiece) == PAWN));
-                ADD_CONDITION(C, (type_of(movedPiece) == KNIGHT));
-                ADD_CONDITION(C, (type_of(movedPiece) == BISHOP));
-                ADD_CONDITION(C, (type_of(movedPiece) == ROOK));
-                ADD_CONDITION(C, (type_of(movedPiece) == QUEEN));
-                ADD_CONDITION(C, (type_of(movedPiece) == KING));
-                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<PAWN>(~us)));
-                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<KNIGHT>(~us)));
-                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<BISHOP>(~us)));
-                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<ROOK>(~us)));
-                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<QUEEN>(~us)));
-                //ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<KING>(~us)));
+                ADD_CONDITION_G(C, (type_of(movedPiece) == PAWN), 200);
+                ADD_CONDITION_G(C, (type_of(movedPiece) == KNIGHT), 200);
+                ADD_CONDITION_G(C, (type_of(movedPiece) == BISHOP), 200);
+                ADD_CONDITION_G(C, (type_of(movedPiece) == ROOK), 200);
+                ADD_CONDITION_G(C, (type_of(movedPiece) == QUEEN), 200);
+                ADD_CONDITION_G(C, (type_of(movedPiece) == KING), 200);
+                ADD_CONDITION_G(C, !(type_of(movedPiece) == PAWN), 200);
+                ADD_CONDITION_G(C, !(type_of(movedPiece) == KNIGHT), 200);
+                ADD_CONDITION_G(C, !(type_of(movedPiece) == BISHOP), 200);
+                ADD_CONDITION_G(C, !(type_of(movedPiece) == ROOK), 200);
+                ADD_CONDITION_G(C, !(type_of(movedPiece) == QUEEN), 200);
+                ADD_CONDITION_G(C, !(type_of(movedPiece) == KING), 200);
+                ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<PAWN>(~us)));
+                ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<KNIGHT>(~us)));
+                ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<BISHOP>(~us)));
+                ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<ROOK>(~us)));
+                ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<QUEEN>(~us)));
+                ADD_CONDITION(C, (move.to_sq() & pos.attacks_by<KING>(~us)));
+                ADD_CONDITION(C, !(move.to_sq() & pos.attacks_by<PAWN>(~us)));
+                ADD_CONDITION(C, !(move.to_sq() & pos.attacks_by<KNIGHT>(~us)));
+                ADD_CONDITION(C, !(move.to_sq() & pos.attacks_by<BISHOP>(~us)));
+                ADD_CONDITION(C, !(move.to_sq() & pos.attacks_by<ROOK>(~us)));
+                ADD_CONDITION(C, !(move.to_sq() & pos.attacks_by<QUEEN>(~us)));
+                ADD_CONDITION(C, !(move.to_sq() & pos.attacks_by<KING>(~us)));
                 //ADD_CONDITION(C, more_than_one(pos.pieces(~us, QUEEN, ROOK, KING) & attacks_bb<KNIGHT>(move.to_sq())));
 
                 stats(T, C);
