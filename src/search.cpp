@@ -1178,7 +1178,7 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 394;  // Base reduction offset to compensate for other tweaks
+        r += 650;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 69;
         r -= std::abs(correctionValue) / 27160;
 
@@ -1211,7 +1211,7 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 789 / 8192;
 
-        r += (ss->ply - depth) * 512 / rootDepth;
+        r += (ss->ply - depth) * (ss->ply > depth ? 40 : 512) / rootDepth;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
