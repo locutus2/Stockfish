@@ -1182,6 +1182,9 @@ moves_loop:  // When in check, search starts here
         r -= moveCount * 69;
         r -= std::abs(correctionValue) / 27160;
 
+        if (capture)
+            r -= 1024 * ss->ply / (ss->ply + depth);
+
         // Increase reduction for cut nodes
         if (cutNode)
             r += 3000;
