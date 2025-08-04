@@ -75,7 +75,7 @@ using SearchedList                  = ValueList<Move, SEARCHEDLIST_CAPACITY>;
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
     const Color us    = pos.side_to_move();
     const auto  m     = (ss - 1)->currentMove;
-    const auto  pcv   = w.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us];
+    const auto  pcv   = w.pawnCorrectionHistory[pawn_correction_history_index(pos)][us];
     const auto  micv  = w.minorPieceCorrectionHistory[minor_piece_index(pos)][us];
     const auto  wnpcv = w.nonPawnCorrectionHistory[non_pawn_index<WHITE>(pos)][WHITE][us];
     const auto  bnpcv = w.nonPawnCorrectionHistory[non_pawn_index<BLACK>(pos)][BLACK][us];
@@ -101,8 +101,7 @@ void update_correction_history(const Position& pos,
 
     static constexpr int nonPawnWeight = 165;
 
-    workerThread.pawnCorrectionHistory[pawn_structure_index<Correction>(pos)][us]
-      << bonus * 128 / 128;
+    workerThread.pawnCorrectionHistory[pawn_correction_history_index(pos)][us] << bonus;
     workerThread.minorPieceCorrectionHistory[minor_piece_index(pos)][us] << bonus * 153 / 128;
     workerThread.nonPawnCorrectionHistory[non_pawn_index<WHITE>(pos)][WHITE][us]
       << bonus * nonPawnWeight / 128;
@@ -703,10 +702,10 @@ Value Search::Worker::search(
             if (depth >= 8 && ttData.move && pos.pseudo_legal(ttData.move) && pos.legal(ttData.move)
                 && !is_decisive(ttData.value))
             {
-                do_move(pos, ttData.move, st, nullptr);
+                pos.do_move(ttData.move, st);
                 Key nextPosKey                             = pos.key();
                 auto [ttHitNext, ttDataNext, ttWriterNext] = tt.probe(nextPosKey);
-                undo_move(pos, ttData.move);
+                pos.undo_move(ttData.move);
 
                 // Check that the ttValue after the tt move would also trigger a cutoff
                 if (!is_valid(ttDataNext.value))
@@ -815,7 +814,7 @@ Value Search::Worker::search(
         mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonus * 935 / 1024;
         if (!ttHit && type_of(pos.piece_on(prevSq)) != PAWN
             && ((ss - 1)->currentMove).type_of() != PROMOTION)
-            pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
+            pawnHistory[pawn_history_index(pos)][pos.piece_on(prevSq)][prevSq]
               << bonus * 1428 / 1024;
     }
 
@@ -823,8 +822,7 @@ Value Search::Worker::search(
     // bigger than the previous static evaluation at our turn (if we were in
     // check at our previous move we go back until we weren't in check) and is
     // false otherwise. The improving flag is used in various pruning heuristics.
-    improving = ss->staticEval > (ss - 2)->staticEval;
-
+    improving         = ss->staticEval > (ss - 2)->staticEval;
     opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
 
     if (priorReduction >= (depth < 10 ? 1 : 3) && !opponentWorsening)
@@ -1069,7 +1067,7 @@ moves_loop:  // When in check, search starts here
             {
                 int history = (*contHist[0])[movedPiece][move.to_sq()]
                             + (*contHist[1])[movedPiece][move.to_sq()]
-                            + pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
+                            + pawnHistory[pawn_history_index(pos)][movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
                 if (history < -4361 * depth)
@@ -1185,7 +1183,7 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += 3000;
+            r += 3000 + 1024 * !ttData.move;
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
@@ -1255,9 +1253,13 @@ moves_loop:  // When in check, search starts here
             if (!ttData.move)
                 r += 1139;
 
+            const int threshold1 = depth <= 4 ? 2000 : 3200;
+            const int threshold2 = depth <= 4 ? 3500 : 4600;
+
             // Note that if expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
-                                   newDepth - (r > 3200) - (r > 4600 && newDepth > 2), !cutNode);
+                                   newDepth - (r > threshold1) - (r > threshold2 && newDepth > 2),
+                                   !cutNode);
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
@@ -1425,7 +1427,7 @@ moves_loop:  // When in check, search starts here
         mainHistory[~us][((ss - 1)->currentMove).from_to()] << scaledBonus * 224 / 32768;
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
-            pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
+            pawnHistory[pawn_history_index(pos)][pos.piece_on(prevSq)][prevSq]
               << scaledBonus * 1127 / 32768;
     }
 
@@ -1644,7 +1646,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             // Continuation history based pruning
             if (!capture
                 && (*contHist[0])[pos.moved_piece(move)][move.to_sq()]
-                       + pawnHistory[pawn_structure_index(pos)][pos.moved_piece(move)][move.to_sq()]
+                       + pawnHistory[pawn_history_index(pos)][pos.moved_piece(move)][move.to_sq()]
                      <= 5868)
                 continue;
 
@@ -1881,7 +1883,7 @@ void update_quiet_histories(
     update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(),
                                   bonus * (bonus > 0 ? 979 : 842) / 1024);
 
-    int pIndex = pawn_structure_index(pos);
+    int pIndex = pawn_history_index(pos);
     workerThread.pawnHistory[pIndex][pos.moved_piece(move)][move.to_sq()]
       << (bonus * (bonus > 0 ? 704 : 439) / 1024) + 70;
 }
