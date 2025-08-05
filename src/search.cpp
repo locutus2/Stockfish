@@ -307,8 +307,9 @@ void Search::Worker::iterative_deepening() {
         if (!threads.increaseDepth)
             searchAgainCounter++;
 
+        size_t extendedMultiPV = multiPV;
         // MultiPV loop. We perform a full root search for each PV line
-        for (pvIdx = 0; pvIdx < multiPV; ++pvIdx)
+        for (pvIdx = 0; pvIdx < extendedMultiPV; ++pvIdx)
         {
             if (pvIdx == pvLast)
             {
@@ -334,6 +335,7 @@ void Search::Worker::iterative_deepening() {
             // Start with a small aspiration window and, in the case of a fail
             // high/low, re-search with a bigger window until we don't fail
             // high/low anymore.
+            uint64_t previousBestMoveChanges = bestMoveChanges;
             int failedHighCnt = 0;
             while (true)
             {
@@ -380,6 +382,9 @@ void Search::Worker::iterative_deepening() {
                 {
                     beta = std::min(bestValue + delta, VALUE_INFINITE);
                     ++failedHighCnt;
+
+                    if(bestMoveChanges > previousBestMoveChanges)
+                        extendedMultiPV = std::min(std::min(multiPV + 1, size_t(MAX_MOVES)), rootMoves.size());
                 }
                 else
                     break;
