@@ -1184,7 +1184,7 @@ moves_loop:  // When in check, search starts here
         r -= std::abs(correctionValue) / 27160;
 
         if (bestValue > 0 && pos.rule50_count() > 0 && visited)
-            r += 1024;
+            r += std::min(bestValue, 1024);
 
         // Increase reduction for cut nodes
         if (cutNode)
