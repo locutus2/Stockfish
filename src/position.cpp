@@ -378,6 +378,8 @@ void Position::set_state() const {
     for (Piece pc : Pieces)
         for (int cnt = 0; cnt < pieceCount[pc]; ++cnt)
             st->materialKey ^= Zobrist::psq[pc][8 + cnt];
+
+    init_squares_visited();
 }
 
 
@@ -681,7 +683,6 @@ bool Position::gives_check(Move m) const {
     }
 }
 
-
 // Makes a move, and saves all information necessary
 // to a StateInfo object. The move is assumed to be legal. Pseudo-legal
 // moves should be filtered out before this function is called.
@@ -945,6 +946,9 @@ DirtyPiece Position::do_move(Move                      m,
         }
     }
 
+    if (st->rule50 == 0)
+        init_squares_visited();
+
     assert(pos_is_ok());
 
     assert(dp.pc != NO_PIECE);
@@ -1089,6 +1093,16 @@ void Position::undo_null_move() {
 
     st         = st->previous;
     sideToMove = ~sideToMove;
+}
+
+
+// Initialize the visited squares with current piece positions
+void Position::init_squares_visited() const {
+    for (Color c : {WHITE, BLACK})
+        st->byColorVisitedBB[c] = byColorBB[c];
+
+    for (PieceType pt : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, ALL_PIECES})
+        st->byTypeVisitedBB[pt] = byTypeBB[pt];
 }
 
 
