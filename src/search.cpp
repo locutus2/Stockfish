@@ -1178,7 +1178,7 @@ moves_loop:  // When in check, search starts here
         // These reduction adjustments have no proven non-linear scaling
 
         r += 650;  // Base reduction offset to compensate for other tweaks
-        r -= moveCount * (depth * 97 + ss->ply * 49) / (depth + ss->ply);
+        r -= moveCount * (depth * 76 + ss->ply * 64) / (depth + ss->ply);
         r -= std::abs(correctionValue) / 27160;
 
         // Increase reduction for cut nodes
