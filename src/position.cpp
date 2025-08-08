@@ -946,9 +946,6 @@ DirtyPiece Position::do_move(Move                      m,
         }
     }
 
-    if (st->rule50 == 0)
-        init_squares_visited();
-
     assert(pos_is_ok());
 
     assert(dp.pc != NO_PIECE);
