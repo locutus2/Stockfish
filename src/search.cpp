@@ -51,9 +51,8 @@
 
 namespace Stockfish {
 
-int X[12][2] = {{650,650},{69,69},{27160,27160},{3000,3000},{1024,1024},{1350,1350},
-	        {935,935},{763,763},{51,51},{2043,2043},{789,789},{1139,1139}};
-TUNE(X);
+constexpr int X[12][2] = {{740,634},{63,66},{26401,26366},{2878,3033},{1086,957},{1351,1424},
+                          {871,911},{795,759},{53,50},{2006,1925},{771,745},{1097,1107}};
 
 namespace TB = Tablebases;
 
@@ -1182,7 +1181,7 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-	#define P(og, eg) (((pos.count<ALL_PIECES>() - 2) * (og) + (32 - pos.count<ALL_PIECES>()) * (eg)) / 30)
+        #define P(og, eg) (((pos.count<ALL_PIECES>() - 2) * (og) + (32 - pos.count<ALL_PIECES>()) * (eg)) / 30)
 
         r += P(X[0][0],X[0][1]);  // Base reduction offset to compensate for other tweaks
         r -= moveCount * P(X[1][0],X[1][1]);
