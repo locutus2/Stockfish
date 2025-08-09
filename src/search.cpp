@@ -582,7 +582,7 @@ Value Search::Worker::search(
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
     {
-        if (!PvNode || !pos.captured_piece())
+        if ((ss - 1)->moveCount != 1 || !pos.captured_piece())
         {
             constexpr auto nt = PvNode ? PV : NonPV;
             return qsearch<nt>(pos, ss, alpha, beta);
