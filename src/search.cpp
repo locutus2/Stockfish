@@ -582,8 +582,12 @@ Value Search::Worker::search(
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
     {
-        constexpr auto nt = PvNode ? PV : NonPV;
-        return qsearch<nt>(pos, ss, alpha, beta);
+        if (!PvNode || !pos.captured_piece())
+        {
+            constexpr auto nt = PvNode ? PV : NonPV;
+            return qsearch<nt>(pos, ss, alpha, beta);
+        }
+        depth = 1;
     }
 
     // Limit the depth if extensions made it too large
