@@ -51,8 +51,8 @@
 
 namespace Stockfish {
 
-int X[11][2] = {{654,745},{65,75},{124,122},{2709,3092},{1017,1092},
-	{932,1051},{779,768},{48,53},{1950,1900},{699,651},{1142,1113}};
+int X[12][2] = {{650,650},{69,69},{27160,27160},{3000,3000},{1024,1024},{1350,1350},
+	        {935,935},{763,763},{51,51},{2043,2043},{789,789},{1139,1139}};
 TUNE(X);
 
 namespace TB = Tablebases;
@@ -1182,29 +1182,29 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-	r *= depth + ss->ply;
+	#define P(og, eg) (((pos.count<ALL_PIECES>() - 2) * (og) + (32 - pos.count<ALL_PIECES>()) * (eg)) / 30)
 
-        r += X[0][0] * depth + X[0][1] * ss->ply;  // Base reduction offset to compensate for other tweaks
-        r -= moveCount * (X[1][0] * depth + X[1][1] * ss->ply);
-        r -= std::abs(correctionValue)  * (X[2][0] * depth + X[2][1] * ss->ply) / (27160*128);
+        r += P(X[0][0],X[0][1]);  // Base reduction offset to compensate for other tweaks
+        r -= moveCount * P(X[1][0],X[1][1]);
+        r -= std::abs(correctionValue) / P(X[2][0],X[2][1]);
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += (X[3][0] * depth + X[3][1] * ss->ply) + (X[4][0] * depth + X[4][1] * ss->ply) * !ttData.move;
+            r += P(X[3][0],X[3][1]) + P(X[4][0],X[4][1]) * !ttData.move;
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
-            r += 1350;
+            r += P(X[5][0],X[5][1]);
 
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 2)
-            r += (X[5][0] * depth + X[5][1] * ss->ply) + allNode * (X[6][0] * depth + X[6][1] * ss->ply);
+            r += P(X[6][0],X[6][1]) + allNode * P(X[7][0],X[7][1]);
 
-        r += (ss + 1)->quietMoveStreak * (X[7][0] * depth + X[7][1] * ss->ply);
+        r += (ss + 1)->quietMoveStreak * P(X[8][0],X[8][1]);
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
-            r -= (X[8][0] * depth + X[8][1] * ss->ply);
+            r -= P(X[9][0],X[9][1]);
 
         if (capture)
             ss->statScore = 782 * int(PieceValue[pos.captured_piece()]) / 128
@@ -1215,13 +1215,11 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[1])[movedPiece][move.to_sq()];
 
         // Decrease/increase reduction for moves with a good/bad history
-        r -= ss->statScore * (X[9][0] * depth + X[9][1] * ss->ply) / 8192;
+        r -= ss->statScore * P(X[10][0],X[10][1]) / 8192;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-	    r /= depth + ss->ply;
-
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
@@ -1258,9 +1256,7 @@ moves_loop:  // When in check, search starts here
         {
             // Increase reduction if ttMove is not present
             if (!ttData.move)
-                r += (X[10][0] * depth + X[10][1] * ss->ply);
-
-	    r /= depth + ss->ply;
+                r += P(X[11][0],X[11][1]);
 
             const int threshold1 = depth <= 4 ? 2000 : 3200;
             const int threshold2 = depth <= 4 ? 3500 : 4600;
