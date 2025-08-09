@@ -1164,6 +1164,9 @@ moves_loop:  // When in check, search starts here
                 extension = -2;
         }
 
+        if (ss->ply + depth <= rootDepth / 2 && capture)
+            extension++;
+
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck, ss);
 
