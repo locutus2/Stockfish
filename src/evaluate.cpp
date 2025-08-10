@@ -83,8 +83,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     // Damp down the evaluation linearly when shuffling
     Color betterSide = (v >= 0 ? pos.side_to_move() : ~pos.side_to_move() );
     int visitedSquares = popcount(pos.squaresVisited(betterSide));
-    v -= v * pos.rule50_count() * (91 - visitedSquares) / 17172;
-
+    v -= v * pos.rule50_count() * (118 - visitedSquares) / 22896;
 
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
