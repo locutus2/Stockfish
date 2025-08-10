@@ -57,34 +57,40 @@ int Y[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
 template<int T>
 Range centered(int v)
 {
-	return Range(v - T, v + T);
+	return Range(v - T/2, v + T/2);
 }
 
-TUNE(SetRange(centered<650>), X[0]);
-TUNE(SetRange(centered<136>), X[1]);
-TUNE(SetRange(centered<54725>), X[2]);
-TUNE(SetRange(centered<1332>), X[3]);
-TUNE(SetRange(centered<2281>), X[4]);
-TUNE(SetRange(centered<6888>), X[5]);
-TUNE(SetRange(centered<3193>), X[6]);
-TUNE(SetRange(centered<7598>), X[7]);
-TUNE(SetRange(centered<209>), X[8]);
-TUNE(SetRange(centered<6324>), X[9]);
-TUNE(SetRange(centered<14462>), X[10]);
-TUNE(SetRange(centered<2230>), X[11]);
+template<int T>
+Range centeredCap(int v)
+{
+	return Range(std::max(v - T, 1), std::min(v + T, 2*v));
+}
+
+TUNE(SetRange(centeredCap<650>), X[0]);
+TUNE(SetRange(centeredCap<136>), X[1]);
+//TUNE(SetRange(centeredCap<54725>), X[2]);
+TUNE(SetRange(centeredCap<1331>), X[3]);
+TUNE(SetRange(centeredCap<2279>), X[4]);
+TUNE(SetRange(centeredCap<6884>), X[5]);
+TUNE(SetRange(centeredCap<3196>), X[6]);
+TUNE(SetRange(centeredCap<7614>), X[7]);
+TUNE(SetRange(centeredCap<209>), X[8]);
+TUNE(SetRange(centeredCap<6320>), X[9]);
+TUNE(SetRange(centeredCap<1323>), X[10]);
+TUNE(SetRange(centeredCap<2229>), X[11]);
 
 TUNE(SetRange(centered<370>), Y[0]);
 TUNE(SetRange(centered<59>), Y[1]);
-TUNE(SetRange(centered<30053>), Y[2]);
-TUNE(SetRange(centered<880>), Y[3]);
-TUNE(SetRange(centered<1822>), Y[4]);
-TUNE(SetRange(centered<3474>), Y[5]);
-TUNE(SetRange(centered<1276>), Y[6]);
-TUNE(SetRange(centered<2765>), Y[7]);
+//TUNE(SetRange(centered<30053>), Y[2]);
+TUNE(SetRange(centered<879>), Y[3]);
+TUNE(SetRange(centered<1823>), Y[4]);
+TUNE(SetRange(centered<3472>), Y[5]);
+TUNE(SetRange(centered<1278>), Y[6]);
+TUNE(SetRange(centered<2771>), Y[7]);
 TUNE(SetRange(centered<114>), Y[8]);
-TUNE(SetRange(centered<3810>), Y[9]);
-TUNE(SetRange(centered<4210>), Y[10]);
-TUNE(SetRange(centered<2236>), Y[11]);
+TUNE(SetRange(centered<3805>), Y[9]);
+TUNE(SetRange(centered<500>), Y[10]);
+TUNE(SetRange(centered<2235>), Y[11]);
 
 namespace TB = Tablebases;
 
