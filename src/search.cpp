@@ -51,46 +51,8 @@
 
 namespace Stockfish {
 
-int X[12] = {650,69,27160,3000,1024,1350,935,763,51,2043,789,1139};
-int Y[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
-
-template<int T>
-Range centered(int v)
-{
-	return Range(v - T/2, v + T/2);
-}
-
-template<int T>
-Range centeredCap(int v)
-{
-	return Range(std::max(v - T, 1), std::min(v + T, 2*v));
-}
-
-TUNE(SetRange(centeredCap<650>), X[0]);
-TUNE(SetRange(centeredCap<136>), X[1]);
-//TUNE(SetRange(centeredCap<54725>), X[2]);
-TUNE(SetRange(centeredCap<1331>), X[3]);
-TUNE(SetRange(centeredCap<2279>), X[4]);
-TUNE(SetRange(centeredCap<6884>), X[5]);
-TUNE(SetRange(centeredCap<3196>), X[6]);
-TUNE(SetRange(centeredCap<7614>), X[7]);
-TUNE(SetRange(centeredCap<209>), X[8]);
-TUNE(SetRange(centeredCap<6320>), X[9]);
-TUNE(SetRange(centeredCap<1323>), X[10]);
-TUNE(SetRange(centeredCap<2229>), X[11]);
-
-TUNE(SetRange(centered<370>), Y[0]);
-TUNE(SetRange(centered<59>), Y[1]);
-//TUNE(SetRange(centered<30053>), Y[2]);
-TUNE(SetRange(centered<879>), Y[3]);
-TUNE(SetRange(centered<1823>), Y[4]);
-TUNE(SetRange(centered<3472>), Y[5]);
-TUNE(SetRange(centered<1278>), Y[6]);
-TUNE(SetRange(centered<2771>), Y[7]);
-TUNE(SetRange(centered<114>), Y[8]);
-TUNE(SetRange(centered<3805>), Y[9]);
-TUNE(SetRange(centered<500>), Y[10]);
-TUNE(SetRange(centered<2235>), Y[11]);
+constexpr int X[12] = {650,69,27160,3000,1024,1350,935,763,51,2043,789,1139};
+constexpr int Y[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
 
 namespace TB = Tablebases;
 
