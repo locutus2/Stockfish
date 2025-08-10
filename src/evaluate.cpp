@@ -81,22 +81,10 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     int v        = (nnue * (77777 + material) + optimism * (7777 + material)) / 77777;
 
     // Damp down the evaluation linearly when shuffling
-    Color betterSide = (v >= 0 ? pos.side_to_move() : ~pos.side_to_move() );
-    int visitedSquares = popcount(pos.squaresVisited(betterSide));
-    /*
-    int visitedSquares = popcount(pos.squaresVisited(betterSide, PAWN))
-                       + popcount(pos.squaresVisited(betterSide, KNIGHT))
-                       + popcount(pos.squaresVisited(betterSide, BISHOP))
-                       + popcount(pos.squaresVisited(betterSide, ROOK))
-                       + popcount(pos.squaresVisited(betterSide, QUEEN))
-                       + popcount(pos.squaresVisited(betterSide, KING));
-		       */
-    dbg_mean_of(visitedSquares);
-    dbg_stdev_of(visitedSquares);
-    dbg_mean_of(visitedSquares-pos.count<ALL_PIECES>(betterSide),1);
-    dbg_stdev_of(visitedSquares-pos.count<ALL_PIECES>(betterSide),1);
-    //v -= v * pos.rule50_count() * (118 - visitedSquares) / 22896;
-    v -= v * pos.rule50_count() / 212;
+    Color betterSide     = (v >= 0 ? pos.side_to_move() : ~pos.side_to_move());
+    int   visitedSquares = popcount(pos.squaresVisited(betterSide));
+    v -= v * pos.rule50_count() * (127 - pos.count<ALL_PIECES>(betterSide) - visitedSquares)
+       / (424 * (63 - pos.count<ALL_PIECES>(betterSide)));
 
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
