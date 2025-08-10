@@ -1181,7 +1181,8 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        #define P(og, eg) (((pos.count<ALL_PIECES>() - 2) * (og) + (32 - pos.count<ALL_PIECES>()) * (eg)) / 30)
+        //#define P(og, eg) (((pos.count<ALL_PIECES>() - 2) * (og) + (32 - pos.count<ALL_PIECES>()) * (eg)) / 30)
+        #define P(og, eg) ((pos.count<ALL_PIECES>() * (((og) - (eg)) / 30) + (32 * (eg) - 2 * (og))) / 30)
 
         r += P(X[0][0],X[0][1]);  // Base reduction offset to compensate for other tweaks
         r -= moveCount * P(X[1][0],X[1][1]);
