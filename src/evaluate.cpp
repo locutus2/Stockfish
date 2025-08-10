@@ -81,8 +81,9 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     int v        = (nnue * (77777 + material) + optimism * (7777 + material)) / 77777;
 
     // Damp down the evaluation linearly when shuffling
-    int visitedSquares = popcount(pos.squaresVisited());
-    v -= v * pos.rule50_count() * (109 - visitedSquares) / 19080;
+    Color betterSide = (v >= 0 ? pos.side_to_move() : ~pos.side_to_move() );
+    int visitedSquares = popcount(pos.squaresVisited(betterSide));
+    v -= v * pos.rule50_count() * (87 - visitedSquares) / 9752;
 
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
