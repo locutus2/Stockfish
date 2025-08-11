@@ -1179,7 +1179,7 @@ moves_loop:  // When in check, search starts here
         // These reduction adjustments have no proven non-linear scaling
 
         r += 650;  // Base reduction offset to compensate for other tweaks
-        r += pos.rule50_count() * 8;
+        r += pos.rule50_count() * 4;
         r -= moveCount * 69;
         r -= std::abs(correctionValue) / 27160;
 
