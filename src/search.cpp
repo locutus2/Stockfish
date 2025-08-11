@@ -1006,8 +1006,6 @@ moves_loop:  // When in check, search starts here
         movedPiece = pos.moved_piece(move);
         givesCheck = pos.gives_check(move);
 
-        (ss + 1)->quietMoveStreak = (!capture && !givesCheck) ? (ss->quietMoveStreak + 1) : 0;
-
         // Calculate new depth for this move
         newDepth = depth - 1;
 
@@ -1166,6 +1164,8 @@ moves_loop:  // When in check, search starts here
 
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck, ss);
+
+        (ss + 1)->quietMoveStreak = (!capture && !givesCheck) ? (ss->quietMoveStreak + 1) : 0;
 
         // Add extension to new depth
         newDepth += extension;
