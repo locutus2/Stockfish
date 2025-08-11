@@ -1006,8 +1006,6 @@ moves_loop:  // When in check, search starts here
         movedPiece = pos.moved_piece(move);
         givesCheck = pos.gives_check(move);
 
-        (ss + 1)->quietMoveStreak = (!capture && !givesCheck) ? (ss->quietMoveStreak + 1) : 0;
-
         // Calculate new depth for this move
         newDepth = depth - 1;
 
@@ -1194,7 +1192,8 @@ moves_loop:  // When in check, search starts here
         if ((ss + 1)->cutoffCnt > 2)
             r += 935 + allNode * 763;
 
-        r += (ss + 1)->quietMoveStreak * 51;
+        if(!ss->inCheck && !givesCheck)
+            r += pos.rule50_count() * 17;
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
