@@ -375,6 +375,9 @@ void Search::Worker::iterative_deepening() {
                     alpha = std::max(bestValue - delta, -VALUE_INFINITE);
 
                     failedHighCnt = 0;
+                    if(bestMoveChanges > previousBestMoveChanges)
+                        extendedMultiPV = std::min(std::min(multiPV + 1, size_t(MAX_MOVES)), rootMoves.size());
+
                     if (mainThread)
                         mainThread->stopOnPonderhit = false;
                 }
@@ -382,9 +385,6 @@ void Search::Worker::iterative_deepening() {
                 {
                     beta = std::min(bestValue + delta, VALUE_INFINITE);
                     ++failedHighCnt;
-
-                    if(bestMoveChanges > previousBestMoveChanges)
-                        extendedMultiPV = std::min(std::min(multiPV + 1, size_t(MAX_MOVES)), rootMoves.size());
                 }
                 else
                     break;
