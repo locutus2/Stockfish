@@ -347,7 +347,7 @@ void Search::Worker::iterative_deepening() {
                 bestValue = search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
                 // Increase multiPV if best move change had happenend
-                if (effectiveMultiPV == 1 && bestMoveChanges >= previousBestMoveChanges + 3)
+                if (effectiveMultiPV == 1 && bestMoveChanges >= previousBestMoveChanges + 4)
                     effectiveMultiPV =
                       std::min(std::min(multiPV + 1, size_t(MAX_MOVES)), rootMoves.size());
 
