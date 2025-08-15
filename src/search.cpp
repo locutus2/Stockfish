@@ -328,8 +328,7 @@ void Search::Worker::iterative_deepening() {
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
             // Adjust optimism based on root move's averageScore
-            optimism[us] =
-              136 * avg * (100 - rootPos.rule50_count()) / (100 * std::abs(avg) + 9300);
+            optimism[us]  = 136 * avg / (std::abs(avg) + 93);
             optimism[~us] = -optimism[us];
 
             // Start with a small aspiration window and, in the case of a fail
