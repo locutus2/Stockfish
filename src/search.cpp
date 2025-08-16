@@ -244,8 +244,8 @@ void Search::Worker::iterative_deepening() {
     Value  alpha, beta;
     Value  bestValue     = -VALUE_INFINITE;
     Color  us            = rootPos.side_to_move();
-    double timeReduction = 1, totBestMoveChanges = 0;
-    int    delta, iterIdx                        = 0;
+    double timeReduction = 1, totalBestMoveChanges = 0, totalOpponentBestMoveChanges = 0;
+    int    delta, iterIdx = 0;
 
     // Allocate stack with extra size to allow access from (ss - 7) to (ss + 2):
     // (ss - 7) is needed for update_continuation_histories(ss - 1) which accesses (ss - 6),
@@ -294,7 +294,10 @@ void Search::Worker::iterative_deepening() {
     {
         // Age out PV variability metric
         if (mainThread)
-            totBestMoveChanges /= 2;
+        {
+            totalBestMoveChanges /= 2;
+            totalOpponentBestMoveChanges /= 2;
+        }
 
         // Save the last iteration's scores before the first PV line is searched and
         // all the move scores except the (new) PV are set to -VALUE_INFINITE.
@@ -446,8 +449,10 @@ void Search::Worker::iterative_deepening() {
         // Use part of the gained time from a previous stable move for the current move
         for (auto&& th : threads)
         {
-            totBestMoveChanges += th->worker->bestMoveChanges;
+            totalBestMoveChanges += th->worker->bestMoveChanges;
             th->worker->bestMoveChanges = 0;
+            totalOpponentBestMoveChanges += th->worker->opponentBestMoveChanges;
+            th->worker->opponentBestMoveChanges = 0;
         }
 
         // Do we have time for the next iteration? Can we stop searching now?
@@ -468,10 +473,12 @@ void Search::Worker::iterative_deepening() {
             timeReduction = 0.8 + 0.84 / (1.077 + std::exp(-k * (completedDepth - center)));
             double reduction =
               (1.4540 + mainThread->previousTimeReduction) / (2.1593 * timeReduction);
-            double bestMoveInstability = 0.9929 + 0.3272 * totBestMoveChanges / threads.size();
+            double bestMoveInstability = 0.9929 + 1.8519 * totalBestMoveChanges / threads.size();
+            double opponentBestMoveInstability =
+              0.9841 + 1.5589 * totalOpponentBestMoveChanges / threads.size();
 
-            double totalTime =
-              mainThread->tm.optimum() * fallingEval * reduction * bestMoveInstability;
+            double totalTime = mainThread->tm.optimum() * fallingEval * reduction
+                             * (bestMoveInstability + opponentBestMoveInstability) / 2;
 
             // Cap used time in case of a single legal move for a better viewer experience
             if (rootMoves.size() == 1)
@@ -1327,7 +1334,7 @@ moves_loop:  // When in check, search starts here
                 // This information is used for time management. In MultiPV mode,
                 // we must take care to only do this for the first PV line.
                 if (moveCount > 1 && !pvIdx)
-                    bestMoveChanges += 2;
+                    ++bestMoveChanges;
             }
             else
                 // All other moves but the PV, are set to the lowest value: this
@@ -1337,7 +1344,7 @@ moves_loop:  // When in check, search starts here
         }
 
         else if (PvNode && ss->ply == 1 && value > alpha && moveCount > 1 && !pvIdx)
-            ++bestMoveChanges;
+            ++opponentBestMoveChanges;
 
         // In case we have an alternative move equal in eval to the current bestmove,
         // promote it to bestmove by pretending it just exceeds alpha (but not beta).
