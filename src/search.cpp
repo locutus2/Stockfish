@@ -371,7 +371,7 @@ void Search::Worker::iterative_deepening() {
                 {
                     beta  = (3 * alpha + beta) / 4;
                     alpha = std::max(bestValue - deltaDown, -VALUE_INFINITE);
-                    deltaDown += deltaDown * 2 / 3;
+                    deltaDown += deltaDown / 2;
 
                     failedHighCnt = 0;
                     if (mainThread)
@@ -380,7 +380,7 @@ void Search::Worker::iterative_deepening() {
                 else if (bestValue >= beta)
                 {
                     beta = std::min(bestValue + deltaUp, VALUE_INFINITE);
-                    deltaUp += deltaUp * 2 / 3;
+                    deltaUp += deltaUp / 2;
                     ++failedHighCnt;
                 }
                 else
