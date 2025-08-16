@@ -245,7 +245,7 @@ void Search::Worker::iterative_deepening() {
     Value  bestValue     = -VALUE_INFINITE;
     Color  us            = rootPos.side_to_move();
     double timeReduction = 1, totBestMoveChanges = 0;
-    int    delta, iterIdx                        = 0;
+    int    deltaDown, deltaUp, iterIdx = 0;
 
     // Allocate stack with extra size to allow access from (ss - 7) to (ss + 2):
     // (ss - 7) is needed for update_continuation_histories(ss - 1) which accesses (ss - 6),
@@ -322,10 +322,10 @@ void Search::Worker::iterative_deepening() {
             selDepth = 0;
 
             // Reset aspiration window starting size
-            delta     = 5 + std::abs(rootMoves[pvIdx].meanSquaredScore) / 11131;
-            Value avg = rootMoves[pvIdx].averageScore;
-            alpha     = std::max(avg - delta, -VALUE_INFINITE);
-            beta      = std::min(avg + delta, VALUE_INFINITE);
+            deltaDown = deltaUp = 5 + std::abs(rootMoves[pvIdx].meanSquaredScore) / 11131;
+            Value avg           = rootMoves[pvIdx].averageScore;
+            alpha               = std::max(avg - deltaDown, -VALUE_INFINITE);
+            beta                = std::min(avg + deltaUp, VALUE_INFINITE);
 
             // Adjust optimism based on root move's averageScore
             optimism[us]  = 136 * avg / (std::abs(avg) + 93);
@@ -370,7 +370,8 @@ void Search::Worker::iterative_deepening() {
                 if (bestValue <= alpha)
                 {
                     beta  = (3 * alpha + beta) / 4;
-                    alpha = std::max(bestValue - delta, -VALUE_INFINITE);
+                    alpha = std::max(bestValue - deltaDown, -VALUE_INFINITE);
+                    deltaDown += deltaDown / 3;
 
                     failedHighCnt = 0;
                     if (mainThread)
@@ -378,13 +379,12 @@ void Search::Worker::iterative_deepening() {
                 }
                 else if (bestValue >= beta)
                 {
-                    beta = std::min(bestValue + delta, VALUE_INFINITE);
+                    beta = std::min(bestValue + deltaUp, VALUE_INFINITE);
+                    deltaUp += deltaUp / 3;
                     ++failedHighCnt;
                 }
                 else
                     break;
-
-                delta += delta / 3;
 
                 assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
             }
