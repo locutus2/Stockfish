@@ -1181,6 +1181,7 @@ moves_loop:  // When in check, search starts here
         r -= moveCount * (67 - 2 * msb(depth));
         r -= std::abs(correctionValue) / 27160;
 
+
         // Increase reduction for cut nodes
         if (cutNode)
             r += 2998 + 2 * msb(depth) + (948 + 14 * msb(depth)) * !ttData.move;
@@ -1210,9 +1211,13 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * (729 - 12 * msb(depth)) / 8192;
 
+	bool CC = false;
+	int V8 = ss->statScore;
+	int V5 = (ss + 1)->cutoffCnt;
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
+		CC = true;
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
@@ -1247,6 +1252,7 @@ moves_loop:  // When in check, search starts here
         // Step 18. Full-depth search when LMR is skipped
         else if (!PvNode || moveCount > 1)
         {
+		CC = true;
             // Increase reduction if ttMove is not present
             if (!ttData.move)
                 r += 1199 + 35 * msb(depth);
@@ -1273,6 +1279,43 @@ moves_loop:  // When in check, search starts here
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
 
+	if(CC)
+	{
+		/*
+		 * Mean #0: Total 165404360 Mean 10.4931
+Mean #1: Total 165404360 Mean 3.4977
+Mean #2: Total 80463350 Mean 3.0024
+Mean #3: Total 46723369 Mean 17.3092
+Mean #4: Total 15831827 Mean 77.0762
+Mean #5: Total 34531619 Mean 82.4186
+Mean #6: Total 14530955 Mean 614.776
+Mean #7: Total 17113765 Mean 46.0141
+Mean #8: Total 165404360 Mean 20.9862
+Mean #9: Total 47696725 Mean 34.2504
+Mean #21: Total 165404360 Mean 21.9949
+Mean #28: Total 165404360 Mean 22912.8
+Mean #29: Total 165404360 Mean 228227
+Mean #31: Total 165404360 Mean 4.82125
+Mean #38: Total 165404360 Mean 3207.41
+Mean #39: Total 165404360 Mean 11013.1
+		 * */
+	dbg_mean_of(6 * msb(depth), 0);
+	dbg_mean_of(2 * msb(depth), 1);
+	dbg_mean_of(moveCount * 2 * msb(depth), 21);
+	dbg_mean_of(moveCount, 31);
+	if(cutNode) dbg_mean_of(2 * msb(depth), 2);
+	if(cutNode && !ttData.move) dbg_mean_of(14 * msb(depth), 3);
+	if(ttCapture) dbg_mean_of(39 * msb(depth), 4);
+	if(V5 > 2) dbg_mean_of(33 * msb(depth), 5);
+	if(V5 > 2 && allNode) dbg_mean_of(224 * msb(depth), 6);
+	if(move == ttData.move) dbg_mean_of(28 * msb(depth), 7);
+	dbg_mean_of(12 * msb(depth), 8);
+	dbg_mean_of(V8 * 12 * msb(depth), 28);
+	dbg_mean_of(std::abs(V8) * 12 * msb(depth), 29);
+	dbg_mean_of(V8, 38);
+	dbg_mean_of(std::abs(V8), 39);
+	if(!(depth >= 2 && moveCount > 1) && (!PvNode || moveCount > 1) && !ttData.move) dbg_mean_of(35 * msb(depth), 9);
+	}
         // Step 19. Undo move
         undo_move(pos, move);
 
