@@ -380,7 +380,7 @@ void Search::Worker::iterative_deepening() {
                 else if (bestValue >= beta)
                 {
                     if (bestMoveChanges > previousBestMoveChanges)
-                        alpha = (3 * alpha + beta) / 4;
+                        alpha = std::clamp(bestValue - delta, alpha, beta);
                     beta = std::min(bestValue + delta, VALUE_INFINITE);
                     ++failedHighCnt;
                 }
