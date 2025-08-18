@@ -385,7 +385,8 @@ void Search::Worker::iterative_deepening() {
                 else
                     break;
 
-                delta += delta / 3 + std::max(int(bestMoveChanges - previousBestMoveChanges), 0);
+                delta +=
+                  delta / 3 + 2 * std::max(int(bestMoveChanges - previousBestMoveChanges), 0);
 
                 assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
             }
