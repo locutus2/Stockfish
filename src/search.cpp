@@ -1213,8 +1213,13 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-		if(allNode && improving)
-			r += 1024;
+	//	if(cutNode && improving)
+	//		r += 1024;
+	    bool CC = true;
+	    bool C = improving;
+	    bool P = nodes & 1;
+	    int R = 1024;
+	    if(P) r += R;
 	
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
@@ -1231,6 +1236,14 @@ moves_loop:  // When in check, search starts here
             // Do a full-depth search when reduced LMR search fails high
             // (*Scaler) Usually doing more shallower searches
             // doesn't scale well to longer TCs
+	    bool T0 = value > alpha;
+	    bool T2 = T0;
+	    if(CC)
+	    {
+	         dbg_hit_on(T0, (10*C+2*PvNode+cutNode)*10+P);
+	         dbg_hit_on(T0, (10*C+5)*10+P);
+	    }
+
             if (value > alpha)
             {
                 // Adjust full-depth search based on LMR results - if the result was
@@ -1244,11 +1257,18 @@ moves_loop:  // When in check, search starts here
 		{
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
                     //value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, false);
-		    bool CC = true;
-		    bool C = improving;
-		    if(CC)
-		        dbg_hit_on(value > alpha, 10*C+2*PvNode+cutNode);
+		    //
+		    bool T = value > alpha;
+		    T2 = T;
+	            if(CC)
+		    {
+		        dbg_hit_on(T, (20+10*C+2*PvNode+cutNode)*10+P);
+		        dbg_hit_on(T, (20+10*C+5)*10+P);
+		    }
 		}
+
+		dbg_hit_on(T2, (100+10*C+2*PvNode+cutNode)*10+P);
+		dbg_hit_on(T2, (100+10*C+5)*10+P);
 
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1365);

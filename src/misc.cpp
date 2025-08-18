@@ -284,7 +284,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+constexpr int MaxDebugSlots = 32000;
 
 namespace {
 
@@ -365,6 +365,7 @@ void dbg_print() {
 
     int64_t n;
     auto    E   = [&n](int64_t x) { return double(x) / n; };
+    auto    E2   = [](int64_t x, int64_t n2) { return double(x) / n2; };
     auto    sqr = [](double x) { return x * x; };
 
     for (int i = 0; i < MaxDebugSlots; ++i)
@@ -400,6 +401,11 @@ void dbg_print() {
                         * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
             std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << std::endl;
         }
+
+    for (int i = 0; i < MaxDebugSlots; i += 2)
+        if ((n = hit[i][0]))
+            std::cerr << "Diff #" << i << ": Total " << n << "/" << hit[i+1][0] << " Hits " << hit[i][1] << "/" << hit[i+1][1]
+                      << " Diff Rate (%) " << 100.0 * (E2(hit[i+1][1], hit[i+1][0]) - E(hit[i][1])) << std::endl;
 }
 
 void dbg_clear() {
