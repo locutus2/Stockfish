@@ -379,15 +379,13 @@ void Search::Worker::iterative_deepening() {
                 }
                 else if (bestValue >= beta)
                 {
-                    if (bestMoveChanges > previousBestMoveChanges)
-                        alpha = std::max(bestValue - delta, -VALUE_INFINITE);
                     beta = std::min(bestValue + delta, VALUE_INFINITE);
                     ++failedHighCnt;
                 }
                 else
                     break;
 
-                delta += delta / 3;
+                delta += delta / 3 + std::max(int(bestMoveChanges - previousBestMoveChanges), 0);
 
                 assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
             }
