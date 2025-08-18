@@ -1213,6 +1213,9 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
+		if(allNode && improving)
+			r += 1024;
+	
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
@@ -1237,8 +1240,15 @@ moves_loop:  // When in check, search starts here
 
                 newDepth += doDeeperSearch - doShallowerSearch;
 
-                if (newDepth > d - PvNode)
+                if (newDepth > d)
+		{
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+                    //value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, false);
+		    bool CC = true;
+		    bool C = improving;
+		    if(CC)
+		        dbg_hit_on(value > alpha, 10*C+2*PvNode+cutNode);
+		}
 
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1365);
