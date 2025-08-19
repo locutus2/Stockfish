@@ -1220,8 +1220,11 @@ moves_loop:  // When in check, search starts here
 	    //bool C0 = cutNode;
 	    //bool C0 = improving;
 	    //bool C0 = capture;
-	    bool C0 = givesCheck;
-	    bool C = ss->inCheck;
+	    //bool C0 = givesCheck;
+	    //bool C0 = ss->inCheck;
+	    //bool C0 = priorCapture;
+	    bool C0 = (ss + 1)->cutoffCnt > 2;
+	    bool C = ttCapture;
 	    bool P = nodes & 1;
 	    int index0 = (10*C+5)*10+P;
 	    //int index1 = (10*C+2*PvNode+cutNode)*10+P;
