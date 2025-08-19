@@ -1216,7 +1216,9 @@ moves_loop:  // When in check, search starts here
 	//	if(cutNode && improving)
 	//		r += 1024;
 	    bool CC = true;
-	    bool C = improving;
+	    //bool C = improving && !capture; // -4.04321
+	    //bool C = improving && !givesCheck; // -4.07682
+	    bool C = !capture && !givesCheck; // -3.77842
 	    bool P = nodes & 1;
 	    int R = 1024;
 	    if(P) r += R;
