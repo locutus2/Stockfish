@@ -1217,11 +1217,10 @@ moves_loop:  // When in check, search starts here
 	//		r += 1024;
 	    //bool CC = true;
 	    bool CC = !PvNode;
-	    //bool C = improving && !capture; // -4.04321
-	    //bool C = improving && !givesCheck; // -4.07682
-	    //bool C = !capture && !givesCheck; // -3.77842
+	    //bool C0 = cutNode;
+	    //bool C0 = improving;
 	    bool C0 = capture;
-	    bool C = improving;
+	    bool C = givesCheck;
 	    bool P = nodes & 1;
 	    int index0 = (10*C+5)*10+P;
 	    //int index1 = (10*C+2*PvNode+cutNode)*10+P;
