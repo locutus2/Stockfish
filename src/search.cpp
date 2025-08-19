@@ -1215,11 +1215,17 @@ moves_loop:  // When in check, search starts here
         {
 	//	if(cutNode && improving)
 	//		r += 1024;
-	    bool CC = true;
+	    //bool CC = true;
+	    bool CC = !PvNode;
 	    //bool C = improving && !capture; // -4.04321
 	    //bool C = improving && !givesCheck; // -4.07682
-	    bool C = !capture && !givesCheck; // -3.77842
+	    //bool C = !capture && !givesCheck; // -3.77842
+	    bool C0 = capture;
+	    bool C = improving;
 	    bool P = nodes & 1;
+	    int index0 = (10*C+5)*10+P;
+	    //int index1 = (10*C+2*PvNode+cutNode)*10+P;
+	    int index1 = (10*C+C0)*10+P;
 	    int R = 1024;
 	    if(P) r += R;
 	
@@ -1242,8 +1248,8 @@ moves_loop:  // When in check, search starts here
 	    bool T2 = T0;
 	    if(CC)
 	    {
-	         dbg_hit_on(T0, (10*C+2*PvNode+cutNode)*10+P);
-	         dbg_hit_on(T0, (10*C+5)*10+P);
+	         dbg_hit_on(T0, index1);
+	         dbg_hit_on(T0, index0);
 	    }
 
             if (value > alpha)
@@ -1264,13 +1270,16 @@ moves_loop:  // When in check, search starts here
 		    T2 = T;
 	            if(CC)
 		    {
-		        dbg_hit_on(T, (20+10*C+2*PvNode+cutNode)*10+P);
-		        dbg_hit_on(T, (20+10*C+5)*10+P);
+		        dbg_hit_on(T, 200+index1);
+		        dbg_hit_on(T, 200+index0);
 		    }
 		}
 
-		dbg_hit_on(T2, (100+10*C+2*PvNode+cutNode)*10+P);
-		dbg_hit_on(T2, (100+10*C+5)*10+P);
+		if(CC)
+		{
+			dbg_hit_on(T2, 1000+index1);
+			dbg_hit_on(T2, 1000+index0);
+		}
 
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1365);
