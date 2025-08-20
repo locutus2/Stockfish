@@ -1,0 +1,8 @@
+improving&allNode Double_diff #10100: Total 312299/296675 Hits 51754/60650|150486/153609 Double_diff Rate (%) 0.28096 [3.87131/3.59035]
+!improving&cutNode Double_diff #10010: Total 255054/244710 Hits 31271/30310|131849/127564 Double_diff Rate (%) -0.30855 [0.125549/0.434099]
+improving Double_diff #10150: Total 1449479/1405218 Hits 281067/294134|840313/842585 Double_diff Rate (%) -0.44705 [1.54066/1.98771]
+allNode Double_diff #10050: Total 549190/520722 Hits 82947/95951|281518/287015 Double_diff Rate (%) -0.535064 [3.32301/3.85808]
+cutNode Double_diff #10150: Total 1392234/1353253 Hits 260584/263794|821676/816540 Double_diff Rate (%) -0.544167 [0.776356/1.32052]
+improving&cutNode Double_diff #10110: Total 1137180/1108543 Hits 229313/233484|689827/688976 Double_diff Rate (%) -0.59311 [0.897184/1.49029]
+!improving Double_diff #10050: Total 491945/468757 Hits 62464/65611|262881/260970 Double_diff Rate (%) -0.936247 [1.29945/2.2357]
+!improving&allNode Double_diff #10000: Total 236891/224047 Hits 31193/35301|131032/133406 Double_diff Rate (%) -1.64214 [2.58841/4.23055]

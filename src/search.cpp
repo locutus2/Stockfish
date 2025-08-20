@@ -1215,22 +1215,37 @@ moves_loop:  // When in check, search starts here
         {
 	//	if(cutNode && improving)
 	//		r += 1024;
+	    constexpr bool USE_PIECES = false;
 	    //bool CC = true;
 	    bool CC = !PvNode;
+	    bool C0 = true;
 	    //bool C0 = cutNode;
 	    //bool C0 = improving;
 	    //bool C0 = capture;
 	    //bool C0 = givesCheck;
 	    //bool C0 = ss->inCheck;
 	    //bool C0 = priorCapture;
-	    bool C0 = (ss + 1)->cutoffCnt > 2;
-	    bool C = ttCapture;
+	    //bool C0 = (ss + 1)->cutoffCnt > 2;
+	    //bool C0 = ttCapture;
+	    //bool C0 = type_of(movedPiece) == KING;
+	    //bool C = (ss + 1)->cutoffCnt > 2;
+	    //bool C = type_of(movedPiece) == KING;
+	    //bool C = bool(ttData.move);
+	    bool C = cutNode;
+
+	    //bool C = bool(ttData.move);
 	    bool P = nodes & 1;
 	    int index0 = (10*C+5)*10+P;
 	    //int index1 = (10*C+2*PvNode+cutNode)*10+P;
 	    int index1 = (10*C+C0)*10+P;
 	    int R = 1024;
-	    if(P) r += R;
+	    if(P) 
+	    {
+		    if(USE_PIECES)
+		        r += R * (pos.count<ALL_PIECES>()) / 32;
+		    else
+		        r += R;
+	    }
 	
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
@@ -1249,6 +1264,9 @@ moves_loop:  // When in check, search starts here
             // doesn't scale well to longer TCs
 	    bool T0 = value > alpha;
 	    bool T2 = T0;
+	    bool T3 = false;
+	    bool T4 = false;
+	    bool T5 = false;
 	    if(CC)
 	    {
 	         dbg_hit_on(T0, index1);
@@ -1264,17 +1282,24 @@ moves_loop:  // When in check, search starts here
 
                 newDepth += doDeeperSearch - doShallowerSearch;
 
+	        if(CC)
+		{
+		        dbg_hit_on(newDepth <= d, 200+index1);
+		        dbg_hit_on(newDepth <= d, 200+index0);
+		}
                 if (newDepth > d)
 		{
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
                     //value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, false);
 		    //
 		    bool T = value > alpha;
-		    T2 = T;
+		    T3 = T2 = T;
+		    T4 = !T;
+		    T5 = true;
 	            if(CC)
 		    {
-		        dbg_hit_on(T, 200+index1);
-		        dbg_hit_on(T, 200+index0);
+		        dbg_hit_on(T, 500+index1);
+		        dbg_hit_on(T, 500+index0);
 		    }
 		}
 
@@ -1282,6 +1307,15 @@ moves_loop:  // When in check, search starts here
 		{
 			dbg_hit_on(T2, 1000+index1);
 			dbg_hit_on(T2, 1000+index0);
+			dbg_hit_on(T3, 2000+index1);
+			dbg_hit_on(T3, 2000+index0);
+			dbg_hit_on(T4, 3000+index1);
+			dbg_hit_on(T4, 3000+index0);
+			dbg_hit_on(T5, 4000+index1);
+			dbg_hit_on(T5, 4000+index0);
+
+			dbg_double_diff_of(T4, T3, 10000+index1);
+			dbg_double_diff_of(T4, T3, 10000+index0);
 		}
 
                 // Post LMR continuation history updates

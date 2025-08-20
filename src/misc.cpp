@@ -312,6 +312,7 @@ struct DebugExtremes: public DebugInfo<3> {
 };
 
 std::array<DebugInfo<2>, MaxDebugSlots>  hit;
+std::array<DebugInfo<3>, MaxDebugSlots>  doubleDiff;
 std::array<DebugInfo<2>, MaxDebugSlots>  mean;
 std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
 std::array<DebugInfo<6>, MaxDebugSlots>  correl;
@@ -324,6 +325,15 @@ void dbg_hit_on(bool cond, int slot) {
     ++hit.at(slot)[0];
     if (cond)
         ++hit.at(slot)[1];
+}
+
+void dbg_double_diff_of(bool cond1, bool cond2, int slot) {
+
+    ++doubleDiff.at(slot)[0];
+    if (cond1)
+        ++doubleDiff.at(slot)[1];
+    if (cond2)
+        ++doubleDiff.at(slot)[2];
 }
 
 void dbg_mean_of(int64_t value, int slot) {
@@ -406,6 +416,17 @@ void dbg_print() {
         if ((n = hit[i][0]))
             std::cerr << "Diff #" << i << ": Total " << n << "/" << hit[i+1][0] << " Hits " << hit[i][1] << "/" << hit[i+1][1]
                       << " Diff Rate (%) " << 100.0 * (E2(hit[i+1][1], hit[i+1][0]) - E(hit[i][1])) << std::endl;
+
+    for (int i = 0; i < MaxDebugSlots; i += 2)
+        if ((n = doubleDiff[i][0]))
+	{
+		double d1 = 100.0*(E2(doubleDiff[i+1][1], doubleDiff[i+1][0]) - E(doubleDiff[i][1]));
+		double d2 = 100.0*(E2(doubleDiff[i+1][2], doubleDiff[i+1][0]) - E(doubleDiff[i][2]));
+            std::cerr << "Double_diff #" << i << ": Total " << n << "/" << doubleDiff[i+1][0] << " Hits " 
+		    << doubleDiff[i][1] << "/" << doubleDiff[i+1][1]
+		    << "|" << doubleDiff[i][2] << "/" << doubleDiff[i+1][2]
+                      << " Double_diff Rate (%) " << d1-d2 << " " << "[" << d1 << "/" << d2 << "]" << std::endl;
+	}
 }
 
 void dbg_clear() {
