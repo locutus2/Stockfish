@@ -1221,14 +1221,14 @@ moves_loop:  // When in check, search starts here
 	    //bool C0 = true;
 	    //bool C0 = cutNode;
 	    //bool C0 = improving;
-	    //bool C0 = capture;
-	    bool C0 = givesCheck;
+	    bool C0 = capture;
+	    //bool C0 = givesCheck;
 	    //bool C0 = ss->inCheck;
 	    //bool C0 = priorCapture;
 	    //bool C0 = (ss + 1)->cutoffCnt > 2;
 	    //bool C0 = ttCapture;
 	    //bool C0 = type_of(movedPiece) == KING;
-	    bool C = ss->inCheck;
+	    bool C = priorCapture;
 	    //bool C = (ss + 1)->cutoffCnt > 2;
 	    //bool C = type_of(movedPiece) == KING;
 	    //bool C = bool(ttData.move);
