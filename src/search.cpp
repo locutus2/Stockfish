@@ -1220,11 +1220,11 @@ moves_loop:  // When in check, search starts here
 	    bool CC = !PvNode;
 	    //bool C0 = true;
 	    //bool C0 = cutNode;
-	    bool C0 = improving;
+	    //bool C0 = improving;
 	    //bool C0 = capture;
 	    //bool C0 = givesCheck;
 	    //bool C0 = ss->inCheck;
-	    //bool C0 = priorCapture;
+	    bool C0 = priorCapture;
 	    //bool C0 = (ss + 1)->cutoffCnt > 2;
 	    //bool C = bool(ttData.move);
 	    //bool C0 = ttCapture;
