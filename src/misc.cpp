@@ -425,7 +425,7 @@ void dbg_print() {
             std::cerr << "Double_diff #" << i << ": Total " << n << "/" << doubleDiff[i+1][0] << " Hits " 
 		    << doubleDiff[i][1] << "/" << doubleDiff[i+1][1]
 		    << "|" << doubleDiff[i][2] << "/" << doubleDiff[i+1][2]
-                      << " Double_diff Rate (%) " << d1-d2 << " " << "[" << d1 << "/" << d2 << "]" << std::endl;
+                      << " Double_diff Rate (%) " << d1-d2 << " " << "[ " << d1 << " / " << d2 << " ]" << std::endl;
 	}
 }
 
