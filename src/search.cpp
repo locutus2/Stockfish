@@ -1183,7 +1183,7 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += 3092 + 2 * msb(depth) + (980 + 15 * msb(depth)) * !ttData.move;
+            r += 3092 + 2 * msb(depth) + (1024 + 15 * msb(depth)) * !ttData.move;
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
@@ -1191,13 +1191,13 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 2)
-            r += 1041 + 34 * msb(depth) + allNode * (752 + 226 * msb(depth));
+            r += 1041 + 34 * msb(depth) + allNode * (763 + 226 * msb(depth));
 
         r += (ss + 1)->quietMoveStreak * 50;
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
-            r -= 2096 + 27 * msb(depth);
+            r -= 2043 + 27 * msb(depth);
 
         if (capture)
             ss->statScore = 803 * int(PieceValue[pos.captured_piece()]) / 128
@@ -1208,7 +1208,7 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[1])[movedPiece][move.to_sq()];
 
         // Decrease/increase reduction for moves with a good/bad history
-        r -= ss->statScore * (734 - 12 * msb(depth)) / 8192;
+        r -= ss->statScore * (789 - 12 * msb(depth)) / 8192;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1250,7 +1250,7 @@ moves_loop:  // When in check, search starts here
         {
             // Increase reduction if ttMove is not present
             if (!ttData.move)
-                r += 1178 + 35 * msb(depth);
+                r += 1139 + 35 * msb(depth);
 
             if (depth < 5)
                 r += 1080;
