@@ -1177,27 +1177,27 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 692 - 6 * msb(depth);  // Base reduction offset to compensate for other tweaks
-        r -= moveCount * (64 - 2 * msb(depth));
+        r += 663;  // Base reduction offset to compensate for other tweaks
+        r -= moveCount * 66;
         r -= std::abs(correctionValue) / 30731;
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += 3189 + 2 * msb(depth) + (960 + 15 * msb(depth)) * !ttData.move;
+            r += 3191 + 1036 * !ttData.move;
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
-            r += 1464 - 42 * msb(depth);
+            r += 1412;
 
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 2)
-            r += 990 + 34 * msb(depth) + allNode * (737 + 213 * msb(depth));
+            r += 1000 + allNode * 799;
 
         r += (ss + 1)->quietMoveStreak * 48;
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
-            r -= 2164 + 28 * msb(depth);
+            r -= 2086;
 
         if (capture)
             ss->statScore = 768 * int(PieceValue[pos.captured_piece()]) / 128
@@ -1208,7 +1208,7 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[1])[movedPiece][move.to_sq()];
 
         // Decrease/increase reduction for moves with a good/bad history
-        r -= ss->statScore * (741 - 11 * msb(depth)) / 8192;
+        r -= ss->statScore * 801 / 8192;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1250,7 +1250,7 @@ moves_loop:  // When in check, search starts here
         {
             // Increase reduction if ttMove is not present
             if (!ttData.move)
-                r += 1221 + 35 * msb(depth);
+                r += 1161;
 
             if (depth < 5)
                 r += 1133;
