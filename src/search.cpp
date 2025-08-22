@@ -1190,8 +1190,8 @@ moves_loop:  // When in check, search starts here
             r += 1467 - 40 * msb(depth);
 
         // Increase reduction if next ply has a lot of fail high
-        if (!PvNode && (ss + 1)->cutoffCnt > 2)
-            r += 1041 + 34 * msb(depth) + allNode * (752 + 226 * msb(depth));
+        if ((ss + 1)->cutoffCnt > 2)
+            r += 1041 + 34 * msb(depth) + allNode * (752 + 226 * msb(depth) + 1024 * (moveCount > 1));
 
         r += (ss + 1)->quietMoveStreak * 50;
 
