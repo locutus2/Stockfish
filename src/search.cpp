@@ -1225,10 +1225,12 @@ moves_loop:  // When in check, search starts here
 	    //bool C0 = givesCheck;
 	    //bool C0 = ss->inCheck;
 	    //bool C0 = priorCapture;
-	    //bool C0 = (ss + 1)->cutoffCnt > 2;
-	    bool C0 = ttCapture;
+	    bool C0 = (ss + 1)->cutoffCnt > 2;
+	    //bool C0 = ttCapture;
+	    //bool C0 = bool(ttData.move);
         
-	    bool C = bool(ttData.move);
+	    //bool C = depth <= 10;
+	    bool C = depth <= 9;
 	    //bool C = type_of(movedPiece) == KING;
 
 	    bool P = nodes & 1;
