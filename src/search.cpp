@@ -1219,7 +1219,8 @@ moves_loop:  // When in check, search starts here
 	    //bool CC = true;
 	    bool CC = !PvNode;
 	    //bool C0 = true;
-	    bool C0 = cutNode;
+	    bool C0 = allNode&improving;
+	    //bool C0 = cutNode;
 	    //bool C0 = improving;
 	    //bool C0 = capture;
 	    //bool C0 = givesCheck;
@@ -1229,7 +1230,7 @@ moves_loop:  // When in check, search starts here
 	    //bool C0 = ttCapture;
 	    //bool C0 = bool(ttData.move);
         
-	    bool C = depth <= 9;
+	    bool C = depth <= 8;
 	    //bool C = type_of(movedPiece) == KING;
 
 	    bool P = nodes & 1;
