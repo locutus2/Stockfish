@@ -660,6 +660,7 @@ Value Search::Worker::search(
     (ss - 1)->reduction = 0;
     ss->statScore       = 0;
     (ss + 2)->cutoffCnt = 0;
+    (ss + 2)->researchCnt = 0;
 
     // Step 4. Transposition table lookup
     excludedMove                   = ss->excludedMove;
@@ -1219,20 +1220,23 @@ moves_loop:  // When in check, search starts here
 	    //bool CC = true;
 	    bool CC = !PvNode;
 	    //bool C0 = true;
-	    bool C0 = allNode&improving;
+	    //bool C0 = allNode&improving;
 	    //bool C0 = cutNode;
 	    //bool C0 = improving;
 	    //bool C0 = capture;
 	    //bool C0 = givesCheck;
 	    //bool C0 = ss->inCheck;
 	    //bool C0 = priorCapture;
-	    //bool C0 = (ss + 1)->cutoffCnt > 2;
+	    bool C0 = (ss + 1)->cutoffCnt > 2;
 	    //bool C0 = ttCapture;
 	    //bool C0 = bool(ttData.move);
-        
-	    bool C = depth <= 8;
+       //dbg_mean_of((ss+1)->researchCnt, 10000);
+      //for(int i = 0; i <= 20; i++) 
+       //dbg_hit_on(i == (ss+1)->researchCnt, 10000+i);
+	    //bool C = depth <= 8;
+	    bool C = (ss+1)->researchCnt >= 1;
 	    //bool C = type_of(movedPiece) == KING;
-
+        //dbg_correl_of(C, (ss+1)->cutoffCnt>2);
 	    bool P = nodes & 1;
 	    int index0 = (10*C+5)*10+P;
 	    //int index1 = (10*C+2*PvNode+cutNode)*10+P;
@@ -1288,6 +1292,7 @@ moves_loop:  // When in check, search starts here
 		}
                 if (newDepth > d)
 		{
+            ss->researchCnt++;
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
                     //value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, false);
 		    //
