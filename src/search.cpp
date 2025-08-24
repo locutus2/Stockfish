@@ -51,6 +51,17 @@
 
 namespace Stockfish {
 
+constexpr int SCALE = 128;
+
+int FLA[2][3] = {{0, 0, SCALE}, {0, 0, SCALE}};
+int FLB[2][3] = {{SCALE, 0, 0}, {SCALE, 0, 0}};
+int FHA[2][3] = {{SCALE, 0, 0}, {SCALE, 0, 0}};
+int FHB[2][3] = {{0, 0, SCALE}, {0, 0, SCALE}};
+
+Range centered(int v) { return Range(v - SCALE, v + SCALE); }
+
+TUNE(SetRange(centered), FLA, FLB, FHA, FHB);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -341,7 +352,8 @@ void Search::Worker::iterative_deepening() {
                 // effective increment for every four searchAgain steps (see issue #2717).
                 Depth adjustedDepth =
                   std::max(1, rootDepth - failedHighCnt - 3 * (searchAgainCounter + 1) / 4);
-                rootDelta = beta - alpha;
+                rootDelta                      = beta - alpha;
+                size_t previousBestMoveChanges = bestMoveChanges;
                 bestValue = search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
                 // Bring the best move to the front. It is critical that sorting
@@ -365,12 +377,21 @@ void Search::Worker::iterative_deepening() {
                     && nodes > 10000000)
                     main_manager()->pv(*this, threads, tt, rootDepth);
 
+                bool bmc = bestMoveChanges > previousBestMoveChanges;
                 // In case of failing low/high increase aspiration window and re-search,
                 // otherwise exit the loop.
                 if (bestValue <= alpha)
                 {
-                    beta  = alpha;
-                    alpha = std::max(bestValue - delta, -VALUE_INFINITE);
+                    //beta  = alpha;
+                    //alpha = std::max(bestValue - delta, -VALUE_INFINITE);
+                    Value tmpAlpha =
+                      (alpha * FLA[bmc][0] + beta * FLA[bmc][1]
+                       + (std::max(bestValue - delta, -VALUE_INFINITE)) * FLA[bmc][2])
+                      / SCALE;
+                    beta = (alpha * FLB[bmc][0] + beta * FLB[bmc][1]
+                            + (std::max(bestValue - delta, -VALUE_INFINITE)) * FLB[bmc][2])
+                         / SCALE;
+                    alpha = tmpAlpha;
 
                     failedHighCnt = 0;
                     if (mainThread)
@@ -378,7 +399,14 @@ void Search::Worker::iterative_deepening() {
                 }
                 else if (bestValue >= beta)
                 {
-                    beta = std::min(bestValue + delta, VALUE_INFINITE);
+                    //beta = std::min(bestValue + delta, VALUE_INFINITE);
+                    Value tmpAlpha = (alpha * FHA[bmc][0] + beta * FHA[bmc][1]
+                                      + (std::min(bestValue + delta, VALUE_INFINITE)) * FHA[bmc][2])
+                                   / SCALE;
+                    beta = (alpha * FHB[bmc][0] + beta * FHB[bmc][1]
+                            + (std::min(bestValue + delta, VALUE_INFINITE)) * FHB[bmc][2])
+                         / SCALE;
+                    alpha = tmpAlpha;
                     ++failedHighCnt;
                 }
                 else
