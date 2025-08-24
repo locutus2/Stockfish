@@ -385,10 +385,10 @@ void Search::Worker::iterative_deepening() {
                     Value tmpAlpha =
                       (alpha * FLA[bmc][0] + beta * FLA[bmc][1]
                        + (std::max(bestValue - delta, -VALUE_INFINITE)) * FLA[bmc][2])
-                      / SCALE;
+                      / (FLA[bmc][0] + FLA[bmc][1] + FLA[bmc][2]);
                     beta = (alpha * FLB[bmc][0] + beta * FLB[bmc][1]
                             + (std::max(bestValue - delta, -VALUE_INFINITE)) * FLB[bmc][2])
-                         / SCALE;
+                         / (FLB[bmc][0] + FLB[bmc][1] + FLB[bmc][2]);
                     alpha = tmpAlpha;
 
                     failedHighCnt = 0;
@@ -400,10 +400,10 @@ void Search::Worker::iterative_deepening() {
                     //beta = std::min(bestValue + delta, VALUE_INFINITE);
                     Value tmpAlpha = (alpha * FHA[bmc][0] + beta * FHA[bmc][1]
                                       + (std::min(bestValue + delta, VALUE_INFINITE)) * FHA[bmc][2])
-                                   / SCALE;
+                                   / (FHA[bmc][0] + FHA[bmc][1] + FHA[bmc][2]);
                     beta = (alpha * FHB[bmc][0] + beta * FHB[bmc][1]
                             + (std::min(bestValue + delta, VALUE_INFINITE)) * FHB[bmc][2])
-                         / SCALE;
+                         / (FHB[bmc][0] + FHB[bmc][1] + FHB[bmc][2]);
                     alpha = tmpAlpha;
                     ++failedHighCnt;
                 }
