@@ -51,16 +51,6 @@
 
 namespace Stockfish {
 
-constexpr int SCALE = 128;
-
-//int FLA[2][3] = {{0, 0, SCALE}, {0, 0, SCALE}};
-int FLB[2][3] = {{SCALE, 0, 0}, {SCALE, 0, 0}};
-int FHA[2][3] = {{SCALE, 0, 0}, {SCALE, 0, 0}};
-//int FHB[2][3] = {{0, 0, SCALE}, {0, 0, SCALE}};
-
-TUNE(SetRange(0, SCALE), FLB, FHA);
-//TUNE(SetRange(0, SCALE), FLA, FLB, FHA, FHB);
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -376,19 +366,14 @@ void Search::Worker::iterative_deepening() {
                     && nodes > 10000000)
                     main_manager()->pv(*this, threads, tt, rootDepth);
 
-                bool bmc = bestMoveChanges > previousBestMoveChanges;
                 // In case of failing low/high increase aspiration window and re-search,
                 // otherwise exit the loop.
                 if (bestValue <= alpha)
                 {
-                    //beta  = alpha;
-                    beta = (alpha * FLB[bmc][0] + beta * FLB[bmc][1]
-                            + (std::min(bestValue + delta, VALUE_INFINITE)) * FLB[bmc][2])
-                         / (FLB[bmc][0] + FLB[bmc][1] + FLB[bmc][2]);
+                    beta =
+                      (alpha * 127 + beta * 4 + std::min(bestValue + delta, VALUE_INFINITE) * 2)
+                      / 133;
                     alpha = std::max(bestValue - delta, -VALUE_INFINITE);
-                    //dbg_hit_on(alpha < -VALUE_INFINITE || alpha > VALUE_INFINITE, 0);
-                    //dbg_hit_on(beta < -VALUE_INFINITE || beta > VALUE_INFINITE, 1);
-                    //dbg_hit_on(alpha + 1 >= beta, 2);
 
                     failedHighCnt = 0;
                     if (mainThread)
@@ -396,14 +381,16 @@ void Search::Worker::iterative_deepening() {
                 }
                 else if (bestValue >= beta)
                 {
-                    //beta = std::min(bestValue + delta, VALUE_INFINITE);
-                    alpha = (alpha * FHA[bmc][0] + beta * FHA[bmc][1]
-                             + (std::max(bestValue - delta, -VALUE_INFINITE)) * FHA[bmc][2])
-                          / (FHA[bmc][0] + FHA[bmc][1] + FHA[bmc][2]);
+                    if (bestMoveChanges > previousBestMoveChanges)
+                        alpha =
+                          (alpha * 125 + beta + std::max(bestValue - delta, -VALUE_INFINITE) * 4)
+                          / 130;
+                    else
+                        alpha = (alpha * 125 + beta * 6
+                                 + std::max(bestValue - delta, -VALUE_INFINITE) * 2)
+                              / 133;
+
                     beta = std::min(bestValue + delta, VALUE_INFINITE);
-                    //dbg_hit_on(alpha < -VALUE_INFINITE || alpha > VALUE_INFINITE, 10);
-                    //dbg_hit_on(beta < -VALUE_INFINITE || beta > VALUE_INFINITE, 11);
-                    //dbg_hit_on(alpha + 1 >= beta, 12);
                     ++failedHighCnt;
                 }
                 else
