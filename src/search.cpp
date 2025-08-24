@@ -53,12 +53,13 @@ namespace Stockfish {
 
 constexpr int SCALE = 128;
 
-int FLA[2][3] = {{0, 0, SCALE}, {0, 0, SCALE}};
+//int FLA[2][3] = {{0, 0, SCALE}, {0, 0, SCALE}};
 int FLB[2][3] = {{SCALE, 0, 0}, {SCALE, 0, 0}};
 int FHA[2][3] = {{SCALE, 0, 0}, {SCALE, 0, 0}};
-int FHB[2][3] = {{0, 0, SCALE}, {0, 0, SCALE}};
+//int FHB[2][3] = {{0, 0, SCALE}, {0, 0, SCALE}};
 
-TUNE(SetRange(0, SCALE), FLA, FLB, FHA, FHB);
+TUNE(SetRange(0, SCALE), FLB, FHA);
+//TUNE(SetRange(0, SCALE), FLA, FLB, FHA, FHB);
 
 namespace TB = Tablebases;
 
@@ -381,15 +382,13 @@ void Search::Worker::iterative_deepening() {
                 if (bestValue <= alpha)
                 {
                     //beta  = alpha;
-                    //alpha = std::max(bestValue - delta, -VALUE_INFINITE);
-                    Value tmpAlpha =
-                      (alpha * FLA[bmc][0] + beta * FLA[bmc][1]
-                       + (std::max(bestValue - delta, -VALUE_INFINITE)) * FLA[bmc][2])
-                      / (FLA[bmc][0] + FLA[bmc][1] + FLA[bmc][2]);
                     beta = (alpha * FLB[bmc][0] + beta * FLB[bmc][1]
-                            + (std::max(bestValue - delta, -VALUE_INFINITE)) * FLB[bmc][2])
+                            + (std::min(bestValue + delta, VALUE_INFINITE)) * FLB[bmc][2])
                          / (FLB[bmc][0] + FLB[bmc][1] + FLB[bmc][2]);
-                    alpha = tmpAlpha;
+                    alpha = std::max(bestValue - delta, -VALUE_INFINITE);
+                    //dbg_hit_on(alpha < -VALUE_INFINITE || alpha > VALUE_INFINITE, 0);
+                    //dbg_hit_on(beta < -VALUE_INFINITE || beta > VALUE_INFINITE, 1);
+                    //dbg_hit_on(alpha + 1 >= beta, 2);
 
                     failedHighCnt = 0;
                     if (mainThread)
@@ -398,13 +397,13 @@ void Search::Worker::iterative_deepening() {
                 else if (bestValue >= beta)
                 {
                     //beta = std::min(bestValue + delta, VALUE_INFINITE);
-                    Value tmpAlpha = (alpha * FHA[bmc][0] + beta * FHA[bmc][1]
-                                      + (std::min(bestValue + delta, VALUE_INFINITE)) * FHA[bmc][2])
-                                   / (FHA[bmc][0] + FHA[bmc][1] + FHA[bmc][2]);
-                    beta = (alpha * FHB[bmc][0] + beta * FHB[bmc][1]
-                            + (std::min(bestValue + delta, VALUE_INFINITE)) * FHB[bmc][2])
-                         / (FHB[bmc][0] + FHB[bmc][1] + FHB[bmc][2]);
-                    alpha = tmpAlpha;
+                    alpha = (alpha * FHA[bmc][0] + beta * FHA[bmc][1]
+                             + (std::max(bestValue - delta, -VALUE_INFINITE)) * FHA[bmc][2])
+                          / (FHA[bmc][0] + FHA[bmc][1] + FHA[bmc][2]);
+                    beta = std::min(bestValue + delta, VALUE_INFINITE);
+                    //dbg_hit_on(alpha < -VALUE_INFINITE || alpha > VALUE_INFINITE, 10);
+                    //dbg_hit_on(beta < -VALUE_INFINITE || beta > VALUE_INFINITE, 11);
+                    //dbg_hit_on(alpha + 1 >= beta, 12);
                     ++failedHighCnt;
                 }
                 else
