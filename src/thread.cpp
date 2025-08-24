@@ -219,6 +219,7 @@ void ThreadPool::clear() {
     main_manager()->callsCnt           = 0;
     main_manager()->bestPreviousScore  = VALUE_INFINITE;
     main_manager()->originalTimeAdjust = -1;
+    main_manager()->totBestMoveChanges = 0;
     main_manager()->tm.clear();
 }
 

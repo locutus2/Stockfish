@@ -243,6 +243,7 @@ class SearchManager: public ISearchManager {
     int                       callsCnt;
     std::atomic_bool          ponder;
 
+    std::atomic<double>  totBestMoveChanges;
     std::array<Value, 4> iterValue;
     double               previousTimeReduction;
     Value                bestPreviousScore;

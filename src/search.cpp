@@ -244,8 +244,11 @@ void Search::Worker::iterative_deepening() {
     Value  alpha, beta;
     Value  bestValue     = -VALUE_INFINITE;
     Color  us            = rootPos.side_to_move();
-    double timeReduction = 1, totBestMoveChanges = 0;
-    int    delta, iterIdx                        = 0;
+    double timeReduction = 1;
+    int    delta, iterIdx = 0;
+
+    if (mainThread)
+        mainThread->totBestMoveChanges = 0;
 
     // Allocate stack with extra size to allow access from (ss - 7) to (ss + 2):
     // (ss - 7) is needed for update_continuation_histories(ss - 1) which accesses (ss - 6),
@@ -294,7 +297,7 @@ void Search::Worker::iterative_deepening() {
     {
         // Age out PV variability metric
         if (mainThread)
-            totBestMoveChanges /= 2;
+            mainThread->totBestMoveChanges = mainThread->totBestMoveChanges / 2;
 
         // Save the last iteration's scores before the first PV line is searched and
         // all the move scores except the (new) PV are set to -VALUE_INFINITE.
@@ -322,7 +325,8 @@ void Search::Worker::iterative_deepening() {
             selDepth = 0;
 
             // Reset aspiration window starting size
-            delta     = 5 + threadIdx % 8 + std::abs(rootMoves[pvIdx].meanSquaredScore) / 9000;
+            delta = 5 + threadIdx % 8 + std::abs(rootMoves[pvIdx].meanSquaredScore) / 9000
+                  + main_manager()->totBestMoveChanges / threads.size();
             Value avg = rootMoves[pvIdx].averageScore;
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
@@ -446,7 +450,8 @@ void Search::Worker::iterative_deepening() {
         // Use part of the gained time from a previous stable move for the current move
         for (auto&& th : threads)
         {
-            totBestMoveChanges += th->worker->bestMoveChanges;
+            mainThread->totBestMoveChanges =
+              mainThread->totBestMoveChanges + th->worker->bestMoveChanges;
             th->worker->bestMoveChanges = 0;
         }
 
@@ -468,7 +473,8 @@ void Search::Worker::iterative_deepening() {
             timeReduction = 0.723 + 0.79 / (1.104 + std::exp(-k * (completedDepth - center)));
             double reduction =
               (1.455 + mainThread->previousTimeReduction) / (2.2375 * timeReduction);
-            double bestMoveInstability = 1.04 + 1.8956 * totBestMoveChanges / threads.size();
+            double bestMoveInstability =
+              1.04 + 1.8956 * mainThread->totBestMoveChanges / threads.size();
 
             double totalTime =
               mainThread->tm.optimum() * fallingEval * reduction * bestMoveInstability;
