@@ -58,9 +58,7 @@ int FLB[2][3] = {{SCALE, 0, 0}, {SCALE, 0, 0}};
 int FHA[2][3] = {{SCALE, 0, 0}, {SCALE, 0, 0}};
 int FHB[2][3] = {{0, 0, SCALE}, {0, 0, SCALE}};
 
-Range centered(int v) { return Range(v - SCALE, v + SCALE); }
-
-TUNE(SetRange(centered), FLA, FLB, FHA, FHB);
+TUNE(SetRange(0, SCALE), FLA, FLB, FHA, FHB);
 
 namespace TB = Tablebases;
 
