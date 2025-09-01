@@ -279,6 +279,8 @@ class Worker {
 
     void ensure_network_replicated();
 
+    int P(int th1, int th8) const;
+
     // Public because they need to be updatable by the stats
     ButterflyHistory mainHistory;
     LowPlyHistory    lowPlyHistory;
