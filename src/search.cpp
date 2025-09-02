@@ -221,7 +221,8 @@ Search::Worker::Worker(SharedState&                    sharedState,
 // For 8 threads exactly value_th8 is returned but because of rounding for one thread a value near value_th1 is returned (at most two units of).
 
 inline int Search::Worker::P(int value_th1, int value_th8) const {
-    return value_th1;
+    assert(threads.size() > 0);
+
     constexpr int K = 3;  // 3 = msb(#threads) for 8 threads;
     const int     B = (value_th8 - value_th1) / K;
     const int     A = value_th8 - B * K;
@@ -631,10 +632,10 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
-    mainHistory.fill(P(xx32, 68));
-    captureHistory.fill(-P(xx33, 689));
-    pawnHistory.fill(-P(xx34, 1238));
-    pawnCorrectionHistory.fill(P(xx35, 5));
+    mainHistory.fill(68);
+    captureHistory.fill(-689);
+    pawnHistory.fill(-1238);
+    pawnCorrectionHistory.fill(5);
     minorPieceCorrectionHistory.fill(0);
     nonPawnCorrectionHistory.fill(0);
 
@@ -642,16 +643,16 @@ void Search::Worker::clear() {
 
     for (auto& to : continuationCorrectionHistory)
         for (auto& h : to)
-            h.fill(P(xx36, 8));
+            h.fill(8);
 
     for (bool inCheck : {false, true})
         for (StatsType c : {NoCaptures, Captures})
             for (auto& to : continuationHistory[inCheck][c])
                 for (auto& h : to)
-                    h.fill(-P(xx37, 529));
+                    h.fill(-529);
 
     for (size_t i = 1; i < reductions.size(); ++i)
-        reductions[i] = int(P(xx38, 2809) / 128.0 * std::log(i));
+        reductions[i] = int(2809 / 128.0 * std::log(i));
 
     refreshTable.clear(networks[numaAccessToken]);
 }
