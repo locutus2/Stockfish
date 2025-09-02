@@ -51,7 +51,7 @@
 
 namespace Stockfish {
 
-constexpr int xx1=8, xx2=9536, xx3=8493, xx4=10132, xx5=7156;
+constexpr int xx1=8, xx2=9536, xx3=8494, xx4=10132, xx5=7156;
 constexpr int xx6=165, xx7=145, xx8=137;
 constexpr int xx9=97;
 constexpr int xx10=9000, xx11=137, xx12=91;
@@ -200,6 +200,7 @@ Search::Worker::Worker(SharedState&                    sharedState,
 // For 8 threads exactly value_th8 is returned but because of rounding for one thread a value near value_th1 is returned (at most two units of).
 
 inline int Search::Worker::P(int value_th1, int value_th8) const {
+    return value_th1;
     constexpr int K = 3; // 3 = msb(#threads) for 8 threads;
     const int B = (value_th8 - value_th1) / K;
     const int A = value_th8 - B * K;
@@ -1130,7 +1131,7 @@ moves_loop:  // When in check, search starts here
 
                 history += P(xx83, 76) * mainHistory[us][move.from_to()] / 32;
 
-                lmrDepth += history / P(xx84, 3320);
+                lmrDepth += history / P(xx84, 3220);
 
                 Value futilityValue =
                   ss->staticEval + P(xx85, 47) + P(xx86, 171) * !bestMove + P(xx87, 134) * lmrDepth + P(xx88, 90) * (ss->staticEval > alpha);
