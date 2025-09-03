@@ -1053,7 +1053,7 @@ moves_loop:  // When in check, search starts here
 
                 // SEE based pruning for captures and checks
                 // Avoid pruning sacrifices of our last piece for stalemate
-                int margin = std::max(157 * depth + captHist / 29, 0) + (capture && bestValue > 0) * pos.rule50_count() * 2;
+                int margin = std::max(157 * depth + captHist / 29, 0) + capture * std::max(bestValue - 200, 0) * pos.rule50_count() / 128;
                 if ((alpha >= VALUE_DRAW || pos.non_pawn_material(us) != PieceValue[movedPiece])
                     && !pos.see_ge(move, -margin))
                     continue;
