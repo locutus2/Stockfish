@@ -218,13 +218,13 @@ Search::Worker::Worker(SharedState&                    sharedState,
 }
 
 // Function P interpolates parameter dependent on number of threads given values for one and eight threaded search.
-// For 8 threads exactly value_th8 is returned but because of rounding for one thread a value near value_th1 is returned (at most two units of).
+// For 8 threads exactly value_th8 is returned but because of rounding for one thread a value near value_th1 is returned (at most one unit of).
 
 inline int Search::Worker::P(int value_th1, int value_th8) const {
     assert(threads.size() > 0);
 
     constexpr int K = 3;  // 3 = msb(#threads) for 8 threads;
-    const int     B = (value_th8 - value_th1) / K;
+    const int     B = (value_th8 - value_th1 + (value_th8 < value_th1 ? -1 : 1)) / K;
     const int     A = value_th8 - B * K;
     return A + B * msb(threads.size());
 }
@@ -1984,8 +1984,9 @@ void update_quiet_histories(
         workerThread.lowPlyHistory[ss->ply][move.from_to()]
           << (bonus * workerThread.P(xx196, 741) / 1024) + workerThread.P(xx197, 38);
 
-    update_continuation_histories(workerThread, ss, pos.moved_piece(move), move.to_sq(),
-                                  bonus * (bonus > 0 ? workerThread.P(xx198, 955) : workerThread.P(xx199, 955)) / 1024);
+    update_continuation_histories(
+      workerThread, ss, pos.moved_piece(move), move.to_sq(),
+      bonus * (bonus > 0 ? workerThread.P(xx198, 955) : workerThread.P(xx199, 955)) / 1024);
 
     int pIndex = pawn_history_index(pos);
     workerThread.pawnHistory[pIndex][pos.moved_piece(move)][move.to_sq()]
