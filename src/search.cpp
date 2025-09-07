@@ -117,7 +117,7 @@ void update_correction_history(const Position& pos,
 }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
-Value value_draw(size_t nodes, int ply) { return VALUE_DRAW - 1 + Value(nodes & 0x2) + ply / 2; }
+Value value_draw(size_t nodes, int ply) { return VALUE_DRAW - 1 + Value(nodes & 0x2) + ply; }
 Value value_to_tt(Value v, int ply);
 Value value_from_tt(Value v, int ply, int r50c);
 void  update_pv(Move* pv, Move move, const Move* childPv);
