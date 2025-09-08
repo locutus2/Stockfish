@@ -51,31 +51,37 @@
 
 namespace Stockfish {
 
-constexpr int xx1=8, xx2=9536, xx3=8494, xx4=10132, xx5=7156;
-constexpr int xx6=165, xx7=145, xx8=137;
-constexpr int xx9=97;
-constexpr int xx10=9000, xx11=137, xx12=91;
-constexpr int xx13=11325, xx14=2115, xx15=987, xx16=5688, xx17=15698, xx18=5189, xx19=1157, xx20=723, xx21=790, xx22=1104, xx23=1455, xx24=22375, xx25=10400, xx26=18956;
-constexpr int xx27=5020, xx28=10, xx29=92425, xx30=6660, xx31=5030;
-constexpr int xx32=68, xx33=689, xx34=1238, xx35=5, xx36=8, xx37=529, xx38=2809;
-constexpr int xx39=130, xx40=71, xx41=1043, xx42=4, xx43=2142, xx44=96, xx45 = 8;
-constexpr int xx46=2023, xx47=1563, xx48=583, xx49=944, xx50=1438;
-constexpr int xx53=3, xx55=2, xx56=173;
-constexpr int xx57=514, xx58=294;
-constexpr int xx59=91, xx60=21, xx61=2094, xx62=1324, xx63=331, xx64=158105, xx65=14;
-constexpr int xx66=18, xx67=390, xx68=6;
-constexpr int xx69=224, xx70=64, xx73=418;
-constexpr int xx74=946, xx75=7, xx76=231, xx77=211, xx78=130, xx79=157, xx80=29, xx82=4312, xx83=76, xx84=3220, xx85=47, xx86=171, xx87=134, xx88=90, xx89=11, xx90=27;
-constexpr int xx91=6, xx92=56, xx93=81, xx94=60, xx95=229958, xx96=4, xx97=198, xx98=212, xx99=921, xx100=127649, xx101=45, xx102=76, xx103=308, xx104=250, xx105=92, xx106=52;
-constexpr int xx107=2618, xx108=991, xx109=903, xx110=978, xx111=1051, xx112=543, xx114=66, xx116=30450, xx117=3094, xx119=1056, xx121=1415, xx123=1051, xx125=814;
-constexpr int xx127=50, xx128=2018, xx130=803, xx131=794, xx133=2, xx134=2, xx135=1, xx136=0, xx137=43, xx138=2, xx139=9, xx140=1365, xx141=1118, xx145=3212, xx146=4784;
-constexpr int xx147=8, xx148=14, xx149=809, xx150=865;
-constexpr int xx151=228, xx152=104, xx154=63, xx155=508, xx156=184, xx157=143, xx158=92, xx159=149, xx160=70, xx161=144, xx162=92, xx163=1365, xx164=400, xx165=220, xx166=1164, xx167=964;
-constexpr int xx168=5475, xx169=78;
-constexpr int xx170=757, xx171=218, xx172=1200;
-constexpr int xx173=151, xx174=91, xx175=1730, xx176=302, xx177=951, xx178=156, xx179=2468, xx180=30, xx185=957, xx186=1024, xx187=503, xx188=1157;
-constexpr int xx189=1157, xx190=648, xx191=288, xx192=576, xx193=140, xx194=441, xx195=88;
-constexpr int xx196=741, xx197=38, xx198=955, xx199=955, xx200=704, xx201=439, xx202=70;
+constexpr int xx1=22, xx2=9615, xx3=7104, xx4=10684, xx5=7376;
+constexpr int xx6=161, xx7=151, xx8=138;
+constexpr int xx9=102;
+constexpr int xx10=9628, xx11=130, xx12=98;
+constexpr int xx13=10978, xx14=2222, xx15=987, xx16=5713, xx17=15347, xx18=5476, xx19=1131, xx20=708, xx21=845, xx22=1023;
+constexpr int xx23=1442, xx24=22954, xx25=9592, xx26=20277;
+constexpr int xx27=5122, xx28=10, xx29=88744, xx30=7236, xx31=4745;
+constexpr int xx32=68, xx33=678, xx34=1362, xx35=5, xx36=8, xx37=495, xx38=2899;
+constexpr int xx39=127, xx40=76, xx41=1067, xx42=4, xx43=1921, xx44=103, xx45 = 8;
+constexpr int xx46=2121, xx47=1551, xx48=656, xx49=933, xx50=1513;
+constexpr int xx53=2, xx55=2, xx56=171;
+constexpr int xx57=516, xx58=295;
+constexpr int xx59=88, xx60=22, xx61=2111, xx62=1324, xx63=331, xx64=168068, xx65=15;
+constexpr int xx66=20, xx67=382, xx68=7;
+constexpr int xx69=190, xx70=68, xx73=439;
+constexpr int xx74=996, xx75=7, xx76=232, xx77=205, xx78=133, xx79=152, xx80=27, xx82=4142, xx83=65, xx84=3906, xx85=43;
+constexpr int xx86=165, xx87=132, xx88=86, xx89=11, xx90=26;
+constexpr int xx91=6, xx92=63, xx93=82, xx94=55, xx95=222044, xx96=4, xx97=201, xx98=211, xx99=1012, xx100=126842, xx101=46;
+constexpr int xx102=82, xx103=316, xx104=231, xx105=93, xx106=54;
+constexpr int xx107=2624, xx108=888, xx109=855, xx110=941, xx111=1044, xx112=684, xx114=69, xx116=32203, xx117=3197;
+constexpr int xx119=1020, xx121=1359, xx123=1113, xx125=777;
+constexpr int xx127=50, xx128=2009, xx130=777, xx131=799, xx133=2, xx134=2, xx135=1, xx136=1, xx137=41, xx138=1, xx139=9;
+constexpr int xx140=1230, xx141=1065, xx145=2853, xx146=5249;
+constexpr int xx147=8, xx148=15, xx149=836, xx150=806;
+constexpr int xx151=235, xx152=108, xx154=60, xx155=442, xx156=191, xx157=147, xx158=99, xx159=145, xx160=70, xx161=143;
+constexpr int xx162=90, xx163=1365, xx164=435, xx165=214, xx166=1206, xx167=1015;
+constexpr int xx168=6149, xx169=78;
+constexpr int xx170=755, xx171=209, xx172=1323;
+constexpr int xx173=143, xx174=96, xx175=1953, xx176=305, xx177=962, xx178=161, xx179=2590, xx180=30, xx185=978, xx186=1002, xx187=474, xx188=1150;
+constexpr int xx189=1027, xx190=636, xx191=277, xx192=603, xx193=148, xx194=389, xx195=90;
+constexpr int xx196=684, xx197=40, xx198=1001, xx199=932, xx200=751, xx201=439, xx202=65;
 
 /*
 TUNE(SetRange(-256, 256), xx1);
