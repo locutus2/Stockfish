@@ -249,7 +249,6 @@ Search::Worker::Worker(SharedState&                    sharedState,
 }
 
 inline int Search::Worker::P(int A, int B) const {
-    return A;
     return A + (msb(nodes + 1) + msb(threads.size())) * B * A / (23 * S);
 }
 
