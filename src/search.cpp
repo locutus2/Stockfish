@@ -51,32 +51,33 @@
 
 namespace Stockfish {
 
-int xx1a=8, xx2a=9536, xx3a=8494, xx4a=10132, xx5a=7156;
-int xx6a=165, xx7a=145, xx8a=137;
-int xx9a=97;
-int xx10a=9000, xx11a=137, xx12a=91;
-int xx13a=11325, xx14a=2115, xx15a=987, xx16a=5688, xx17a=15698, xx18a=5189, xx19a=1157, xx20a=723, xx21a=790, xx22a=1104, xx23a=1455, xx24a=22375, xx25a=10400, xx26a=18956;
-int xx27a=5020, xx28a=10, xx29a=92425, xx30a=6660, xx31a=5030;
-int xx32a=68, xx33a=689, xx34a=1238, xx35a=5, xx36a=8, xx37a=529, xx38a=2809;
-int xx39a=130, xx40a=71, xx41a=1043, xx42a=4, xx43a=2142, xx44a=96, xx45a=8;
-int xx46a=2023, xx47a=1563, xx48a=583, xx49a=944, xx50a=1438;
-int xx53a=3, xx55a=2, xx56a=173;
-int xx57a=514, xx58a=294;
-int xx59a=91, xx60a=21, xx61a=2094, xx62a=1324, xx63a=331, xx64a=158105, xx65a=14;
-int xx66a=18, xx67a=390, xx68a=6;
-int xx69a=224, xx70a=64, xx73a=418;
-int xx74a=946, xx75a=7, xx76a=231, xx77a=211, xx78a=130, xx79a=157, xx80a=29, xx82a=4312, xx83a=76, xx84a=3220, xx85a=47, xx86a=171, xx87a=134, xx88a=90, xx89a=11, xx90a=27;
-int xx91a=6, xx92a=56, xx93a=81, xx94a=60, xx95a=229958, xx96a=4, xx97a=198, xx98a=212, xx99a=921, xx100a=127649, xx101a=45, xx102a=76, xx103a=308, xx104a=250, xx105a=92, xx106a=52;
-int xx107a=2618, xx108a=991, xx109a=903, xx110a=978, xx111a=1051, xx112a=543, xx114a=66, xx116a=30450, xx117a=3094, xx119a=1056, xx121a=1415, xx123a=1051, xx125a=814;
-int xx127a=50, xx128a=2018, xx130a=803, xx131a=794, xx133a=2, xx134a=2, xx135a=1, xx136a=0, xx137a=43, xx138a=2, xx139a=9, xx140a=1365, xx141a=1118, xx145a=3212, xx146a=4784;
-int xx147a=8, xx148a=14, xx149a=809, xx150a=865;
-int xx151a=228, xx152a=104, xx154a=63, xx155a=508, xx156a=184, xx157a=143, xx158a=92, xx159a=149, xx160a=70, xx161a=144, xx162a=92, xx163a=1365, xx164a=400, xx165a=220, xx166a=1164, xx167a=964;
-int xx168a=5475, xx169a=78;
-int xx170a=757, xx171a=218, xx172a=1200;
-int xx173a=151, xx174a=91, xx175a=1730, xx176a=302, xx177a=951, xx178a=156, xx179a=2468, xx180a=30, xx185a=957, xx186a=1024, xx187a=503, xx188a=1157;
-int xx189a=1157, xx190a=648, xx191a=288, xx192a=576, xx193a=140, xx194a=441, xx195a=88;
-int xx196a=741, xx197a=38, xx198a=955, xx199a=955, xx200a=704, xx201a=439, xx202a=70;
+constexpr int xx1a=8, xx2a=9536, xx3a=8494, xx4a=10132, xx5a=7156;
+constexpr int xx6a=165, xx7a=145, xx8a=137;
+constexpr int xx9a=97;
+constexpr int xx10a=9000, xx11a=137, xx12a=91;
+constexpr int xx13a=11325, xx14a=2115, xx15a=987, xx16a=5688, xx17a=15698, xx18a=5189, xx19a=1157, xx20a=723, xx21a=790, xx22a=1104, xx23a=1455, xx24a=22375, xx25a=10400, xx26a=18956;
+constexpr int xx27a=5020, xx28a=10, xx29a=92425, xx30a=6660, xx31a=5030;
+constexpr int xx32a=68, xx33a=689, xx34a=1238, xx35a=5, xx36a=8, xx37a=529, xx38a=2809;
+constexpr int xx39a=130, xx40a=71, xx41a=1043, xx42a=4, xx43a=2142, xx44a=96, xx45a=8;
+constexpr int xx46a=2023, xx47a=1563, xx48a=583, xx49a=944, xx50a=1438;
+constexpr int xx53a=3, xx55a=2, xx56a=173;
+constexpr int xx57a=514, xx58a=294;
+constexpr int xx59a=91, xx60a=21, xx61a=2094, xx62a=1324, xx63a=331, xx64a=158105, xx65a=14;
+constexpr int xx66a=18, xx67a=390, xx68a=6;
+constexpr int xx69a=224, xx70a=64, xx73a=418;
+constexpr int xx74a=946, xx75a=7, xx76a=231, xx77a=211, xx78a=130, xx79a=157, xx80a=29, xx82a=4312, xx83a=76, xx84a=3220, xx85a=47, xx86a=171, xx87a=134, xx88a=90, xx89a=11, xx90a=27;
+constexpr int xx91a=6, xx92a=56, xx93a=81, xx94a=60, xx95a=229958, xx96a=4, xx97a=198, xx98a=212, xx99a=921, xx100a=127649, xx101a=45, xx102a=76, xx103a=308, xx104a=250, xx105a=92, xx106a=52;
+constexpr int xx107a=2618, xx108a=991, xx109a=903, xx110a=978, xx111a=1051, xx112a=543, xx114a=66, xx116a=30450, xx117a=3094, xx119a=1056, xx121a=1415, xx123a=1051, xx125a=814;
+constexpr int xx127a=50, xx128a=2018, xx130a=803, xx131a=794, xx133a=2, xx134a=2, xx135a=1, xx136a=0, xx137a=43, xx138a=2, xx139a=9, xx140a=1365, xx141a=1118, xx145a=3212, xx146a=4784;
+constexpr int xx147a=8, xx148a=14, xx149a=809, xx150a=865;
+constexpr int xx151a=228, xx152a=104, xx154a=63, xx155a=508, xx156a=184, xx157a=143, xx158a=92, xx159a=149, xx160a=70, xx161a=144, xx162a=92, xx163a=1365, xx164a=400, xx165a=220, xx166a=1164, xx167a=964;
+constexpr int xx168a=5475, xx169a=78;
+constexpr int xx170a=757, xx171a=218, xx172a=1200;
+constexpr int xx173a=151, xx174a=91, xx175a=1730, xx176a=302, xx177a=951, xx178a=156, xx179a=2468, xx180a=30, xx185a=957, xx186a=1024, xx187a=503, xx188a=1157;
+constexpr int xx189a=1157, xx190a=648, xx191a=288, xx192a=576, xx193a=140, xx194a=441, xx195a=88;
+constexpr int xx196a=741, xx197a=38, xx198a=955, xx199a=955, xx200a=704, xx201a=439, xx202a=70;
 
+/*
 TUNE(SetRange(-256, 256), xx1a);
 TUNE(xx2a, xx3a, xx4a, xx5a, xx6a, xx7a, xx8a, xx9a, xx10a, xx11a, xx12a, xx13a, xx14a, xx16a, xx17a, xx18a, xx19a, xx20a, xx21a, xx22a, xx23a, xx24a, xx25a, xx26a,
 xx27a, xx28a, xx29a, xx30a, xx31a, xx32a, xx33a, xx34a, xx35a, xx36a, xx37a, xx38a, xx39a, xx40a, xx41a, xx42a, xx43a, xx44a, xx45a, xx46a, xx47a, xx48a, xx49a, xx50a);
@@ -94,41 +95,43 @@ TUNE(SetRange(-4, 6), xx138a);
 TUNE(xx139a, xx140a, xx141a, xx145a, xx146a, xx147a, xx148a, xx149a, xx150a, xx151a, xx152a, xx154a, xx155a, xx156a, xx157a, xx158a, xx159a,
 xx160a, xx161a, xx162a, xx163a, xx164a, xx165a, xx166a, xx167a, xx168a, xx169a, xx170a, xx171a, xx172a, xx173a, xx174a, xx175a, xx176a, xx177a, xx178a, xx179a, xx180a,
 xx185a, xx186a, xx187a, xx188a, xx189a, xx190a, xx191a, xx192a, xx193a, xx194a, xx195a, xx196a, xx197a, xx198a, xx199a, xx200a, xx201a, xx202a);
+*/
 
-int xx1b=0, xx2b=0, xx3b=0, xx4b=0, xx5b=0;
-int xx6b=0, xx7b=0, xx8b=0;
-int xx9b=0;
-int xx10b=0, xx11b=0, xx12b=0;
-int xx13b=0, xx14b=0, xx15b=0, xx16b=0, xx17b=0, xx18b=0, xx19b=0, xx20b=0, xx21b=0, xx22b=0;
-int xx23b=0, xx24b=0, xx25b=0, xx26b=0;
-int xx27b=0, xx28b=0, xx29b=0, xx30b=0, xx31b=0;
-int xx32b=0, xx33b=0, xx34b=0, xx35b=0, xx36b=0, xx37b=0, xx38b=0;
-int xx39b=0, xx40b=0, xx41b=0, xx42b=0, xx43b=0, xx44b=0, xx45b=0;
-int xx46b=0, xx47b=0, xx48b=0, xx49b=0, xx50b=0;
-int xx53b=0, xx55b=0, xx56b=0;
-int xx57b=0, xx58b=0;
-int xx59b=0, xx60b=0, xx61b=0, xx62b=0, xx63b=0, xx64b=0, xx65b=0;
-int xx66b=0, xx67b=0, xx68b=0;
-int xx69b=0, xx70b=0, xx73b=0;
-int xx74b=0, xx75b=0, xx76b=0, xx77b=0, xx78b=0, xx79b=0, xx80b=0, xx82b=0, xx83b=0, xx84b=0, xx85b=0;
-int xx86b=0, xx87b=0, xx88b=0, xx89b=0, xx90b=0;
-int xx91b=0, xx92b=0, xx93b=0, xx94b=0, xx95b=0, xx96b=0, xx97b=0, xx98b=0, xx99b=0, xx100b=0, xx101b=0;
-int xx102b=0, xx103b=0, xx104b=0, xx105b=0, xx106b=0;
-int xx107b=0, xx108b=0, xx109b=0, xx110b=0, xx111b=0, xx112b=0, xx114b=0, xx116b=0, xx117b=0;
-int xx119b=0, xx121b=0, xx123b=0, xx125b=0;
-int xx127b=0, xx128b=0, xx130b=0, xx131b=0, xx133b=0, xx134b=0, xx135b=0, xx136b=0, xx137b=0, xx138b=0, xx139b=0;
-int xx140b=0, xx141b=0, xx145b=0, xx146b=0;
-int xx147b=0, xx148b=0, xx149b=0, xx150b=0;
-int xx151b=0, xx152b=0, xx154b=0, xx155b=0, xx156b=0, xx157b=0, xx158b=0, xx159b=0, xx160b=0, xx161b=0;
-int xx162b=0, xx163b=0, xx164b=0, xx165b=0, xx166b=0, xx167b=0;
-int xx168b=0, xx169b=0;
-int xx170b=0, xx171b=0, xx172b=0;
-int xx173b=0, xx174b=0, xx175b=0, xx176b=0, xx177b=0, xx178b=0, xx179b=0, xx180b=0, xx185b=0, xx186b=0, xx187b=0, xx188b=0;
-int xx189b=0, xx190b=0, xx191b=0, xx192b=0, xx193b=0, xx194b=0, xx195b=0;
-int xx196b=0, xx197b=0, xx198b=0, xx199b=0, xx200b=0, xx201b=0, xx202b=0;
+constexpr int xx1b=0, xx2b=0, xx3b=0, xx4b=0, xx5b=0;
+constexpr int xx6b=0, xx7b=0, xx8b=0;
+constexpr int xx9b=0;
+constexpr int xx10b=0, xx11b=0, xx12b=0;
+constexpr int xx13b=0, xx14b=0, xx15b=0, xx16b=0, xx17b=0, xx18b=0, xx19b=0, xx20b=0, xx21b=0, xx22b=0;
+constexpr int xx23b=0, xx24b=0, xx25b=0, xx26b=0;
+constexpr int xx27b=0, xx28b=0, xx29b=0, xx30b=0, xx31b=0;
+constexpr int xx32b=0, xx33b=0, xx34b=0, xx35b=0, xx36b=0, xx37b=0, xx38b=0;
+constexpr int xx39b=0, xx40b=0, xx41b=0, xx42b=0, xx43b=0, xx44b=0, xx45b=0;
+constexpr int xx46b=0, xx47b=0, xx48b=0, xx49b=0, xx50b=0;
+constexpr int xx53b=0, xx55b=0, xx56b=0;
+constexpr int xx57b=0, xx58b=0;
+constexpr int xx59b=0, xx60b=0, xx61b=0, xx62b=0, xx63b=0, xx64b=0, xx65b=0;
+constexpr int xx66b=0, xx67b=0, xx68b=0;
+constexpr int xx69b=0, xx70b=0, xx73b=0;
+constexpr int xx74b=0, xx75b=0, xx76b=0, xx77b=0, xx78b=0, xx79b=0, xx80b=0, xx82b=0, xx83b=0, xx84b=0, xx85b=0;
+constexpr int xx86b=0, xx87b=0, xx88b=0, xx89b=0, xx90b=0;
+constexpr int xx91b=0, xx92b=0, xx93b=0, xx94b=0, xx95b=0, xx96b=0, xx97b=0, xx98b=0, xx99b=0, xx100b=0, xx101b=0;
+constexpr int xx102b=0, xx103b=0, xx104b=0, xx105b=0, xx106b=0;
+constexpr int xx107b=0, xx108b=0, xx109b=0, xx110b=0, xx111b=0, xx112b=0, xx114b=0, xx116b=0, xx117b=0;
+constexpr int xx119b=0, xx121b=0, xx123b=0, xx125b=0;
+constexpr int xx127b=0, xx128b=0, xx130b=0, xx131b=0, xx133b=0, xx134b=0, xx135b=0, xx136b=0, xx137b=0, xx138b=0, xx139b=0;
+constexpr int xx140b=0, xx141b=0, xx145b=0, xx146b=0;
+constexpr int xx147b=0, xx148b=0, xx149b=0, xx150b=0;
+constexpr int xx151b=0, xx152b=0, xx154b=0, xx155b=0, xx156b=0, xx157b=0, xx158b=0, xx159b=0, xx160b=0, xx161b=0;
+constexpr int xx162b=0, xx163b=0, xx164b=0, xx165b=0, xx166b=0, xx167b=0;
+constexpr int xx168b=0, xx169b=0;
+constexpr int xx170b=0, xx171b=0, xx172b=0;
+constexpr int xx173b=0, xx174b=0, xx175b=0, xx176b=0, xx177b=0, xx178b=0, xx179b=0, xx180b=0, xx185b=0, xx186b=0, xx187b=0, xx188b=0;
+constexpr int xx189b=0, xx190b=0, xx191b=0, xx192b=0, xx193b=0, xx194b=0, xx195b=0;
+constexpr int xx196b=0, xx197b=0, xx198b=0, xx199b=0, xx200b=0, xx201b=0, xx202b=0;
 
 constexpr int S = 256;
 
+/*
 TUNE(SetRange(-S, S), xx1b);
 TUNE(SetRange(-S, S), xx2b, xx3b, xx4b, xx5b, xx6b, xx7b, xx8b, xx9b, xx10b, xx11b, xx12b, xx13b, xx14b, xx16b, xx17b, xx18b, xx19b, xx20b, xx21b, xx22b, xx23b, xx24b, xx25b, xx26b,
 xx27b, xx28b, xx29b, xx30b, xx31b, xx32b, xx33b, xx34b, xx35b, xx36b, xx37b, xx38b, xx39b, xx40b, xx41b, xx42b, xx43b, xx44b, xx45b, xx46b, xx47b, xx48b, xx49b, xx50b);
@@ -146,6 +149,7 @@ TUNE(SetRange(-S, S), xx138b);
 TUNE(SetRange(-S, S), xx139b, xx140b, xx141b, xx145b, xx146b, xx147b, xx148b, xx149b, xx150b, xx151b, xx152b, xx154b, xx155b, xx156b, xx157b, xx158b, xx159b,
 xx160b, xx161b, xx162b, xx163b, xx164b, xx165b, xx166b, xx167b, xx168b, xx169b, xx170b, xx171b, xx172b, xx173b, xx174b, xx175b, xx176b, xx177b, xx178b, xx179b, xx180b,
 xx185b, xx186b, xx187b, xx188b, xx189b, xx190b, xx191b, xx192b, xx193b, xx194b, xx195b, xx196b, xx197b, xx198b, xx199b, xx200b, xx201b, xx202b);
+*/
 
 namespace TB = Tablebases;
 
@@ -249,7 +253,7 @@ Search::Worker::Worker(SharedState&                    sharedState,
 }
 
 inline int Search::Worker::P(int A, int B) const {
-    return A + (msb(nodes + 1) + msb(threads.size())) * B * A / (23 * S);
+    return A + (msb(nodes + 1) + msb(threads.size())) * (B * A / (23 * S));
 }
 
 void Search::Worker::ensure_network_replicated() {
