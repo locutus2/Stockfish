@@ -1167,7 +1167,7 @@ moves_loop:  // When in check, search starts here
             else if (cutNode)
                 extension = -2;
 
-            else if (!(nodes & 127))
+            else if (!(nodes & 255))
                 extension = 1;
         }
 
