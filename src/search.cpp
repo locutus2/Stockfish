@@ -1167,7 +1167,7 @@ moves_loop:  // When in check, search starts here
             else if (cutNode)
                 extension = -2;
 
-            else if (capture && type_of(movedPiece) == PAWN)
+            else if (!(nodes & 7) && capture && type_of(movedPiece) == PAWN)
                 extension = 1;
         }
 
