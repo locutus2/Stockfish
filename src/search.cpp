@@ -280,7 +280,7 @@ Search::Worker::Worker(SharedState&                    sharedState,
 }
 
 inline int Search::Worker::P(int A, int B) const {
-    return A + (msb(nodes + 1) + msb(threads.size())) * (B * A / (23 * S));
+    return A + B * (msb(nodes + 1) + msb(threads.size()));
 }
 
 void Search::Worker::ensure_network_replicated() {
