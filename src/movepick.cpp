@@ -21,6 +21,7 @@
 #include <cassert>
 #include <limits>
 #include <utility>
+#include <iostream>
 
 #include "bitboard.h"
 #include "misc.h"
@@ -61,18 +62,73 @@ enum Stages {
 // The order of moves smaller than the limit is left unspecified.
 void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 
-    const int s = std::distance(begin, end) / 2;
-    if(s > 2)
+    constexpr int CACHE_LINE_SIZE = std::hardware_destructive_interference_size;
+    constexpr int S = CACHE_LINE_SIZE / sizeof(ExtMove);
+    //std::cerr << "CACHELINE=" << CACHE_LINE_SIZE << std::endl;
+    //std::cerr << "K=" << K << std::endl;
+    //std::exit(-1);
+    /*
+    if(std::distance(begin, end) >= S)
     {
-        for (ExtMove *sortedEnd = begin, *p = begin + s; p < end; ++p)
+        for (ExtMove *sortedEnd = begin, *p = begin + S; p < end; ++p)
             if (p->value >= limit)
             {
                 ExtMove tmp = *p, *q;
                 *p          = *++sortedEnd;
-                for (q = sortedEnd; q >= begin + s  && *(q - s) < tmp; q -= s)
-                    *q = *(q - s);
+                for (q = sortedEnd; q >= begin + S  && *(q - S) < tmp; q -= S)
+                    *q = *(q - S);
                 *q = tmp;
             }
+    }
+    */
+
+    /*
+    const int n = std::distance(begin, end);
+    if(n >= 2 * S)
+    {
+        ExtMove tmp[2 * S];
+        for(ExtMove *cacheLine = begin; cacheLine + 2 * S < end; cacheLine += S)
+        {
+            ExtMove *q = tmp;
+            for (ExtMove *p = cacheLine; p < cacheLine + S; ++p, ++q)
+                if(*p < *(p + S))
+                {
+                    *q = *(p + S);
+                    *(q + S) = *p;
+                }
+                else
+                {
+                    *q = *p;
+                    *(q + S) = *(p + S);
+                }
+            std::memcpy(cacheLine, tmp, 2 * CACHE_LINE_SIZE);
+        }
+    }
+    */
+
+    const int n = std::distance(begin, end);
+    if(n >= 2 * S)
+    {
+        ExtMove tmp[2 * S];
+        for(ExtMove *cacheLine = begin + S; cacheLine + S < end; cacheLine += S)
+        {
+            for (ExtMove *cl = cacheLine; cl - S >= begin; cl -= S)
+            {
+                ExtMove *q = tmp;
+                for (ExtMove *p = cl - S; p < cl; ++p, ++q)
+                    if(*(p - S) < *p)
+                    {
+                        *(q - S) = *p;
+                        *q = *(p - S);
+                    }
+                    else
+                    {
+                        *(q - S) = *(p - S);
+                        *q = *p;
+                    }
+                std::memcpy(cl - S, tmp, 2 * CACHE_LINE_SIZE);
+            }
+        }
     }
 
     for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
