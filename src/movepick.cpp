@@ -61,6 +61,21 @@ enum Stages {
 // The order of moves smaller than the limit is left unspecified.
 void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 
+    constexpr int STEP = 8;
+
+    if(std::distance(begin, end) >= STEP)
+    {
+        for (ExtMove *sortedEnd = begin, *p = begin + STEP; p < end; ++p)
+            if (p->value >= limit)
+            {
+                ExtMove tmp = *p, *q;
+                *p          = *++sortedEnd;
+                for (q = sortedEnd; q >= begin + STEP  && *(q - STEP) < tmp; q -= STEP)
+                    *q = *(q - STEP);
+                *q = tmp;
+            }
+    }
+
     for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
         if (p->value >= limit)
         {
