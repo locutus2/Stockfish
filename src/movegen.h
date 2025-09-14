@@ -38,6 +38,7 @@ enum GenType {
 
 struct ExtMove: public Move {
     int value;
+    //int index;
 
     void operator=(Move m) { data = m.raw(); }
 
@@ -47,6 +48,7 @@ struct ExtMove: public Move {
 };
 
 inline bool operator<(const ExtMove& f, const ExtMove& s) { return f.value < s.value; }
+//inline bool operator<(const ExtMove& f, const ExtMove& s) { return f.value < s.value || (f.value == s.value && f.index > s.index); }
 
 template<GenType>
 Move* generate(const Position& pos, Move* moveList);

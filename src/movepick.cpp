@@ -61,6 +61,74 @@ enum Stages {
 // The order of moves smaller than the limit is left unspecified.
 void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 
+    //int i = 0;
+    //for (ExtMove *p = begin; p != end; ++p)
+    //    p->index = i++;
+
+    //std::vector<ExtMove> cmove(begin, end);
+    //std::vector<ExtMove> smove(begin, end);
+    //std::vector<ExtMove> cmove_s2(begin, end);
+
+    //std::stable_sort(smove.begin(), smove.end());
+
+    //int s = std::min(1,std::max(int(std::distance(begin, end)) / 3, 1));
+    int s = std::max(int(std::distance(begin, end)) / 3, 1);
+    //int s0 = s;
+    while(s >= 1)
+    {
+        for (ExtMove *sortedEnd = begin, *p = begin + s; p < end; ++p)
+            if (p->value >= limit)
+            {
+                ExtMove tmp = *p, *q;
+                *p          = *++sortedEnd;
+                for (q = sortedEnd; q >= begin + s  && *(q - s) < tmp; q -= s)
+                    *q = *(q - s);
+                *q = tmp;
+            }
+        //if(s == 2)
+        //    std::copy(begin, end, cmove_s2.begin());
+        s = (s + 1) / 3;
+    }
+
+    /*
+    //int i = 0;
+    //for (ExtMove *p = begin; p != end; ++p)
+    //    p->index = i++;
+
+    int s = std::max(int(std::distance(begin, end)) / 3, 1);
+    while(s >= 1)
+    {
+        for (ExtMove *sortedEnd = begin, *p = begin + s; p < end; ++p)
+            if (p->value >= limit)
+            {
+                ExtMove tmp = *p, *q;
+                *p          = *++sortedEnd;
+                for (q = sortedEnd; q > begin + s - 1  && *(q - s) < tmp; --q)
+                    *q = *(q - s);
+                *q = tmp;
+            }
+        s /= 3;
+    }
+    */
+
+    /*
+    const int s = std::distance(begin, end) / 2;
+    if(s >= 3)
+    {
+        for (ExtMove *sortedEnd = begin, *p = begin + s; p < end; ++p)
+            if (p->value >= limit)
+            {
+                ExtMove tmp = *p, *q;
+                *p          = *++sortedEnd;
+                for (q = sortedEnd; q > begin + s - 1  && *(q - s) < tmp; --q)
+                    *q = *(q - s);
+                *q = tmp;
+            }
+    }
+    */
+
+    // master
+    /*
     for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
         if (p->value >= limit)
         {
@@ -70,6 +138,47 @@ void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
                 *q = *(q - 1);
             *q = tmp;
         }
+    */
+
+    /*
+    if(begin != end && s0 > 1)
+    {
+        bool ok = true;
+        for (ExtMove *p = begin + 1; p != end; ++p)
+        {
+            if(p->value >= limit)
+            {
+                if((p-1)->value < p->value || ((p-1)->value == p->value && (p-1)->index > p->index)) 
+                {
+                    ok = false;
+                    std::cerr << "error " << std::distance(begin,p) << " " << (p-1)->value << " < " << p->value << std::endl;
+                }
+                //assert((p-1)->value >= p->value);
+                //assert((p-1)->value > p->value 
+                //        || ((p-1)->value == p->value && (p-1)->index < p->index));
+                //        
+            }
+        }
+        if(!ok)
+        {
+            std::cerr << "limit " << limit << std::endl;
+            std::cerr << "original:";
+            for(int j = 0; j < int(cmove.size()); j++)
+                std::cerr << " " << cmove[j].value << "/" << cmove[j].index;
+            std::cerr << std::endl;
+            std::cerr << "after s=2:";
+            for(int j = 0; j < int(cmove_s2.size()); j++)
+                std::cerr << " " << cmove_s2[j].value << "/" << cmove_s2[j].index;
+            std::cerr << std::endl;
+            std::cerr << "sorted:";
+            for (ExtMove *p = begin; p != end; ++p)
+                std::cerr << " " << p->value << "/" << p->index;
+            std::cerr << std::endl;
+            assert(ok);
+        }
+    }
+    */
+
 }
 
 }  // namespace
