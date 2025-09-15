@@ -28,6 +28,7 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <map>
 #include <limits>
 #include <mutex>
 #include <sstream>
@@ -311,6 +312,7 @@ struct DebugExtremes: public DebugInfo<3> {
     }
 };
 
+std::array<std::map<int, DebugInfo<2>>, MaxDebugSlots>  auc;
 std::array<DebugInfo<2>, MaxDebugSlots>  hit;
 std::array<DebugInfo<2>, MaxDebugSlots>  mean;
 std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
@@ -318,6 +320,12 @@ std::array<DebugInfo<6>, MaxDebugSlots>  correl;
 std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
+
+void dbg_auc_of(int val, bool cond, int slot) {
+    ++auc.at(slot)[val][0];
+    if (cond)
+        ++auc.at(slot)[val][1];
+}
 
 void dbg_hit_on(bool cond, int slot) {
 
@@ -366,6 +374,22 @@ void dbg_print() {
     int64_t n;
     auto    E   = [&n](int64_t x) { return double(x) / n; };
     auto    sqr = [](double x) { return x * x; };
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        if (!auc[i].empty())
+        {
+            n = 0; 
+            int64_t k = 0; 
+            double inv = 0;
+            for(auto x : auc[i])
+            {
+                inv += (x.second[0] - x.second[1]) * (k + x.second[1] * 0.5);
+                n += x.second[0];
+                k += x.second[1];
+            }
+            double auc = inv / n / (n-1) * 2;
+            std::cerr << "Auc #" << i << " Auc " << auc << std::endl;
+        }
 
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = hit[i][0]))
