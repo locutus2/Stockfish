@@ -381,11 +381,11 @@ void dbg_print() {
             n = 0; 
             int64_t k = 0; 
             double inv = 0;
-            for(auto x : auc[i])
+            for(auto x = auc[i].begin(); x != auc[i].end(); ++x)
             {
-                inv += (x.second[0] - x.second[1]) * (k + x.second[1] * 0.5);
-                n += x.second[0];
-                k += x.second[1];
+                inv += (x->second[0] - x->second[1]) * (k + x->second[1] * 0.5);
+                n += x->second[0];
+                k += x->second[1];
             }
             double auc = inv / n / (n-1) * 2;
             std::cerr << "Auc #" << i << " Auc " << auc << std::endl;
