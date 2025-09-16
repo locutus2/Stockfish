@@ -1283,6 +1283,7 @@ moves_loop:  // When in check, search starts here
 
             /*
              bool CC = mp.is_good_quiet();
+             dbg_auc_of(extmove.values[i], T, 10+i);
              * Auc #0 Auc 0.735594
              * Auc #10 Auc 0.646006
              * Auc #11 Auc 0.617481
@@ -1297,6 +1298,7 @@ moves_loop:  // When in check, search starts here
              * Hit #0: Total 72042562 Hits 10195238 Hit Rate (%) 14.1517
              
              bool CC = mp.is_bad_quiet();
+             dbg_auc_of(extmove.values[i], T, 10+i);
              Auc #0 Auc 0.612966
              Auc #10 Auc 0.617647
              Auc #11 Auc 0.576535
@@ -1311,6 +1313,7 @@ moves_loop:  // When in check, search starts here
              Hit #0: Total 29217115 Hits 420326 Hit Rate (%) 1.43863
 
              bool CC = mp.is_good_quiet() || mp.is_bad_quiet();
+             dbg_auc_of(extmove.values[i], T, 10+i);
              Auc #0 Auc 0.794852
              Auc #10 Auc 0.700668
              Auc #11 Auc 0.674142
@@ -1323,6 +1326,21 @@ moves_loop:  // When in check, search starts here
              Auc #18 Auc 0.519743
              Auc #19 Auc 0.719326
              Hit #0: Total 101259677 Hits 10615564 Hit Rate (%) 10.4835
+
+             bool CC = mp.is_good_quiet() && ss->ply < LOW_PLY_HISTORY_SIZE;
+             dbg_auc_of(extmove.value + extmove.values[i], T, 10+i);
+             Auc #0 Auc 0.774484
+             Auc #10 Auc 0.772863
+             Auc #11 Auc 0.770252
+             Auc #12 Auc 0.775501
+             Auc #13 Auc 0.768197
+             Auc #14 Auc 0.759842
+             Auc #15 Auc 0.768012
+             Auc #16 Auc 0.774484
+             Auc #17 Auc 0.774664
+             Auc #18 Auc 0.766237
+             Auc #19 Auc 0.774549
+             Hit #0: Total 5260837 Hits 779973 Hit Rate (%) 14.826
              * */
         }
 
