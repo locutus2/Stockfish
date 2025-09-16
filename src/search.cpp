@@ -1269,7 +1269,7 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        bool CC = mp.is_good_quiet();
+        bool CC = mp.is_good_quiet() || mp.is_bad_quiet();
         if(CC)
         {
             bool T = value > alpha;
@@ -1293,6 +1293,34 @@ moves_loop:  // When in check, search starts here
              * Auc #18 Auc 0.50993
              * Auc #19 Auc 0.663211
              * Hit #0: Total 72042562 Hits 10195238 Hit Rate (%) 14.1517
+             
+             bool CC = mp.is_bad_quiet();
+             Auc #0 Auc 0.612966
+             Auc #10 Auc 0.617647
+             Auc #11 Auc 0.576535
+             Auc #12 Auc 0.524737
+             Auc #13 Auc 0.473316
+             Auc #14 Auc 0.47299
+             Auc #15 Auc 0.4764
+             Auc #16 Auc 0.473312
+             Auc #17 Auc 0.529166
+             Auc #18 Auc 0.51472
+             Auc #19 Auc 0.501842
+             Hit #0: Total 29217115 Hits 420326 Hit Rate (%) 1.43863
+
+             bool CC = mp.is_good_quiet() || mp.is_bad_quiet();
+             Auc #0 Auc 0.794852
+             Auc #10 Auc 0.700668
+             Auc #11 Auc 0.674142
+             Auc #12 Auc 0.635487
+             Auc #13 Auc 0.627857
+             Auc #14 Auc 0.61796
+             Auc #15 Auc 0.654863
+             Auc #16 Auc 0.631843
+             Auc #17 Auc 0.543156
+             Auc #18 Auc 0.519743
+             Auc #19 Auc 0.719326
+             Hit #0: Total 101259677 Hits 10615564 Hit Rate (%) 10.4835
              * */
         }
 
