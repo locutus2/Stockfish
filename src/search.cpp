@@ -249,7 +249,7 @@ Search::Worker::Worker(SharedState&                    sharedState,
 }
 
 inline int Search::Worker::P(int A, int B) const {
-    return A + rootDepth * B * A / (23 * S);
+    return A + logNodes * B * A / (23 * S);
 }
 
 void Search::Worker::ensure_network_replicated() {
@@ -395,6 +395,8 @@ void Search::Worker::iterative_deepening() {
     while (++rootDepth < MAX_PLY && !threads.stop
            && !(limits.depth && mainThread && rootDepth > limits.depth))
     {
+        logNodes = msb(nodes + 1);
+
         // Age out PV variability metric
         if (mainThread)
             totBestMoveChanges /= 2;
