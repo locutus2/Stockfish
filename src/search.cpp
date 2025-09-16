@@ -1269,7 +1269,8 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        bool CC = mp.is_good_quiet() || mp.is_bad_quiet();
+        //bool CC = mp.is_good_quiet() || mp.is_bad_quiet();
+        bool CC = mp.is_good_quiet();
         if(CC)
         {
             bool T = value > alpha;
@@ -1277,7 +1278,8 @@ moves_loop:  // When in check, search starts here
             dbg_auc_of(extmove.value, T, 0);
 
             for(int i = 0; i < int(extmove.values.size()); i++)
-                dbg_auc_of(extmove.values[i], T, 10+i);
+                dbg_auc_of(extmove.value + extmove.values[i], T, 10+i);
+                //dbg_auc_of(extmove.values[i], T, 10+i);
 
             /*
              bool CC = mp.is_good_quiet();
@@ -1982,7 +1984,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        dbg_print();
+        //dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI
