@@ -1270,7 +1270,7 @@ moves_loop:  // When in check, search starts here
         undo_move(pos, move);
 
         //bool CC = mp.is_good_quiet() || mp.is_bad_quiet();
-        bool CC = mp.is_good_quiet();
+        bool CC = mp.is_good_quiet() && ss->ply < LOW_PLY_HISTORY_SIZE;
         if(CC)
         {
             bool T = value > alpha;
@@ -1981,10 +1981,10 @@ void SearchManager::check_time(Search::Worker& worker) {
     TimePoint elapsed = tm.elapsed([&worker]() { return worker.threads.nodes_searched(); });
     TimePoint tick    = worker.limits.startTime + elapsed;
 
-    if (tick - lastInfoTime >= 1000)
+    if (tick - lastInfoTime >= 10000)
     {
         lastInfoTime = tick;
-        //dbg_print();
+        dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI
