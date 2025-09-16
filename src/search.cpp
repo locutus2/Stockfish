@@ -978,8 +978,11 @@ moves_loop:  // When in check, search starts here
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move()) != Move::none())
+    ExtMove extmove;
+    while ((extmove = mp.next_move()) != Move::none())
     {
+        move = extmove;
+
         assert(move.is_ok());
 
         if (move == excludedMove)
@@ -1265,6 +1268,15 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+        bool CC = mp.is_quiet();
+        if(CC)
+        {
+            bool T = value > alpha;
+            dbg_hit_on(T, 0);
+            dbg_auc_of(moveCount, T, 0);
+            dbg_auc_of(extmove.value, T, 1);
+        }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 

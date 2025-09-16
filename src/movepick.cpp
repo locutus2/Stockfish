@@ -118,6 +118,11 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     stage = PROBCUT_TT + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm));
 }
 
+bool MovePicker::is_quiet() const {
+    return stage == GOOD_QUIET;
+    //return stage == GOOD_QUIET || stage == BAD_QUIET;
+}
+
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
 // with a good history. Quiets moves are ordered using the history tables.
@@ -198,19 +203,19 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 // Returns the next move satisfying a predicate function.
 // This never returns the TT move, as it was emitted before.
 template<typename Pred>
-Move MovePicker::select(Pred filter) {
+ExtMove MovePicker::select(Pred filter) {
 
     for (; cur < endCur; ++cur)
-        if (*cur != ttMove && filter())
+        if (Move(*cur) != ttMove && filter())
             return *cur++;
 
-    return Move::none();
+    return ExtMove(Move::none());
 }
 
 // This is the most important method of the MovePicker class. We emit one
 // new pseudo-legal move on every call until there are no more moves left,
 // picking the move with the highest score from a list of generated moves.
-Move MovePicker::next_move() {
+ExtMove MovePicker::next_move() {
 
     constexpr int goodQuietThreshold = -14000;
 top:
