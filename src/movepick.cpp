@@ -118,9 +118,12 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     stage = PROBCUT_TT + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm));
 }
 
-bool MovePicker::is_quiet() const {
+bool MovePicker::is_good_quiet() const {
     return stage == GOOD_QUIET;
-    //return stage == GOOD_QUIET || stage == BAD_QUIET;
+}
+
+bool MovePicker::is_bad_quiet() const {
+    return stage == BAD_QUIET;
 }
 
 // Assigns a numerical value to each move in a list, used for sorting.
@@ -183,6 +186,18 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply);
+
+            m.values.push_back((*mainHistory)[us][m.from_to()]);
+            m.values.push_back((*pawnHistory)[pawn_history_index(pos)][pc][to]);
+            m.values.push_back((*continuationHistory[0])[pc][to]);
+            m.values.push_back((*continuationHistory[1])[pc][to]);
+            m.values.push_back((*continuationHistory[2])[pc][to]);
+            m.values.push_back((*continuationHistory[3])[pc][to]);
+            m.values.push_back((*continuationHistory[5])[pc][to]);
+            m.values.push_back((bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384);
+            m.values.push_back(bonus[pt] * v);
+            if (ply < LOW_PLY_HISTORY_SIZE)
+                m.values.push_back((*lowPlyHistory)[ply][m.from_to()] / (1 + ply));
         }
 
         else  // Type == EVASIONS

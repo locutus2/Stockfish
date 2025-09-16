@@ -1269,13 +1269,31 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        bool CC = mp.is_quiet();
+        bool CC = mp.is_good_quiet();
         if(CC)
         {
             bool T = value > alpha;
             dbg_hit_on(T, 0);
-            dbg_auc_of(moveCount, T, 0);
-            dbg_auc_of(extmove.value, T, 1);
+            dbg_auc_of(extmove.value, T, 0);
+
+            for(int i = 0; i < int(extmove.values.size()); i++)
+                dbg_auc_of(extmove.values[i], T, 10+i);
+
+            /*
+             bool CC = mp.is_good_quiet();
+             * Auc #0 Auc 0.735594
+             * Auc #10 Auc 0.646006
+             * Auc #11 Auc 0.617481
+             * Auc #12 Auc 0.59796
+             * Auc #13 Auc 0.591348
+             * Auc #14 Auc 0.564376
+             * Auc #15 Auc 0.605629
+             * Auc #16 Auc 0.582228
+             * Auc #17 Auc 0.537204
+             * Auc #18 Auc 0.50993
+             * Auc #19 Auc 0.663211
+             * Hit #0: Total 72042562 Hits 10195238 Hit Rate (%) 14.1517
+             * */
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);

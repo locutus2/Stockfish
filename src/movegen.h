@@ -38,6 +38,7 @@ enum GenType {
 
 struct ExtMove: public Move {
     int value;
+    std::vector<int> values;
 
     ExtMove(Move move = Move::none()) : Move(move) {}
     void operator=(Move m) { data = m.raw(); }
