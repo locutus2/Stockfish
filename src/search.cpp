@@ -1464,7 +1464,12 @@ moves_loop:  // When in check, search starts here
                 dbg_auc_of(x.value, T, 0);
 
                 for(int i = 0; i < int(x.values.size()); i++)
-                    dbg_auc_of(x.value + x.values[i], T, 10+i);
+                {
+                    dbg_auc_of(x.values[i], T, 10+i);
+                    dbg_auc_of(x.value + x.values[i], T, 20+i);
+                    dbg_auc_of(x.value - x.values[i], T, 30+i);
+                }
+                //dbg_auc_of(x.value - x.values[2] + x.values[1], T, 100);
                     //dbg_auc_of(extmove.values[i], T, 10+i);
             }
         }
