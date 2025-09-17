@@ -979,6 +979,7 @@ moves_loop:  // When in check, search starts here
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     ExtMove extmove;
+    std::vector<ExtMove> extmoves[2];
     while ((extmove = mp.next_move()) != Move::none())
     {
         move = extmove;
@@ -1270,16 +1271,21 @@ moves_loop:  // When in check, search starts here
         undo_move(pos, move);
 
         //bool CC = mp.is_good_quiet() || mp.is_bad_quiet();
-        bool CC = mp.is_good_quiet() && ss->ply < LOW_PLY_HISTORY_SIZE;
+        //bool CC = mp.is_good_quiet() && ss->ply < LOW_PLY_HISTORY_SIZE;
+        bool CC = mp.is_evasion() && capture;
         if(CC)
         {
             bool T = value > alpha;
+            extmoves[T].push_back(extmove);
+
+            /*
             dbg_hit_on(T, 0);
             dbg_auc_of(extmove.value, T, 0);
 
             for(int i = 0; i < int(extmove.values.size()); i++)
                 dbg_auc_of(extmove.value + extmove.values[i], T, 10+i);
                 //dbg_auc_of(extmove.values[i], T, 10+i);
+                */
 
             /*
              bool CC = mp.is_good_quiet();
@@ -1445,6 +1451,22 @@ moves_loop:  // When in check, search starts here
                 capturesSearched.push_back(move);
             else
                 quietsSearched.push_back(move);
+        }
+    }
+
+    if(!extmoves[0].empty() && !extmoves[1].empty())
+    {
+        for(int T = 0; T < 2; ++T)
+        {
+            for(auto x : extmoves[T])
+            {
+                dbg_hit_on(T, 0);
+                dbg_auc_of(x.value, T, 0);
+
+                for(int i = 0; i < int(x.values.size()); i++)
+                    dbg_auc_of(x.value + x.values[i], T, 10+i);
+                    //dbg_auc_of(extmove.values[i], T, 10+i);
+            }
         }
     }
 

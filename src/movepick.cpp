@@ -126,6 +126,10 @@ bool MovePicker::is_bad_quiet() const {
     return stage == BAD_QUIET;
 }
 
+bool MovePicker::is_evasion() const {
+    return stage == EVASION;
+}
+
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
 // with a good history. Quiets moves are ordered using the history tables.
@@ -186,7 +190,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply);
-
+/*
             m.values.push_back((*mainHistory)[us][m.from_to()]);
             m.values.push_back((*pawnHistory)[pawn_history_index(pos)][pc][to]);
             m.values.push_back((*continuationHistory[0])[pc][to]);
@@ -198,17 +202,35 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.values.push_back(bonus[pt] * v);
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.values.push_back((*lowPlyHistory)[ply][m.from_to()] / (1 + ply));
+                */
         }
 
         else  // Type == EVASIONS
         {
             if (pos.capture_stage(m))
+            {
                 m.value = PieceValue[capturedPiece] + (1 << 28);
+                m.values.push_back(PieceValue[capturedPiece]);
+                m.values.push_back((*mainHistory)[us][m.from_to()]);
+                m.values.push_back((*continuationHistory[0])[pc][to]);
+                m.values.push_back((*captureHistory)[pc][to][type_of(capturedPiece)]);
+                m.values.push_back((*captureHistory)[pc][to][type_of(capturedPiece)] / 2);
+                m.values.push_back((*captureHistory)[pc][to][type_of(capturedPiece)] / 4);
+                m.values.push_back((*captureHistory)[pc][to][type_of(capturedPiece)] / 8);
+                m.values.push_back((*captureHistory)[pc][to][type_of(capturedPiece)] / 16);
+                m.values.push_back((*captureHistory)[pc][to][type_of(capturedPiece)] - m.value);
+            }
             else
             {
+                m.values.push_back(0);
+                m.values.push_back((*mainHistory)[us][m.from_to()]);
+                m.values.push_back((*continuationHistory[0])[pc][to]);
                 m.value = (*mainHistory)[us][m.from_to()] + (*continuationHistory[0])[pc][to];
                 if (ply < LOW_PLY_HISTORY_SIZE)
+                {
                     m.value += 2 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply);
+                    m.values.push_back(2 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply));
+                }
             }
         }
     }

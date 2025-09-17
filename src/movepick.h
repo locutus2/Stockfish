@@ -52,6 +52,7 @@ class MovePicker {
     void skip_quiet_moves();
     bool is_good_quiet() const;
     bool is_bad_quiet() const;
+    bool is_evasion() const;
 
    private:
     template<typename Pred>
