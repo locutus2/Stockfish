@@ -209,9 +209,9 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         {
             if (pos.capture_stage(m))
             {
-                m.value = //PieceValue[capturedPiece] 
+                m.value = PieceValue[capturedPiece] 
                     + (1 << 28)
-                    + (*captureHistory)[pc][to][type_of(capturedPiece)];
+                    ;//+ (*captureHistory)[pc][to][type_of(capturedPiece)];
                 m.values.push_back(std::rand());
                 //m.values.push_back(std::rand() + (1 << 28));
                 m.values.push_back(PieceValue[capturedPiece]);

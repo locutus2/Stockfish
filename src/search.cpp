@@ -1272,7 +1272,7 @@ moves_loop:  // When in check, search starts here
 
         //bool CC = mp.is_good_quiet() || mp.is_bad_quiet();
         //bool CC = mp.is_good_quiet() && ss->ply < LOW_PLY_HISTORY_SIZE;
-        bool CC = mp.is_evasion() && capture;
+        bool CC = mp.is_evasion() && !capture;
         if(CC)
         {
             bool T = value > alpha;
