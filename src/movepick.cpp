@@ -239,7 +239,7 @@ top:
 
     case GOOD_CAPTURE :
         if (select([&]() {
-                if (pos.see_ge(*cur, -cur->value / 9))
+                if (pos.see_ge(*cur, -(cur->value + 4 * int(PieceValue[pos.piece_on(cur->to_sq())])) / 18))
                     return true;
                 std::swap(*endBadCaptures++, *cur);
                 return false;
