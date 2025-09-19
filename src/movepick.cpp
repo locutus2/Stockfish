@@ -152,7 +152,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         const Piece     capturedPiece = pos.piece_on(to);
 
         if constexpr (Type == CAPTURES)
-            m.value = 7 * int(PieceValue[capturedPiece]) + 1024 * bool(pos.check_squares(pt) & to);
+            m.value = (*captureHistory)[pc][to][type_of(capturedPiece)] + 1024 * bool(pos.check_squares(pt) & to);
 
         else if constexpr (Type == QUIETS)
         {
@@ -238,11 +238,8 @@ top:
 
     case GOOD_CAPTURE :
         if (select([&]() {
-                const Square to            = cur->to_sq();
-                const Piece  pc            = pos.moved_piece(*cur);
-                const Piece  capturedPiece = pos.piece_on(to);
-                const int    capHist       = (*captureHistory)[pc][to][type_of(capturedPiece)];
-                if (pos.see_ge(*cur, -(cur->value + capHist) / 18))
+                const Piece capturedPiece = pos.piece_on(cur->to_sq());
+                if (pos.see_ge(*cur, -(cur->value + 7 * int(PieceValue[capturedPiece])) / 18))
                     return true;
                 std::swap(*endBadCaptures++, *cur);
                 return false;
