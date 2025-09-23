@@ -184,7 +184,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         {
             if (pos.capture_stage(m))
                 m.value = (depth + 16) * (*captureHistory)[pc][to][type_of(capturedPiece)]
-                        + 32 * PieceValue[capturedPiece] + (1 << 28);
+                        + 80 * PieceValue[capturedPiece] + (1 << 28);
             else
             {
                 m.value = (*mainHistory)[us][m.from_to()] + (*continuationHistory[0])[pc][to];
