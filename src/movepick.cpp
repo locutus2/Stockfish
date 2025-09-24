@@ -190,7 +190,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply);
-/*
+
             m.values.push_back((*mainHistory)[us][m.from_to()]);
             m.values.push_back((*pawnHistory)[pawn_history_index(pos)][pc][to]);
             m.values.push_back((*continuationHistory[0])[pc][to]);
@@ -202,7 +202,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.values.push_back(bonus[pt] * v);
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.values.push_back((*lowPlyHistory)[ply][m.from_to()] / (1 + ply));
-                */
+            else
+                m.values.push_back(0);
         }
 
         else  // Type == EVASIONS
@@ -212,6 +213,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 m.value = PieceValue[capturedPiece] 
                     + (1 << 28)
                     ;//+ (*captureHistory)[pc][to][type_of(capturedPiece)];
+                /*
                 m.values.push_back(std::rand());
                 //m.values.push_back(std::rand() + (1 << 28));
                 m.values.push_back(PieceValue[capturedPiece]);
@@ -226,6 +228,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                     m.values.push_back(0);
                 m.values.push_back(-PieceValue[capturedPiece]
                     + (*captureHistory)[pc][to][type_of(capturedPiece)]);
+                    */
                 /*
                 m.values.push_back((*captureHistory)[pc][to][type_of(capturedPiece)]);
                 m.values.push_back((*captureHistory)[pc][to][type_of(capturedPiece)] / 2);
@@ -241,21 +244,18 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 //m.value = (*mainHistory)[us][m.from_to()];
                 m.value = (*mainHistory)[us][m.from_to()] + (*continuationHistory[0])[pc][to]
                      ;//+ (*pawnHistory)[pawn_history_index(pos)][pc][to];
-                m.values.push_back(std::rand());
-                //m.values.push_back(0);
-                //m.values.push_back(0);
-                //m.values.push_back(0);
-                m.values.push_back((*mainHistory)[us][m.from_to()]);
-                m.values.push_back((*pawnHistory)[pawn_history_index(pos)][pc][to]);
-                m.values.push_back((*continuationHistory[0])[pc][to]);
+                //m.values.push_back(std::rand());
+                //m.values.push_back((*mainHistory)[us][m.from_to()]);
+                //m.values.push_back((*pawnHistory)[pawn_history_index(pos)][pc][to]);
+                //m.values.push_back((*continuationHistory[0])[pc][to]);
                 //m.value = (*mainHistory)[us][m.from_to()] + (*pawnHistory)[pawn_history_index(pos)][pc][to];
                 if (ply < LOW_PLY_HISTORY_SIZE)
                 {
                     m.value += 2 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply);
-                    m.values.push_back(2 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply));
+                    //m.values.push_back(2 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply));
                 }
                 else
-                    m.values.push_back(0);
+                    ;//m.values.push_back(0);
             }
         }
     }

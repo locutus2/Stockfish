@@ -391,7 +391,7 @@ void dbg_print() {
             }
             //std::cerr << std::endl;
             double auc = inv / k / (n - k);
-            std::cerr << "Auc #" << i << " Auc " << auc << std::endl;
+            std::cerr << "Auc #" << i << ": Total " << n << " Auc " << auc << std::endl;
             //std::cerr << "Inv " << inv << " " << k << "/" << n << std::endl;
         }
 
