@@ -178,6 +178,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
 
+            //m.value += (pt == PAWN && attacks_bb<PAWN>(to, us) & (pos.pieces(~us) ^ pos.pieces(~us, PAWN, KING))) * 16384;
+
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
 
@@ -190,7 +192,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply);
-
+/*
             m.values.push_back((*mainHistory)[us][m.from_to()]);
             m.values.push_back((*pawnHistory)[pawn_history_index(pos)][pc][to]);
             m.values.push_back((*continuationHistory[0])[pc][to]);
@@ -204,6 +206,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 m.values.push_back((*lowPlyHistory)[ply][m.from_to()] / (1 + ply));
             else
                 m.values.push_back(0);
+                */
         }
 
         else  // Type == EVASIONS
