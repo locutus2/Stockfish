@@ -178,7 +178,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
             //dbg_mean_of((*mainHistory)[us][m.from_to()]); // -4858.07
-            m.value -= (*mainHistory)[us][m.from_to()] + 4858;
+            //m.value -= (*mainHistory)[us][m.from_to()] + 4858;
             //dbg_mean_of(std::abs((*continuationHistory[0])[pc][to] - (*continuationHistory[1])[pc][to])); // 6216.06
             //m.value -= std::abs((*continuationHistory[0])[pc][to] - (*continuationHistory[1])[pc][to]) - 6216;
 
@@ -192,6 +192,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             static constexpr int bonus[KING + 1] = {0, 0, 144, 144, 256, 517, 10000};
             int v = threatByLesser[pt] & to ? -95 : 100 * bool(threatByLesser[pt] & from);
             m.value += bonus[pt] * v;
+            //dbg_mean_of(bonus[pt] * v); // -36887.3
+            //m.value -= bonus[pt] * v + 36887;
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
