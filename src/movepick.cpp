@@ -177,6 +177,10 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[2])[pc][to];
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
+            //dbg_mean_of((*mainHistory)[us][m.from_to()]); // -4858.07
+            m.value -= (*mainHistory)[us][m.from_to()] + 4858;
+            //dbg_mean_of(std::abs((*continuationHistory[0])[pc][to] - (*continuationHistory[1])[pc][to])); // 6216.06
+            //m.value -= std::abs((*continuationHistory[0])[pc][to] - (*continuationHistory[1])[pc][to]) - 6216;
 
             //m.value += (pt == PAWN && attacks_bb<PAWN>(to, us) & (pos.pieces(~us) ^ pos.pieces(~us, PAWN, KING))) * 16384;
 
