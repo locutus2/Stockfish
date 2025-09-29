@@ -329,6 +329,7 @@ void Search::Worker::iterative_deepening() {
             Value avg = rootMoves[pvIdx].averageScore;
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
+            std::cerr << rootPos.fen() << std::endl << " initial d=" << rootDepth << " alpha=" << alpha << " beta=" << beta << " avg=" << avg << " meansquare=" << std::abs(rootMoves[pvIdx].meanSquaredScore) / 9000 << " delta=" << delta << std::endl << std::flush;
 
             // Adjust optimism based on root move's averageScore
             optimism[us]  = 137 * avg / (std::abs(avg) + 91);
@@ -373,10 +374,13 @@ void Search::Worker::iterative_deepening() {
                 // otherwise exit the loop.
                 if (bestValue <= alpha)
                 {
+                    Value alphaOld = alpha, betaOld = beta;
                     beta =
                       (alpha * 123 + beta * 9 + std::min(bestValue + delta, VALUE_INFINITE) * 12)
                       / 144;
                     alpha = std::max(bestValue - delta, -VALUE_INFINITE);
+                        std::cerr << rootPos.fen() << std::endl << " faillow d=" << rootDepth << " alpha=" << alpha << " beta=" << beta << " bestValue=" << bestValue << " delta=" << delta << " alphaOld=" << alphaOld << " betaOld=" << betaOld << std::endl << std::flush;
+                        assert(alpha + 1 < beta);
 
                     failedHighCnt = 0;
                     if (mainThread)
@@ -384,6 +388,7 @@ void Search::Worker::iterative_deepening() {
                 }
                 else if (bestValue >= beta)
                 {
+                    Value alphaOld = alpha, betaOld = beta;
                     if (bestMoveChanges > previousBestMoveChanges)
                         alpha =
                           (alpha * 116 + beta + std::max(bestValue - delta, -VALUE_INFINITE) * 7)
@@ -394,6 +399,8 @@ void Search::Worker::iterative_deepening() {
                               / 141;
 
                     beta = std::min(bestValue + delta, VALUE_INFINITE);
+                        std::cerr << rootPos.fen() << std::endl << " failhigh d=" << rootDepth << " alpha=" << alpha << " beta=" << beta << " bestValue=" << bestValue << " delta=" << delta << " alphaOld=" << alphaOld << " betaOld=" << betaOld << std::endl << std::flush;
+                        assert(alpha + 1 < beta);
                     ++failedHighCnt;
                 }
                 else
