@@ -183,6 +183,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             //m.value -= std::abs((*continuationHistory[0])[pc][to] - (*continuationHistory[1])[pc][to]) - 6216;
 
             //m.value += (pt == PAWN && attacks_bb<PAWN>(to, us) & (pos.pieces(~us) ^ pos.pieces(~us, PAWN, KING))) * 16384;
+            //m.value -= (*continuationHistory[1])[pc][to];
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
