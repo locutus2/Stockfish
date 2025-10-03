@@ -1271,7 +1271,7 @@ moves_loop:  // When in check, search starts here
 
         //bool CC = mp.is_good_quiet() || mp.is_bad_quiet();
         //bool CC = mp.is_good_quiet() && ss->ply < LOW_PLY_HISTORY_SIZE;
-        bool CC = mp.is_good_quiet() && true;
+        bool CC = mp.is_good_quiet() && bool(priorCapture);
         if(CC)
         {
             bool T = value > alpha;

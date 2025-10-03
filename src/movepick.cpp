@@ -183,7 +183,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             //m.value -= std::abs((*continuationHistory[0])[pc][to] - (*continuationHistory[1])[pc][to]) - 6216;
 
             //m.value += (pt == PAWN && attacks_bb<PAWN>(to, us) & (pos.pieces(~us) ^ pos.pieces(~us, PAWN, KING))) * 16384;
-            //m.value -= (*continuationHistory[1])[pc][to];
+            //m.value -= (*continuationHistory[0])[pc][to] * bool(pos.captured_piece()) / 16;
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
@@ -191,7 +191,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
             static constexpr int bonus[KING + 1] = {0, 0, 144, 144, 256, 517, 10000};
-            int v = threatByLesser[pt] & to ? -95 : 100 * bool(threatByLesser[pt] & from);
+            int v = threatByLesser[pt] & to ? -95 : 100 * bool(threatByLesser[pt] & from) * (1 + 2 * bool(pos.captured_piece()));
             m.value += bonus[pt] * v;
             //dbg_mean_of(bonus[pt] * v); // -36887.3
             //m.value -= bonus[pt] * v + 36887;
