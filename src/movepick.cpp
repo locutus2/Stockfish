@@ -261,11 +261,11 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 //m.value = (*mainHistory)[us][m.from_to()] + (*pawnHistory)[pawn_history_index(pos)][pc][to];
                 if (ply < LOW_PLY_HISTORY_SIZE)
                 {
-                    m.value += 2 * (*lowPlyHistory)[ply][m.from_to()];
-                    //m.values.push_back(2 * (*lowPlyHistory)[ply][m.from_to()]);
+                    m.value += (*lowPlyHistory)[ply][m.from_to()];
+                    //m.values.push_back((*lowPlyHistory)[ply][m.from_to()]);
                 }
-                else
-                    ;//m.values.push_back(0);
+                //else
+                    //m.values.push_back(0);
             }
         }
     }
