@@ -1867,7 +1867,7 @@ void update_quiet_histories(
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
         workerThread.lowPlyHistory[ss->ply][move.from_to()] << bonus * 761 / 1024;
 
-    update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus * (955 + 478 * moreCmhBonus) / 1024);
+    update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus * (955 + 239 * moreCmhBonus) / 1024);
 
     int pIndex = pawn_history_index(pos);
     workerThread.pawnHistory[pIndex][pos.moved_piece(move)][move.to_sq()]
