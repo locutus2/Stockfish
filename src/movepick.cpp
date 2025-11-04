@@ -195,6 +195,10 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
     return it;
 }
 
+bool MovePicker::is_bad_quiet() const {
+    return stage == BAD_QUIET;
+}
+
 // Returns the next move satisfying a predicate function.
 // This never returns the TT move, as it was emitted before.
 template<typename Pred>
