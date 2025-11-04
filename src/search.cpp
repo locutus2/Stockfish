@@ -128,7 +128,7 @@ Value value_from_tt(Value v, int ply, int r50c);
 void  update_pv(Move* pv, Move move, const Move* childPv);
 void  update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
 void  update_quiet_histories(
-   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus, bool moreCmhBonus);
+   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus);
 void update_all_stats(const Position& pos,
                       Stack*          ss,
                       Search::Worker& workerThread,
@@ -692,7 +692,7 @@ Value Search::Worker::search(
             // Bonus for a quiet ttMove that fails high
             if (!ttCapture)
                 update_quiet_histories(pos, ss, *this, ttData.move,
-                                       std::min(130 * depth - 71, 1043), false);
+                                       std::min(130 * depth - 71, 1043));
 
             // Extra penalty for early quiet moves of the previous ply
             if (prevSq != SQ_NONE && (ss - 1)->moveCount < 4 && !priorCapture)
@@ -1807,16 +1807,16 @@ void update_all_stats(const Position& pos,
     Piece                  movedPiece     = pos.moved_piece(bestMove);
     PieceType              capturedPiece;
 
-    int bonus = std::min(121 * depth - 77, 1633) + 375 * (bestMove == ttMove);
+    int bonus = std::min(121 * depth - 77, 1633) + 375 * (bestMove == ttMove) + 400 * bestIsBadQuiet;
     int malus = std::min(825 * depth - 196, 2159) - 16 * moveCount;
 
     if (!pos.capture_stage(bestMove))
     {
-        update_quiet_histories(pos, ss, workerThread, bestMove, bonus * 881 / 1024, bestIsBadQuiet);
+        update_quiet_histories(pos, ss, workerThread, bestMove, bonus * 881 / 1024);
 
         // Decrease stats for all non-best quiet moves
         for (Move move : quietsSearched)
-            update_quiet_histories(pos, ss, workerThread, move, -malus * 1083 / 1024, false);
+            update_quiet_histories(pos, ss, workerThread, move, -malus * 1083 / 1024);
     }
     else
     {
@@ -1859,7 +1859,7 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 // Updates move sorting heuristics
 
 void update_quiet_histories(
-  const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus, bool moreCmhBonus) {
+  const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
     workerThread.mainHistory[us][move.from_to()] << bonus;  // Untuned to prevent duplicate effort
@@ -1867,7 +1867,7 @@ void update_quiet_histories(
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
         workerThread.lowPlyHistory[ss->ply][move.from_to()] << bonus * 761 / 1024;
 
-    update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus * (955 + 239 * moreCmhBonus) / 1024);
+    update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), bonus * 955 / 1024);
 
     int pIndex = pawn_history_index(pos);
     workerThread.pawnHistory[pIndex][pos.moved_piece(move)][move.to_sq()]
