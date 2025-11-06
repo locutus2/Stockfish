@@ -1803,12 +1803,12 @@ void update_all_stats(const Position& pos,
     Piece                  movedPiece     = pos.moved_piece(bestMove);
     PieceType              capturedPiece;
 
-    int bonus = std::min(121 * depth - 77, 1633) + 375 * (bestMove == ttMove);
+    int bonus = std::min(121 * depth - 77, 1633) + 375 * (bestMove == ttMove) + moveCount * moveCount;
     int malus = std::min(825 * depth - 196, 2159) - 16 * moveCount;
 
     if (!pos.capture_stage(bestMove))
     {
-        update_quiet_histories(pos, ss, workerThread, bestMove, (bonus + 6 * moveCount) * 881 / 1024);
+        update_quiet_histories(pos, ss, workerThread, bestMove, bonus * 881 / 1024);
 
         // Decrease stats for all non-best quiet moves
         for (Move move : quietsSearched)
