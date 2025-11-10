@@ -190,12 +190,12 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
 
-            m.value += special * -4096;
+            //m.value += special * 4096 * 8;
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
             static constexpr int bonus[KING + 1] = {0, 0, 144, 144, 256, 517, 10000};
-            int v = threatByLesser[pt] & to ? -95 : 100 * bool(threatByLesser[pt] & from) * (1 + 2 * bool(pos.captured_piece()));
+            int v = threatByLesser[pt] & to ? -95 : 100 * bool(threatByLesser[pt] & from);// * (1 + 2 * bool(pos.captured_piece()));
             m.value += bonus[pt] * v;
             //dbg_mean_of(bonus[pt] * v); // -36887.3
             //m.value -= bonus[pt] * v + 36887;
@@ -266,7 +266,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 if (ply < LOW_PLY_HISTORY_SIZE)
                 {
                     m.value += (*lowPlyHistory)[ply][m.from_to()];
-                    //m.values.push_back((*lowPlyHistory)[ply][m.from_to()]);
+                 //   //m.values.push_back((*lowPlyHistory)[ply][m.from_to()]);
                 }
                 //else
                     //m.values.push_back(0);
@@ -344,7 +344,7 @@ top:
         [[fallthrough]];
 
     case GOOD_QUIET :
-        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold; }))
+        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold + special * 1024 * 0; }))
             return *(cur - 1);
 
         // Prepare the pointers to loop over the bad captures
