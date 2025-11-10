@@ -46,7 +46,8 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const PawnHistory*,
-               int);
+               int,
+               bool sp = false);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
     ExtMove next_move();
     void skip_quiet_moves();
@@ -62,6 +63,7 @@ class MovePicker {
     ExtMove* begin() { return cur; }
     ExtMove* end() { return endCur; }
 
+    bool special = false;
     const Position&              pos;
     const ButterflyHistory*      mainHistory;
     const LowPlyHistory*         lowPlyHistory;

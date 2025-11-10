@@ -966,7 +966,7 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
-                  &pawnHistory, ss->ply);
+                  &pawnHistory, ss->ply, allNode);
 
     value = bestValue;
 
@@ -1275,7 +1275,9 @@ moves_loop:  // When in check, search starts here
         //bool CC = mp.is_good_quiet() && bool(priorCapture);
         //bool CC = mp.is_bad_quiet();
         //bool CC = mp.is_good_quiet();
-        bool CC = !ss->inCheck;
+        //bool CC = !ss->inCheck;
+        //bool CC = mp.is_good_quiet() || mp.is_bad_quiet();
+        bool CC = true;
         if(CC)
         {
             bool T = value > alpha;
