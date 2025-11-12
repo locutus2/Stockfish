@@ -344,7 +344,7 @@ top:
         [[fallthrough]];
 
     case GOOD_QUIET :
-        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold + special * 1024 * -1; }))
+        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold + special * 1024 * 0; }))
             return *(cur - 1);
 
         // Prepare the pointers to loop over the bad captures
