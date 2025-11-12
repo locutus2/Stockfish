@@ -966,7 +966,7 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
-                  &pawnHistory, ss->ply, false);//allNode);
+                  &pawnHistory, ss->ply, allNode);
 
     value = bestValue;
 
