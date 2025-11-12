@@ -214,7 +214,7 @@ Move MovePicker::select(Pred filter) {
 // picking the move with the highest score from a list of generated moves.
 Move MovePicker::next_move() {
 
-    const int goodQuietThreshold = -14000 - allNode * 1024;
+    const int goodQuietThreshold = -14000 + allNode * 1024;
 top:
     switch (stage)
     {
