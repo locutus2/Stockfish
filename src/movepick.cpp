@@ -89,7 +89,7 @@ MovePicker::MovePicker(const Position&              p,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
                        int                          pl,
-                       bool                         an) :
+                       bool                         cn) :
     pos(p),
     mainHistory(mh),
     lowPlyHistory(lph),
@@ -99,7 +99,7 @@ MovePicker::MovePicker(const Position&              p,
     ttMove(ttm),
     depth(d),
     ply(pl),
-    allNode(an) {
+    cutNode(cn) {
 
     if (pos.checkers())
         stage = EVASION_TT + !(ttm && pos.pseudo_legal(ttm));
@@ -214,7 +214,7 @@ Move MovePicker::select(Pred filter) {
 // picking the move with the highest score from a list of generated moves.
 Move MovePicker::next_move() {
 
-    const int goodQuietThreshold = -14000 + allNode * 1024;
+    constexpr int goodQuietThreshold = -14000;
 top:
     switch (stage)
     {
@@ -265,7 +265,7 @@ top:
         [[fallthrough]];
 
     case GOOD_QUIET :
-        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold; }))
+        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold + cutNode * 1024; }))
             return *(cur - 1);
 
         // Prepare the pointers to loop over the bad captures
@@ -288,7 +288,7 @@ top:
 
     case BAD_QUIET :
         if (!skipQuiets)
-            return select([&]() { return cur->value <= goodQuietThreshold; });
+            return select([&]() { return cur->value <= goodQuietThreshold + cutNode * 1024; });
 
         return Move::none();
 
