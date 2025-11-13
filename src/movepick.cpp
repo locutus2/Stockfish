@@ -265,7 +265,7 @@ top:
         [[fallthrough]];
 
     case GOOD_QUIET :
-        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold + cutNode * 2048; }))
+        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold - cutNode * 1024; }))
             return *(cur - 1);
 
         // Prepare the pointers to loop over the bad captures
@@ -288,7 +288,7 @@ top:
 
     case BAD_QUIET :
         if (!skipQuiets)
-            return select([&]() { return cur->value <= goodQuietThreshold + cutNode * 2048; });
+            return select([&]() { return cur->value <= goodQuietThreshold - cutNode * 1024; });
 
         return Move::none();
 
