@@ -294,7 +294,7 @@ ExtMove MovePicker::select(Pred filter) {
 // picking the move with the highest score from a list of generated moves.
 ExtMove MovePicker::next_move() {
 
-    constexpr int goodQuietThreshold = -14000;
+    const int goodQuietThreshold = -14000 + special * 1024 * 0;
 top:
     switch (stage)
     {
@@ -345,7 +345,7 @@ top:
         [[fallthrough]];
 
     case GOOD_QUIET :
-        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold + special * 1024 * -1; }))
+        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold; }))
             return *(cur - 1);
 
         // Prepare the pointers to loop over the bad captures
