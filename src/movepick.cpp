@@ -167,12 +167,12 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
         if constexpr (Type == CAPTURES)
             m.value = (*captureHistory)[pc][to][type_of(capturedPiece)]
-                    + 7 * int(PieceValue[capturedPiece]) + 1024 * bool(pos.check_squares(pt) & to);
+                    + 7 * int(PieceValue[capturedPiece]);
 
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.from_to()];
+            m.value = 2 * (*mainHistory)[us][m.raw()];
             m.value += 2 * (*pawnHistory)[pawn_history_index(pos)][pc][to];
             m.value += (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
@@ -194,15 +194,16 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
-            static constexpr int bonus[KING + 1] = {0, 0, 144, 144, 256, 517, 10000};
-            int v = threatByLesser[pt] & to ? -95 : 100 * bool(threatByLesser[pt] & from);// * (1 + 2 * bool(pos.captured_piece()));
-            m.value += bonus[pt] * v;
+            int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
+            m.value += PieceValue[pt] * v;
+
+
             //dbg_mean_of(bonus[pt] * v); // -36887.3
             //m.value -= bonus[pt] * v + 36887;
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + ply);
+                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
 /*
             m.values.push_back((*mainHistory)[us][m.from_to()]);
             m.values.push_back((*pawnHistory)[pawn_history_index(pos)][pc][to]);
@@ -256,7 +257,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             {
                 //m.value = (*mainHistory)[us][m.from_to()] + (*continuationHistory[0])[pc][to];
                 //m.value = (*mainHistory)[us][m.from_to()];
-                m.value = (*mainHistory)[us][m.from_to()] + (*continuationHistory[0])[pc][to]
+                m.value = (*mainHistory)[us][m.raw()] + (*continuationHistory[0])[pc][to]
                      ;//+ (*pawnHistory)[pawn_history_index(pos)][pc][to];
                 //m.values.push_back(std::rand());
                 //m.values.push_back((*mainHistory)[us][m.from_to()]);
@@ -265,8 +266,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 //m.value = (*mainHistory)[us][m.from_to()] + (*pawnHistory)[pawn_history_index(pos)][pc][to];
                 if (ply < LOW_PLY_HISTORY_SIZE)
                 {
-                    m.value += (*lowPlyHistory)[ply][m.from_to()];
-                 //   //m.values.push_back((*lowPlyHistory)[ply][m.from_to()]);
+                    m.value += (*lowPlyHistory)[ply][m.raw()];
+                 //   //m.values.push_back((*lowPlyHistory)[ply][m.raw()]);
                 }
                 //else
                     //m.values.push_back(0);
@@ -293,7 +294,7 @@ ExtMove MovePicker::select(Pred filter) {
 // picking the move with the highest score from a list of generated moves.
 ExtMove MovePicker::next_move() {
 
-    const int goodQuietThreshold = -14000 - special * 1024 * -1;
+    const int goodQuietThreshold = -14000 + special * 1024 * 0;
 top:
     switch (stage)
     {
