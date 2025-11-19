@@ -137,10 +137,17 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
           pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us) | threatByLesser[KNIGHT];
         threatByLesser[QUEEN] = pos.attacks_by<ROOK>(~us) | threatByLesser[ROOK];
         threatByLesser[KING]  = pos.attacks_by<QUEEN>(~us) | threatByLesser[QUEEN];
-        undefendedThreat =
-          (pos.attacks_by<KING>(~us) | threatByLesser[KING])
-          & ~(pos.attacks_by<PAWN>(us) | pos.attacks_by<KNIGHT>(us) | pos.attacks_by<BISHOP>(us)
-              | pos.attacks_by<ROOK>(us) | pos.attacks_by<QUEEN>(us) | pos.attacks_by<KING>(us));
+
+        Bitboard defended = pos.attacks_by<KNIGHT>(us), twiceDefended = 0, b;
+        twiceDefended |= defended & (b = pos.attacks_by<BISHOP>(us));
+        defended |= b;
+        twiceDefended |= defended & (b = pos.attacks_by<ROOK>(us));
+        defended |= b;
+        twiceDefended |= defended & (b = pos.attacks_by<QUEEN>(us));
+        defended |= b;
+        twiceDefended |= defended & pos.attacks_by<KING>(us);
+
+        undefendedThreat = (pos.attacks_by<KING>(~us) | threatByLesser[KING]) & ~twiceDefended & ~pos.attacks_by<PAWN>(us);
     }
 
     ExtMove* it = cur;
@@ -175,11 +182,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
-            int v = threatByLesser[pt] & to
-                    ? -19
-                    : 20 * bool((threatByLesser[pt] | undefendedThreat) & from);
+            int v = (threatByLesser[pt] | undefendedThreat) & to ? -19 : 20 * bool(threatByLesser[pt] & from);
             m.value += PieceValue[pt] * v;
-
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
