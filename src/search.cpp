@@ -1475,7 +1475,9 @@ moves_loop:  // When in check, search starts here
             for(auto x : extmoves[T])
             {
                 dbg_hit_on(T, 0);
+                dbg_hit_on(T, depth);
                 dbg_auc_of(x.value, T, 0);
+                dbg_auc_of(x.value, T, depth);
 
                 for(int i = 0; i < int(x.values.size()); i++)
                 {
