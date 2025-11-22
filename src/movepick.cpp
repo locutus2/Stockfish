@@ -126,7 +126,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-    Color us = pos.side_to_move();
+    Color     us            = pos.side_to_move();
+    const int threatPenalty = Type == QUIETS ? -19 - 646 / (depth + 16) : 0;
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
     if constexpr (Type == QUIETS)
@@ -171,7 +172,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
-            int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
+            int v = threatByLesser[pt] & to ? threatPenalty : 20 * bool(threatByLesser[pt] & from);
             m.value += PieceValue[pt] * v;
 
 
