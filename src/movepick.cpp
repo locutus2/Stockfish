@@ -255,7 +255,7 @@ top:
 
             endCur = endGenerated = score<QUIETS>(ml);
 
-            partial_insertion_sort(cur, endCur, std::max(-3560 * depth, goodQuietThreshold));
+            partial_insertion_sort(cur, endCur, std::min(-3560 * depth, goodQuietThreshold));
         }
 
         ++stage;
