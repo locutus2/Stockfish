@@ -127,7 +127,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
     Color     us            = pos.side_to_move();
-    const int threatPenalty = Type == QUIETS ? -19 - 646 / (depth + 16) : 0;
+    const int threatPenalty = Type == QUIETS ? -57 + 646 / (depth + 16) : 0;
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
     if constexpr (Type == QUIETS)
