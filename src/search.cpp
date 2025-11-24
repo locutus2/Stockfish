@@ -269,7 +269,6 @@ void Search::Worker::iterative_deepening() {
           &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
-        assert((ss - i)->totalReduction == 0);
     }
 
     for (int i = 0; i <= MAX_PLY + 2; ++i)
@@ -1213,7 +1212,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 850 / 8192;
 
         if (!PvNode)
-            r += (ss->totalReduction / ss->ply - r) / 32;
+            r += (ss->totalReduction / ss->ply - r) / 16;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
