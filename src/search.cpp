@@ -676,7 +676,7 @@ Value Search::Worker::search(
     bestMove       = Move::none();
     priorReduction = (ss - 1)->reduction;
     ss->totalReduction  = (ss - 1)->totalReduction + (ss - 1)->reduction;
-    ss->countReduction = (ss - 1)->countReduction + ((ss - 1)->reduction != 0);
+    ss->countReduction  = (ss - 1)->countReduction + ((ss - 1)->reduction != 0);
     (ss - 1)->reduction = 0;
     ss->statScore       = 0;
     (ss + 2)->cutoffCnt = 0;
