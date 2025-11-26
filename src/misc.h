@@ -35,11 +35,17 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <iostream>
 
 #define stringify2(x) #x
 #define stringify(x) stringify2(x)
 
 namespace Stockfish {
+
+namespace PCA {
+    void add(const std::vector<int>& x);
+    void calcComponents(std::ostream& out = std::cerr);
+};
 
 std::string engine_version_info();
 std::string engine_info(bool to_uci = false);
@@ -71,6 +77,9 @@ struct PipeDeleter {
 // Returns std::nullopt if the file does not exist.
 std::optional<std::string> read_file_to_string(const std::string& path);
 
+double dbg_get_mean_of(int slot = 0);
+double dbg_get_stdev_of(int slot = 0);
+double dbg_get_cov_of(int slot = 0);
 void dbg_hit_on(bool cond, int slot = 0);
 void dbg_mean_of(int64_t value, int slot = 0);
 void dbg_stdev_of(int64_t value, int slot = 0);

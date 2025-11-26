@@ -37,6 +37,82 @@
 
 namespace Stockfish {
 
+namespace PCA {
+
+    constexpr int M = 100;
+    int N = 0;
+
+    int index(int i, int j)
+    {
+        return M * i + j;
+    }
+
+    int64_t C = 0;
+    void add(const std::vector<int>& x)
+    {
+        std::ostream& out = std::cerr;
+
+        //++C;
+        N = std::max(N, int(x.size()));
+        for(int i = 0; i < int(x.size()); i++)
+        {
+            dbg_mean_of(x[i], i);
+            dbg_stdev_of(x[i], i);
+            for(int j = 0; j < int(x.size()); j++)
+            {
+                dbg_correl_of(x[i], x[j], index(i,j));
+            }
+        }
+        //out << "add N=" << N << std::endl;
+        //dbg_hit_on(true);
+
+        return;
+        if(C < 52769llu) return;
+
+        out << "test N=" << N << " C=" << C << std::endl;
+        for(int i = 0; i < N; i++)
+        {
+            double stdevi = dbg_get_stdev_of(i);
+            for(int j = 0; j < N; j++)
+            {
+                double stdevj = dbg_get_stdev_of(j);
+                double cov = dbg_get_cov_of(index(i,j));
+                // cov_norm = COV((x1-m1)/s1, (x2-m29/s2))
+                //          = COV(x1-m1,x2-m2) / s1 / s2
+                //          = COV(x1,x2) / s1 / s2
+                double cov_norm = cov / stdevi / stdevj;
+
+                if(j) out << ';';
+                out << cov_norm;
+            }
+            out << std::endl;
+        }
+        std::exit(1);
+    }
+
+    void calcComponents(std::ostream& out)
+    {
+        out << "PCA N=" << N << std::endl;
+        for(int i = 0; i < N; i++)
+        {
+            double stdevi = dbg_get_stdev_of(i);
+            for(int j = 0; j < N; j++)
+            {
+                double stdevj = dbg_get_stdev_of(j);
+                double cov = dbg_get_cov_of(index(i,j));
+                // cov_norm = COV((x1-m1)/s1, (x2-m29/s2))
+                //          = COV(x1-m1,x2-m2) / s1 / s2
+                //          = COV(x1,x2) / s1 / s2
+                double cov_norm = cov / stdevi / stdevj;
+
+                if(j) out << ';';
+                out << cov_norm;
+            }
+            out << std::endl;
+        }
+    }
+};
+
 namespace {
 
 // Version number or dev.
@@ -284,7 +360,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+constexpr int MaxDebugSlots = 3200;
 
 namespace {
 
@@ -318,6 +394,25 @@ std::array<DebugInfo<6>, MaxDebugSlots>  correl;
 std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
+
+double dbg_get_mean_of(int slot) {
+    int64_t n = mean[slot][0];
+    auto    E   = [&n](int64_t x) { return double(x) / n; };
+    return E(mean[slot][1]);
+}
+
+double dbg_get_stdev_of(int slot) {
+    int64_t n = stdev[slot][0];
+    auto    E   = [&n](int64_t x) { return double(x) / n; };
+    auto    sqr = [](double x) { return x * x; };
+    return sqrt(E(stdev[slot][2]) - sqr(E(stdev[slot][1])));
+}
+
+double dbg_get_cov_of(int slot) {
+    int64_t n = correl[slot][0];
+    auto    E   = [&n](int64_t x) { return double(x) / n; };
+    return E(correl[slot][5]) - E(correl[slot][1]) * E(correl[slot][3]);
+}
 
 void dbg_hit_on(bool cond, int slot) {
 
@@ -395,11 +490,14 @@ void dbg_print() {
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = correl[i][0]))
         {
+            double cov = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]));
             double r = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
                      / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
                         * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
-            std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << std::endl;
+            std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << " Cov " << cov << std::endl;
         }
+
+    PCA::calcComponents();
 }
 
 void dbg_clear() {

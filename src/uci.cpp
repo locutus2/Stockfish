@@ -424,6 +424,8 @@ void UCIEngine::benchmark(std::istream& args) {
     if (threadBinding.empty())
         threadBinding = "none";
 
+    //PCA::calcComponents(std::cerr);
+
     // clang-format off
 
     std::cerr << "==========================="
