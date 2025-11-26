@@ -183,13 +183,86 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                   + 0.881 * x[4]
                   + 1.043 * x[5]
                   + 1 * x[6]
-              ));
+                  +15333.2) / 16062.2 * 20788.6 - 26316.2);
 
               dbg_mean_of(h[0], 100);
               dbg_stdev_of(h[0], 100);
               dbg_mean_of(h[1], 101);
               dbg_stdev_of(h[1], 101);
               dbg_correl_of(h[0], h[1], 100);
+
+              //m.value = h[1];
+              /*
+               * Hit #0: Total 116532149 Hits 13600045 Hit Rate (%) 11.6706
+               * Mean #0: Total 116532149 Mean -1745.23
+               * Mean #1: Total 116532149 Mean -285.684
+               * Mean #2: Total 116532149 Mean 1524.99
+               * Mean #3: Total 116532149 Mean -528.671
+               * Mean #4: Total 116532149 Mean -640.566
+               * Mean #5: Total 116532149 Mean -1384.11
+               * Mean #6: Total 116532149 Mean -1198.41
+               * Mean #7: Total 116532149 Mean -505.138
+               * Mean #100: Total 1009242979 Mean -26316.2
+               * Mean #101: Total 1009242979 Mean -15333.2
+               * Stdev #0: Total 116532149 Stdev 4038.44
+               * Stdev #1: Total 116532149 Stdev 4203.3
+               * Stdev #2: Total 116532149 Stdev 8193
+               * Stdev #3: Total 116532149 Stdev 6698.41
+               * Stdev #4: Total 116532149 Stdev 7619.97
+               * Stdev #5: Total 116532149 Stdev 6675.44
+               * Stdev #6: Total 116532149 Stdev 6384.15
+               * Stdev #7: Total 116532149 Stdev 3127.28
+               * Stdev #100: Total 1009242979 Stdev 20788.6
+               * Stdev #101: Total 1009242979 Stdev 16062.2
+               * Correl. #0: Total 116532149 Coefficient -0.2085 Cov -0.426611
+               * Correl. #10: Total 116532149 Coefficient 0.212801 Cov 275.923
+               * Correl. #11: Total 116532149 Coefficient 0.194474 Cov 262.453
+               * Correl. #12: Total 116532149 Coefficient 0.198944 Cov 523.327
+               * Correl. #13: Total 116532149 Coefficient 0.141724 Cov 304.801
+               * Correl. #14: Total 116532149 Coefficient 0.122994 Cov 300.909
+               * Correl. #15: Total 116532149 Coefficient 0.162257 Cov 347.763
+               * Correl. #16: Total 116532149 Coefficient 0.139336 Cov 285.606
+               * Correl. #17: Total 116532149 Coefficient 0.275038 Cov 276.16
+               * Correl. #100: Total 1009242979 Coefficient 0.931169 Cov 3.10928e+08
+               *
+               * Hit #0: Total 116532149 Hits 13600045 Hit Rate (%) 11.6706
+               * Mean #0: Total 116532149 Mean -1745.23
+               * Mean #1: Total 116532149 Mean -285.684
+               * Mean #2: Total 116532149 Mean 1524.99
+               * Mean #3: Total 116532149 Mean -528.671
+               * Mean #4: Total 116532149 Mean -640.566
+               * Mean #5: Total 116532149 Mean -1384.11
+               * Mean #6: Total 116532149 Mean -1198.41
+               * Mean #7: Total 116532149 Mean -505.138
+               * Mean #100: Total 1009242979 Mean -26316.2
+               * Mean #101: Total 1009242979 Mean -26316.3
+               * Stdev #0: Total 116532149 Stdev 4038.44
+               * Stdev #1: Total 116532149 Stdev 4203.3
+               * Stdev #2: Total 116532149 Stdev 8193
+               * Stdev #3: Total 116532149 Stdev 6698.41
+               * Stdev #4: Total 116532149 Stdev 7619.97
+               * Stdev #5: Total 116532149 Stdev 6675.44
+               * Stdev #6: Total 116532149 Stdev 6384.15
+               * Stdev #7: Total 116532149 Stdev 3127.28
+               * Stdev #100: Total 1009242979 Stdev 20788.6
+               * Stdev #101: Total 1009242979 Stdev 20788.8
+               * Correl. #0: Total 116532149 Coefficient -0.2085 Cov -0.426611
+               * Correl. #10: Total 116532149 Coefficient 0.212801 Cov 275.923
+               * Correl. #11: Total 116532149 Coefficient 0.194474 Cov 262.453
+               * Correl. #12: Total 116532149 Coefficient 0.198944 Cov 523.327
+               * Correl. #13: Total 116532149 Coefficient 0.141724 Cov 304.801
+               * Correl. #14: Total 116532149 Coefficient 0.122994 Cov 300.909
+               * Correl. #15: Total 116532149 Coefficient 0.162257 Cov 347.763
+               * Correl. #16: Total 116532149 Coefficient 0.139336 Cov 285.606
+               * Correl. #17: Total 116532149 Coefficient 0.275038 Cov 276.16
+               * Correl. #100: Total 1009242979 Coefficient 0.931169 Cov 4.02423e+08
+               * PCA N=0
+               *
+               * ===========================
+               * Total time (ms) : 645724
+               * Nodes searched  : 191897230
+               * Nodes/second    : 297181
+               */
 
 /*
             PCA::add(x);
