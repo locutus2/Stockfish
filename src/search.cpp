@@ -1166,6 +1166,37 @@ moves_loop:  // When in check, search starts here
                 extension = -2;
         }
 
+        std::vector<int> h;
+        bool CC = move != ttData.move && !capture;
+        if(CC)
+		{
+            std::vector<int> x = {
+                int(mainHistory[us][move.raw()]),
+                int(pawnHistory[pawn_history_index(pos)][movedPiece][move.to_sq()]),
+                int((*contHist[0])[movedPiece][move.to_sq()]),
+                int((*contHist[1])[movedPiece][move.to_sq()]),
+                int((*contHist[2])[movedPiece][move.to_sq()]),
+                int((*contHist[3])[movedPiece][move.to_sq()]),
+                int((*contHist[5])[movedPiece][move.to_sq()]),
+            };
+
+            h = x;
+
+            h.push_back((0.553 * x[0]
+               + 0.465 * x[1]
+               + 0.847 * x[2]
+               + 0.991 * x[3]
+               + 0.881 * x[4]
+               + 1.043 * x[6]
+               )/x.size());
+
+            for(int i = 0; i < int(h.size()); i++)
+            {
+                dbg_mean_of(h[i], i);
+                dbg_stdev_of(h[i], i);
+            }
+		}
+
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck, ss);
 
@@ -1209,7 +1240,6 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 850 / 8192;
-
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1274,6 +1304,17 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+        if(CC)
+        {
+            bool T = value > alpha;
+            dbg_hit_on(T, 0);
+            dbg_correl_of(moveCount, T, 0);
+            for(int i = 0; i < int(h.size()); i++)
+            {
+                dbg_correl_of(h[i], T, 10+i);
+            }
+        }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1933,7 +1974,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        //dbg_print();
+        dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI
