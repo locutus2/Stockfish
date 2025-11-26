@@ -183,7 +183,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                   + 0.881 * x[4]
                   + 1.043 * x[5]
                   + 1 * x[6]
-                  +15333.2) / 16062.2 * 20788.6 - 26316.2);
+                  +15333.2) / 16062.2 * 20788.6 / 22334.3 * 20788.6 - 26316.2 + 884.5);
 
               dbg_mean_of(h[0], 100);
               dbg_stdev_of(h[0], 100);
@@ -191,7 +191,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
               dbg_stdev_of(h[1], 101);
               dbg_correl_of(h[0], h[1], 100);
 
-              //m.value = h[1];
+              m.value = h[1];
               /*
                * Hit #0: Total 116532149 Hits 13600045 Hit Rate (%) 11.6706
                * Mean #0: Total 116532149 Mean -1745.23
@@ -262,6 +262,83 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                * Total time (ms) : 645724
                * Nodes searched  : 191897230
                * Nodes/second    : 297181
+               *
+               //m.value = h[1];
+               * Hit #0: Total 126900978 Hits 14762863 Hit Rate (%) 11.6334
+                                   * Mean #0: Total 126900978 Mean -1674.42
+                                   * Mean #1: Total 126900978 Mean -372.984
+                                   * Mean #2: Total 126900978 Mean 1269.26
+                                   * Mean #3: Total 126900978 Mean -684.834
+                                   * Mean #4: Total 126900978 Mean -632.925
+                                   * Mean #5: Total 126900978 Mean -1367.07
+                                   * Mean #6: Total 126900978 Mean -1208.68
+                                   * Mean #7: Total 126900978 Mean -556.377
+                                   * Mean #100: Total 1098838922 Mean -26673.7
+                                   * Mean #101: Total 1098838922 Mean -27200.7
+                                   * Stdev #0: Total 126900978 Stdev 4107.02
+                                   * Stdev #1: Total 126900978 Stdev 4282.69
+                                   * Stdev #2: Total 126900978 Stdev 8587.97
+                                   * Stdev #3: Total 126900978 Stdev 7080.77
+                                   * Stdev #4: Total 126900978 Stdev 8014.07
+                                   * Stdev #5: Total 126900978 Stdev 7062.77
+                                   * Stdev #6: Total 126900978 Stdev 6772.59
+                                   * Stdev #7: Total 126900978 Stdev 3622.03
+                                   * Stdev #100: Total 1098838922 Stdev 22606.5
+                                   * Stdev #101: Total 1098838922 Stdev 22334.3
+                                   * Correl. #0: Total 126900978 Coefficient -0.209791 Cov -0.436185
+                                   * Correl. #10: Total 126900978 Coefficient 0.211742 Cov 278.825
+                                   * Correl. #11: Total 126900978 Coefficient 0.196021 Cov 269.164
+                                   * Correl. #12: Total 126900978 Coefficient 0.218513 Cov 601.679
+                                   * Correl. #13: Total 126900978 Coefficient 0.172218 Cov 390.981
+                                   * Correl. #14: Total 126900978 Coefficient 0.147643 Cov 379.371
+                                   * Correl. #15: Total 126900978 Coefficient 0.186845 Cov 423.11
+                                   * Correl. #16: Total 126900978 Coefficient 0.166587 Cov 361.736
+                                   * Correl. #17: Total 126900978 Coefficient 0.284583 Cov 330.491
+                                   * Correl. #100: Total 1098838922 Coefficient 0.940368 Cov 4.74792e+08
+                                   * PCA N=0
+                                   *
+                                   * ===========================
+                                   * Total time (ms) : 716244
+                                                       * Nodes searched  : 209467861
+                                                       * Nodes/second    : 292453
+                                                       *
+               * Hit #0: Total 123020115 Hits 14352652 Hit Rate (%) 11.6669
+                                                       * Mean #0: Total 123020115 Mean -1721.84
+                                                       * Mean #1: Total 123020115 Mean -387.424
+                                                       * Mean #2: Total 123020115 Mean 1370.85
+                                                       * Mean #3: Total 123020115 Mean -612.142
+                                                       * Mean #4: Total 123020115 Mean -552.831
+                                                       * Mean #5: Total 123020115 Mean -1289.6
+                                                       * Mean #6: Total 123020115 Mean -1147.05
+                                                       * Mean #7: Total 123020115 Mean -508.073
+                                                       * Mean #100: Total 1064161878 Mean -26397.9
+                                                       * Mean #101: Total 1064161878 Mean -25909.8
+                                                       * Stdev #0: Total 123020115 Stdev 4086.1
+                                                       * Stdev #1: Total 123020115 Stdev 4265.47
+                                                       * Stdev #2: Total 123020115 Stdev 8312.71
+                                                       * Stdev #3: Total 123020115 Stdev 6816.67
+                                                       * Stdev #4: Total 123020115 Stdev 7728.61
+                                                       * Stdev #5: Total 123020115 Stdev 6793.75
+                                                       * Stdev #6: Total 123020115 Stdev 6508.08
+                                                       * Stdev #7: Total 123020115 Stdev 3384.48
+                                                       * Stdev #100: Total 1064161878 Stdev 21748.8
+                                                       * Stdev #101: Total 1064161878 Stdev 19735
+                                                       * Correl. #0: Total 123020115 Coefficient -0.210344 Cov -0.434365
+                                                       * Correl. #10: Total 123020115 Coefficient 0.209924 Cov 275.367
+                                                       * Correl. #11: Total 123020115 Coefficient 0.193397 Cov 264.823
+                                                       * Correl. #12: Total 123020115 Coefficient 0.214296 Cov 571.869
+                                                       * Correl. #13: Total 123020115 Coefficient 0.162407 Cov 355.4
+                                                       * Correl. #14: Total 123020115 Coefficient 0.137889 Cov 342.113
+                                                       * Correl. #15: Total 123020115 Coefficient 0.177521 Cov 387.168
+                                                       * Correl. #16: Total 123020115 Coefficient 0.156025 Cov 325.976
+                                                       * Correl. #17: Total 123020115 Coefficient 0.281758 Cov 306.132
+                                                       * Correl. #100: Total 1064161878 Coefficient 0.936585 Cov 4.01994e+08
+                                                       * PCA N=0
+                                                       *
+                                                       * ===========================
+                                                       * Total time (ms) : 723877
+                                                                           * Nodes searched  : 203259689
+                                                                           * Nodes/second    : 280793
                */
 
 /*
