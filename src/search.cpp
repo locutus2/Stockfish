@@ -1187,7 +1187,8 @@ moves_loop:  // When in check, search starts here
                + 0.847 * x[2]
                + 0.991 * x[3]
                + 0.881 * x[4]
-               + 1.043 * x[6]
+               + 1.043 * x[5]
+               + 1     * x[6]
                )/x.size());
 
             for(int i = 0; i < int(h.size()); i++)

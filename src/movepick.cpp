@@ -165,7 +165,6 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[2])[pc][to];
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
-/*
             std::vector<int> x = {  
                 (*mainHistory)[us][m.raw()],
                 (*pawnHistory)[pawn_history_index(pos)][pc][to],
@@ -175,6 +174,24 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 (*continuationHistory[3])[pc][to],
                 (*continuationHistory[5])[pc][to],
             };
+
+              std::vector<int> h = {m.value};
+              h.push_back((0.553 * x[0]
+                  + 0.465 * x[1]
+                  + 0.847 * x[2]
+                  + 0.991 * x[3]
+                  + 0.881 * x[4]
+                  + 1.043 * x[5]
+                  + 1 * x[6]
+              ));
+
+              dbg_mean_of(h[0], 100);
+              dbg_stdev_of(h[0], 100);
+              dbg_mean_of(h[1], 101);
+              dbg_stdev_of(h[1], 101);
+              dbg_correl_of(h[0], h[1], 100);
+
+/*
             PCA::add(x);
 */
             // bonus for checks
