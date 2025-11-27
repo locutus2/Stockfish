@@ -1167,29 +1167,19 @@ moves_loop:  // When in check, search starts here
         }
 
         std::vector<int> h;
-        bool CC = move != ttData.move && !capture;
+        bool CC = false && move != ttData.move && capture;
         if(CC)
 		{
             std::vector<int> x = {
-                int(mainHistory[us][move.raw()]),
-                int(pawnHistory[pawn_history_index(pos)][movedPiece][move.to_sq()]),
-                int((*contHist[0])[movedPiece][move.to_sq()]),
-                int((*contHist[1])[movedPiece][move.to_sq()]),
-                int((*contHist[2])[movedPiece][move.to_sq()]),
-                int((*contHist[3])[movedPiece][move.to_sq()]),
-                int((*contHist[5])[movedPiece][move.to_sq()]),
+                 captureHistory[movedPiece][move.to_sq()][type_of(pos.piece_on(move.to_sq()))],
+                 int(PieceValue[pos.piece_on(move.to_sq())]),
             };
 
             h = x;
 
-            h.push_back((0.553 * x[0]
-               + 0.465 * x[1]
-               + 0.847 * x[2]
-               + 0.991 * x[3]
-               + 0.881 * x[4]
-               + 1.043 * x[5]
-               + 1     * x[6]
-               )/x.size());
+            h.push_back((1.000 * x[0]
+               + 7.000 * x[1]
+               ));
 
             for(int i = 0; i < int(h.size()); i++)
             {

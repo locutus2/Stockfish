@@ -93,6 +93,7 @@ namespace PCA {
     void calcComponents(std::ostream& out)
     {
         out << "PCA N=" << N << std::endl;
+        out << "normalized COV" << std::endl;
         for(int i = 0; i < N; i++)
         {
             double stdevi = dbg_get_stdev_of(i);

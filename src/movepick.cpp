@@ -152,8 +152,26 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         const Piece     capturedPiece = pos.piece_on(to);
 
         if constexpr (Type == CAPTURES)
+        {
             m.value = (*captureHistory)[pc][to][type_of(capturedPiece)]
                     + 7 * int(PieceValue[capturedPiece]);
+            std::vector<int> x = {  
+                (*captureHistory)[pc][to][type_of(capturedPiece)],
+                int(PieceValue[capturedPiece]),
+            };
+            PCA::add(x);
+
+              std::vector<int> h = {m.value};
+              h.push_back((1.000 * x[0]
+                  + 7.000 * x[1]));
+              dbg_mean_of(h[0], 1000);
+              dbg_stdev_of(h[0], 1000);
+              dbg_mean_of(h[1], 1001);
+              dbg_stdev_of(h[1], 1001);
+              dbg_correl_of(h[0], h[1], 1000);
+
+              //m.value = h[1];
+        }
 
         else if constexpr (Type == QUIETS)
         {
@@ -165,6 +183,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[2])[pc][to];
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
+            /*
             std::vector<int> x = {  
                 (*mainHistory)[us][m.raw()],
                 (*pawnHistory)[pawn_history_index(pos)][pc][to],
@@ -185,13 +204,14 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                   + 1 * x[6]
                   +15333.2) / 16062.2 * 20788.6 / 22334.3 * 20788.6 - 26316.2 + 884.5);
 
-              dbg_mean_of(h[0], 100);
-              dbg_stdev_of(h[0], 100);
-              dbg_mean_of(h[1], 101);
-              dbg_stdev_of(h[1], 101);
-              dbg_correl_of(h[0], h[1], 100);
+              dbg_mean_of(h[0], 1000);
+              dbg_stdev_of(h[0], 1000);
+              dbg_mean_of(h[1], 1001);
+              dbg_stdev_of(h[1], 1001);
+              dbg_correl_of(h[0], h[1], 1000);
 
               m.value = h[1];
+              */
               /*
                * Hit #0: Total 116532149 Hits 13600045 Hit Rate (%) 11.6706
                * Mean #0: Total 116532149 Mean -1745.23
