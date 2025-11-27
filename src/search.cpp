@@ -1177,6 +1177,7 @@ moves_loop:  // When in check, search starts here
                 int((*contHist[1])[movedPiece][move.to_sq()]),
                 int((*contHist[2])[movedPiece][move.to_sq()]),
                 int((*contHist[3])[movedPiece][move.to_sq()]),
+                int((*contHist[4])[movedPiece][move.to_sq()]),
                 int((*contHist[5])[movedPiece][move.to_sq()]),
             };
 
@@ -1216,10 +1217,10 @@ moves_loop:  // When in check, search starts here
              };
              */
              std::vector<double> basefactor = {
-                 { 2.,2.,1.,1.,1.,1.,1.},
+                 { 2.,2.,1.,1.,1.,1.,0.,1.},
              };
+             constexpr int histIndex = 2;
              constexpr int S = 16;
-             constexpr int histIndex = 0;
              std::vector<std::vector<double>> factor0;
              for(int i = -S; i <= S; i++)
              {
@@ -1258,12 +1259,13 @@ moves_loop:  // When in check, search starts here
                                  + factor0[i][4] * x[4]
                                  + factor0[i][5] * x[5]
                                  + factor0[i][6] * x[6]
+                                 + factor0[i][7] * x[7]
                                  ) );
              }
 
              double scale = SCALE * 6.4600191420864874271295571217263;
              double offset = (4.16272 * SCALE - 0.039791) * 6.4600191420864874271295571217263 - 26316.2;
-             std::vector<double> factor = { 0.000333064,0.000277362,0.000118239,0.000168658,0.000124153,0.00018503,0.000185863};
+             std::vector<double> factor = { 0.000333064,0.000277362,0.000118239,0.000168658,0.000124153,0.00018503,0.0,0.000185863};
              h.push_back((factor[0] * x[0]
                              + factor[1] * x[1]
                              + factor[2] * x[2]
@@ -1271,6 +1273,7 @@ moves_loop:  // When in check, search starts here
                              + factor[4] * x[4]
                              + factor[5] * x[5]
                              + factor[6] * x[6]
+                             + factor[7] * x[7]
                              ) );
              /*
              h.push_back((factor[0] * x[0]
