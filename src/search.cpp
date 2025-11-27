@@ -1179,6 +1179,7 @@ moves_loop:  // When in check, search starts here
                 int((*contHist[3])[movedPiece][move.to_sq()]),
                 int((*contHist[4])[movedPiece][move.to_sq()]),
                 int((*contHist[5])[movedPiece][move.to_sq()]),
+                int((*contHist[0])[movedPiece][move.to_sq()]) -int((*contHist[2])[movedPiece][move.to_sq()]),
             };
 
             h = x;
@@ -1217,9 +1218,9 @@ moves_loop:  // When in check, search starts here
              };
              */
              std::vector<double> basefactor = {
-                 { 2.,2.,1.,1.,1.,1.,0.,1.},
+                 { 2.,2.,1.,1.,1.,1.,0.,1.,0.},
              };
-             constexpr int histIndex = 2;
+             constexpr int histIndex = 8;
              constexpr int S = 16;
              std::vector<std::vector<double>> factor0;
              for(int i = -S; i <= S; i++)
@@ -1260,6 +1261,7 @@ moves_loop:  // When in check, search starts here
                                  + factor0[i][5] * x[5]
                                  + factor0[i][6] * x[6]
                                  + factor0[i][7] * x[7]
+                                 + factor0[i][8] * x[8]
                                  ) );
              }
 
