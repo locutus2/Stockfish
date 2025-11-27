@@ -1219,6 +1219,7 @@ moves_loop:  // When in check, search starts here
              */
              std::vector<double> basefactor = {
                  { 2.,2.,1.,1.,1.,1.,0.,1.,0.},
+                 //{ 2.,2.,1.+0.5,1.,1.-0.5,1.,0.,1.,0.},
              };
              constexpr int histIndex = 8;
              constexpr int S = 16;
