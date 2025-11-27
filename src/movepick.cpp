@@ -158,12 +158,12 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 6 * (*mainHistory)[us][m.raw()];
-            m.value += 5 * (*pawnHistory)[pawn_history_index(pos)][pc][to];
-            m.value += 9 * (*continuationHistory[0])[pc][to];
-            m.value += 10 * (*continuationHistory[1])[pc][to];
-            m.value += 9 * (*continuationHistory[2])[pc][to];
-            m.value += 11 * (*continuationHistory[3])[pc][to];
+            m.value = 17 * (*mainHistory)[us][m.raw()];
+            m.value += 14 * (*pawnHistory)[pawn_history_index(pos)][pc][to];
+            m.value += 6 * (*continuationHistory[0])[pc][to];
+            m.value += 9 * (*continuationHistory[1])[pc][to];
+            m.value += 6 * (*continuationHistory[2])[pc][to];
+            m.value += 10 * (*continuationHistory[3])[pc][to];
             m.value += 10 * (*continuationHistory[5])[pc][to];
 
             // bonus for checks
@@ -211,7 +211,7 @@ Move MovePicker::select(Pred filter) {
 // picking the move with the highest score from a list of generated moves.
 Move MovePicker::next_move() {
 
-    constexpr int goodQuietThreshold = -60231;
+    constexpr int goodQuietThreshold = -116598;
 top:
     switch (stage)
     {
@@ -255,7 +255,7 @@ top:
 
             endCur = endGenerated = score<QUIETS>(ml);
 
-            partial_insertion_sort(cur, endCur, 51769 - 28480 * depth);
+            partial_insertion_sort(cur, endCur, -4598 - 28480 * depth);
         }
 
         ++stage;
