@@ -93,6 +93,24 @@ namespace PCA {
     void calcComponents(std::ostream& out)
     {
         out << "PCA N=" << N << std::endl;
+
+        out << "Mean: "; 
+        for(int i = 0; i < N; i++)
+        {
+                if(i) out << ',';
+                out << dbg_get_mean_of(i);
+        }
+        out << std::endl;
+
+        out << "StDev: "; 
+        for(int i = 0; i < N; i++)
+        {
+                if(i) out << ',';
+                out << dbg_get_stdev_of(i);
+        }
+        out << std::endl;
+
+        out << "Normalized COV:" << std::endl;
         for(int i = 0; i < N; i++)
         {
             double stdevi = dbg_get_stdev_of(i);
@@ -105,8 +123,45 @@ namespace PCA {
                 //          = COV(x1,x2) / s1 / s2
                 double cov_norm = cov / stdevi / stdevj;
 
-                if(j) out << ';';
+                if(j) out << ',';
                 out << cov_norm;
+            }
+            out << std::endl;
+        }
+
+        if(true)
+        {
+            //offset: 4.16272 factors: 0.000333064,0.000277362,0.000118239,0.000168658,0.000124153,0.00018503,0.000185863
+            //Mean: -4593.66,-2525.44,-2017.49,-2823.03,-2030.63,-2713.54,-2493.3
+            //StDev: 3107.51,3417.92,6436.09,5608.97,6443.66,5545.05,5380.32
+            std::vector<double> mean = {-4593.66,-2525.44,-2017.49,-2823.03,-2030.63,-2713.54,-2493.3};
+            std::vector<double> stdev = {3107.51,3417.92,6436.09,5608.97,6443.66,5545.05,5380.32};
+            std::vector<double> ev = {1.035,0.948,0.761,0.946,0.800,1.026,1.000};
+            std::vector<double> factor;
+            double offset = 0;
+            for(int i = 0; i < int(ev.size()); i++)
+            {
+                factor.push_back(ev[i] / stdev[i]);
+                offset -= factor[i] * mean[i];
+            }
+            out << "offset: " << offset; 
+            out << " factors: "; 
+            for(int i = 0; i < int(factor.size()); i++)
+            {
+                    if(i) out << ',';
+                    out << factor[i];
+            }
+            out << std::endl;
+
+            double total_scale = 1000 * 6.4600191420864874271295571217263;
+            double total_offset = (4.16272 * 1000 - 0.039791) * 6.4600191420864874271295571217263 - 26316.2;
+
+            out << "total offset: " << total_offset; 
+            out << " total factors: "; 
+            for(int i = 0; i < int(factor.size()); i++)
+            {
+                    if(i) out << ',';
+                    out << factor[i] * total_scale;
             }
             out << std::endl;
         }

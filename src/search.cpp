@@ -1182,14 +1182,18 @@ moves_loop:  // When in check, search starts here
 
             h = x;
 
-            h.push_back((0.553 * x[0]
-               + 0.465 * x[1]
-               + 0.847 * x[2]
-               + 0.991 * x[3]
-               + 0.881 * x[4]
-               + 1.043 * x[5]
-               + 1     * x[6]
-               )/x.size());
+             constexpr int SCALE = 1000;
+             double scale = SCALE * 6.4600191420864874271295571217263;
+             double offset = (4.16272 * SCALE - 0.039791) * 6.4600191420864874271295571217263 - 26316.2;
+             std::vector<double> factor = { 0.000333064,0.000277362,0.000118239,0.000168658,0.000124153,0.00018503,0.000185863};
+             h.push_back((factor[0] * x[0]
+                             + factor[1] * x[1]
+                             + factor[2] * x[2]
+                             + factor[3] * x[3]
+                             + factor[4] * x[4]
+                             + factor[5] * x[5]
+                             + factor[6] * x[6]
+                             ) * scale + offset);
 
             for(int i = 0; i < int(h.size()); i++)
             {

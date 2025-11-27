@@ -176,6 +176,26 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             };
 
               std::vector<int> h = {m.value};
+              //offset: 4.16272 factors: 0.000333064,0.000277362,0.000118239,0.000168658,0.000124153,0.00018503,0.000185863
+              double offset = 4.16272;
+              constexpr int SCALE = 1000;
+              std::vector<double> factor = { 0.000333064,0.000277362,0.000118239,0.000168658,0.000124153,0.00018503,0.000185863};
+              h.push_back(((factor[0] * x[0]
+                  + factor[1] * x[1]
+                  + factor[2] * x[2]
+                  + factor[3] * x[3]
+                  + factor[4] * x[4]
+                  + factor[5] * x[5]
+                  + factor[6] * x[6]
+                  + offset) * SCALE - 0.039791) * 6.4600191420864874271295571217263 - 26316.2);
+              /*
+               * Mean #1000: Total 1009242979 Mean -26316.2
+               * Mean #1001: Total 1009242979 Mean 0.039791
+               * Stdev #1000: Total 1009242979 Stdev 20788.6
+               * Stdev #1001: Total 1009242979 Stdev 3218.04
+               * Correl. #1000: Total 1009242979 Coefficient 0.992495 Cov 6.63966e+07
+               * */
+              /*
               h.push_back((0.553 * x[0]
                   + 0.465 * x[1]
                   + 0.847 * x[2]
@@ -184,14 +204,16 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                   + 1.043 * x[5]
                   + 1 * x[6]
                   +15333.2) / 16062.2 * 20788.6 / 22334.3 * 20788.6 - 26316.2 + 884.5);
+                  */
 
-              dbg_mean_of(h[0], 100);
-              dbg_stdev_of(h[0], 100);
-              dbg_mean_of(h[1], 101);
-              dbg_stdev_of(h[1], 101);
-              dbg_correl_of(h[0], h[1], 100);
+              dbg_mean_of(h[0], 1000);
+              dbg_stdev_of(h[0], 1000);
+              dbg_mean_of(h[1], 1001);
+              dbg_stdev_of(h[1], 1001);
+              dbg_correl_of(h[0], h[1], 1000);
 
-              m.value = h[1];
+              //PCA::add(x);
+              //m.value = h[1];
               /*
                * Hit #0: Total 116532149 Hits 13600045 Hit Rate (%) 11.6706
                * Mean #0: Total 116532149 Mean -1745.23
@@ -341,9 +363,6 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                                                                            * Nodes/second    : 280793
                */
 
-/*
-            PCA::add(x);
-*/
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
 
