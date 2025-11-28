@@ -1180,7 +1180,7 @@ moves_loop:  // When in check, search starts here
                 int((*contHist[4])[movedPiece][move.to_sq()]),
                 int((*contHist[5])[movedPiece][move.to_sq()]),
                 //int((*contHist[0])[movedPiece][move.to_sq()]) -int((*contHist[2])[movedPiece][move.to_sq()]),
-                int(4*mainHistory[us][move.raw()]) -int((*contHist[5])[movedPiece][move.to_sq()]),
+                int(mainHistory[us][move.raw()]) -int((*contHist[5])[movedPiece][move.to_sq()]),
             };
 
             h = x;
