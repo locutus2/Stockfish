@@ -1179,7 +1179,8 @@ moves_loop:  // When in check, search starts here
                 int((*contHist[3])[movedPiece][move.to_sq()]),
                 int((*contHist[4])[movedPiece][move.to_sq()]),
                 int((*contHist[5])[movedPiece][move.to_sq()]),
-                int((*contHist[0])[movedPiece][move.to_sq()]) -int((*contHist[2])[movedPiece][move.to_sq()]),
+                //int((*contHist[0])[movedPiece][move.to_sq()]) -int((*contHist[2])[movedPiece][move.to_sq()]),
+                int(4*mainHistory[us][move.raw()]) -int((*contHist[5])[movedPiece][move.to_sq()]),
             };
 
             h = x;
@@ -1221,7 +1222,7 @@ moves_loop:  // When in check, search starts here
                  //{ 2.,2.,1.,1.,1.,1.,0.,1.,0.},
                  { 2.,2.,1.+0.5,1.,1.-0.5,1.,0.,1.,0.},
              };
-             constexpr int histIndex = 0;
+             constexpr int histIndex = 8;
              constexpr int S = 16;
              std::vector<std::vector<double>> factor0;
              for(int i = -S; i <= S; i++)
