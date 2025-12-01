@@ -1221,7 +1221,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 850 / 8192;
 
         if (!PvNode)
-            r += r / 2;
+            r += r / 32;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
