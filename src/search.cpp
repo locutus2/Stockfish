@@ -1036,7 +1036,7 @@ moves_loop:  // When in check, search starts here
 
         int delta = beta - alpha;
 
-        Depth r = reduction(improving, depth, moveCount, delta);
+        Depth r = reduction<PvNode>(improving, depth, moveCount, delta);
 
         // Increase reduction for ttPv nodes (*Scaler)
         // Larger values scale well
@@ -1725,9 +1725,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     return bestValue;
 }
 
+template <bool PvNode>
 Depth Search::Worker::reduction(bool i, Depth d, int mn, int delta) const {
     int reductionScale = reductions[d] * reductions[mn];
-    return reductionScale - delta * 608 / rootDelta + !i * reductionScale * 238 / 512 + 1182;
+    int r = reductionScale - delta * 608 / rootDelta + !i * reductionScale * 238 / 512 + 1182;
+    return PvNode ? r : r * 5 / 4;
 }
 
 // elapsed() returns the time elapsed since the search started. If the
