@@ -1285,6 +1285,16 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
+        bool CC = true;
+        if(CC)
+        {
+            bool C = ttHit;
+            bool T = value > alpha;
+            dbg_hit_on(T, 100*C);
+            dbg_hit_on(T, 100*C+moveCount);
+            dbg_correl_of(moveCount, T, 100*C);
+        }
+
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
         // Step 20. Check for a new best move
