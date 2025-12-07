@@ -1290,10 +1290,9 @@ moves_loop:  // When in check, search starts here
         {
             bool C = cutNode;
             bool T = value > alpha;
-            dbg_hit_on(T, 100*C);
-            //dbg_hit_on(T, 100*C+moveCount);
-            dbg_correl_of(moveCount, T, 100*C);
-            dbg_mean_of(moveCount,100*C+T);
+            dbg_hit_on(T, C);
+            dbg_correl_of(moveCount, T, C);
+            if(T) dbg_mean_of(moveCount,C);
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
