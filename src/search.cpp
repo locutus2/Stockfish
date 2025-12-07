@@ -1293,7 +1293,6 @@ moves_loop:  // When in check, search starts here
             dbg_hit_on(T, 100*C);
             //dbg_hit_on(T, 100*C+moveCount);
             dbg_correl_of(moveCount, T, 100*C);
-            dbg_mean_of(moveCount,T);
             dbg_mean_of(moveCount,100*C+T);
         }
 
