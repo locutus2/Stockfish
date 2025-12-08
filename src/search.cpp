@@ -1288,7 +1288,7 @@ moves_loop:  // When in check, search starts here
         bool CC = true;
         if(CC)
         {
-            bool C = cutNode;
+            bool C = (ss-1)->currentMove == Move::null(); 
             bool T = value > alpha;
             dbg_hit_on(T, C);
             dbg_correl_of(moveCount, T, C);
