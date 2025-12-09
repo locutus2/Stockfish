@@ -1288,10 +1288,11 @@ moves_loop:  // When in check, search starts here
         bool CC = true;
         if(CC)
         {
-            bool C = (ss-1)->currentMove == Move::null(); 
+            int C = true; 
             bool T = value > alpha;
             dbg_hit_on(T, C);
             dbg_correl_of(moveCount, T, C);
+            dbg_correl_of(T, -moveCount * C, 10000);
             if(T) dbg_mean_of(moveCount,C);
         }
 
