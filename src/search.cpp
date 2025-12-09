@@ -1190,6 +1190,8 @@ moves_loop:  // When in check, search starts here
                + (ttData.depth >= depth) * (934 + cutNode * 1011);
 
         r += 714;  // Base reduction offset to compensate for other tweaks
+        //r -= moveCount * (73 + cutNode * 2.7623547216343873571555407833629 - (1-cutNode) * (1 - 2.7623547216343873571555407833629));
+        //r -= moveCount * (73 + 1*(cutNode + 1.7467215338061772793532116));
         r -= moveCount * 73;
         r -= std::abs(correctionValue) / 30370;
 
@@ -1288,12 +1290,19 @@ moves_loop:  // When in check, search starts here
         bool CC = true;
         if(CC)
         {
-            int C = true; 
+            constexpr int M = 1+2+4;
+            //int C = improving; 
+            int C = true;
+            dbg_mean_of(moveCount, 1000+C); 
+            //int C = 4*cutNode + 2*capture + ss->inCheck; 
+            //int C = 3*cutNode+2*capture+ss->inCheck + capture*ss->inCheck + cutNode*ss->inCheck + cutNode*capture - 2*cutNode*capture*ss->inCheck;
             bool T = value > alpha;
             dbg_hit_on(T, C);
+            dbg_hit_on(T, moveCount+100*C);
             dbg_correl_of(moveCount, T, C);
-            dbg_correl_of(T, -moveCount * C, 10000);
+            //dbg_correl_of(T, -moveCount, 10000+C);
             if(T) dbg_mean_of(moveCount,C);
+            if(C) dbg_correl_of(moveCount*C, T*M, 10);
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
