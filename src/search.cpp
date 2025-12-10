@@ -1190,12 +1190,12 @@ moves_loop:  // When in check, search starts here
                + (ttData.depth >= depth) * (934 + cutNode * 1011);
 
         r += 714;  // Base reduction offset to compensate for other tweaks
-        r -= moveCount * (73 - cutNode * moveCount);
+        r -= moveCount * 73;
         r -= std::abs(correctionValue) / 30370;
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += 3372 + 997 * !ttData.move;
+            r += (3372 + 997 * !ttData.move) / moveCount;
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
