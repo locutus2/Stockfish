@@ -1195,7 +1195,7 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += (3372 + 997 * !ttData.move) / moveCount;
+            r += (1686 + 499 * !ttData.move) * (moveCount + 1) / moveCount;
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
