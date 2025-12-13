@@ -1220,7 +1220,7 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 850 / 8192;
 
-        if (allNode)
+        if (cutNode)
             r += r / 16;
 
         // Step 17. Late moves reduction / extension (LMR)
