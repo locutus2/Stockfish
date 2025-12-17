@@ -74,6 +74,10 @@ void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 
 }  // namespace
 
+bool MovePicker::is_quiet() const
+{
+    return stage == GOOD_QUIET || stage == BAD_QUIET;
+}
 
 // Constructors of the MovePicker class. As arguments, we pass information
 // to decide which class of moves to emit, to help sorting the (presumably)

@@ -1177,6 +1177,23 @@ moves_loop:  // When in check, search starts here
                 extension = -2;
         }
 
+        bool CC = mp.is_quiet();
+        std::vector<int> hist;
+
+        if(CC)
+        {
+            hist = {
+                  mainHistory[us][move.raw()],
+                  pawnHistory[pawn_history_index(pos)][movedPiece][move.to_sq()],
+                  (*contHist[0])[movedPiece][move.to_sq()],
+                  (*contHist[1])[movedPiece][move.to_sq()],
+                  (*contHist[2])[movedPiece][move.to_sq()],
+                  (*contHist[3])[movedPiece][move.to_sq()],
+                  (*contHist[4])[movedPiece][move.to_sq()],
+                  (*contHist[5])[movedPiece][move.to_sq()],
+            };
+        }
+
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck, ss);
 
@@ -1284,6 +1301,15 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+        if(CC)
+        {
+            bool T = value >= beta;
+            std::cerr << int(T);
+            for(int i = 0; i < int(hist.size()); i++)
+                std::cerr << ';' << hist[i];
+            std::cerr << std::endl;
+        }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
