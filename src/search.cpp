@@ -1426,7 +1426,7 @@ moves_loop:  // When in check, search starts here
 
         bonusScale = std::max(bonusScale, 0);
 
-        const int scaledBonus = std::min(141 * depth - 87, 1351) * bonusScale;
+        const int scaledBonus = std::min(141 * depth - 87, 1351) * bonusScale + (ss - 2)->statScore;
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                       scaledBonus * 406 / 32768);
