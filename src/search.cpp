@@ -1101,6 +1101,11 @@ moves_loop:  // When in check, search starts here
 				ss->ttHit,
 				ss->inCheck,
 				improving,
+				priorCapture,
+				(ss-1)->currentMove == Move::null(),
+				eval > ss->staticEval,
+				ss->staticEval > alpha,
+				eval > alpha,
 				//capture,
 				//givesCheck,
 			};
@@ -1317,7 +1322,11 @@ moves_loop:  // When in check, search starts here
 		dbg_hit_on_diff(P, T, 0);
 		for(int i = 0; i < int(C.size()); i++)
 		{
-		    dbg_hit_on_diff(P, T, 10*(1+i)+C[i]);
+		    dbg_hit_on_diff(P, T, 100*(1+i)+C[i]);
+			for(int j = i+1; j < int(C.size()); j++)
+			{
+			    dbg_hit_on_diff(P, T, 100000*(1+i)+1000*(j+1)+10*C[i]+C[j]);
+			}
 		}
 	}
 
