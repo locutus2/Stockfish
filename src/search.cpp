@@ -52,6 +52,10 @@
 
 namespace Stockfish {
 
+constexpr int N = 15;
+int           A[N][N][4], Random;
+TUNE(SetRange(-1024, 1024), Random, A);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1223,6 +1227,36 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 850 / 8192;
+
+        if (!ss->ttPv)
+        {
+            bool C[N] = {
+              cutNode,
+              improving,
+              priorCapture,
+              ttCapture,
+              ss->inCheck,
+              ttHit,
+              (ss + 1)->cutoffCnt > 1,
+              (ss - 1)->currentMove == Move::null(),
+              bool(ttData.move),
+              eval > alpha,
+              ss->staticEval > alpha,
+              eval > ss->staticEval,
+              capture,
+              givesCheck,
+              move == ttData.move,
+            };
+
+            for (int i = 0; i < N; i++)
+            {
+                r += A[i][i][C[i] * 3];
+                for (int j = i + 1; j < N; j++)
+                {
+                    r += A[i][j][C[i] * 2 + C[j]];
+                }
+            }
+        }
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
