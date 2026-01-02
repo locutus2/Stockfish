@@ -54,7 +54,7 @@ namespace Stockfish {
 
 constexpr int N = 15;
 int           A[N][N][4], Random;
-TUNE(SetRange(-1024, 1024), Random, A);
+TUNE(SetRange(-2048, 2048), Random, A);
 
 namespace TB = Tablebases;
 
@@ -1089,8 +1089,39 @@ moves_loop:  // When in check, search starts here
                             + (*contHist[1])[movedPiece][move.to_sq()]
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
+                int  T    = 0;
+                bool C[N] = {
+                  cutNode,
+                  improving,
+                  priorCapture,
+                  ttCapture,
+                  ss->inCheck,
+                  ttHit,
+                  (ss + 1)->cutoffCnt > 1,
+                  (ss - 1)->currentMove == Move::null(),
+                  bool(ttData.move),
+                  eval > alpha,
+                  ss->staticEval > alpha,
+                  eval > ss->staticEval,
+                  //capture,
+                  //givesCheck,
+                  //move == ttData.move,
+                  allNode,
+                  PvNode,
+                  ss->ttPv,
+                };
+
+                for (int i = 0; i < N; i++)
+                {
+                    T += A[i][i][C[i] * 3];
+                    for (int j = i + 1; j < N; j++)
+                    {
+                        T += A[i][j][C[i] * 2 + C[j]];
+                    }
+                }
+
                 // Continuation history based pruning
-                if (history < -4083 * depth)
+                if (history < -4083 * depth + T)
                     continue;
 
                 history += 69 * mainHistory[us][move.raw()] / 32;
@@ -1227,36 +1258,6 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 850 / 8192;
-
-        if (!ss->ttPv)
-        {
-            bool C[N] = {
-              cutNode,
-              improving,
-              priorCapture,
-              ttCapture,
-              ss->inCheck,
-              ttHit,
-              (ss + 1)->cutoffCnt > 1,
-              (ss - 1)->currentMove == Move::null(),
-              bool(ttData.move),
-              eval > alpha,
-              ss->staticEval > alpha,
-              eval > ss->staticEval,
-              capture,
-              givesCheck,
-              move == ttData.move,
-            };
-
-            for (int i = 0; i < N; i++)
-            {
-                r += A[i][i][C[i] * 3];
-                for (int j = i + 1; j < N; j++)
-                {
-                    r += A[i][j][C[i] * 2 + C[j]];
-                }
-            }
-        }
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
