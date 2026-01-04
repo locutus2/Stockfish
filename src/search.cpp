@@ -1228,6 +1228,30 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r / (depth + 1);
 
+        bool CC = false;
+        std::vector<bool> C;
+        if (!ss->ttPv)
+        {
+            CC = true;
+            C = {
+              cutNode,
+              improving,
+              priorCapture,
+              ttCapture,
+              ss->inCheck,
+              ttHit,
+              (ss + 1)->cutoffCnt > 1,
+              (ss - 1)->currentMove == Move::null(),
+              bool(ttData.move),
+              eval > alpha,
+              ss->staticEval > alpha,
+              eval > ss->staticEval,
+              capture,
+              givesCheck,
+              move == ttData.move,
+            };
+        }
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1292,6 +1316,15 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+        if(CC && !C.empty())
+	{
+		bool T = value > alpha;
+		std::cerr << int(T);
+		for(int i = 0; i < int(C.size()); i++)
+		     std::cerr << ',' << int(C[i]);
+                std::cerr << std::endl;
+	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
