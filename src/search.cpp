@@ -1228,12 +1228,12 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r / (depth + 1);
 
-        bool CC = false;
+        bool              CC = false;
         std::vector<bool> C;
         if (!ss->ttPv)
         {
             CC = true;
-            C = {
+            C  = {
               cutNode,
               improving,
               priorCapture,
@@ -1317,14 +1317,14 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        if(CC && !C.empty())
-	{
-		bool T = value > alpha;
-		std::cerr << int(T);
-		for(int i = 0; i < int(C.size()); i++)
-		     std::cerr << ',' << int(C[i]);
-                std::cerr << std::endl;
-	}
+        if (CC && !C.empty())
+        {
+            bool T = value > alpha;
+            std::cerr << int(T) << ' ';
+            for (int i = 0; i < int(C.size()); i++)
+                std::cerr << int(C[i]);
+            std::cerr << std::endl;
+        }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
