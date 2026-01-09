@@ -1207,9 +1207,7 @@ moves_loop:  // When in check, search starts here
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 1)
             r += 120 + 1024 * ((ss + 1)->cutoffCnt > 2) + 100 * ((ss + 1)->cutoffCnt > 3)
-               + allNode
-                   * (1024
-                      + 1024 * (priorCapture && !improving && !ttCapture && !ss->inCheck && ttHit));
+               + allNode * (1024 + 1024 * (priorCapture && !improving));
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
