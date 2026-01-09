@@ -1247,6 +1247,7 @@ moves_loop:  // When in check, search starts here
         {
             CC = true;
             C  = {
+		    /*
               CONDITION(cutNode),
               CONDITION(improving),
               CONDITION(priorCapture),
@@ -1254,8 +1255,8 @@ moves_loop:  // When in check, search starts here
               CONDITION(ss->inCheck),
               CONDITION(ttHit),
               CONDITION((ss + 1)->cutoffCnt > 1),
-	      /*
-              CONDITION((ss - 1)->currentMove == Move::null()),
+	      */
+		    /*
               CONDITION(bool(ttData.move)),
               CONDITION(eval > alpha),
               CONDITION(ss->staticEval > alpha),
@@ -1264,6 +1265,13 @@ moves_loop:  // When in check, search starts here
               CONDITION(givesCheck),
               CONDITION(move == ttData.move),
 	      */
+              CONDITION((ss - 1)->currentMove == Move::null()),
+              CONDITION(bool(excludedMove)),
+              CONDITION((ss-1)->moveCount == 0),
+              CONDITION((ss-1)->inCheck),
+              CONDITION(ss->statScore > 0),
+              CONDITION(type_of(movedPiece) == PAWN),
+              CONDITION(type_of(movedPiece) == KING),
             };
         }
 
