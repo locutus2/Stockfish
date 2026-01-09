@@ -286,6 +286,7 @@ void UCIEngine::bench(std::istream& args) {
     elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
 
     dbg_print();
+    printConditions();
 
     std::cerr << "\n==========================="    //
               << "\nTotal time (ms) : " << elapsed  //

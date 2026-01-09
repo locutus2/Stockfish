@@ -32,6 +32,7 @@
 #include <ratio>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -51,6 +52,18 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+
+constexpr int N_CONDITIONS = 7;
+std::vector<std::string> conditionNames;
+
+#define CONDITION(c) bool(((int(conditionNames.size()) < N_CONDITIONS ? (conditionNames.push_back(#c), true) : true),(c)))
+
+void printConditions(std::ostream& out)
+{
+	out << "CONDITIONS:" << std::endl;
+	for(int i = 0; i < int(conditionNames.size()); i++)
+	    out << conditionNames[i] << std::endl;
+}
 
 namespace TB = Tablebases;
 
@@ -1234,21 +1247,23 @@ moves_loop:  // When in check, search starts here
         {
             CC = true;
             C  = {
-              cutNode,
-              improving,
-              priorCapture,
-              ttCapture,
-              ss->inCheck,
-              ttHit,
-              (ss + 1)->cutoffCnt > 1,
-              (ss - 1)->currentMove == Move::null(),
-              bool(ttData.move),
-              eval > alpha,
-              ss->staticEval > alpha,
-              eval > ss->staticEval,
-              capture,
-              givesCheck,
-              move == ttData.move,
+              CONDITION(cutNode),
+              CONDITION(improving),
+              CONDITION(priorCapture),
+              CONDITION(ttCapture),
+              CONDITION(ss->inCheck),
+              CONDITION(ttHit),
+              CONDITION((ss + 1)->cutoffCnt > 1),
+	      /*
+              CONDITION((ss - 1)->currentMove == Move::null()),
+              CONDITION(bool(ttData.move)),
+              CONDITION(eval > alpha),
+              CONDITION(ss->staticEval > alpha),
+              CONDITION(eval > ss->staticEval),
+              CONDITION(capture),
+              CONDITION(givesCheck),
+              CONDITION(move == ttData.move),
+	      */
             };
         }
 
@@ -1317,13 +1332,26 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        if (CC && !C.empty())
+        if (CC && C.size() <= 7)
         {
-            bool T = value > alpha;
-            std::cerr << int(T) << ' ';
-            for (int i = 0; i < int(C.size()); i++)
-                std::cerr << int(C[i]);
-            std::cerr << std::endl;
+            const bool T = value > alpha;
+	    const int M = 1 << int(C.size());
+
+            for (int i = 0; i < M; i++)
+	    {
+		    int index = 0;
+		    for(int j = int(C.size())-1, base = 1; j >= 0; j--, base *= 3)
+			    if(i & (1 << j))
+				    index += base * (1 + C[j]);
+
+		    dbg_hit_on(T, index);
+	    }
+/*
+	    dbg_hit_on(T, 1000 + 0);
+	    dbg_hit_on(T, 1000 + 3 * (1+C[0]));
+	    dbg_hit_on(T, 1000 + 1+C[1]);
+	    dbg_hit_on(T, 1000 + 3 * (1+C[0]) + 1+C[1]);
+	    */
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
@@ -1989,7 +2017,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        dbg_print();
+        //dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI

@@ -284,7 +284,8 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+//constexpr int MaxDebugSlots = 59049; // 3^10
+constexpr int MaxDebugSlots = 2187; // 3^7
 
 namespace {
 
