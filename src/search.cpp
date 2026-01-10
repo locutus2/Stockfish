@@ -1207,7 +1207,7 @@ moves_loop:  // When in check, search starts here
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 1)
             r += 120 + 1024 * ((ss + 1)->cutoffCnt > 2) + 100 * ((ss + 1)->cutoffCnt > 3)
-               + allNode * (1024 + 1024 * (priorCapture && !improving));
+               + 1024 * allNode;
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
@@ -1220,6 +1220,10 @@ moves_loop:  // When in check, search starts here
             ss->statScore = 2 * mainHistory[us][move.raw()]
                           + (*contHist[0])[movedPiece][move.to_sq()]
                           + (*contHist[1])[movedPiece][move.to_sq()];
+
+        if (type_of(movedPiece) == KING && (ss - 1)->moveCount == 0 && ss->statScore <= 0
+            && !(ss - 1)->inCheck && !excludedMove && (ss - 1)->currentMove != Move::null())
+            r += 1024;
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 850 / 8192;
