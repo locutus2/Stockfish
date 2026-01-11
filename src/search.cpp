@@ -1209,7 +1209,7 @@ moves_loop:  // When in check, search starts here
             r += 256 + 1024 * ((ss + 1)->cutoffCnt > 2)
                + allNode
                    * (1024
-                        * (depth >= 12 && priorCapture && !improving && !ttCapture && !ss->inCheck
+                        * (depth < 12 && priorCapture && !improving && !ttCapture && !ss->inCheck
                            && ttHit)
                       + 1024);
 
