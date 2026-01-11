@@ -1209,7 +1209,9 @@ moves_loop:  // When in check, search starts here
             r += 120 + 1024 * ((ss + 1)->cutoffCnt > 2) + 100 * ((ss + 1)->cutoffCnt > 3)
                + allNode
                    * (1024
-                      + 1024 * (priorCapture && !improving && !ttCapture && !ss->inCheck && ttHit));
+                        * (depth >= 12 && priorCapture && !improving && !ttCapture && !ss->inCheck
+                           && ttHit)
+                      + 1024);
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
