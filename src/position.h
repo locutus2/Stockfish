@@ -308,7 +308,7 @@ inline Bitboard Position::check_squares(PieceType pt) const { return st->checkSq
 inline Key Position::key() const { return adjust_key50(st->key); }
 
 inline Key Position::adjust_key50(Key k) const {
-    return st->rule50 < 14 ? k : k ^ make_key((st->rule50 - 14) / 8);
+    return (st->rule50 < 14 ? k : k ^ make_key((st->rule50 - 14) / 8)) << 1 | Key(sideToMove);
 }
 
 inline Key Position::pawn_key() const { return st->pawnKey; }
