@@ -107,8 +107,8 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
 // http://web.archive.org/web/20201107002606/https://marcelk.net/2013-04-06/paper/upcoming-rep-v2.pdf
 
 // First and second hash functions for indexing the cuckoo tables
-inline int H1(Key h) { return h & 0x1fff; }
-inline int H2(Key h) { return (h >> 16) & 0x1fff; }
+inline int H1(Key h) { return (h >> 1) & 0x1fff; }
+inline int H2(Key h) { return (h >> 17) & 0x1fff; }
 
 // Cuckoo tables with Zobrist hashes of valid reversible moves, and the moves themselves
 std::array<Key, 8192>  cuckoo;
@@ -134,7 +134,7 @@ void Position::init() {
     for (int cr = NO_CASTLING; cr <= ANY_CASTLING; ++cr)
         Zobrist::castling[cr] = rng.rand<Key>() & mask;
 
-    Zobrist::side    = 1ULL;
+    Zobrist::side    = rng.rand<Key>() | 1;
     Zobrist::noPawns = rng.rand<Key>() & mask;
 
     // Prepare the cuckoo tables
