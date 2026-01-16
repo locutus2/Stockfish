@@ -117,7 +117,8 @@ std::array<Move, 8192> cuckooMove;
 // Initializes at startup the various arrays used to compute hash keys
 void Position::init() {
 
-    PRNG rng(1070372);
+    int  delta = 0;
+    PRNG rng(1070372 + delta);
 
     for (Piece pc : Pieces)
         for (Square s = SQ_A1; s <= SQ_H8; ++s)

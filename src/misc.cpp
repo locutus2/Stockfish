@@ -284,7 +284,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+constexpr int MaxDebugSlots = 320;
 
 namespace {
 
@@ -367,10 +367,28 @@ void dbg_print() {
     auto    E   = [&n](int64_t x) { return double(x) / n; };
     auto    sqr = [](double x) { return x * x; };
 
+    double  P1 = 1, P0 = 1;
+    double  PA1 = 0, PA0 = 0;
+    int64_t NP = 0;
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = hit[i][0]))
+        {
+            NP++;
+            double p = double(hit[i][1]) / n;
+            P1 *= std::max(p, 1 - p) / 0.5;
+            P0 *= std::min(p, 1 - p) / 0.5;
+            PA1 += std::max(p, 1 - p) / 0.5;
+            PA0 += std::min(p, 1 - p) / 0.5;
             std::cerr << "Hit #" << i << ": Total " << n << " Hits " << hit[i][1]
                       << " Hit Rate (%) " << 100.0 * E(hit[i][1]) << std::endl;
+        }
+    if (NP)
+    {
+        std::cerr << "P1=" << 100. * (P1 - 1) << "%"
+                  << " P0=" << 100. * (P0 - 1) << "%"
+                  << " PA1=" << 100. * (PA1 - 1) / NP << "%"
+                  << " PA0=" << 100. * (PA0 - 1) / NP << "%" << std::endl;
+    }
 
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = mean[i][0]))

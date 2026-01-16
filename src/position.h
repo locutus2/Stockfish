@@ -308,10 +308,18 @@ inline Bitboard Position::check_squares(PieceType pt) const { return st->checkSq
 inline Key Position::key() const { return adjust_key50(st->key); }
 
 inline Key Position::adjust_key50(Key k) const {
-    return st->rule50 < 14 ? k : k ^ make_key((st->rule50 - 14) / 8);
+    k = st->rule50 < 14 ? k : k ^ make_key((st->rule50 - 14) / 8);
+    //for(int i = 0; i < 64; i++)
+    //	    dbg_hit_on(k & (1ULL<<i), i);
+    return k;
 }
 
-inline Key Position::pawn_key() const { return st->pawnKey; }
+inline Key Position::pawn_key() const {
+    Key k = st->pawnKey;
+    for (int i = 0; i < 64; i++)
+        dbg_hit_on(k & (1ULL << i), i);
+    return k;
+}
 
 inline Key Position::material_key() const { return st->materialKey; }
 
