@@ -123,6 +123,37 @@ void Position::init() {
     for (Piece pc : Pieces)
         for (Square s = SQ_A1; s <= SQ_H8; ++s)
             Zobrist::psq[pc][s] = rng.rand<Key>();
+
+    /*
+    for (Piece pc : { W_PAWN, B_PAWN })
+        for (Square s = SQ_A1; s <= SQ_H8; ++s)
+	{
+		if(popcount(Zobrist::psq[pc][s]) > 32)
+                    Zobrist::psq[pc][s] &= rng.rand<Key>();
+		else if(popcount(Zobrist::psq[pc][s]) < 32)
+                    Zobrist::psq[pc][s] |= rng.rand<Key>();
+	}
+	*/
+    for (Piece pc : { W_PAWN, B_PAWN })
+        for (Square s = SQ_A1; s <= SQ_H8; ++s)
+	{
+		if(pc == W_PAWN)
+		{
+                    if(s <= SQ_H4)
+                         Zobrist::psq[pc][s] &= rng.rand<Key>();
+		    else
+                         Zobrist::psq[pc][s] |= rng.rand<Key>();
+		}
+		else
+		{
+                    if(s > SQ_H4)
+                         Zobrist::psq[pc][s] &= rng.rand<Key>();
+		    else
+                         Zobrist::psq[pc][s] |= rng.rand<Key>();
+
+		}
+	}
+
     // pawns on these squares will promote
     std::fill_n(Zobrist::psq[W_PAWN] + SQ_A8, 8, 0);
     std::fill_n(Zobrist::psq[B_PAWN], 8, 0);
@@ -349,6 +380,9 @@ void Position::set_state() const {
     st->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
 
     set_check_info();
+    for(int c = 0; c < 2; ++c)
+        for(int i = 0; i < 64; ++i)
+		st->pkey[c][i] = 0;
 
     for (Bitboard b = pieces(); b;)
     {
@@ -357,7 +391,10 @@ void Position::set_state() const {
         st->key ^= Zobrist::psq[pc][s];
 
         if (type_of(pc) == PAWN)
+	{
             st->pawnKey ^= Zobrist::psq[pc][s];
+	    st->pkey[color_of(pc)][s] ^= 1;
+	}
 
         else
         {
@@ -781,6 +818,7 @@ void Position::do_move(Move                      m,
             }
 
             st->pawnKey ^= Zobrist::psq[captured][capsq];
+	    st->pkey[color_of(captured)][capsq] ^= 1;
         }
         else
         {
@@ -871,6 +909,8 @@ void Position::do_move(Move                      m,
 
         // Update pawn hash key
         st->pawnKey ^= Zobrist::psq[pc][from] ^ Zobrist::psq[pc][to];
+	st->pkey[color_of(pc)][from] ^= 1;
+	st->pkey[color_of(pc)][to] ^= 1;
 
         // Reset rule 50 draw counter
         st->rule50 = 0;

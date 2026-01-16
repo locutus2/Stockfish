@@ -44,6 +44,7 @@ struct StateInfo {
     // Copied when making a move
     Key    materialKey;
     Key    pawnKey;
+    int    pkey[2][64];
     Key    minorPieceKey;
     Key    nonPawnKey[COLOR_NB];
     Value  nonPawnMaterial[COLOR_NB];
@@ -311,13 +312,20 @@ inline Key Position::adjust_key50(Key k) const {
     k = st->rule50 < 14 ? k : k ^ make_key((st->rule50 - 14) / 8);
     //for(int i = 0; i < 64; i++)
     //	    dbg_hit_on(k & (1ULL<<i), i);
+    //for(int i = 0; i <= 64; i++)
+   // 	    dbg_hit_on(i == popcount(k), i);
     return k;
 }
 
 inline Key Position::pawn_key() const {
     Key k = st->pawnKey;
-    for (int i = 0; i < 64; i++)
-        dbg_hit_on(k & (1ULL << i), i);
+    //for (int i = 0; i < 64; i++)
+    //    dbg_hit_on(k & (1ULL << i), i);
+    for(int i = 0; i <= 64; i++)
+    	    dbg_hit_on(i == popcount(k), i);
+    //for(int c = 0; c < 2; c++)
+    //    for(int i = 0; i < 64; i++)
+   // 	    dbg_hit_on(st->pkey[c][i], 64*c+i);
     return k;
 }
 
