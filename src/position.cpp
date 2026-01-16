@@ -45,10 +45,11 @@ namespace Stockfish {
 
 namespace Zobrist {
 
-Key psq[PIECE_NB][SQUARE_NB];
-Key enpassant[FILE_NB];
-Key castling[CASTLING_RIGHT_NB];
-Key side, noPawns;
+Key           psq[PIECE_NB][SQUARE_NB];
+Key           enpassant[FILE_NB];
+Key           castling[CASTLING_RIGHT_NB];
+Key           noPawns;
+constexpr Key side = ~0ULL;
 
 }
 
@@ -132,7 +133,6 @@ void Position::init() {
     for (int cr = NO_CASTLING; cr <= ANY_CASTLING; ++cr)
         Zobrist::castling[cr] = rng.rand<Key>();
 
-    Zobrist::side    = rng.rand<Key>();
     Zobrist::noPawns = rng.rand<Key>();
 
     // Prepare the cuckoo tables
@@ -376,7 +376,10 @@ void Position::set_state() const {
         st->key ^= Zobrist::enpassant[file_of(st->epSquare)];
 
     if (sideToMove == BLACK)
+    {
         st->key ^= Zobrist::side;
+        st->pawnKey ^= Zobrist::side;
+    }
 
     st->key ^= Zobrist::castling[st->castlingRights];
     st->materialKey = compute_material_key();
@@ -902,7 +905,9 @@ void Position::do_move(Move                      m,
     // Calculate checkers bitboard (if move gives check)
     st->checkersBB = givesCheck ? attackers_to(square<KING>(them)) & pieces(us) : 0;
 
+    st->pawnKey ^= Zobrist::side;
     sideToMove = ~sideToMove;
+
 
     // Update king attacks used for fast check detection
     set_check_info();
@@ -1265,6 +1270,7 @@ void Position::do_null_move(StateInfo& newSt, const TranspositionTable& tt) {
     }
 
     st->key ^= Zobrist::side;
+    st->pawnKey ^= Zobrist::side;
     prefetch(tt.first_entry(key()));
 
     st->pliesFromNull = 0;
