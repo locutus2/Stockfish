@@ -386,8 +386,8 @@ void dbg_print() {
     {
         std::cerr << "P1=" << 100. * (P1 - 1) << "%"
                   << " P0=" << 100. * (P0 - 1) << "%"
-                  << " PA1=" << 100. * (PA1 - 1) / NP << "%"
-                  << " PA0=" << 100. * (PA0 - 1) / NP << "%" << std::endl;
+                  << " PA1=" << 100. * (PA1/NP - 1) << "%"
+                  << " PA0=" << 100. * (PA0/NP - 1) << "%" << std::endl;
     }
 
     for (int i = 0; i < MaxDebugSlots; ++i)
