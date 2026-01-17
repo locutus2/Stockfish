@@ -134,6 +134,7 @@ void Position::init() {
                     Zobrist::psq[pc][s] |= rng.rand<Key>();
 	}
 	*/
+    /*
     for (Piece pc : { W_PAWN, B_PAWN })
         for (Square s = SQ_A1; s <= SQ_H8; ++s)
 	{
@@ -153,6 +154,192 @@ void Position::init() {
 
 		}
 	}
+	*/
+    double p[2][64] = {
+	    {
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0.244918,
+		    0.223552,
+		    0.0833459,
+		    0.000939272,
+		    0.0403881,
+		    0.380177,
+		    0.255565,
+		    0.384925,
+		    0.193866,
+		    0.138558,
+		    0.0989915,
+		    0.0589281,
+		    0.136335,
+		    0.128684,
+		    0.330416,
+		    0.176047,
+		    0.122035,
+		    0.0833021,
+		    0.135627,
+		    0.13788,
+		    0.135485,
+		    0.117025,
+		    0.0820672,
+		    0.123846,
+		    0.0405299,
+		    0.0634634,
+		    0.0456598,
+		    0.0772655,
+		    0.078625,
+		    0.0299953,
+		    0.0308239,
+		    0.0387253,
+		    0.0105531,
+		    0.0134355,
+		    0.0101348,
+		    0.00801817,
+		    0.0126644,
+		    0.0106456,
+		    0.00368555,
+		    0.0177489,
+		    0.00494164,
+		    0.00481658,
+		    0.00219977,
+		    0.00302283,
+		    0.00353239,
+		    0.00220199,
+		    0.0012668,
+		    0.00367733,
+		    0.00600993,
+		    0.00208388,
+		    0.00311551,
+		    0.000920038,
+		    0.00111656,
+		    0.00223907,
+		    0.00321378,
+		    0.0023307
+	    },
+	    {
+		    0.0017908,
+		    0.000766019,
+		    0.00101838,
+		    0.00336965,
+		    0.00555195,
+		    0.00231721,
+		    0.00270847,
+		    0.00249792,
+		    0.00516151,
+		    0.00264557,
+		    0.002192,
+		    0.00563255,
+		    0.00253144,
+		    0.00393276,
+		    0.00403319,
+		    0.00257938,
+		    0.0124143,
+		    0.00551327,
+		    0.00687901,
+		    0.010338,
+		    0.0153731,
+		    0.00682683,
+		    0.00736465,
+		    0.0159742,
+		    0.0479828,
+		    0.0536445,
+		    0.0434485,
+		    0.0426059,
+		    0.0502641,
+		    0.0362687,
+		    0.032531,
+		    0.0330706,
+		    0.149648,
+		    0.0789811,
+		    0.133205,
+		    0.160605,
+		    0.135268,
+		    0.099963,
+		    0.0915491,
+		    0.112551,
+		    0.164761,
+		    0.134708,
+		    0.120813,
+		    0.11924,
+		    0.182511,
+		    0.104865,
+		    0.26713,
+		    0.219882,
+		    0.227308,
+		    0.217207,
+		    0.076622,
+		    0.0155072,
+		    0.0317808,
+		    0.388248,
+		    0.305039,
+		    0.332173,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0
+	    }
+    };
+
+    for (int i = 0; i < 64; i++)
+    {
+	    double B0 = 0;
+	    std::vector<std::vector<double>> B(2, std::vector<double>(64, 0));
+            for (Piece pc : { W_PAWN, B_PAWN })
+	    {
+                for (Square s = SQ_A1; s <= SQ_H8; ++s)
+	        {
+			int b0 = (Zobrist::psq[pc][s] >> i) & 1;
+			B0 = p[color_of(pc)][s] * b0 * (1 - B0) + (1 - p[color_of(pc)][s] * b0) * B0;
+			//std::cerr << "==> i=" << i << " B0=" << B0 << " c/s=" << int(color_of(pc)) << "/" << int(s) << std::endl;
+			for(Color c : { WHITE, BLACK })
+                            for (Square s1 = SQ_A1; s1 <= SQ_H8; ++s1)
+			    {
+				if(color_of(pc) == WHITE && s < SQ_A2) continue;
+				if(color_of(pc) == BLACK && s > SQ_H7) continue;
+				int b = b0;
+				if(color_of(pc) == c && s == s1)
+					b ^= 1;
+				B[c][s1] = p[color_of(pc)][s] * b * (1 - B[c][s1]) + (1 - p[color_of(pc)][s] * b) * B[c][s1];
+			    }
+		}
+	    }
+
+	    Color bestColor = Color(-1);
+	    Square bestSquare = SQ_NONE;
+	    double bestValue = std::abs(B0 - 0.5);
+	    std::cerr << "=> base v=" << bestValue << std::endl;
+	    for(Color c : { WHITE, BLACK })
+                for (Square s = SQ_A1; s <= SQ_H8; ++s)
+		{
+			if(c == WHITE && s < SQ_A2) continue;
+			if(c == BLACK && s > SQ_H7) continue;
+			double value = std::abs(B[c][s] - 0.5);
+			if(value < bestValue)
+			{
+				std::cerr << "=> select c=" << int(c) << " s=" << int(s) << " v=" << value << " < " << bestValue << std::endl;
+				bestColor = c;
+				bestSquare = s;
+				bestValue = value;
+			}
+		}
+
+	    if (bestSquare != SQ_NONE)
+	    {
+			Zobrist::psq[make_piece(bestColor, PAWN)][bestSquare] ^= 1ULL << i;
+	    }
+	    std::cerr << "i=" << i << " P=" << bestValue << " P0=" << std::abs(B0 - 0.5) << " c=" << int(bestColor) << " sq=" << int(bestSquare) << std::endl;
+    }
+    //std::exit(1);
 
     // pawns on these squares will promote
     std::fill_n(Zobrist::psq[W_PAWN] + SQ_A8, 8, 0);
