@@ -155,6 +155,7 @@ void Position::init() {
 		}
 	}
 	*/
+    /*
     double p[2][64] = {
 	    {
 		    0,
@@ -339,6 +340,7 @@ void Position::init() {
 	    }
 	    std::cerr << "i=" << i << " P=" << bestValue << " P0=" << std::abs(B0 - 0.5) << " c=" << int(bestColor) << " sq=" << int(bestSquare) << std::endl;
     }
+    */
     //std::exit(1);
 
     // pawns on these squares will promote
