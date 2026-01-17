@@ -319,8 +319,10 @@ inline Key Position::adjust_key50(Key k) const {
 
 inline Key Position::pawn_key() const {
     Key k = st->pawnKey;
-    //for (int i = 0; i < 64; i++)
-    //    dbg_hit_on(k & (1ULL << i), i);
+    k ^= (k >> 6) & 2ULL;
+
+    for (int i = 0; i < 64; i++)
+        dbg_hit_on(k & (1ULL << i), i);
     /*
     for (int i = 0; i < 64; i++)
          for (int j = 0; j < 64; j++)
@@ -331,8 +333,8 @@ inline Key Position::pawn_key() const {
     //for(int c = 0; c < 2; c++)
     //    for(int i = 0; i < 64; i++)
    // 	    dbg_hit_on(st->pkey[c][i], 64*c+i);
-    for (unsigned int i = 0; i < 256; i++)
-        dbg_hit_on(popcount(k & i) & 1, i);
+    //for (unsigned int i = 0; i < 256; i++)
+    //    dbg_hit_on(popcount(k & i) & 1, i);
     return k;
 }
 
