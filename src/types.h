@@ -460,6 +460,7 @@ class Move {
 
     constexpr bool operator==(const Move& m) const { return data == m.data; }
     constexpr bool operator!=(const Move& m) const { return data != m.data; }
+    constexpr bool operator<(const Move& m) const { return data < m.data; }
 
     constexpr explicit operator bool() const { return data != 0; }
 

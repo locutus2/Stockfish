@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "history.h"
+#include "mcts.h"
 #include "misc.h"
 #include "nnue/network.h"
 #include "nnue/nnue_accumulator.h"
@@ -178,6 +179,7 @@ struct InfoFull: InfoShort {
     size_t           tbHits;
     std::string_view pv;
     int              hashfull;
+    int              mctsUsage;
 };
 
 struct InfoIteration {
@@ -297,6 +299,8 @@ class Worker {
     TTMoveHistory    ttMoveHistory;
     SharedHistories& sharedHistory;
 
+    MCTS::Tree treeMCTS;
+
    private:
     void iterative_deepening();
 
@@ -309,7 +313,13 @@ class Worker {
 
     // This is the main search function, for both PV and non-PV nodes
     template<NodeType nodeType>
-    Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
+    Value search(Position&   pos,
+                 Stack*      ss,
+                 Value       alpha,
+                 Value       beta,
+                 Depth       depth,
+                 bool        cutNode,
+                 MCTS::Node* mcts = nullptr);
 
     // Quiescence search function, which is called by the main search
     template<NodeType nodeType>
