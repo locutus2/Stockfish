@@ -19,22 +19,6 @@
 #ifndef MCTS_H_INCLUDED
 #define MCTS_H_INCLUDED
 
-/*
-#include <algorithm>
-#include <array>
-#include <atomic>
-#include <cassert>
-#include <cmath>
-#include <cstdint>
-#include <cstdlib>
-#include <limits>
-#include <type_traits>  // IWYU pragma: keep
-
-#include "memory.h"
-#include "misc.h"
-#include "position.h"
-*/
-
 #include <map>
 
 #include "types.h"
