@@ -43,6 +43,8 @@ namespace Stockfish {
 
 namespace MCTS {
 
+class Tree;
+
 class Node {
 
     struct Stats {
@@ -50,7 +52,7 @@ class Node {
         int64_t count = 0;
         Node*   next  = nullptr;
 
-        Value value() const { return sum / count; }
+        Value value() const { return count ? sum / count : VALUE_ZERO; }
     };
 
     Stats nodeStats;
@@ -64,10 +66,12 @@ class Node {
     Value getValue(Move m) const;
     Value averageValue() const;
     Node* next(Move m) const;
+
+    friend Tree;
 };
 
 class Tree {
-    static constexpr int SIZE = 1024;
+    static constexpr int SIZE = 16384;
 
     int                    nNodes = 1;
     std::array<Node, SIZE> nodes;
@@ -75,7 +79,7 @@ class Tree {
    public:
     Node*  root();
     void   clear();
-    Node*  createNode();
+    Node*  extendMove(Node* node, Move m);
     double usage() const;
 };
 

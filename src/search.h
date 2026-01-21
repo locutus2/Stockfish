@@ -179,7 +179,7 @@ struct InfoFull: InfoShort {
     size_t           tbHits;
     std::string_view pv;
     int              hashfull;
-    int              mctsUsage;
+    int              mctsfull;
 };
 
 struct InfoIteration {

@@ -1293,6 +1293,9 @@ moves_loop:  // When in check, search starts here
                     || ttData.depth > 1))
                 newDepth = std::max(newDepth, 1);
 
+            if (mcts && !nextMCTS)
+                nextMCTS = treeMCTS.extendMove(mcts, move);
+
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false, nextMCTS);
         }
 
@@ -2186,7 +2189,7 @@ void SearchManager::pv(Search::Worker&           worker,
         info.tbHits    = tbHits;
         info.pv        = pv;
         info.hashfull  = tt.hashfull();
-        info.mctsUsage = 1000 * worker.treeMCTS.usage();
+        info.mctsfull  = 1000 * worker.treeMCTS.usage();
 
         updates.onUpdateFull(info);
     }

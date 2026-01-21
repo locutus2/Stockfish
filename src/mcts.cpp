@@ -70,11 +70,11 @@ void Tree::clear() {
     nodes[0].clear();
 };
 
-Node* Tree::createNode() {
+Node* Tree::extendMove(Node* node, Move m) {
     if (nNodes < SIZE)
     {
         nodes[nNodes].clear();
-        return &nodes[nNodes++];
+        return node->moveStats[m].next = &nodes[nNodes++];
     }
     else
         return nullptr;
