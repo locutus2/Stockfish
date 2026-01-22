@@ -182,7 +182,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
 
             if (mcts && mcts->hasValue(m))
-                m.value += mcts->getValue(m) - alpha;
+                m.value += mcts->getUCB(m) - alpha;
         }
 
         else  // Type == EVASIONS
