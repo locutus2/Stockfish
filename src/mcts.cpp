@@ -18,6 +18,7 @@
 
 #include "mcts.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace Stockfish {
@@ -70,6 +71,17 @@ Value Node::getUCB(Move m) const {
 }
 
 Value Node::getAverage() const { return nodeStats.value(); }
+
+Move Node::getBestMove() const {
+    return moveStats.empty() ? Move::none()
+                             : std::max_element(moveStats.begin(), moveStats.end(),
+                                                [](const auto& s1, const auto& s2) {
+                                                    return s1.second.value() > s2.second.value()
+                                                        || (s1.second.value() == s2.second.value()
+                                                            && s1.first < s2.first);
+                                                })
+                                 ->first;
+}
 
 Node* Node::next(Move m) const {
     auto entry = moveStats.find(m);

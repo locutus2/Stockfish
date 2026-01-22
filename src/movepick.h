@@ -48,8 +48,7 @@ class MovePicker {
                const PieceToHistory**,
                const SharedHistories*,
                int,
-               Value,
-               MCTS::Node*);
+               Move);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
     Move next_move();
     void skip_quiet_moves();
@@ -75,8 +74,7 @@ class MovePicker {
     Depth                        depth;
     int                          ply;
     bool                         skipQuiets = false;
-    Value                        alpha;
-    MCTS::Node*                  mcts = nullptr;
+    Move                         mctsMove   = Move::none();
     ExtMove                      moves[MAX_MOVES];
 };
 

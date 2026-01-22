@@ -53,6 +53,7 @@ class Node {
     Value getValue(Move m) const;
     Value getUCB(Move m) const;
     Value getAverage() const;
+    Move  getBestMove() const;
     Node* next(Move m) const;
 
     friend Tree;

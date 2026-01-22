@@ -33,6 +33,7 @@ namespace {
 enum Stages {
     // generate main search moves
     MAIN_TT,
+    MAIN_MCTS,
     CAPTURE_INIT,
     GOOD_CAPTURE,
     QUIET_INIT,
@@ -42,6 +43,7 @@ enum Stages {
 
     // generate evasion moves
     EVASION_TT,
+    EVASION_MCTS,
     EVASION_INIT,
     EVASION,
 
@@ -89,8 +91,7 @@ MovePicker::MovePicker(const Position&              p,
                        const PieceToHistory**       ch,
                        const SharedHistories*       sh,
                        int                          pl,
-                       Value                        a,
-                       MCTS::Node*                  mc) :
+                       Move                         mm) :
     pos(p),
     mainHistory(mh),
     lowPlyHistory(lph),
@@ -100,8 +101,7 @@ MovePicker::MovePicker(const Position&              p,
     ttMove(ttm),
     depth(d),
     ply(pl),
-    alpha(a),
-    mcts(mc) {
+    mctsMove(mm) {
 
     if (pos.checkers())
         stage = EVASION_TT + !(ttm && pos.pseudo_legal(ttm));
@@ -180,9 +180,6 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
-
-            if (mcts && mcts->hasValue(m))
-                m.value += mcts->getUCB(m) - alpha;
         }
 
         else  // Type == EVASIONS
@@ -202,7 +199,7 @@ template<typename Pred>
 Move MovePicker::select(Pred filter) {
 
     for (; cur < endCur; ++cur)
-        if (*cur != ttMove && filter())
+        if (*cur != ttMove && *cur != mctsMove && filter())
             return *cur++;
 
     return Move::none();
@@ -224,6 +221,13 @@ top:
     case PROBCUT_TT :
         ++stage;
         return ttMove;
+
+    case MAIN_MCTS :
+    case EVASION_MCTS :
+        ++stage;
+        if (mctsMove && mctsMove != ttMove)
+            return mctsMove;
+        goto top;
 
     case CAPTURE_INIT :
     case PROBCUT_INIT :
