@@ -45,6 +45,11 @@ void Node::clear() {
     moveStats.clear();
 }
 
+bool Node::hasValue(Move m) const {
+    auto entry = moveStats.find(m);
+    return entry != moveStats.end() && entry->second.count > 0;
+}
+
 Value Node::getValue(Move m) const {
     auto entry = moveStats.find(m);
     if (entry == moveStats.end())

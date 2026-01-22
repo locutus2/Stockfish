@@ -47,6 +47,7 @@ class Node {
     Node();
     void  clear();
     void  update(Move m, Value v);
+    bool  hasValue(Move m) const;
     Value getValue(Move m) const;
     Value averageValue() const;
     Node* next(Move m) const;
