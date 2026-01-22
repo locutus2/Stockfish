@@ -31,6 +31,8 @@ class Tree;
 
 class Node {
 
+    static constexpr double C = 545;  // ~ 385 * sqrt(2)
+
     struct Stats {
         int64_t sum   = 0;
         int64_t count = 0;
@@ -49,7 +51,8 @@ class Node {
     void  update(Move m, Value v);
     bool  hasValue(Move m) const;
     Value getValue(Move m) const;
-    Value averageValue() const;
+    Value getUCB(Move m) const;
+    Value getAverage() const;
     Node* next(Move m) const;
 
     friend Tree;

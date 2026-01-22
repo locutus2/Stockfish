@@ -161,29 +161,32 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
         else if constexpr (Type == QUIETS)
         {
-            // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()];
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
-            m.value += (*continuationHistory[0])[pc][to];
-            m.value += (*continuationHistory[1])[pc][to];
-            m.value += (*continuationHistory[2])[pc][to];
-            m.value += (*continuationHistory[3])[pc][to];
-            m.value += (*continuationHistory[5])[pc][to];
+            if (mcts)
+                m.value = mcts->getUCB(m);
 
-            // bonus for checks
-            m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            else
+            {
+                // histories
+                m.value = 2 * (*mainHistory)[us][m.raw()];
+                m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
+                m.value += (*continuationHistory[0])[pc][to];
+                m.value += (*continuationHistory[1])[pc][to];
+                m.value += (*continuationHistory[2])[pc][to];
+                m.value += (*continuationHistory[3])[pc][to];
+                m.value += (*continuationHistory[5])[pc][to];
 
-            // penalty for moving to a square threatened by a lesser piece
-            // or bonus for escaping an attack by a lesser piece.
-            int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
-            m.value += PieceValue[pt] * v;
+                // bonus for checks
+                m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+
+                // penalty for moving to a square threatened by a lesser piece
+                // or bonus for escaping an attack by a lesser piece.
+                int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
+                m.value += PieceValue[pt] * v;
 
 
-            if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
-
-            if (mcts && mcts->hasValue(m))
-                m.value += 8 * (mcts->getValue(m) - alpha);
+                if (ply < LOW_PLY_HISTORY_SIZE)
+                    m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+            }
         }
 
         else  // Type == EVASIONS
@@ -258,14 +261,17 @@ top:
 
             endCur = endGenerated = score<QUIETS>(ml);
 
-            partial_insertion_sort(cur, endCur, -3560 * depth);
+            partial_insertion_sort(cur, endCur,
+                                   (mcts ? std::numeric_limits<int>::min() : -3560 * depth));
         }
 
         ++stage;
         [[fallthrough]];
 
     case GOOD_QUIET :
-        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold; }))
+        if (!skipQuiets && select([&]() {
+                return cur->value > (mcts ? mcts->getAverage() : goodQuietThreshold);
+            }))
             return *(cur - 1);
 
         // Prepare the pointers to loop over the bad captures
