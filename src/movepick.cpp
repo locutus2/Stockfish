@@ -88,7 +88,9 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const SharedHistories*       sh,
-                       int                          pl) :
+                       int                          pl,
+                       Value                        a,
+                       MCTS::Node*                  mc) :
     pos(p),
     mainHistory(mh),
     lowPlyHistory(lph),
@@ -97,7 +99,9 @@ MovePicker::MovePicker(const Position&              p,
     sharedHistory(sh),
     ttMove(ttm),
     depth(d),
-    ply(pl) {
+    ply(pl),
+    alpha(a),
+    mcts(mc) {
 
     if (pos.checkers())
         stage = EVASION_TT + !(ttm && pos.pseudo_legal(ttm));
@@ -177,6 +181,9 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+
+            if (mcts && mcts->hasValue(m))
+                m.value += 8 * (mcts->getValue(m) - alpha);
         }
 
         else  // Type == EVASIONS
