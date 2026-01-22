@@ -161,32 +161,28 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
         else if constexpr (Type == QUIETS)
         {
-            if (mcts)
-                m.value = mcts->getUCB(m);
+            // histories
+            m.value = 2 * (*mainHistory)[us][m.raw()];
+            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
+            m.value += (*continuationHistory[0])[pc][to];
+            m.value += (*continuationHistory[1])[pc][to];
+            m.value += (*continuationHistory[2])[pc][to];
+            m.value += (*continuationHistory[3])[pc][to];
+            m.value += (*continuationHistory[5])[pc][to];
 
-            else
-            {
-                // histories
-                m.value = 2 * (*mainHistory)[us][m.raw()];
-                m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
-                m.value += (*continuationHistory[0])[pc][to];
-                m.value += (*continuationHistory[1])[pc][to];
-                m.value += (*continuationHistory[2])[pc][to];
-                m.value += (*continuationHistory[3])[pc][to];
-                m.value += (*continuationHistory[5])[pc][to];
+            // bonus for checks
+            m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
 
-                // bonus for checks
-                m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            // penalty for moving to a square threatened by a lesser piece
+            // or bonus for escaping an attack by a lesser piece.
+            int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
+            m.value += PieceValue[pt] * v;
 
-                // penalty for moving to a square threatened by a lesser piece
-                // or bonus for escaping an attack by a lesser piece.
-                int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
-                m.value += PieceValue[pt] * v;
+            if (ply < LOW_PLY_HISTORY_SIZE)
+                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
 
-
-                if (ply < LOW_PLY_HISTORY_SIZE)
-                    m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
-            }
+            if (mcts && mcts->hasValue(m))
+                m.value += 8 * (mcts->getUCB(m) - alpha);
         }
 
         else  // Type == EVASIONS
