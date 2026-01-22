@@ -182,7 +182,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
 
             if (mcts && mcts->hasValue(m))
-                m.value += 8 * (mcts->getUCB(m) - alpha);
+                m.value += mcts->getValue(m) - alpha;
         }
 
         else  // Type == EVASIONS
@@ -257,17 +257,14 @@ top:
 
             endCur = endGenerated = score<QUIETS>(ml);
 
-            partial_insertion_sort(cur, endCur,
-                                   (mcts ? std::numeric_limits<int>::min() : -3560 * depth));
+            partial_insertion_sort(cur, endCur, -3560 * depth);
         }
 
         ++stage;
         [[fallthrough]];
 
     case GOOD_QUIET :
-        if (!skipQuiets && select([&]() {
-                return cur->value > (mcts ? mcts->getAverage() : goodQuietThreshold);
-            }))
+        if (!skipQuiets && select([&]() { return cur->value > goodQuietThreshold; }))
             return *(cur - 1);
 
         // Prepare the pointers to loop over the bad captures
