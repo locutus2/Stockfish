@@ -18,6 +18,8 @@
 
 #include "mcts.h"
 
+#include <cmath>
+
 namespace Stockfish {
 
 namespace MCTS {
@@ -58,7 +60,16 @@ Value Node::getValue(Move m) const {
         return entry->second.value();
 }
 
-Value Node::averageValue() const { return nodeStats.value(); }
+Value Node::getUCB(Move m) const {
+    auto entry = moveStats.find(m);
+    if (nodeStats.count > 0 && entry != moveStats.end() && entry->second.count > 0)
+        return double(entry->second.sum) / entry->second.count
+             + C * std::sqrt(std::log(nodeStats.count) / entry->second.count);
+    else
+        return VALUE_MATE_IN_MAX_PLY;
+}
+
+Value Node::getAverage() const { return nodeStats.value(); }
 
 Node* Node::next(Move m) const {
     auto entry = moveStats.find(m);
