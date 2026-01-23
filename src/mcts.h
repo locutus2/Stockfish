@@ -31,7 +31,7 @@ class Tree;
 
 class Node {
 
-    static constexpr double C = 545;  // ~ 385 * sqrt(2)
+    static constexpr double C = 1089;  // ~ 770 * sqrt(2)
 
     struct Stats {
         int64_t sum   = 0;
