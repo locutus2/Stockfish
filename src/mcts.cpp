@@ -76,7 +76,7 @@ Move Node::getBestMove() const {
     return moveStats.empty() ? Move::none()
                              : std::max_element(moveStats.begin(), moveStats.end(),
                                                 [](const auto& s1, const auto& s2) {
-                                                    return s1.second.value() > s2.second.value()
+                                                    return s1.second.value() < s2.second.value()
                                                         || (s1.second.value() == s2.second.value()
                                                             && s1.first < s2.first);
                                                 })
