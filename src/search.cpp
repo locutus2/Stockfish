@@ -995,7 +995,7 @@ moves_loop:  // When in check, search starts here
       (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
 
 
-    Move       mctsMove = mcts ? mcts->getBestMove() : Move::none();
+    Move       mctsMove = mcts ? mcts->getBestUCBMove() : Move::none();
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
                   &sharedHistory, ss->ply, mctsMove);
 

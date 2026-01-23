@@ -83,6 +83,17 @@ Move Node::getBestMove() const {
                                  ->first;
 }
 
+Move Node::getBestUCBMove() const {
+    return moveStats.empty() ? Move::none()
+                             : std::max_element(moveStats.begin(), moveStats.end(),
+                                                [this](const auto& s1, const auto& s2) {
+                                                    return getUCB(s1.first) < getUCB(s2.first)
+                                                        || (getUCB(s1.first) == getUCB(s2.first)
+                                                            && s1.first < s2.first);
+                                                })
+                                 ->first;
+}
+
 Node* Node::next(Move m) const {
     auto entry = moveStats.find(m);
     if (entry == moveStats.end())
