@@ -31,7 +31,7 @@ class Tree;
 
 class Node {
 
-    static constexpr double C = 1089;  // ~ 770 * sqrt(2)
+    static constexpr double C = 545;
 
     struct Stats {
         int64_t sum   = 0;
@@ -48,7 +48,7 @@ class Node {
    public:
     Node();
     void  clear();
-    void  update(Move m, Value v);
+    void  update(Move m, Value v, int w = 1);
     bool  hasValue(Move m) const;
     Value getValue(Move m) const;
     Value getUCB(Move m) const;

@@ -1304,7 +1304,7 @@ moves_loop:  // When in check, search starts here
         undo_move(pos, move);
 
         if (mcts)
-            mcts->update(move, value);
+            mcts->update(move, value, depth);
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 

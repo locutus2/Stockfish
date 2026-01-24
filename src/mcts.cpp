@@ -27,18 +27,18 @@ namespace MCTS {
 
 Node::Node() {}
 
-void Node::update(Move m, Value v) {
-    nodeStats.sum += v;
-    nodeStats.count++;
+void Node::update(Move m, Value v, int w) {
+    nodeStats.sum += w * v;
+    nodeStats.count += w;
 
     auto entry = moveStats.find(m);
     if (entry == moveStats.end())
-        moveStats[m] = {v, 1};
+        moveStats[m] = {w * v, w};
 
     else
     {
-        moveStats[m].sum += v;
-        moveStats[m].count++;
+        moveStats[m].sum += w * v;
+        moveStats[m].count += w;
     }
 }
 
