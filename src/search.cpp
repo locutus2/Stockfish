@@ -1224,8 +1224,12 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 850 / 8192;
 
         // Scale up reductions for expected ALL nodes
-        if ((PvNode && !bestMove && moveCount >= 9) || allNode)
+        if (allNode)
             r += r / (depth + 1);
+
+        // Scale up reductions for expected PV nodes if no best move found
+        else if (PvNode && !bestMove)
+            r += r * 2 / (depth + 3);
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
