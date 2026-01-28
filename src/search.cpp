@@ -1226,7 +1226,7 @@ moves_loop:  // When in check, search starts here
         // Scale up reductions for expected ALL nodes
         if (allNode)
         {
-            const int factor = 1 + 3 * priorCapture;
+            const int factor = 1 + priorCapture;
             r += r * (factor + priorCapture) / (factor * depth + factor + 2 * priorCapture);
         }
 
