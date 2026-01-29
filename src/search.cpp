@@ -1225,10 +1225,7 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
-        {
-            const int factor = 1 + priorCapture;
-            r += r * (factor + priorCapture) / (factor * depth + factor + 2 * priorCapture);
-        }
+            r += r * (2 + priorCapture) / (2 * (depth + 1 + priorCapture));
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
