@@ -694,9 +694,10 @@ Value Search::Worker::search(
     Square prevSq  = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
     bestMove       = Move::none();
     priorReduction = (ss - 1)->reduction;
-    (ss - 1)->reduction = 0;
-    ss->statScore       = 0;
-    (ss + 2)->cutoffCnt = 0;
+    (ss - 1)->reduction           = 0;
+    ss->statScore                 = 0;
+    (ss + 2)->cutoffCnt           = 0;
+    (ss + 2)->unexpectedCutoffCnt = 0;
 
     // Step 4. Transposition table lookup
     excludedMove                   = ss->excludedMove;
@@ -1223,8 +1224,8 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 850 / 8192;
 
-        // Scale up reductions for expected ALL nodes
-        if (allNode)
+        // Scale up reductions for expected ALL node
+        if (allNode && (ss + 1)->unexpectedCutoffCnt < 3)
             r += r / (depth + 1);
 
         // Step 17. Late moves reduction / extension (LMR)
@@ -1372,6 +1373,7 @@ moves_loop:  // When in check, search starts here
                 {
                     // (*Scaler) Infrequent and small updates scale well
                     ss->cutoffCnt += (extension < 2) || PvNode;
+                    ss->unexpectedCutoffCnt += !cutNode;
                     assert(value >= beta);  // Fail high
                     break;
                 }
