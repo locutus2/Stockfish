@@ -1232,8 +1232,8 @@ moves_loop:  // When in check, search starts here
             r += r / (depth + 1);
 
 	bool CC = cutNode;
-	int V = (ss+1)->cutoffCnt;
-	//int V = (ss+1)->unexpectedCutoffCnt;
+	//int V = (ss+1)->cutoffCnt;
+	int V = (ss+1)->unexpectedCutoffCnt;
 	//int V = (ss+1)->allNodeUnexpectedCutoffCnt;
 	//int V = (ss+1)->oldUnexpectedCutoffCnt;
 	//int V = (ss+1)->diffOldUnexpectedCutoffCnt;
