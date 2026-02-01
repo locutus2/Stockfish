@@ -701,6 +701,7 @@ Value Search::Worker::search(
     (ss + 2)->allNodeUnexpectedCutoffCnt = 0;
     (ss + 2)->oldUnexpectedCutoffCnt = 0;
     (ss + 2)->diffOldUnexpectedCutoffCnt = 0;
+    (ss + 2)->failLowCnt = 0;
 
     // Step 4. Transposition table lookup
     excludedMove                   = ss->excludedMove;
@@ -1231,12 +1232,15 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r / (depth + 1);
 
-	bool CC = cutNode;
+	bool CC = allNode && (ss+2)->cutoffCnt > 0;
 	//int V = (ss+1)->cutoffCnt;
 	//int V = (ss+1)->unexpectedCutoffCnt;
 	//int V = (ss+1)->allNodeUnexpectedCutoffCnt;
 	//int V = (ss+1)->oldUnexpectedCutoffCnt;
-	int V = (ss+1)->diffOldUnexpectedCutoffCnt;
+	//int V = (ss+1)->diffOldUnexpectedCutoffCnt;
+	//int V = (ss+1)->failLowCnt;
+	//int V = (ss+2)->cutoffCnt;
+	int V = moveCount;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1474,6 +1478,9 @@ moves_loop:  // When in check, search starts here
         assert(capturedPiece != NO_PIECE);
         captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 1012;
     }
+
+    if(moveCount > 0 && !bestMove)
+        ss->failLowCnt += 1;
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);

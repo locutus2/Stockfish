@@ -79,6 +79,7 @@ struct Stack {
     int                         allNodeUnexpectedCutoffCnt;
     int                         oldUnexpectedCutoffCnt;
     int                         diffOldUnexpectedCutoffCnt;
+    int                         failLowCnt;
     int                         reduction;
 };
 
