@@ -1225,12 +1225,16 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 850 / 8192;
 
         // Scale up reductions for expected ALL node
-        if (allNode && (ss + 1)->unexpectedCutoffCnt < 3)
+        if (allNode)
             r += r / (depth + 1);
+
+	bool CC = false;
+	int V = (ss+1)->cutoffCnt;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
+		CC = true;
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
@@ -1264,6 +1268,7 @@ moves_loop:  // When in check, search starts here
         // Step 18. Full-depth search when LMR is skipped
         else if (!PvNode || moveCount > 1)
         {
+		CC = true;
             // Increase reduction if ttMove is not present
             if (!ttData.move)
                 r += 1140;
@@ -1292,6 +1297,12 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+	if(CC && allNode)
+	{
+		bool T = value > alpha;
+		dbg_hit_on(T, V);
+	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
