@@ -698,6 +698,9 @@ Value Search::Worker::search(
     ss->statScore                 = 0;
     (ss + 2)->cutoffCnt           = 0;
     (ss + 2)->unexpectedCutoffCnt = 0;
+    (ss + 2)->allNodeUnexpectedCutoffCnt = 0;
+    (ss + 2)->oldUnexpectedCutoffCnt = 0;
+    (ss + 2)->diffOldUnexpectedCutoffCnt = 0;
 
     // Step 4. Transposition table lookup
     excludedMove                   = ss->excludedMove;
@@ -1228,13 +1231,16 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r / (depth + 1);
 
-	bool CC = false;
+	bool CC = cutNode;
 	int V = (ss+1)->cutoffCnt;
+	//int V = (ss+1)->unexpectedCutoffCnt;
+	//int V = (ss+1)->allNodeUnexpectedCutoffCnt;
+	//int V = (ss+1)->oldUnexpectedCutoffCnt;
+	//int V = (ss+1)->diffOldUnexpectedCutoffCnt;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-		CC = true;
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
@@ -1277,6 +1283,8 @@ moves_loop:  // When in check, search starts here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 3957) - (r > 5654 && newDepth > 2), !cutNode);
         }
+	else
+		CC = false;
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
         // otherwise let the parent node fail low with value <= alpha and try another move.
@@ -1298,7 +1306,7 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-	if(CC && allNode)
+	if(CC)
 	{
 		bool T = value > alpha;
 		dbg_hit_on(T, V);
@@ -1385,6 +1393,9 @@ moves_loop:  // When in check, search starts here
                     // (*Scaler) Infrequent and small updates scale well
                     ss->cutoffCnt += (extension < 2) || PvNode;
                     ss->unexpectedCutoffCnt += !cutNode;
+                    ss->oldUnexpectedCutoffCnt += ((extension < 2) || PvNode) && !cutNode;
+                    ss->allNodeUnexpectedCutoffCnt += allNode;
+                    ss->diffOldUnexpectedCutoffCnt = ss->cutoffCnt - ss->oldUnexpectedCutoffCnt;
                     assert(value >= beta);  // Fail high
                     break;
                 }

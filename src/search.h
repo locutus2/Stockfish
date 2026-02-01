@@ -76,6 +76,9 @@ struct Stack {
     bool                        ttHit;
     int                         cutoffCnt;
     int                         unexpectedCutoffCnt;
+    int                         allNodeUnexpectedCutoffCnt;
+    int                         oldUnexpectedCutoffCnt;
+    int                         diffOldUnexpectedCutoffCnt;
     int                         reduction;
 };
 
