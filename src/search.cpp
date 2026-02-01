@@ -1233,9 +1233,9 @@ moves_loop:  // When in check, search starts here
 
 	bool CC = cutNode;
 	//int V = (ss+1)->cutoffCnt;
-	int V = (ss+1)->unexpectedCutoffCnt;
+	//int V = (ss+1)->unexpectedCutoffCnt;
 	//int V = (ss+1)->allNodeUnexpectedCutoffCnt;
-	//int V = (ss+1)->oldUnexpectedCutoffCnt;
+	int V = (ss+1)->oldUnexpectedCutoffCnt;
 	//int V = (ss+1)->diffOldUnexpectedCutoffCnt;
 
         // Step 17. Late moves reduction / extension (LMR)
