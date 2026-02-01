@@ -1274,7 +1274,6 @@ moves_loop:  // When in check, search starts here
         // Step 18. Full-depth search when LMR is skipped
         else if (!PvNode || moveCount > 1)
         {
-		CC = true;
             // Increase reduction if ttMove is not present
             if (!ttData.move)
                 r += 1140;
