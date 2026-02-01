@@ -1230,9 +1230,9 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL node
         if (allNode)
-            r += r / (depth + 1);
+            r += r * (3 * (ss+2)->cutoffCnt + 1) / (depth + 1);
 
-	bool CC = allNode && (ss+2)->cutoffCnt == 3;
+	bool CC = allNode;// && (ss+2)->cutoffCnt > 0;
 	//int V = (ss+1)->cutoffCnt;
 	//int V = (ss+1)->unexpectedCutoffCnt;
 	//int V = (ss+1)->allNodeUnexpectedCutoffCnt;
