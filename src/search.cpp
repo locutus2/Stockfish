@@ -1310,6 +1310,31 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
+	/*
+	 *
+	 * Mean #0: Total 72163195 Mean 358.661
+Mean #1: Total 72163195 Mean 367.694
+Mean #2: Total 72163195 Mean 360.236
+Mean #3: Total 72163195 Mean 359.499
+Mean #4: Total 72163195 Mean 351.091
+Mean #5: Total 72163195 Mean 355.244
+Mean #6: Total 72163195 Mean 360.193
+Stdev #0: Total 72163195 Stdev 444.656
+Stdev #1: Total 72163195 Stdev 523.09
+Stdev #2: Total 72163195 Stdev 421.785
+Stdev #3: Total 72163195 Stdev 430.117
+Stdev #4: Total 72163195 Stdev 1068.69
+Stdev #5: Total 72163195 Stdev 476.34
+Stdev #6: Total 72163195 Stdev 465.647
+
+ dbg_mean_of(r/(depth+1), 0);
+                dbg_mean_of(r*moveCount/(7*(depth+1)), 1);
+                dbg_mean_of(r*(32+moveCount)/(39*(depth+1)), 2);
+                dbg_mean_of(r*(64+moveCount)/(71*(depth+1)), 3);
+                dbg_mean_of(r*7/(2*moveCount*(depth+1)), 4);
+                dbg_mean_of(r*38/((32+moveCount)*(depth+1)), 5);
+                dbg_mean_of(r*71/((64+moveCount)*(depth+1)), 6);
+	 * */
 	if(CC)
 	{
 		bool T = value > alpha;
