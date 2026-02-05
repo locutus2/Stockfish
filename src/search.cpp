@@ -1230,9 +1230,11 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL node
         if (allNode)
-            r += r * (3 * (ss+2)->cutoffCnt + 1) / (depth + 1);
+            r += r / (depth + 1);
+            //r += r / (depth + 1 - 2 * priorCapture + 1);
+            //r += r * (3 * (ss+2)->cutoffCnt + 1) / (depth + 1);
 
-	bool CC = allNode;// && (ss+2)->cutoffCnt > 0;
+	bool CC = allNode && !priorCapture;// && (ss+2)->cutoffCnt > 0;
 	//int V = (ss+1)->cutoffCnt;
 	//int V = (ss+1)->unexpectedCutoffCnt;
 	//int V = (ss+1)->allNodeUnexpectedCutoffCnt;
@@ -1339,6 +1341,7 @@ Stdev #6: Total 72163195 Stdev 465.647
 	{
 		bool T = value > alpha;
 		dbg_hit_on(T, V);
+		dbg_mean_of(r, V);
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);

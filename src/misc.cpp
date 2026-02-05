@@ -373,7 +373,7 @@ void dbg_print() {
                       << " Hit Rate (%) " << 100.0 * E(hit[i][1]) << std::endl;
 
     for (int i = 0; i < MaxDebugSlots; ++i)
-        if ((n = mean[i][0]))
+        if ((n = mean[i][0]) >= 1000)
         {
             std::cerr << "Mean #" << i << ": Total " << n << " Mean " << E(mean[i][1]) << std::endl;
         }
