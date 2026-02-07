@@ -1225,12 +1225,13 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 850 / 8192;
 
-	bool CC = allNode && r > 0 && (ss+2)->cutoffCnt == 0;
+	bool CC = false;
 	//int V = (ss+2)->failLowCnt;
 	int V = moveCount;
         // Scale up reductions for expected ALL nodes
         if (allNode)
 	{
+	    CC = (r / (depth+1) != 0);
             r += r / (depth + 1);
 	}
 
