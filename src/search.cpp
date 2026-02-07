@@ -1224,7 +1224,7 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
-            r += r * (1 + (ss + 2)->cutoffCnt) / (depth + 1 + (ss + 2)->cutoffCnt);
+            r += r * (2 + 2 * (ss + 2)->cutoffCnt) / (2 * depth + 2 + (ss + 2)->cutoffCnt);
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
