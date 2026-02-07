@@ -75,6 +75,7 @@ struct Stack {
     bool                        ttPv;
     bool                        ttHit;
     int                         cutoffCnt;
+    int                         failLowCnt;
     int                         reduction;
 };
 

@@ -284,7 +284,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+constexpr int MaxDebugSlots = 3200;
 
 namespace {
 
@@ -368,7 +368,7 @@ void dbg_print() {
     auto    sqr = [](double x) { return x * x; };
 
     for (int i = 0; i < MaxDebugSlots; ++i)
-        if ((n = hit[i][0]))
+        if ((n = hit[i][0])>=1000)
             std::cerr << "Hit #" << i << ": Total " << n << " Hits " << hit[i][1]
                       << " Hit Rate (%) " << 100.0 * E(hit[i][1]) << std::endl;
 

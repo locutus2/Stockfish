@@ -698,6 +698,7 @@ Value Search::Worker::search(
     (ss - 1)->reduction = 0;
     ss->statScore       = 0;
     (ss + 2)->cutoffCnt = 0;
+    (ss + 2)->failLowCnt = 0;
 
     // Step 4. Transposition table lookup
     excludedMove                   = ss->excludedMove;
@@ -1224,9 +1225,13 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 850 / 8192;
 
+	bool CC = allNode && r > 0;
+	int V = (ss+2)->failLowCnt;
         // Scale up reductions for expected ALL nodes
         if (allNode)
+	{
             r += r / (depth + 1);
+	}
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1272,6 +1277,8 @@ moves_loop:  // When in check, search starts here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 3957) - (r > 5654 && newDepth > 2), !cutNode);
         }
+	else
+		CC = false;
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
         // otherwise let the parent node fail low with value <= alpha and try another move.
@@ -1292,6 +1299,13 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+	if(CC)
+	{
+		bool T = value > alpha;
+		dbg_hit_on(T, 0);
+		dbg_hit_on(T, 1000+V);
+	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1452,6 +1466,10 @@ moves_loop:  // When in check, search starts here
         assert(capturedPiece != NO_PIECE);
         captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 1012;
     }
+
+    if(!bestMove && moveCount)
+	    ss->failLowCnt++;
+
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
