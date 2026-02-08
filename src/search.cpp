@@ -1227,11 +1227,11 @@ moves_loop:  // When in check, search starts here
 
 	bool CC = false;
 	//int V = (ss+2)->failLowCnt;
-	int V = moveCount;
+	int V = depth;
         // Scale up reductions for expected ALL nodes
         if (allNode)
 	{
-	    CC = (r / (depth+1) != 0);
+	    CC = (r / (depth+1) != 0) && priorCapture && !capture;
             r += r / (depth + 1);
 	}
 
