@@ -1231,7 +1231,7 @@ moves_loop:  // When in check, search starts here
         // Scale up reductions for expected ALL nodes
         if (allNode)
 	{
-	    CC = (r / (depth+1) != 0) && priorCapture && !capture;
+	    CC = (r / (depth+1) > 0) && move == ttData.move;
             r += r / (depth + 1);
 	}
 
