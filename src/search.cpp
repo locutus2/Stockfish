@@ -695,6 +695,7 @@ Value Search::Worker::search(
     priorReduction = (ss - 1)->reduction;
     (ss - 1)->reduction = 0;
     ss->statScore       = 0;
+    ss->totalStatScore       = -(ss-1)->totalStatScore / 2;
     (ss + 2)->cutoffCnt = 0;
     (ss + 2)->failLowCnt = 0;
 
@@ -1220,6 +1221,8 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[0])[movedPiece][move.to_sq()]
                           + (*contHist[1])[movedPiece][move.to_sq()];
 
+	ss->totalStatScore = ss->statScore - (ss-1)->totalStatScore / 2;
+
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 850 / 8192;
 
@@ -1229,7 +1232,7 @@ moves_loop:  // When in check, search starts here
         // Scale up reductions for expected ALL nodes
         if (allNode)
 	{
-	    CC = (r / (depth+1) > 0) && move == ttData.move;
+	    CC = (r / (depth+1) > 0) && ss->totalStatScore > 0;
             r += r / (depth + 1);
 	}
 
