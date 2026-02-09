@@ -1230,11 +1230,19 @@ moves_loop:  // When in check, search starts here
 	//int V = (ss+2)->failLowCnt;
 	int V = depth;
 	int V2 = moveCount;
+	constexpr int RN = 8;
+	constexpr int R0 = 1024 / (RN-1);
+	const int Rindex = nodes % RN;
+	const int R = R0 * Rindex;
+
         // Scale up reductions for expected ALL nodes
         if (allNode)
 	{
-	    CC = (r / (depth+1) > 0);// && ss->totalStatScore > 0;
-            r += r / (depth + 1);
+	    bool C = capture;
+	    //int X = r / (depth+1+C*Rindex);
+	    int X = r / (depth+1+C*0);
+	    CC = (X > 0) && C;// && ss->totalStatScore > 0;
+            if(!C) r += X;//r / (depth + 1);
 	}
 
         // Step 17. Late moves reduction / extension (LMR)
@@ -1309,7 +1317,8 @@ moves_loop:  // When in check, search starts here
 		bool T = value > alpha;
 		dbg_hit_on(T, 0);
 		dbg_hit_on(T, 1000+V);
-		dbg_hit_on(T, 100000+100*V+V2);
+		//dbg_hit_on(T, 100000+100*V+V2);
+		//dbg_hit_on(T, 1000+100*Rindex+V);
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
