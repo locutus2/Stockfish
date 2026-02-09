@@ -1229,10 +1229,11 @@ moves_loop:  // When in check, search starts here
 	bool CC = false;
 	//int V = (ss+2)->failLowCnt;
 	int V = depth;
+	int V2 = moveCount;
         // Scale up reductions for expected ALL nodes
         if (allNode)
 	{
-	    CC = (r / (depth+1) > 0) && ss->totalStatScore > 0;
+	    CC = (r / (depth+1) > 0);// && ss->totalStatScore > 0;
             r += r / (depth + 1);
 	}
 
@@ -1308,6 +1309,7 @@ moves_loop:  // When in check, search starts here
 		bool T = value > alpha;
 		dbg_hit_on(T, 0);
 		dbg_hit_on(T, 1000+V);
+		dbg_hit_on(T, 100000+100*V+V2);
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
