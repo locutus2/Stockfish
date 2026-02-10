@@ -1241,7 +1241,11 @@ moves_loop:  // When in check, search starts here
 	{
 	    //bool C = true;
 	    //bool C = givesCheck;
-	    bool C = ss->statScore > (ss-1)->statScore;
+	    //bool C = ss->statScore > (ss-1)->statScore;
+	    //bool C = ss->inCheck;
+	    //bool C = ttHit && ttData.bound == BOUND_LOWER;
+	    //bool C = ttHit && ttData.bound & BOUND_LOWER && ttData.value > alpha;
+	    bool C = ttData.bound == BOUND_LOWER;
 	    //int X = r / (depth+1+C*Rindex);
 	    int X0 = r / (depth+1);
 	    CC = (X0 > 0) && C;// && ss->totalStatScore > 0;
