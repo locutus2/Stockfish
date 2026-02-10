@@ -1240,8 +1240,10 @@ moves_loop:  // When in check, search starts here
         //if (allNode && !capture)
 	{
 	    //bool C = true;
+	    bool C = !capture;
 	    //bool C = givesCheck;
-	    bool C = ss->statScore > (ss-1)->statScore;
+	    //bool C = ss->statScore > (ss-1)->statScore;
+	    //bool C = ss->statScore - (ss-1)->statScore > 25000;
 	    //bool C = ss->inCheck;
 	    //bool C = ttHit && ttData.bound == BOUND_LOWER;
 	    //bool C = ttHit && ttData.bound & BOUND_LOWER && ttData.value > alpha;
@@ -1326,10 +1328,17 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		bool T = value > alpha;
+		/*
 		dbg_hit_on(T, 0);
 		dbg_hit_on(T, 1000+V);
 		//dbg_hit_on(T, 100000+100*V+V2);
 		//dbg_hit_on(T, 1000+100*Rindex+V);
+		*/
+		constexpr int M = 50;
+		//const int I = M + std::clamp((ss->statScore) / 1000, -M, M);
+		//const int I = M + std::clamp((-(ss-1)->statScore) / 1000, -M, M);
+		const int I = M + std::clamp((ss->statScore-(ss-1)->statScore) / 1000, -M, M);
+		dbg_hit_on(T, I);
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
