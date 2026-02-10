@@ -1244,7 +1244,7 @@ moves_loop:  // When in check, search starts here
 	    int X = r / (depth+1);
 	    CC = (X > 0) && C;// && ss->totalStatScore > 0;
 	    //X = r / (depth+1+C*0);
-	    int K = 5; X = r * (K - C) / (K*depth+K);
+	    int K = 6; X = r * (K - C) / (K*depth+K);
             //if(!C) 
 		    r += X;//r / (depth + 1);
 	}
