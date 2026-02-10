@@ -1236,16 +1236,16 @@ moves_loop:  // When in check, search starts here
 	const int R = R0 * Rindex;
 
         // Scale up reductions for expected ALL nodes
-        //if (allNode)
-        if (allNode && !capture)
+        if (allNode)
+        //if (allNode && !capture)
 	{
 	    //bool C = true;
 	    //bool C = givesCheck;
-	    //bool C = ss->statScore > (ss-1)->statScore;
+	    bool C = ss->statScore > (ss-1)->statScore;
 	    //bool C = ss->inCheck;
 	    //bool C = ttHit && ttData.bound == BOUND_LOWER;
 	    //bool C = ttHit && ttData.bound & BOUND_LOWER && ttData.value > alpha;
-	    bool C = ttData.bound == BOUND_LOWER;
+	    //bool C = ttData.bound == BOUND_LOWER;
 	    //int X = r / (depth+1+C*Rindex);
 	    int X0 = r / (depth+1);
 	    CC = (X0 > 0) && C;// && ss->totalStatScore > 0;
