@@ -1240,9 +1240,9 @@ moves_loop:  // When in check, search starts here
 	{
 	    bool C = capture;
 	    //int X = r / (depth+1+C*Rindex);
-	    int X = r / (depth+1+C*0);
+	    int X = r / (depth+1+C*8);
 	    CC = (X > 0) && C;// && ss->totalStatScore > 0;
-            if(!C) r += X;//r / (depth + 1);
+            r += X;//r / (depth + 1);
 	}
 
         // Step 17. Late moves reduction / extension (LMR)
