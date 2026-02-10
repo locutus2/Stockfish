@@ -1238,11 +1238,15 @@ moves_loop:  // When in check, search starts here
         // Scale up reductions for expected ALL nodes
         if (allNode)
 	{
+	    //bool C = givesCheck;
 	    bool C = capture;
 	    //int X = r / (depth+1+C*Rindex);
-	    int X = r / (depth+1+C*8);
+	    int X = r / (depth+1);
 	    CC = (X > 0) && C;// && ss->totalStatScore > 0;
-            r += X;//r / (depth + 1);
+	    //X = r / (depth+1+C*0);
+	    int K = 5; X = r * (K - C) / (K*depth+K);
+            //if(!C) 
+		    r += X;//r / (depth + 1);
 	}
 
         // Step 17. Late moves reduction / extension (LMR)
