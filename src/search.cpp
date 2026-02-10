@@ -1223,7 +1223,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 850 / 8192;
 
         // Scale up reductions for expected ALL nodes
-        if (allNode)
+        if (allNode && depth > 2)
             r += r / (depth + 1);
 
         // Step 17. Late moves reduction / extension (LMR)
