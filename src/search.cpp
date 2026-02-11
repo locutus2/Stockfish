@@ -1264,6 +1264,7 @@ moves_loop:  // When in check, search starts here
 	    int r0 = r;
 	    r += (K ? X : X0);//r / (depth + 1);
 	    CC = (r/1024 > r0/1024) && C;// && ss->totalStatScore > 0;
+	    dbg_hit_on(CC, 0);
 	}
 
         // Step 17. Late moves reduction / extension (LMR)
@@ -1336,7 +1337,7 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		bool T = value > alpha;
-		dbg_hit_on(T, 0);
+		//dbg_hit_on(T, 0);
 		dbg_hit_on(T, 1000+V);
 		//dbg_hit_on(T, 100000+100*V+V2);
 		//dbg_hit_on(T, 1000+100*Rindex+V);
