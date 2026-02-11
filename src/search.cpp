@@ -1229,19 +1229,22 @@ moves_loop:  // When in check, search starts here
 	bool CC = false;
 	//int V = (ss+2)->failLowCnt;
 	//int V = (ss+2)->cutoffCnt;
-	int V = depth;
+	//int V = (ss+1)->cutoffCnt + (ss+2)->cutoffCnt;
+	int V = ss->cutoffCnt;
+	//int V = depth;
 	int V2 = moveCount;
 	constexpr int RN = 8;
 	constexpr int R0 = 1024 / (RN-1);
 	const int Rindex = nodes % RN;
 	const int R = R0 * Rindex;
 
+	constexpr bool STATISTIC = true;
         // Scale up reductions for expected ALL nodes
         if (allNode)
         //if (allNode && !capture)
 	{
 	    bool C = true;
-	    //bool C = !capture;
+	    //bool C = capture;
 	    //bool C = priorCapture;
 	    //bool C = givesCheck;
 	    //bool C = ss->statScore > (ss-1)->statScore;
@@ -1249,10 +1252,12 @@ moves_loop:  // When in check, search starts here
 	    //bool C = ss->inCheck;
 	    //bool C = (ss-1)->ttPv;
 	    //bool C = (ss+2)->cutoffCnt > 0;
+	    //bool C = (ss+2)->cutoffCnt > 4;
+	    //bool C = (ss+2)->cutoffCnt == 1;
 	    //bool C = ss->ttPv;
 	    //bool C = bool(excludedMove);
 	    //bool C = ttHit && ttData.bound == BOUND_LOWER;
-	    //bool C = ttHit && ttData.bound & BOUND_LOWER && ttData.value > alpha;
+	    //bool C = ttData.bound & BOUND_LOWER && ttData.value > alpha;
 	    //bool C = ttData.bound == BOUND_LOWER;
 	    //bool C = ttData.bound & BOUND_UPPER && ttData.value <= alpha;
 	    //int X = r / (depth+1+C*Rindex);
@@ -1264,7 +1269,7 @@ moves_loop:  // When in check, search starts here
 	    int r0 = r;
 	    r += (K ? X : X0);//r / (depth + 1);
 	    CC = (r/1024 > r0/1024) && C;// && ss->totalStatScore > 0;
-	    dbg_hit_on(CC, 0);
+	    if(!STATISTIC) dbg_hit_on(CC, 0);
 	}
 
         // Step 17. Late moves reduction / extension (LMR)
@@ -1337,22 +1342,26 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		bool T = value > alpha;
-		//dbg_hit_on(T, 0);
-		dbg_hit_on(T, 1000+V);
-		//dbg_hit_on(T, 100000+100*V+V2);
-		//dbg_hit_on(T, 1000+100*Rindex+V);
-		
-		/*
-		//constexpr int M = 50;
-		//constexpr int D = 1000;
-		constexpr int M = 50;
-		constexpr int D = 1;
-		//const int I = M + std::clamp((ss->statScore) / D, -M, M);
-		//const int I = M + std::clamp((-(ss-1)->statScore) / D, -M, M);
-		//const int I = M + std::clamp((ss->statScore-(ss-1)->statScore) / D, -M, M);
-		const int I = M + std::clamp(V / D, -M, M);
-		dbg_hit_on(T, I);
-		*/
+
+                if(!STATISTIC)
+		{
+			//dbg_hit_on(T, 0);
+			dbg_hit_on(T, 1000+V);
+			//dbg_hit_on(T, 100000+100*V+V2);
+			//dbg_hit_on(T, 1000+100*Rindex+V);
+		}
+	        else
+		{
+			//constexpr int M = 50;
+			//constexpr int D = 1000;
+			constexpr int M = 50;
+			constexpr int D = 1;
+			//const int I = M + std::clamp((ss->statScore) / D, -M, M);
+			//const int I = M + std::clamp((-(ss-1)->statScore) / D, -M, M);
+			//const int I = M + std::clamp((ss->statScore-(ss-1)->statScore) / D, -M, M);
+			const int I = M + std::clamp(V / D, -M, M);
+			dbg_hit_on(T, I);
+		}	
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
