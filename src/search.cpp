@@ -1229,22 +1229,30 @@ moves_loop:  // When in check, search starts here
 	bool CC = false;
 	//int V = (ss+2)->failLowCnt;
 	//int V = (ss+2)->cutoffCnt;
-	//int V = (ss+1)->cutoffCnt + (ss+2)->cutoffCnt;
-	int V = ss->cutoffCnt;
-	//int V = depth;
+	//int V = (ss+2)->cutoffCnt + moveCount/2;
+	//int V = 3*(ss+2)->cutoffCnt - ss->cutoffCnt;
+	//int V = ss->cutoffCnt;
+	int V = depth;
+	//int V = moveCount;
 	int V2 = moveCount;
 	constexpr int RN = 8;
 	constexpr int R0 = 1024 / (RN-1);
 	const int Rindex = nodes % RN;
 	const int R = R0 * Rindex;
 
-	constexpr bool STATISTIC = true;
+	constexpr bool STATISTIC = false;
         // Scale up reductions for expected ALL nodes
         if (allNode)
         //if (allNode && !capture)
 	{
-	    bool C = true;
-	    //bool C = capture;
+	    //bool C = true;
+	    //bool C = bool(ttData.move);
+	    //bool C = bool(ttData.move) && ttData.move.from_sq() == move.from_sq();
+	    //bool C = moveCount == 1;
+	    //bool C = moveCount == 1 && ttData.move != move;
+	    //bool C = moveCount <= 2;
+	    //bool C = move == ttData.move;
+	    bool C = capture;
 	    //bool C = priorCapture;
 	    //bool C = givesCheck;
 	    //bool C = ss->statScore > (ss-1)->statScore;
