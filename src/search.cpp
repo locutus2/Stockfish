@@ -1246,7 +1246,9 @@ moves_loop:  // When in check, search starts here
         if (allNode)
         //if (allNode && !capture)
 	{
-	    C = { capture };
+	    C = { true, capture, givesCheck, priorCapture, improving, ss->inCheck, moveCount == 1, move == ttData.move,
+	          ttData.bound & BOUND_LOWER && ttData.value > alpha
+	    };
 	    //bool C = true;
 	    //bool C = bool(ttData.move);
 	    //bool C = bool(ttData.move) && ttData.move.from_sq() == move.from_sq();
@@ -1277,9 +1279,24 @@ moves_loop:  // When in check, search starts here
 	    int K = 0; 
 	    if(K != 0 && int(C.size()) != 1) std::exit(1);
 	    int X = r * (K - C[0]) / (K*depth+K);
+
 	    int r0 = r;
-	    r += (K ? X : X0);//r / (depth + 1);
-	    CC = (r/1024 > r0/1024);// && ss->totalStatScore > 0;
+	    int r1 = r0 + (K ? X : X0);
+	    //CC = (r1/1024 > r0/1024);
+	    if(depth >= 2 && moveCount > 1)
+	    {
+                Depth d0 = std::max(1, std::min(newDepth - r0 / 1024, newDepth + 2)) + PvNode;
+                Depth d1 = std::max(1, std::min(newDepth - r1 / 1024, newDepth + 2)) + PvNode;
+	        CC = (d1 < d0);
+	    }
+	    else
+	    {
+	        r1 += 1140 * !ttData.move;
+                Depth d0 = newDepth - (r0 > 3957) - (r0 > 5654 && newDepth > 2);
+                Depth d1 = newDepth - (r1 > 3957) - (r1 > 5654 && newDepth > 2);
+	        CC = (d1 < d0);
+	    }
+
 	    if(!STATISTIC) 
 	    {
 		    dbg_hit_on(CC, 0);
@@ -1288,6 +1305,9 @@ moves_loop:  // When in check, search starts here
 				dbg_hit_on(CC && C[i], 100 + i);
 	    }
 	}
+
+        if (allNode)
+            r += r / (depth + 1);
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
