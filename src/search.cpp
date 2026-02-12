@@ -1280,7 +1280,13 @@ moves_loop:  // When in check, search starts here
 	    int r0 = r;
 	    r += (K ? X : X0);//r / (depth + 1);
 	    CC = (r/1024 > r0/1024);// && ss->totalStatScore > 0;
-	    if(!STATISTIC) dbg_hit_on(CC, 0);
+	    if(!STATISTIC) 
+	    {
+		    dbg_hit_on(CC, 0);
+		    if(CC)
+			    for(int i = 0; i < int(C.size()); i++)
+				dbg_hit_on(CC && C[i], 100 + i);
+	    }
 	}
 
         // Step 17. Late moves reduction / extension (LMR)
