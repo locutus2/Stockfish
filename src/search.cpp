@@ -1282,19 +1282,24 @@ moves_loop:  // When in check, search starts here
 
 	    int r0 = r;
 	    int r1 = r0 + (K ? X : X0);
+	    int r2 = r0 + (K ? X : X0) / 2;
 	    //CC = (r1/1024 > r0/1024);
 	    if(depth >= 2 && moveCount > 1)
 	    {
                 Depth d0 = std::max(1, std::min(newDepth - r0 / 1024, newDepth + 2)) + PvNode;
                 Depth d1 = std::max(1, std::min(newDepth - r1 / 1024, newDepth + 2)) + PvNode;
+                Depth d2 = std::max(1, std::min(newDepth - r2 / 1024, newDepth + 2)) + PvNode;
 	        CC = (d1 < d0);
+	        CC = CC && (d1 < d2);
 	    }
 	    else
 	    {
 	        r1 += 1140 * !ttData.move;
                 Depth d0 = std::max(0, newDepth - (r0 > 3957) - (r0 > 5654 && newDepth > 2));
                 Depth d1 = std::max(0, newDepth - (r1 > 3957) - (r1 > 5654 && newDepth > 2));
+                Depth d2 = std::max(0, newDepth - (r2 > 3957) - (r2 > 5654 && newDepth > 2));
 	        CC = (d1 < d0);
+	        CC = CC && (d1 < d2);
 	    }
 
 	    if(!STATISTIC) 
