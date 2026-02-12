@@ -1240,11 +1240,13 @@ moves_loop:  // When in check, search starts here
 	const int Rindex = nodes % RN;
 	const int R = R0 * Rindex;
 
+	std::vector<bool> C;
 	constexpr bool STATISTIC = false;
         // Scale up reductions for expected ALL nodes
         if (allNode)
         //if (allNode && !capture)
 	{
+	    C = { capture };
 	    //bool C = true;
 	    //bool C = bool(ttData.move);
 	    //bool C = bool(ttData.move) && ttData.move.from_sq() == move.from_sq();
@@ -1252,7 +1254,7 @@ moves_loop:  // When in check, search starts here
 	    //bool C = moveCount == 1 && ttData.move != move;
 	    //bool C = moveCount <= 2;
 	    //bool C = move == ttData.move;
-	    bool C = capture;
+	    //bool C = capture;
 	    //bool C = priorCapture;
 	    //bool C = givesCheck;
 	    //bool C = ss->statScore > (ss-1)->statScore;
@@ -1273,10 +1275,11 @@ moves_loop:  // When in check, search starts here
 	    //CC = (X0 > 0) && C;// && ss->totalStatScore > 0;
 	    //X = r / (depth+1+C*0);
 	    int K = 0; 
-	    int X = r * (K - C) / (K*depth+K);
+	    if(K != 0 && int(C.size()) != 1) std::exit(1);
+	    int X = r * (K - C[0]) / (K*depth+K);
 	    int r0 = r;
 	    r += (K ? X : X0);//r / (depth + 1);
-	    CC = (r/1024 > r0/1024) && C;// && ss->totalStatScore > 0;
+	    CC = (r/1024 > r0/1024);// && ss->totalStatScore > 0;
 	    if(!STATISTIC) dbg_hit_on(CC, 0);
 	}
 
@@ -1354,7 +1357,8 @@ moves_loop:  // When in check, search starts here
                 if(!STATISTIC)
 		{
 			//dbg_hit_on(T, 0);
-			dbg_hit_on(T, 1000+V);
+			for(int i = 0; i < int(C.size()); i++)
+			   dbg_hit_on(T, 1000*(i+1)+V);
 			//dbg_hit_on(T, 100000+100*V+V2);
 			//dbg_hit_on(T, 1000+100*Rindex+V);
 		}
@@ -1368,7 +1372,8 @@ moves_loop:  // When in check, search starts here
 			//const int I = M + std::clamp((-(ss-1)->statScore) / D, -M, M);
 			//const int I = M + std::clamp((ss->statScore-(ss-1)->statScore) / D, -M, M);
 			const int I = M + std::clamp(V / D, -M, M);
-			dbg_hit_on(T, I);
+			for(int i = 0; i < int(C.size()); i++)
+			    dbg_hit_on(T, 1000*(i+1)+I);
 		}	
 	}
 
