@@ -1246,9 +1246,10 @@ moves_loop:  // When in check, search starts here
         if (allNode)
         //if (allNode && !capture)
 	{
-	    C = { true, capture, givesCheck, priorCapture, improving, ss->inCheck, moveCount == 1, move == ttData.move,
-	          ttData.bound & BOUND_LOWER && ttData.value > alpha
-	    };
+	    //C = { true, capture, givesCheck, priorCapture, improving, ss->inCheck, moveCount == 1, move == ttData.move,
+	    //      ttData.bound & BOUND_LOWER && ttData.value > alpha
+	    //};
+	    C = { givesCheck && !priorCapture };
 	    //bool C = true;
 	    //bool C = bool(ttData.move);
 	    //bool C = bool(ttData.move) && ttData.move.from_sq() == move.from_sq();
