@@ -1247,7 +1247,7 @@ moves_loop:  // When in check, search starts here
         //if (allNode && !capture)
 	{
 	    C = { true, capture, givesCheck, priorCapture, improving, ss->inCheck, ttData.bound & BOUND_LOWER && ttData.value > alpha, !ttHit,
-	          type_of(movedPiece) == PAWN, type_of(movedPiece) == KING,  type_of(movedPiece) == QUEEN };
+	          type_of(movedPiece) == PAWN, type_of(movedPiece) == KING,  type_of(movedPiece) == QUEEN, !capture };
 		    //moveCount == 1, move == ttData.move,
 	    //C = { givesCheck && !priorCapture };
 	    //bool C = true;
@@ -1283,8 +1283,8 @@ moves_loop:  // When in check, search starts here
 
 	    int r0 = r;
 	    int r1 = r0 + (K ? X : X0);
-	    //int r2 = r0 + (K ? X : X0) / 2; // half scaling
-	    int r2 = r0 + (K ? X : X0) * 3 / 4; // 3/4 scaling
+	    int r2 = r0 + (K ? X : X0) / 2; // half scaling
+	    //int r2 = r0 + (K ? X : X0) * 3 / 4; // 3/4 scaling
 	    //CC = (r1/1024 > r0/1024);
 	    if(depth >= 2 && moveCount > 1)
 	    {
