@@ -1292,8 +1292,8 @@ moves_loop:  // When in check, search starts here
 	    else
 	    {
 	        r1 += 1140 * !ttData.move;
-                Depth d0 = newDepth - (r0 > 3957) - (r0 > 5654 && newDepth > 2);
-                Depth d1 = newDepth - (r1 > 3957) - (r1 > 5654 && newDepth > 2);
+                Depth d0 = std::max(0, newDepth - (r0 > 3957) - (r0 > 5654 && newDepth > 2));
+                Depth d1 = std::max(0, newDepth - (r1 > 3957) - (r1 > 5654 && newDepth > 2));
 	        CC = (d1 < d0);
 	    }
 
