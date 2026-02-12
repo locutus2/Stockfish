@@ -1384,7 +1384,7 @@ moves_loop:  // When in check, search starts here
 		{
 			//dbg_hit_on(T, 0);
 			for(int i = 0; i < int(C.size()); i++)
-			   dbg_hit_on(T, 1000*(i+1)+V);
+			   if(C[i]) dbg_hit_on(T, 1000*(i+1)+V);
 			//dbg_hit_on(T, 100000+100*V+V2);
 			//dbg_hit_on(T, 1000+100*Rindex+V);
 		}
@@ -1399,7 +1399,7 @@ moves_loop:  // When in check, search starts here
 			//const int I = M + std::clamp((ss->statScore-(ss-1)->statScore) / D, -M, M);
 			const int I = M + std::clamp(V / D, -M, M);
 			for(int i = 0; i < int(C.size()); i++)
-			    dbg_hit_on(T, 1000*(i+1)+I);
+			    if(C[i]) dbg_hit_on(T, 1000*(i+1)+I);
 		}	
 	}
 
