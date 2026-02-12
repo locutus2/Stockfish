@@ -1246,10 +1246,10 @@ moves_loop:  // When in check, search starts here
         if (allNode)
         //if (allNode && !capture)
 	{
-	    //C = { true, capture, givesCheck, priorCapture, improving, ss->inCheck, moveCount == 1, move == ttData.move,
-	    //      ttData.bound & BOUND_LOWER && ttData.value > alpha
-	    //};
-	    C = { givesCheck && !priorCapture };
+	    C = { true, capture, givesCheck, priorCapture, improving, ss->inCheck, ttData.bound & BOUND_LOWER && ttData.value > alpha, !ttHit,
+	          type_of(movedPiece) == PAWN, type_of(movedPiece) == KING,  type_of(movedPiece) == QUEEN };
+		    //moveCount == 1, move == ttData.move,
+	    //C = { givesCheck && !priorCapture };
 	    //bool C = true;
 	    //bool C = bool(ttData.move);
 	    //bool C = bool(ttData.move) && ttData.move.from_sq() == move.from_sq();
@@ -1283,7 +1283,8 @@ moves_loop:  // When in check, search starts here
 
 	    int r0 = r;
 	    int r1 = r0 + (K ? X : X0);
-	    int r2 = r0 + (K ? X : X0) / 2;
+	    //int r2 = r0 + (K ? X : X0) / 2; // half scaling
+	    int r2 = r0 + (K ? X : X0) * 3 / 4; // 3/4 scaling
 	    //CC = (r1/1024 > r0/1024);
 	    if(depth >= 2 && moveCount > 1)
 	    {
@@ -1302,6 +1303,7 @@ moves_loop:  // When in check, search starts here
 	        CC = (d1 < d0);
 	        CC = CC && (d1 < d2);
 	    }
+	    CC = CC && depth >= 2 && moveCount > 1;
 
 	    if(!STATISTIC) 
 	    {
