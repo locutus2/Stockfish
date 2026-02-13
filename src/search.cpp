@@ -645,7 +645,7 @@ Value Search::Worker::search(
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
-    bool  capture, ttCapture;
+    bool  capture, ttCapture, ttFailHigh;
     int   priorReduction;
     Piece movedPiece;
 
@@ -706,6 +706,7 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+    ttFailHigh   = ttData.bound & BOUND_LOWER && ttData.value >= beta;
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
@@ -1222,7 +1223,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 850 / 8192;
 
         // Scale up reductions for expected ALL nodes
-        if (allNode && (!(ttData.bound & BOUND_LOWER) || ttData.value <= alpha))
+        if (allNode && !ttFailHigh)
             r += r / (depth + 1);
 
         // Step 17. Late moves reduction / extension (LMR)
