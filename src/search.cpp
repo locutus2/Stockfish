@@ -1380,6 +1380,9 @@ moves_loop:  // When in check, search starts here
 
                 assert(depth > 0);
                 alpha = value;  // Update alpha! Always alpha < beta
+
+                update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched,
+                                 depth, ttData.move);
             }
         }
 
