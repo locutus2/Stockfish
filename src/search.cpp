@@ -877,11 +877,11 @@ Value Search::Worker::search(
     // For PvNodes, we must have a guard against mates being returned.
     if (!PvNode && eval < alpha - 485 - 281 * depth * depth)
     {
-	//const int qval = qsearch<NonPV>(pos, ss, alpha, beta);
+        //const int qval = qsearch<NonPV>(pos, ss, alpha, beta);
 
         //if (!cutNode || qval <= alpha)
-		//rval = qval;
-            //return qval;
+        //rval = qval;
+        //return qval;
         rval = qsearch<NonPV>(pos, ss, alpha, beta);
     }
 
@@ -1464,36 +1464,69 @@ moves_loop:  // When in check, search starts here
         captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 1012;
     }
 
-    if(rval != VALUE_NONE)
-	{
-	 	int nt = cutNode;
-		    std::vector<bool> C = { true, !priorCapture, priorCapture, improving, ss->ttPv, (ss-1)->moveCount == 0, (ss-1)->moveCount == 1,
-					    (ss-1)->inCheck, (ss-1)->ttPv, !ttHit, !(ss-1)->ttHit, (ss-1)->currentMove == Move::null(),
-					    bool(excludedMove), bool((ss-1)->excludedMove), ttCapture,
-		    !improving, !ss->ttPv, !(ss-1)->inCheck, !(ss-1)->ttPv, ttHit, (ss-1)->ttHit,
-		    (ss-1)->currentMove != Move::null(), !excludedMove, !(ss-1)->excludedMove, !ttCapture,
-		    ttGivesCheck, !ttGivesCheck, ttFailHigh, !ttFailHigh, ttFailLow, !ttFailLow };
-		    for(int i = 0; i < int(C.size()); i++)
-		    {
-			    int nt1 = rval <= alphaOrig ? 0 : 1;
-			    int nt2 = bestValue <= alphaOrig ? 0 : 1;
-			    bool E1 = nt1 != nt;
-			    bool E2 = nt2 != nt;
-			    bool T = nt1 != nt2;
-			    /*
+    if (rval != VALUE_NONE && !PvNode)
+    {
+        std::vector<bool> C = {true,
+                               !priorCapture,
+                               priorCapture,
+                               improving,
+                               ss->ttPv,
+                               (ss - 1)->moveCount == 0,
+                               (ss - 1)->moveCount == 1,
+                               (ss - 1)->inCheck,
+                               (ss - 1)->ttPv,
+                               !ttHit,
+                               !(ss - 1)->ttHit,
+                               (ss - 1)->currentMove == Move::null(),
+                               bool(excludedMove),
+                               bool((ss - 1)->excludedMove),
+                               ttCapture,
+                               !improving,
+                               !ss->ttPv,
+                               !(ss - 1)->inCheck,
+                               !(ss - 1)->ttPv,
+                               ttHit,
+                               (ss - 1)->ttHit,
+                               (ss - 1)->currentMove != Move::null(),
+                               !excludedMove,
+                               !(ss - 1)->excludedMove,
+                               !ttCapture,
+                               ttGivesCheck,
+                               !ttGivesCheck,
+                               ttFailHigh,
+                               !ttFailHigh,
+                               ttFailLow,
+                               !ttFailLow};
+
+        int nt0 = cutNode;
+        int nt1 = rval <= alphaOrig ? 0 : 1;
+        int nt2 = bestValue <= alphaOrig ? 0 : 1;
+        for (int i = 0; i < int(C.size()); i++)
+        {
+            //bool E1 = nt1 != nt0;
+            //bool E2 = nt2 != nt0;
+            //bool T = nt1 != nt2;
+            /*
 			    bool T = E2 > E1;
 			    */
-			    /*
+            /*
 			    bool T = E2 < E1;
 			    */
-			    if(C[i]) {
+            if (C[i])
+            {
+                /*
 				    dbg_hit_on(T, 100*i+10*2+2);
 				    dbg_hit_on(T, 100*i+10*2+nt);
 				    dbg_hit_on(T, 100*i+10*nt1+2);
 				    dbg_hit_on(T, 100*i+10*nt1+nt);
-			    }
-		    }
-	}
+				    */
+                dbg_razor_stats(nt0, nt1, nt2, 100 * i + 10 * 2 + 2);
+                dbg_razor_stats(nt0, nt1, nt2, 100 * i + 10 * 2 + nt0);
+                dbg_razor_stats(nt0, nt1, nt2, 100 * i + 10 * nt1 + 2);
+                dbg_razor_stats(nt0, nt1, nt2, 100 * i + 10 * nt1 + nt0);
+            }
+        }
+    }
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);

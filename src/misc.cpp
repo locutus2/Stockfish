@@ -311,6 +311,7 @@ struct DebugExtremes: public DebugInfo<3> {
     }
 };
 
+std::array<DebugInfo<2>, MaxDebugSlots>  razor;
 std::array<DebugInfo<2>, MaxDebugSlots>  hit;
 std::array<DebugInfo<2>, MaxDebugSlots>  mean;
 std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
@@ -318,6 +319,23 @@ std::array<DebugInfo<6>, MaxDebugSlots>  correl;
 std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
+
+void dbg_razor_stats(int v0, int v1, int v2, int slot) {
+
+    //bool E1 = v1 != v0;
+    //bool E2 = v2 != v0;
+    /*
+                            bool T = E2 > E1;
+                            */
+    /*
+                            bool T = E2 < E1;
+                            */
+    bool T = v1 != v2;
+
+    ++razor.at(slot)[0];
+    if (T)
+        ++razor.at(slot)[1];
+}
 
 void dbg_hit_on(bool cond, int slot) {
 
