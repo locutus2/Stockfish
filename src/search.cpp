@@ -617,6 +617,8 @@ Value Search::Worker::search(
     constexpr bool rootNode = nodeType == Root;
     const bool     allNode  = !(PvNode || cutNode);
 
+    Value alphaOrig = alpha;
+
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
         return qsearch<PvNode ? PV : NonPV>(pos, ss, alpha, beta);
@@ -851,6 +853,8 @@ Value Search::Worker::search(
         }
     }
 
+    Value rval = VALUE_NONE;
+
     if (ss->inCheck)
         goto moves_loop;
 
@@ -869,7 +873,7 @@ Value Search::Worker::search(
     // If eval is really low, skip search entirely and return the qsearch value.
     // For PvNodes, we must have a guard against mates being returned.
     if (!PvNode && eval < alpha - 485 - 281 * depth * depth)
-        return qsearch<NonPV>(pos, ss, alpha, beta);
+        rval = qsearch<NonPV>(pos, ss, alpha, beta);
 
     // Step 8. Futility pruning: child node
     // The depth condition is important for mate finding.
@@ -1449,6 +1453,36 @@ moves_loop:  // When in check, search starts here
         assert(capturedPiece != NO_PIECE);
         captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 1012;
     }
+
+    if(rval != VALUE_NONE)
+	{
+	 	int nt = cutNode;
+		    std::vector<bool> C = { true, !priorCapture, priorCapture, improving, ss->ttPv, (ss-1)->moveCount == 0, (ss-1)->moveCount == 1,
+					    (ss-1)->inCheck, (ss-1)->ttPv, !ttHit, !(ss-1)->ttHit, (ss-1)->currentMove == Move::null(),
+					    bool(excludedMove), bool((ss-1)->excludedMove), ttCapture,
+		    !improving, !ss->ttPv, !(ss-1)->inCheck, !(ss-1)->ttPv, ttHit, (ss-1)->ttHit,
+		    (ss-1)->currentMove != Move::null(), !excludedMove, !(ss-1)->excludedMove, !ttCapture };
+		    for(int i = 0; i < int(C.size()); i++)
+		    {
+			    int nt1 = rval <= alphaOrig ? 0 : 1;
+			    int nt2 = bestValue <= alphaOrig ? 0 : 1;
+			    bool E1 = nt1 != nt;
+			    bool E2 = nt2 != nt;
+			    /*
+			    bool T = nt1 != nt2;
+			    */
+			    bool T = E2 > E1;
+			    /*
+			    bool T = E2 < E1;
+			    */
+			    if(C[i]) {
+				    dbg_hit_on(T, 100*i+10*2+2);
+				    dbg_hit_on(T, 100*i+10*2+nt);
+				    dbg_hit_on(T, 100*i+10*nt1+2);
+				    dbg_hit_on(T, 100*i+10*nt1+nt);
+			    }
+		    }
+	}
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
