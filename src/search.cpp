@@ -647,7 +647,7 @@ Value Search::Worker::search(
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
-    bool  capture, ttCapture;
+    bool  capture, ttCapture, ttGivesCheck, ttFailHigh, ttFailLow;
     int   priorReduction;
     Piece movedPiece;
 
@@ -708,6 +708,9 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+    ttGivesCheck = ttData.move && pos.gives_check(ttData.move);
+    ttFailHigh   = ttData.bound & BOUND_LOWER && ttData.value >= beta;
+    ttFailLow    = ttData.bound & BOUND_UPPER && ttData.value <= alpha;
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
@@ -1468,17 +1471,18 @@ moves_loop:  // When in check, search starts here
 					    (ss-1)->inCheck, (ss-1)->ttPv, !ttHit, !(ss-1)->ttHit, (ss-1)->currentMove == Move::null(),
 					    bool(excludedMove), bool((ss-1)->excludedMove), ttCapture,
 		    !improving, !ss->ttPv, !(ss-1)->inCheck, !(ss-1)->ttPv, ttHit, (ss-1)->ttHit,
-		    (ss-1)->currentMove != Move::null(), !excludedMove, !(ss-1)->excludedMove, !ttCapture };
+		    (ss-1)->currentMove != Move::null(), !excludedMove, !(ss-1)->excludedMove, !ttCapture,
+		    ttGivesCheck, !ttGivesCheck, ttFailHigh, !ttFailHigh, ttFailLow, !ttFailLow };
 		    for(int i = 0; i < int(C.size()); i++)
 		    {
 			    int nt1 = rval <= alphaOrig ? 0 : 1;
 			    int nt2 = bestValue <= alphaOrig ? 0 : 1;
 			    bool E1 = nt1 != nt;
 			    bool E2 = nt2 != nt;
-			    /*
 			    bool T = nt1 != nt2;
-			    */
+			    /*
 			    bool T = E2 > E1;
+			    */
 			    /*
 			    bool T = E2 < E1;
 			    */
