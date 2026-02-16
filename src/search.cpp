@@ -887,6 +887,7 @@ Value Search::Worker::search(
         //return qval;
         V    = depth;
         rval = qsearch<NonPV>(pos, ss, alpha, beta);
+	if(excludedMove) return rval;
     }
 
     // Step 8. Futility pruning: child node
