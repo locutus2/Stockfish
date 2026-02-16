@@ -857,7 +857,7 @@ Value Search::Worker::search(
     }
 
     Value rval = VALUE_NONE;
-    int V = 0;
+    int   V    = 0;
 
     if (ss->inCheck)
         goto moves_loop;
@@ -878,14 +878,14 @@ Value Search::Worker::search(
     // For PvNodes, we must have a guard against mates being returned.
     if (!PvNode && eval < alpha - 485 - 281 * depth * depth)
     {
-	//for(int d = 1; d <= 20; d++)
-//		dbg_hit_on(d == depth, d);
+        //for(int d = 1; d <= 20; d++)
+        //		dbg_hit_on(d == depth, d);
         //const int qval = qsearch<NonPV>(pos, ss, alpha, beta);
 
         //if (!cutNode || qval <= alpha)
         //rval = qval;
         //return qval;
-	V = depth;
+        V    = depth;
         rval = qsearch<NonPV>(pos, ss, alpha, beta);
     }
 
@@ -1524,7 +1524,7 @@ moves_loop:  // When in check, search starts here
 				    dbg_hit_on(T, 100*i+10*nt1+2);
 				    dbg_hit_on(T, 100*i+10*nt1+nt);
 				    */
-		    /*
+                /*
                 dbg_razor_stats(nt0, nt1, nt2, 100 * i + 10 * 2 + 2);
                 dbg_razor_stats(nt0, nt1, nt2, 100 * i + 10 * 2 + nt0);
                 dbg_razor_stats(nt0, nt1, nt2, 100 * i + 10 * nt1 + 2);
@@ -1536,10 +1536,10 @@ moves_loop:  // When in check, search starts here
                 dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * nt1 + 2));
                 dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * nt1 + nt0));
 
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * 2 + 2) + std::min(V,9));
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * 2 + nt0) + std::min(V,9));
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * nt1 + 2) + std::min(V,9));
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * nt1 + nt0) + std::min(V,9));
+                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * 2 + 2) + std::min(V, 9));
+                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * 2 + nt0) + std::min(V, 9));
+                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * nt1 + 2) + std::min(V, 9));
+                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * nt1 + nt0) + std::min(V, 9));
             }
         }
     }
