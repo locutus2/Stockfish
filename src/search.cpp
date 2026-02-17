@@ -1549,8 +1549,11 @@ moves_loop:  // When in check, search starts here
 
                 for (int j = (i == 0 ?  i : i + 1); j < int(C.size()); j++)
                 {
-                    dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j);
-                    dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j + std::min(V, 9));
+			if(C[j])
+			{
+			    dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j);
+			    dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j + std::min(V, 9));
+			}
                 }
             }
         }
