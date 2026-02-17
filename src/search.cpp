@@ -871,7 +871,7 @@ Value Search::Worker::search(
     if (!PvNode && eval < alpha - 485 - 281 * depth * depth)
     {
         Value qvalue = qsearch<NonPV>(pos, ss, alpha, beta);
-        if (allNode || priorCapture || qvalue >= beta)
+        if (depth < 2 || allNode || priorCapture || qvalue >= beta)
             return qvalue;
     }
 
