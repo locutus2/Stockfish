@@ -856,8 +856,9 @@ Value Search::Worker::search(
         }
     }
 
-    Value rval = VALUE_NONE;
-    int   V    = 0;
+    Value          rval = VALUE_NONE;
+    int            V    = 0;
+    constexpr bool CC   = true;
 
     if (ss->inCheck)
         goto moves_loop;
@@ -887,7 +888,10 @@ Value Search::Worker::search(
         //return qval;
         V    = depth;
         rval = qsearch<NonPV>(pos, ss, alpha, beta);
-	if(excludedMove) return rval;
+        if (!CC)
+            return rval;
+        if (excludedMove)
+            return rval;
     }
 
     // Step 8. Futility pruning: child node
@@ -1471,37 +1475,48 @@ moves_loop:  // When in check, search starts here
 
     if (rval != VALUE_NONE && !PvNode)
     {
-        std::vector<bool> C = {true,
-                               !priorCapture,
-                               priorCapture,
-                               improving,
-                               ss->ttPv,
-                               (ss - 1)->moveCount == 0,
-                               (ss - 1)->moveCount == 1,
-                               (ss - 1)->inCheck,
-                               (ss - 1)->ttPv,
-                               !ttHit,
-                               !(ss - 1)->ttHit,
-                               (ss - 1)->currentMove == Move::null(),
-                               bool(excludedMove),
-                               bool((ss - 1)->excludedMove),
-                               ttCapture,
-                               !improving,
-                               !ss->ttPv,
-                               !(ss - 1)->inCheck,
-                               !(ss - 1)->ttPv,
-                               ttHit,
-                               (ss - 1)->ttHit,
-                               (ss - 1)->currentMove != Move::null(),
-                               !excludedMove,
-                               !(ss - 1)->excludedMove,
-                               !ttCapture,
-                               ttGivesCheck,
-                               !ttGivesCheck,
-                               ttFailHigh,
-                               !ttFailHigh,
-                               ttFailLow,
-                               !ttFailLow};
+        std::vector<bool> C = {
+          true,
+          allNode,
+          cutNode,
+          rval < beta,
+          rval >= beta,
+          priorCapture,
+          !priorCapture,
+          improving,
+          !improving,
+          opponentWorsening,
+          !opponentWorsening,
+          ttCapture,
+          !ttCapture,
+          ss->ttPv,
+          !ss->ttPv,
+          (ss - 1)->inCheck,
+          !(ss - 1)->inCheck,
+          (ss - 1)->ttPv,
+          !(ss - 1)->ttPv,
+          ttHit,
+          !ttHit,
+          (ss - 1)->ttHit,
+          !(ss - 1)->ttHit,
+          (ss - 1)->currentMove == Move::null(),
+          (ss - 1)->currentMove != Move::null(),
+          bool(excludedMove),
+          !excludedMove,
+          bool((ss - 1)->excludedMove),
+          !(ss - 1)->excludedMove,
+          ttGivesCheck,
+          !ttGivesCheck,
+          ttFailHigh,
+          !ttFailHigh,
+          ttFailLow,
+          !ttFailLow,
+          (ss - 1)->moveCount == 0,
+          (ss - 1)->moveCount == 1,
+          (ss - 1)->moveCount > 1,
+          (ss - 1)->statScore >= 0,
+          (ss - 1)->statScore < 0,
+        };
 
         int nt0 = cutNode;
         int nt1 = rval <= alphaOrig ? 0 : 1;
@@ -1532,15 +1547,11 @@ moves_loop:  // When in check, search starts here
                 dbg_razor_stats(nt0, nt1, nt2, 100 * i + 10 * nt1 + nt0);
 		*/
 
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * 2 + 2));
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * 2 + nt0));
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * nt1 + 2));
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * nt1 + nt0));
-
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * 2 + 2) + std::min(V, 9));
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * 2 + nt0) + std::min(V, 9));
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * nt1 + 2) + std::min(V, 9));
-                dbg_razor_stats(nt0, nt1, nt2, 10 * (100 * i + 10 * nt1 + nt0) + std::min(V, 9));
+                for (int j = i; j < int(C.size()); j++)
+                {
+                    dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j);
+                    dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j + std::min(V, 9));
+                }
             }
         }
     }

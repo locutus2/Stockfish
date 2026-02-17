@@ -387,8 +387,8 @@ void dbg_print() {
 
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = razor[i][0]))
-            std::cerr << "Razor #" << std::setfill('0') << std::setw(3) << i << ": Total " << n << " " << 100.0 * E(razor[i][1])
-                      << std::endl;
+            std::cerr << "Razor #" << std::setfill('0') << std::setw(1) << i << ": Total " << n
+                      << " " << 100.0 * E(razor[i][1]) << std::endl;
 
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = hit[i][0]))
