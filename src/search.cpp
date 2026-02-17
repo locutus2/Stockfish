@@ -1547,7 +1547,7 @@ moves_loop:  // When in check, search starts here
                 dbg_razor_stats(nt0, nt1, nt2, 100 * i + 10 * nt1 + nt0);
 		*/
 
-                for (int j = i; j < int(C.size()); j++)
+                for (int j = (i == 0 ?  i : i + 1); j < int(C.size()); j++)
                 {
                     dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j);
                     dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j + std::min(V, 9));
