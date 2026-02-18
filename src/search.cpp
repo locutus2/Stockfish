@@ -641,7 +641,7 @@ Value Search::Worker::search(
     StateInfo st;
 
     Key   posKey;
-    Move  move, excludedMove, bestMove;
+    Move  move, excludedMove, bestMove, realBestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
@@ -691,6 +691,7 @@ Value Search::Worker::search(
 
     Square prevSq  = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
     bestMove       = Move::none();
+    realBestMove   = Move::none();
     priorReduction = (ss - 1)->reduction;
     (ss - 1)->reduction = 0;
     ss->statScore       = 0;
@@ -1363,6 +1364,9 @@ moves_loop:  // When in check, search starts here
             {
                 bestMove = move;
 
+                if (value > alpha)
+                    realBestMove = move;
+
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     update_pv(ss->pv, move, (ss + 1)->pv);
 
@@ -1465,8 +1469,9 @@ moves_loop:  // When in check, search starts here
                        bestValue >= beta    ? BOUND_LOWER
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
-                       moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6), bestMove,
-                       unadjustedStaticEval, tt.generation());
+                       moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6),
+                       (realBestMove ? realBestMove : bestMove), unadjustedStaticEval,
+                       tt.generation());
 
     // Adjust correction history if the best move is not a capture
     // and the error direction matches whether we are above/below bounds.
