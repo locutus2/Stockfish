@@ -858,7 +858,8 @@ Value Search::Worker::search(
 
     Value          rval = VALUE_NONE;
     int            V    = 0;
-    constexpr bool CC   = true;
+    //bool CC   = true;
+    bool CC   = !excludedMove;
 
     if (ss->inCheck)
         goto moves_loop;
@@ -889,8 +890,6 @@ Value Search::Worker::search(
         V    = depth;
         rval = qsearch<NonPV>(pos, ss, alpha, beta);
         if (!CC)
-            return rval;
-        if (excludedMove)
             return rval;
     }
 
