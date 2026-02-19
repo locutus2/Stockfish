@@ -647,7 +647,7 @@ Value Search::Worker::search(
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
-    bool  capture, ttCapture, ttGivesCheck, ttFailHigh, ttFailLow;
+    bool  capture, ttCapture, ttCheck, ttFailHigh, ttFailLow;
     int   priorReduction;
     Piece movedPiece;
 
@@ -708,7 +708,7 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
-    ttGivesCheck = ttData.move && pos.gives_check(ttData.move);
+    ttCheck      = ttData.move && pos.pseudo_legal(ttData.move) && pos.gives_check(ttData.move);
     ttFailHigh   = ttData.bound & BOUND_LOWER && ttData.value >= beta;
     ttFailLow    = ttData.bound & BOUND_UPPER && ttData.value <= alpha;
 
@@ -1504,8 +1504,8 @@ moves_loop:  // When in check, search starts here
           !excludedMove,
           bool((ss - 1)->excludedMove),
           !(ss - 1)->excludedMove,
-          ttGivesCheck,
-          !ttGivesCheck,
+          ttCheck,
+          !ttCheck,
           ttFailHigh,
           !ttFailHigh,
           ttFailLow,
