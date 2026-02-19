@@ -1478,12 +1478,16 @@ moves_loop:  // When in check, search starts here
         captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 993;
     }
 
-    if (rval != VALUE_NONE && !PvNode)
+    if (rval != VALUE_NONE)
     {
         std::vector<bool> C = {
           true,
           allNode,
+          !allNode,
+          PvNode,
+          !PvNode,
           cutNode,
+          !cutNode,
           rval < beta,
           rval >= beta,
           priorCapture,
@@ -1519,8 +1523,8 @@ moves_loop:  // When in check, search starts here
           (ss - 1)->moveCount == 0,
           (ss - 1)->moveCount == 1,
           (ss - 1)->moveCount > 1,
-          (ss - 1)->statScore >= 0,
-          (ss - 1)->statScore < 0,
+          (ss - 1)->statScore >= 0, 
+          (ss - 1)->statScore < 0, // 44
         };
 
         int nt0 = cutNode;
