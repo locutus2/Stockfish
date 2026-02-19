@@ -858,8 +858,8 @@ Value Search::Worker::search(
 
     Value rval = VALUE_NONE;
     int   V    = 0;
-    //bool CC   = true;
-    bool CC = !excludedMove;
+    bool  CC   = true;
+    //bool CC = !excludedMove;
 
     if (ss->inCheck)
         goto moves_loop;
@@ -887,10 +887,13 @@ Value Search::Worker::search(
         //if (!cutNode || qval <= alpha)
         //rval = qval;
         //return qval;
+        /*
         V    = depth;
         rval = qsearch<NonPV>(pos, ss, alpha, beta);
         if (!CC)
             return rval;
+	    */
+        return qsearch<NonPV>(pos, ss, alpha, beta);
     }
 
     // Step 8. Futility pruning: child node
@@ -1180,7 +1183,10 @@ moves_loop:  // When in check, search starts here
             else if (value >= beta && !is_decisive(value))
             {
                 ttMoveHistory << std::max(-394 - 105 * depth, -3692);
-                return value;
+                if (!CC)
+                    return value;
+                rval = value;
+                V    = depth;
             }
 
             // Negative extensions
