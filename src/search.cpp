@@ -1163,7 +1163,8 @@ moves_loop:  // When in check, search starts here
                     return value;
                 }
 
-                extension = -1;
+                if (depth > 1)
+                    depth--;
             }
 
             // Negative extensions
