@@ -856,10 +856,10 @@ Value Search::Worker::search(
         }
     }
 
-    Value          rval = VALUE_NONE;
-    int            V    = 0;
+    Value rval = VALUE_NONE;
+    int   V    = 0;
     //bool CC   = true;
-    bool CC   = !excludedMove;
+    bool CC = !excludedMove;
 
     if (ss->inCheck)
         goto moves_loop;
@@ -1546,13 +1546,22 @@ moves_loop:  // When in check, search starts here
                 dbg_razor_stats(nt0, nt1, nt2, 100 * i + 10 * nt1 + nt0);
 		*/
 
-                for (int j = (i == 0 ?  i : i + 1); j < int(C.size()); j++)
+                for (int j = (i == 0 ? i : i + 1); j < int(C.size()); j++)
                 {
-			if(C[j])
-			{
-			    dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j);
-			    dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j + std::min(V, 9));
-			}
+                    if (C[j])
+                    {
+                        //dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j);
+                        //dbg_razor_stats(nt0, nt1, nt2, 1000 * i + 10 * j + std::min(V, 9));
+                        for (int k = (j == 0 ? j : j + 1); k < int(C.size()); k++)
+                        {
+                            if (C[k])
+                            {
+                                dbg_razor_stats(nt0, nt1, nt2, 100000 * i + 1000 * j + 10 * k);
+                                dbg_razor_stats(nt0, nt1, nt2,
+                                                100000 * i + 1000 * j + 10 * k + std::min(V, 9));
+                            }
+                        }
+                    }
                 }
             }
         }
