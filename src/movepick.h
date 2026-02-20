@@ -49,12 +49,13 @@ class MovePicker {
                const SharedHistories*,
                int);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
-    Move next_move();
-    void skip_quiet_moves();
+    ExtMove next_move();
+    void    skip_quiet_moves();
+    bool    isQuiet() const;
 
    private:
     template<typename Pred>
-    Move select(Pred);
+    ExtMove select(Pred);
     template<GenType T>
     ExtMove* score(MoveList<T>&);
     ExtMove* begin() { return cur; }

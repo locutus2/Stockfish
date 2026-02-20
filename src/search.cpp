@@ -1021,30 +1021,33 @@ moves_loop:  // When in check, search starts here
     const PieceToHistory cmh0  = *contHist[0];
     const PieceToHistory ttmah = *ss->ttMoveAlternativeHistory;
 
-    int cmh0BestValue = -30001;
-    int ttmahBestValue = -30001;
-    Move cmh0BestMove = Move::none();
-    Move ttmahBestMove = Move::none();
-    for(Move m : MoveList<LEGAL>(pos))
+    int  cmh0BestValue  = -30001;
+    int  ttmahBestValue = -30001;
+    Move cmh0BestMove   = Move::none();
+    Move ttmahBestMove  = Move::none();
+    for (Move m : MoveList<LEGAL>(pos))
     {
-         const Piece p = pos.moved_piece(m);
-	 const Square to = m.to_sq();
-         if(cmh0[p][to] > cmh0BestValue)
-	 {
-		 cmh0BestValue = cmh0[p][to];
-		 cmh0BestMove = m;
-	 }
-         if(ttmah[p][to] > ttmahBestValue)
-	 {
-		 ttmahBestValue = ttmah[p][to];
-		 ttmahBestMove = m;
-	 }
+        const Piece  p  = pos.moved_piece(m);
+        const Square to = m.to_sq();
+        if (cmh0[p][to] > cmh0BestValue)
+        {
+            cmh0BestValue = cmh0[p][to];
+            cmh0BestMove  = m;
+        }
+        if (ttmah[p][to] > ttmahBestValue)
+        {
+            ttmahBestValue = ttmah[p][to];
+            ttmahBestMove  = m;
+        }
     }
 
+    ExtMove extMove;
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move()) != Move::none())
+    while ((Move) (extMove = mp.next_move()) != Move::none())
     {
+        Move move = extMove;
+
         assert(move.is_ok());
 
         if (move == excludedMove)
@@ -1333,12 +1336,14 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        if (ttData.move && move != ttData.move && !capture)
+        if (ttData.move && mp.isQuiet())
+        //if (ttData.move && !ttCapture && mp.isQuiet())
         {
-            bool T  = value > alpha;
-            int  V0 = cmh0[movedPiece][move.to_sq()];
+            bool T = value > alpha;
+            //int  V0 = cmh0[movedPiece][move.to_sq()];
+            int V0 = extMove.value;
             //int  V  = ttmah[movedPiece][move.to_sq()];
-            int  V  = std::abs(ttmah[movedPiece][move.to_sq()]);
+            int V = extMove.value2;
 
             dbg_hit_on(T, 10000);
             dbg_mean_of(V0, T);
@@ -1348,18 +1353,20 @@ moves_loop:  // When in check, search starts here
             dbg_mean_of(V, 31);
             dbg_correl_of(V, T, 1);
 
-	    if(move == cmh0BestMove)
-		    dbg_hit_on(T, 10010);
+            if (move == cmh0BestMove)
+                dbg_hit_on(T, 10010);
 
-	    if(move == ttmahBestMove)
-		    dbg_hit_on(T, 10011);
+            if (move == ttmahBestMove)
+                dbg_hit_on(T, 10011);
 
-            constexpr int M     = 60000 / 1000;
+            constexpr int B  = 60;
+            constexpr int D0 = 300000;
+            constexpr int D  = 30000;
 
-            const int index0 = (30000 + V0) * M / 60000;
+            const int index0 = std::clamp((D0 + V0) * B / (2 * D0), 0, B);
             dbg_hit_on(T, index0 + 1000);
 
-            const int     index = (30000 + V) * M / 60000;
+            const int index = std::clamp((D + V) * B / (2 * D), 0, B);
             dbg_hit_on(T, index + 2000);
 
             dbg_correl_of(V0, V, 10);
@@ -1911,14 +1918,14 @@ void update_all_stats(const Position& pos,
     {
         update_quiet_histories(pos, ss, workerThread, bestMove, bonus * 810 / 1024);
 
-	const bool hasAlternative = ttMove && !pos.capture_stage(ttMove) && bestMove != ttMove;
+        const bool hasAlternative = ttMove && !pos.capture_stage(ttMove) && bestMove != ttMove;
         if (hasAlternative)
-	{
+        {
             (*ss->ttMoveAlternativeHistory)[movedPiece][bestMove.to_sq()] << bonus * 810 / 1024;
-            //(*ss->ttMoveAlternativeHistory)[pos.moved_piece(ttMove)][ttMove.to_sq()] << -bonus * 810 / 1024;
-            //workerThread.ttMoveAlternativeHistory[movedPiece][bestMove.to_sq()][pos.moved_piece(ttMove)][ttMove.to_sq()] << -bonus * 810 / 1024;
-            workerThread.ttMoveAlternativeHistory[movedPiece][bestMove.to_sq()][pos.moved_piece(ttMove)][ttMove.to_sq()] << -malus * 1159 / 1024;
-	}
+            workerThread.ttMoveAlternativeHistory[movedPiece][bestMove.to_sq()]
+                                                 [pos.moved_piece(ttMove)][ttMove.to_sq()]
+              << -bonus * 810 / 1024;
+        }
 
         int actualMalus = malus * 1159 / 1024;
         // Decrease stats for all non-best quiet moves
