@@ -252,7 +252,7 @@ void UCIEngine::bench(std::istream& args) {
 
         if (token == "go" || token == "eval")
         {
-            if (cnt && cnt % 50 == 0)
+            if (cnt && cnt % 10 == 0)
                 dbg_print();
             std::cerr << "\nPosition: " << cnt++ << '/' << num << " (" << engine.fen() << ")"
                       << std::endl;
