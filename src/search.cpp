@@ -1155,17 +1155,11 @@ moves_loop:  // When in check, search starts here
             // over the original beta, we assume this expected cut-node is not
             // singular (multiple moves fail high), and we can prune the whole
             // subtree by returning a softbound.
-            else if (value >= beta && !is_decisive(value))
+            else if (value >= beta && !is_decisive(value)
+                     && (!allNode || ttData.value >= beta || (ss - 1)->statScore < 0))
             {
-                if (!PvNode || ttData.value >= beta || (ss - 1)->statScore <= 0)
-                {
-                    ttMoveHistory << std::max(-394 - 105 * depth, -3692);
-                    return value;
-                }
-
-                depth--;
-
-                assert(depth > 0);
+                ttMoveHistory << std::max(-394 - 105 * depth, -3692);
+                return value;
             }
 
             // Negative extensions
