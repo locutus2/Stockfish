@@ -1531,10 +1531,25 @@ moves_loop:  // When in check, search starts here
           (ss - 1)->moveCount == 0,
           (ss - 1)->moveCount == 1,  // 40
           (ss - 1)->moveCount > 1,   // 41
-          (ss - 1)->statScore >= 0,  // 42
+          (ss - 1)->statScore > 0,   // 42
           (ss - 1)->statScore < 0,   // 43
           ss->inCheck,
           !ss->inCheck,  // 45
+          (ss - 2)->inCheck,
+          !(ss - 2)->inCheck,
+          (ss - 2)->ttHit,
+          !(ss - 2)->ttHit,
+          (ss - 2)->ttPv,  // 50
+          !(ss - 2)->ttPv,
+          bool((ss - 2)->excludedMove),
+          !(ss - 2)->excludedMove,
+          (ss - 2)->statScore > 0,
+          (ss - 2)->statScore < 0,  // 55
+          (ss - 2)->currentMove == Move::null(),
+          (ss - 2)->currentMove != Move::null(),
+          (ss - 2)->moveCount == 0,
+          (ss - 2)->moveCount == 1,
+          (ss - 2)->moveCount > 1,  // 60
         };
 
         int nt0 = cutNode;
