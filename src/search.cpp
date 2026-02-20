@@ -281,6 +281,8 @@ void Search::Worker::iterative_deepening() {
     {
         (ss - i)->continuationHistory =
           &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
+        (ss - i)->ttMoveAlternativeHistory =
+          &ttMoveAlternativeHistory[NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
     }
@@ -601,6 +603,10 @@ void Search::Worker::clear() {
                 for (auto& h : to)
                     h.fill(-541);
 
+    for (auto& to : ttMoveAlternativeHistory)
+        for (auto& h : to)
+            h.fill(0);
+
     for (size_t i = 1; i < reductions.size(); ++i)
         reductions[i] = int(2809 / 128.0 * std::log(i));
 
@@ -706,6 +712,12 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+
+    if (ttData.move)
+        ss->ttMoveAlternativeHistory =
+          &ttMoveAlternativeHistory[pos.moved_piece(ttData.move)][ttData.move.to_sq()];
+    else
+        ss->ttMoveAlternativeHistory = &ttMoveAlternativeHistory[NO_PIECE][0];
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
@@ -992,7 +1004,7 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
-                  &sharedHistory, ss->ply);
+                  ss->ttMoveAlternativeHistory, &sharedHistory, ss->ply);
 
     value = bestValue;
 
@@ -1289,6 +1301,7 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1610,7 +1623,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
     MovePicker mp(pos, ttData.move, DEPTH_QS, &mainHistory, &lowPlyHistory, &captureHistory,
-                  contHist, &sharedHistory, ss->ply);
+                  contHist, ss->ttMoveAlternativeHistory, &sharedHistory, ss->ply);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.
@@ -1834,6 +1847,14 @@ void update_all_stats(const Position& pos,
     if (!pos.capture_stage(bestMove))
     {
         update_quiet_histories(pos, ss, workerThread, bestMove, bonus * 810 / 1024);
+
+        if (ttMove && !pos.capture_stage(ttMove) && bestMove != ttMove)
+        {
+            (*ss->ttMoveAlternativeHistory)[movedPiece][bestMove.to_sq()] << bonus * 810 / 1024;
+            workerThread.ttMoveAlternativeHistory[movedPiece][bestMove.to_sq()]
+                                                 [pos.moved_piece(ttMove)][ttMove.to_sq()]
+              << -bonus * 810 / 1024;
+        }
 
         int actualMalus = malus * 1159 / 1024;
         // Decrease stats for all non-best quiet moves
