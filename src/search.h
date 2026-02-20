@@ -76,6 +76,13 @@ struct Stack {
     bool                        ttHit;
     int                         cutoffCnt;
     int                         reduction;
+    bool                        priorCapture;
+    bool                        improving;
+    bool                        opponentWorsening;
+    bool                        ttCapture;
+    bool                        allNode;
+    bool                        PvNode;
+    bool                        cutNode;
 };
 
 

@@ -617,6 +617,10 @@ Value Search::Worker::search(
     constexpr bool rootNode = nodeType == Root;
     const bool     allNode  = !(PvNode || cutNode);
 
+    ss->allNode = allNode;
+    ss->PvNode  = PvNode;
+    ss->cutNode = cutNode;
+
     Value alphaOrig = alpha;
 
     // Dive into quiescence search when the depth reaches zero
@@ -655,12 +659,12 @@ Value Search::Worker::search(
     SearchedList quietsSearched;
 
     // Step 1. Initialize node
-    ss->inCheck   = pos.checkers();
-    priorCapture  = pos.captured_piece();
-    Color us      = pos.side_to_move();
-    ss->moveCount = 0;
-    bestValue     = -VALUE_INFINITE;
-    maxValue      = VALUE_INFINITE;
+    ss->inCheck      = pos.checkers();
+    ss->priorCapture = priorCapture = pos.captured_piece();
+    Color us                        = pos.side_to_move();
+    ss->moveCount                   = 0;
+    bestValue                       = -VALUE_INFINITE;
+    maxValue                        = VALUE_INFINITE;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -703,14 +707,14 @@ Value Search::Worker::search(
     posKey                         = pos.key();
     auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
     // Need further processing of the saved data
-    ss->ttHit    = ttHit;
-    ttData.move  = rootNode ? rootMoves[pvIdx].pv[0] : ttHit ? ttData.move : Move::none();
-    ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
-    ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
-    ttCapture    = ttData.move && pos.capture_stage(ttData.move);
-    ttCheck      = ttData.move && pos.pseudo_legal(ttData.move) && pos.gives_check(ttData.move);
-    ttFailHigh   = ttData.bound & BOUND_LOWER && ttData.value >= beta;
-    ttFailLow    = ttData.bound & BOUND_UPPER && ttData.value <= alpha;
+    ss->ttHit     = ttHit;
+    ttData.move   = rootNode ? rootMoves[pvIdx].pv[0] : ttHit ? ttData.move : Move::none();
+    ttData.value  = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
+    ss->ttPv      = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
+    ss->ttCapture = ttCapture = ttData.move && pos.capture_stage(ttData.move);
+    ttCheck    = ttData.move && pos.pseudo_legal(ttData.move) && pos.gives_check(ttData.move);
+    ttFailHigh = ttData.bound & BOUND_LOWER && ttData.value >= beta;
+    ttFailLow  = ttData.bound & BOUND_UPPER && ttData.value <= alpha;
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
@@ -750,8 +754,8 @@ Value Search::Worker::search(
     // false otherwise. The improving flag is used in various pruning heuristics.
     // Similarly, opponentWorsening is true if our static evaluation is better
     // for us than at the last ply.
-    improving         = ss->staticEval > (ss - 2)->staticEval;
-    opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
+    ss->improving = improving = ss->staticEval > (ss - 2)->staticEval;
+    ss->opponentWorsening = opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
 
     // Hindsight adjustment of reductions based on static evaluation difference.
     if (priorReduction >= 3 && !opponentWorsening)
@@ -1160,6 +1164,9 @@ moves_loop:  // When in check, search starts here
             ss->excludedMove = move;
             value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
             ss->excludedMove = Move::none();
+            ss->allNode      = allNode;
+            ss->PvNode       = PvNode;
+            ss->cutNode      = cutNode;
 
             if (value < singularBeta)
             {
@@ -1550,6 +1557,28 @@ moves_loop:  // When in check, search starts here
           (ss - 2)->moveCount == 0,
           (ss - 2)->moveCount == 1,
           (ss - 2)->moveCount > 1,  // 60
+          (ss - 1)->ttCapture,
+          !(ss - 1)->ttCapture,
+          (ss - 1)->priorCapture,
+          !(ss - 1)->priorCapture,
+          (ss - 1)->improving,  // 65
+          !(ss - 1)->improving,
+          (ss - 1)->opponentWorsening,
+          !(ss - 1)->opponentWorsening,
+          (ss - 2)->ttCapture,
+          !(ss - 2)->ttCapture,  // 70
+          (ss - 2)->priorCapture,
+          !(ss - 2)->priorCapture,
+          (ss - 2)->improving,
+          !(ss - 2)->improving,
+          (ss - 2)->opponentWorsening,   // 75
+          !(ss - 2)->opponentWorsening,  // 76
+          (ss - 1)->allNode,
+          !(ss - 1)->allNode,
+          (ss - 1)->PvNode,
+          !(ss - 1)->PvNode,  // 80
+          (ss - 1)->cutNode,
+          !(ss - 1)->cutNode,  // 82
         };
 
         int nt0 = cutNode;
