@@ -1360,7 +1360,7 @@ moves_loop:  // When in check, search starts here
                 dbg_hit_on(T, 10011);
 
             constexpr int B  = 60;
-            constexpr int D0 = 300000;
+            constexpr int D0 = 200000;
             constexpr int D  = 30000;
 
             const int index0 = std::clamp((D0 + V0) * B / (2 * D0), 0, B);
