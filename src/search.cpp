@@ -1582,7 +1582,7 @@ moves_loop:  // When in check, search starts here
           (ss - 2)->allNode,
           !(ss - 2)->allNode,
           (ss - 2)->PvNode,
-          !(ss - 2)->PvNode,  
+          !(ss - 2)->PvNode,
           (ss - 2)->cutNode,
           !(ss - 2)->cutNode,  // 88
         };
