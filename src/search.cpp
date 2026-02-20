@@ -282,7 +282,7 @@ void Search::Worker::iterative_deepening() {
         (ss - i)->continuationHistory =
           &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->ttMoveAlternativeHistory =
-          &ttMoveAlternativeHistory[NO_PIECE][0];  // Use as a sentinel
+          &ttMoveAlternativeHistory[NO_PIECE_TYPE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
     }
@@ -715,9 +715,9 @@ Value Search::Worker::search(
 
     if (ttData.move)
         ss->ttMoveAlternativeHistory =
-          &ttMoveAlternativeHistory[pos.moved_piece(ttData.move)][ttData.move.to_sq()];
+          &ttMoveAlternativeHistory[type_of(pos.moved_piece(ttData.move))][ttData.move.to_sq()];
     else
-        ss->ttMoveAlternativeHistory = &ttMoveAlternativeHistory[NO_PIECE][0];
+        ss->ttMoveAlternativeHistory = &ttMoveAlternativeHistory[NO_PIECE_TYPE][0];
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
@@ -1851,7 +1851,7 @@ void update_all_stats(const Position& pos,
         if (ttMove && !pos.capture_stage(ttMove) && bestMove != ttMove)
         {
             (*ss->ttMoveAlternativeHistory)[movedPiece][bestMove.to_sq()] << bonus * 810 / 1024;
-            workerThread.ttMoveAlternativeHistory[movedPiece][bestMove.to_sq()]
+            workerThread.ttMoveAlternativeHistory[type_of(movedPiece)][bestMove.to_sq()]
                                                  [pos.moved_piece(ttMove)][ttMove.to_sq()]
               << -bonus * 810 / 1024;
         }
