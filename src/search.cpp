@@ -1181,30 +1181,36 @@ moves_loop:  // When in check, search starts here
             // over the original beta, we assume this expected cut-node is not
             // singular (multiple moves fail high), and we can prune the whole
             // subtree by returning a softbound.
-            else if (value >= beta && !is_decisive(value))
+            else
             {
-                ttMoveHistory << std::max(-394 - 105 * depth, -3692);
-                if (!CC)
-                    return value;
-                rval = value;
-                V    = depth;
+                if (value >= beta && !is_decisive(value))
+                {
+                    if (!CC)
+                    {
+                        ttMoveHistory << std::max(-394 - 105 * depth, -3692);
+                        return value;
+                    }
+                    rval = value;
+                    V    = depth;
+                }
+
+                // Negative extensions
+                // If other moves failed high over (ttValue - margin) without the
+                // ttMove on a reduced search, but we cannot do multi-cut because
+                // (ttValue - margin) is lower than the original beta, we do not know
+                // if the ttMove is singular or can do a multi-cut, so we reduce the
+                // ttMove in favor of other moves based on some conditions:
+
+                // If the ttMove is assumed to fail high over current beta
+                //else if (ttData.value >= beta)
+                if (ttData.value >= beta)
+                    extension = -3;
+
+                // If we are on a cutNode but the ttMove is not assumed to fail high
+                // over current beta
+                else if (cutNode)
+                    extension = -2;
             }
-
-            // Negative extensions
-            // If other moves failed high over (ttValue - margin) without the
-            // ttMove on a reduced search, but we cannot do multi-cut because
-            // (ttValue - margin) is lower than the original beta, we do not know
-            // if the ttMove is singular or can do a multi-cut, so we reduce the
-            // ttMove in favor of other moves based on some conditions:
-
-            // If the ttMove is assumed to fail high over current beta
-            else if (ttData.value >= beta)
-                extension = -3;
-
-            // If we are on a cutNode but the ttMove is not assumed to fail high
-            // over current beta
-            else if (cutNode)
-                extension = -2;
         }
 
         // Step 16. Make the move
@@ -1481,54 +1487,54 @@ moves_loop:  // When in check, search starts here
 
     if (rval != VALUE_NONE && CC)
     {
-	    // MultiCut #336420: Total 1789 5.8692 PvNode && !ttFailHigh && (ss-1)->statsSCore >= 0  
+        // MultiCut #336420: Total 1789 5.8692 PvNode && !ttFailHigh && (ss-1)->statsSCore >= 0
         std::vector<bool> C = {
           true,
-          allNode, // 1
+          allNode,  // 1
           !allNode,
-          PvNode, // 3
+          PvNode,  // 3
           !PvNode,
-          cutNode, // 5
+          cutNode,  // 5
           !cutNode,
           rval < beta,
           rval >= beta,
           priorCapture,
-          !priorCapture, // 10
+          !priorCapture,  // 10
           improving,
           !improving,
           opponentWorsening,
           !opponentWorsening,
-          ttCapture, // 15
+          ttCapture,  // 15
           !ttCapture,
           ss->ttPv,
           !ss->ttPv,
           (ss - 1)->inCheck,
-          !(ss - 1)->inCheck, // 20
+          !(ss - 1)->inCheck,  // 20
           (ss - 1)->ttPv,
           !(ss - 1)->ttPv,
           ttHit,
           !ttHit,
-          (ss - 1)->ttHit, // 25
+          (ss - 1)->ttHit,  // 25
           !(ss - 1)->ttHit,
           (ss - 1)->currentMove == Move::null(),
           (ss - 1)->currentMove != Move::null(),
           bool(excludedMove),
-          !excludedMove, // 30
-          bool((ss - 1)->excludedMove), // 31
+          !excludedMove,                 // 30
+          bool((ss - 1)->excludedMove),  // 31
           !(ss - 1)->excludedMove,
           ttCheck,
           !ttCheck,
-          ttFailHigh, // 35
-          !ttFailHigh, // 36
+          ttFailHigh,   // 35
+          !ttFailHigh,  // 36
           ttFailLow,
           !ttFailLow,
           (ss - 1)->moveCount == 0,
-          (ss - 1)->moveCount == 1, // 40
-          (ss - 1)->moveCount > 1, // 41
-          (ss - 1)->statScore >= 0, // 42
-          (ss - 1)->statScore < 0, // 43
+          (ss - 1)->moveCount == 1,  // 40
+          (ss - 1)->moveCount > 1,   // 41
+          (ss - 1)->statScore >= 0,  // 42
+          (ss - 1)->statScore < 0,   // 43
           ss->inCheck,
-          !ss->inCheck, // 45
+          !ss->inCheck,  // 45
         };
 
         int nt0 = cutNode;
