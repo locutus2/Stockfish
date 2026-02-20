@@ -1479,7 +1479,7 @@ moves_loop:  // When in check, search starts here
         captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 993;
     }
 
-    if (rval != VALUE_NONE)
+    if (rval != VALUE_NONE && CC)
     {
 	    // MultiCut #336420: Total 1789 5.8692 PvNode && !ttFailHigh && (ss-1)->statsSCore >= 0  
         std::vector<bool> C = {
