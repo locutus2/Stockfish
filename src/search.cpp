@@ -859,6 +859,7 @@ Value Search::Worker::search(
     Value rval = VALUE_NONE;
     int   V    = 0;
     bool  CC   = true;
+    //bool  CC   = ss->inCheck;
     //bool CC = !excludedMove;
 
     if (ss->inCheck)
@@ -1480,51 +1481,54 @@ moves_loop:  // When in check, search starts here
 
     if (rval != VALUE_NONE)
     {
+	    // MultiCut #336420: Total 1789 5.8692 PvNode && !ttFailHigh && (ss-1)->statsSCore >= 0  
         std::vector<bool> C = {
           true,
-          allNode,
+          allNode, // 1
           !allNode,
-          PvNode,
+          PvNode, // 3
           !PvNode,
-          cutNode,
+          cutNode, // 5
           !cutNode,
           rval < beta,
           rval >= beta,
           priorCapture,
-          !priorCapture,
+          !priorCapture, // 10
           improving,
           !improving,
           opponentWorsening,
           !opponentWorsening,
-          ttCapture,
+          ttCapture, // 15
           !ttCapture,
           ss->ttPv,
           !ss->ttPv,
           (ss - 1)->inCheck,
-          !(ss - 1)->inCheck,
+          !(ss - 1)->inCheck, // 20
           (ss - 1)->ttPv,
           !(ss - 1)->ttPv,
           ttHit,
           !ttHit,
-          (ss - 1)->ttHit,
+          (ss - 1)->ttHit, // 25
           !(ss - 1)->ttHit,
           (ss - 1)->currentMove == Move::null(),
           (ss - 1)->currentMove != Move::null(),
           bool(excludedMove),
-          !excludedMove,
-          bool((ss - 1)->excludedMove),
+          !excludedMove, // 30
+          bool((ss - 1)->excludedMove), // 31
           !(ss - 1)->excludedMove,
           ttCheck,
           !ttCheck,
-          ttFailHigh,
-          !ttFailHigh,
+          ttFailHigh, // 35
+          !ttFailHigh, // 36
           ttFailLow,
           !ttFailLow,
           (ss - 1)->moveCount == 0,
-          (ss - 1)->moveCount == 1,
-          (ss - 1)->moveCount > 1,
-          (ss - 1)->statScore >= 0, 
-          (ss - 1)->statScore < 0, // 44
+          (ss - 1)->moveCount == 1, // 40
+          (ss - 1)->moveCount > 1, // 41
+          (ss - 1)->statScore >= 0, // 42
+          (ss - 1)->statScore < 0, // 43
+          ss->inCheck,
+          !ss->inCheck, // 45
         };
 
         int nt0 = cutNode;
