@@ -719,6 +719,14 @@ Value Search::Worker::search(
     else
         ss->ttMoveAlternativeHistory = &ttMoveAlternativeHistory[NO_PIECE][0];
 
+    if (!ss->ttMoveAlternativeHistory)
+    {
+        std::cerr << "Assert: ply: " << ss->ply
+                  << " oldttmah: " << (ss - 1)->ttMoveAlternativeHistory << std::endl;
+        std::terminate();
+    }
+
+
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
     const auto correctionValue      = correction_value(*this, pos, ss);
@@ -1009,6 +1017,29 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+
+    const PieceToHistory cmh0  = *contHist[0];
+    const PieceToHistory ttmah = *ss->ttMoveAlternativeHistory;
+
+    int cmh0BestValue = -30001;
+    int ttmahBestValue = -30001;
+    Move cmh0BestMove = Move::none();
+    Move ttmahBestMove = Move::none();
+    for(Move m : MoveList<LEGAL>(pos))
+    {
+         const Piece p = pos.moved_piece(m);
+	 const Square to = m.to_sq();
+         if(cmh0[p][to] > cmh0BestValue)
+	 {
+		 cmh0BestValue = cmh0[p][to];
+		 cmh0BestMove = m;
+	 }
+         if(ttmah[p][to] > ttmahBestValue)
+	 {
+		 ttmahBestValue = ttmah[p][to];
+		 ttmahBestMove = m;
+	 }
+    }
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1302,6 +1333,38 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
+        if (ttData.move && move != ttData.move && !capture)
+        {
+            bool T  = value > alpha;
+            int  V0 = cmh0[movedPiece][move.to_sq()];
+            //int  V  = ttmah[movedPiece][move.to_sq()];
+            int  V  = std::abs(ttmah[movedPiece][move.to_sq()]);
+
+            dbg_hit_on(T, 10000);
+            dbg_mean_of(V0, T);
+            dbg_mean_of(V0, 30);
+            dbg_correl_of(V0, T, 0);
+            dbg_mean_of(V, 10 + T);
+            dbg_mean_of(V, 31);
+            dbg_correl_of(V, T, 1);
+
+	    if(move == cmh0BestMove)
+		    dbg_hit_on(T, 10010);
+
+	    if(move == ttmahBestMove)
+		    dbg_hit_on(T, 10011);
+
+            constexpr int M     = 60000 / 1000;
+
+            const int index0 = (30000 + V0) * M / 60000;
+            dbg_hit_on(T, index0 + 1000);
+
+            const int     index = (30000 + V) * M / 60000;
+            dbg_hit_on(T, index + 2000);
+
+            dbg_correl_of(V0, V, 10);
+            dbg_correl_of(index0, index, 11);
+        }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1848,13 +1911,14 @@ void update_all_stats(const Position& pos,
     {
         update_quiet_histories(pos, ss, workerThread, bestMove, bonus * 810 / 1024);
 
-        if (ttMove && !pos.capture_stage(ttMove) && bestMove != ttMove)
-        {
+	const bool hasAlternative = ttMove && !pos.capture_stage(ttMove) && bestMove != ttMove;
+        if (hasAlternative)
+	{
             (*ss->ttMoveAlternativeHistory)[movedPiece][bestMove.to_sq()] << bonus * 810 / 1024;
-            workerThread.ttMoveAlternativeHistory[movedPiece][bestMove.to_sq()]
-                                                 [pos.moved_piece(ttMove)][ttMove.to_sq()]
-              << -bonus * 810 / 1024;
-        }
+            //(*ss->ttMoveAlternativeHistory)[pos.moved_piece(ttMove)][ttMove.to_sq()] << -bonus * 810 / 1024;
+            //workerThread.ttMoveAlternativeHistory[movedPiece][bestMove.to_sq()][pos.moved_piece(ttMove)][ttMove.to_sq()] << -bonus * 810 / 1024;
+            workerThread.ttMoveAlternativeHistory[movedPiece][bestMove.to_sq()][pos.moved_piece(ttMove)][ttMove.to_sq()] << -malus * 1159 / 1024;
+	}
 
         int actualMalus = malus * 1159 / 1024;
         // Decrease stats for all non-best quiet moves
@@ -1862,6 +1926,9 @@ void update_all_stats(const Position& pos,
         {
             actualMalus = actualMalus * 963 / 1024;
             update_quiet_histories(pos, ss, workerThread, move, -actualMalus);
+
+            //if (hasAlternative)
+            //    (*ss->ttMoveAlternativeHistory)[movedPiece][bestMove.to_sq()] << -actualMalus;
         }
     }
     else
