@@ -1343,7 +1343,7 @@ moves_loop:  // When in check, search starts here
             //int  V0 = cmh0[movedPiece][move.to_sq()];
             int V0 = extMove.value;
             //int  V  = ttmah[movedPiece][move.to_sq()];
-            int V = extMove.value2;
+            int V = V0 + 2*std::abs(extMove.value2);
 
             dbg_hit_on(T, 10000);
             dbg_mean_of(V0, T);
@@ -1361,7 +1361,8 @@ moves_loop:  // When in check, search starts here
 
             constexpr int B  = 60;
             constexpr int D0 = 200000;
-            constexpr int D  = 30000;
+            //constexpr int D  = 30000;
+            constexpr int D  = 200000;
 
             const int index0 = std::clamp((D0 + V0) * B / (2 * D0), 0, B);
             dbg_hit_on(T, index0 + 1000);
