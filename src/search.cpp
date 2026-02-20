@@ -1579,6 +1579,12 @@ moves_loop:  // When in check, search starts here
           !(ss - 1)->PvNode,  // 80
           (ss - 1)->cutNode,
           !(ss - 1)->cutNode,  // 82
+          (ss - 2)->allNode,
+          !(ss - 2)->allNode,
+          (ss - 2)->PvNode,
+          !(ss - 2)->PvNode,  
+          (ss - 2)->cutNode,
+          !(ss - 2)->cutNode,  // 88
         };
 
         int nt0 = cutNode;
