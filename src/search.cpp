@@ -1041,6 +1041,8 @@ moves_loop:  // When in check, search starts here
         }
     }
 
+    Depth origDepth = depth;
+
     ExtMove extMove;
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1336,7 +1338,9 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        if (ttData.move && mp.isQuiet())
+	//bool CC = true;
+	bool CC = true;
+        if (CC && ttData.move && mp.isQuiet())
         //if (ttData.move && !ttCapture && mp.isQuiet())
         {
             bool T = value > alpha;
@@ -1381,7 +1385,9 @@ moves_loop:  // When in check, search starts here
             dbg_correl_of(index0, index, 11);
 
             dbg_auc_of(index0, T, 0, B);
-            dbg_auc_of(index, T, 100, 100 + B);
+            dbg_auc_of(index0, T, 100*origDepth, 100*origDepth+B);
+            dbg_auc_of(index, T, 10000, 10000 + B);
+            dbg_auc_of(index, T, 10000+100*origDepth, 10000+100*origDepth+B);
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
