@@ -170,6 +170,9 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[5])[pc][to];
             m.value2 = (*ttMoveAlternativeHistory)[pc][to];
             //m.value2 = (*continuationHistory[0])[pc][to];
+            //m.value2 = (*continuationHistory[1])[pc][to];
+            //m.value2 = (*mainHistory)[us][m.raw()];
+            //m.value2 = sharedHistory->pawn_entry(pos)[pc][to];
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
@@ -178,6 +181,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             // or bonus for escaping an attack by a lesser piece.
             int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
             m.value += PieceValue[pt] * v;
+            //m.value2 = PieceValue[pt] * v;
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)

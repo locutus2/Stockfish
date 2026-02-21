@@ -1344,8 +1344,8 @@ moves_loop:  // When in check, search starts here
             int V0 = extMove.value;
             //int  V  = std::abs(ttmah[movedPiece][move.to_sq()]);
             //int V = ttmah[movedPiece][move.to_sq()];
-	    int V = extMove.value2;
-	    //int V = std::abs(extMove.value2);
+	    //int V = extMove.value2;
+	    int V = std::abs(extMove.value2);
             //int V = V0 + std::abs(extMove.value2) / 2;
             //int V = V0 + std::abs(extMove.value2);
 
@@ -1364,9 +1364,12 @@ moves_loop:  // When in check, search starts here
                 dbg_hit_on(T, 10011);
 
             constexpr int B  = 60;
-            constexpr int D0 = 200000;
-            constexpr int D  = 30000;
-            //constexpr int D = 200000;
+            constexpr int D0 = 200000; // quiet score
+            constexpr int D  = 30000; // cont && ttmah
+            //constexpr int D  = 7200; // main history
+            //constexpr int D  = 50000; // threats
+            //constexpr int D  = 8200; // pawn history
+            //constexpr int D = 200000; // quiet score
 
             const int index0 = std::clamp((D0 + V0) * B / (2 * D0), 0, B);
             dbg_hit_on(T, index0 + 1000);
@@ -1384,7 +1387,7 @@ moves_loop:  // When in check, search starts here
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
         // Step 20. Check for a new best move
-        // Finished searching the move. If a stop occurred, the return value of
+        // inished searching the move. If a stop occurred, the return value ofi
         // the search cannot be trusted, and we return immediately without updating
         // best move, principal variation nor transposition table.
         if (threads.stop.load(std::memory_order_relaxed))
@@ -2049,7 +2052,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     TimePoint elapsed = tm.elapsed([&worker]() { return worker.threads.nodes_searched(); });
     TimePoint tick    = worker.limits.startTime + elapsed;
 
-    if (tick - lastInfoTime >= 1000)
+    if (tick - lastInfoTime >= 60000)
     {
         lastInfoTime = tick;
         dbg_print();
