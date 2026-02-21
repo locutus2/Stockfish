@@ -1348,8 +1348,8 @@ moves_loop:  // When in check, search starts here
             int V0 = extMove.value;
             //int  V  = std::abs(ttmah[movedPiece][move.to_sq()]);
             //int V = ttmah[movedPiece][move.to_sq()];
-	    //int V = extMove.value2;
-	    int V = std::abs(extMove.value2);
+	    int V = extMove.value2;
+	    //int V = std::abs(extMove.value2);
             //int V = V0 + std::abs(extMove.value2) / 2;
             //int V = V0 + std::abs(extMove.value2);
 
