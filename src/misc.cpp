@@ -428,7 +428,7 @@ void dbg_print() {
 
         if (K > 0)
         {
-            n = 0;
+            n         = 0;
             int64_t k = 0;
             int64_t ni;
             int64_t ki;

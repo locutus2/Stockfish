@@ -1338,8 +1338,8 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-	//bool CC = true;
-	bool CC = true;
+        //bool CC = true;
+        bool CC = true;
         if (CC && ttData.move && mp.isQuiet())
         //if (ttData.move && !ttCapture && mp.isQuiet())
         {
@@ -1348,18 +1348,20 @@ moves_loop:  // When in check, search starts here
             int V0 = extMove.value;
             //int  V  = std::abs(ttmah[movedPiece][move.to_sq()]);
             //int V = ttmah[movedPiece][move.to_sq()];
-	    int V = extMove.value2;
-	    //int V = std::abs(extMove.value2);
+            int V = extMove.value2;
+            //int V = std::abs(extMove.value2);
             //int V = V0 + std::abs(extMove.value2) / 2;
             //int V = V0 + std::abs(extMove.value2);
 
-            dbg_hit_on(T, 10000);
-            dbg_mean_of(V0, T);
-            dbg_mean_of(V0, 30);
-            dbg_correl_of(V0, T, 0);
-            dbg_mean_of(V, 10 + T);
-            dbg_mean_of(V, 31);
-            dbg_correl_of(V, T, 1);
+            constexpr int B  = 60;
+            constexpr int D0 = 200000;  // quiet score
+            constexpr int D  = 30000;   // cont && ttmah
+            //constexpr int D  = 7200; // main history
+            //constexpr int D  = 50000; // threats
+            //constexpr int D  = 8200; // pawn history
+            //constexpr int D = 200000; // quiet score
+            const int index0 = std::clamp((D0 + V0) * B / (2 * D0), 0, B);
+            int       index  = std::clamp((D + V) * B / (2 * D), 0, B);
 
             if (move == cmh0BestMove)
                 dbg_hit_on(T, 10010);
@@ -1367,27 +1369,56 @@ moves_loop:  // When in check, search starts here
             if (move == ttmahBestMove)
                 dbg_hit_on(T, 10011);
 
-            constexpr int B  = 60;
-            constexpr int D0 = 200000; // quiet score
-            constexpr int D  = 30000; // cont && ttmah
-            //constexpr int D  = 7200; // main history
-            //constexpr int D  = 50000; // threats
-            //constexpr int D  = 8200; // pawn history
-            //constexpr int D = 200000; // quiet score
+            if (true)  // select condition
+            {
+                bool C = priorCapture;
+                V      = V0;
+                index  = index0;
+                dbg_hit_on(T, 10000);
+                if (C)
+                {
+                    dbg_mean_of(V, 10 + T);
+                    dbg_mean_of(V, 31);
+                    dbg_correl_of(V, T, 1);
+                    dbg_hit_on(T, index + 2000);
+                    dbg_auc_of(index, T, 10000, 10000 + B);
+                    dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+                }
+                else
+                {
+                    dbg_mean_of(V0, T);
+                    dbg_mean_of(V0, 30);
+                    dbg_correl_of(V0, T, 0);
+                    dbg_hit_on(T, index0 + 1000);
+                    dbg_auc_of(index0, T, 0, B);
+                    dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
+                }
 
-            const int index0 = std::clamp((D0 + V0) * B / (2 * D0), 0, B);
-            dbg_hit_on(T, index0 + 1000);
 
-            const int index = std::clamp((D + V) * B / (2 * D), 0, B);
-            dbg_hit_on(T, index + 2000);
+                //dbg_correl_of(V0, V, 10);
+                //dbg_correl_of(index0, index, 11);
+            }
+            else
+            {
+                dbg_hit_on(T, 10000);
+                dbg_mean_of(V0, T);
+                dbg_mean_of(V0, 30);
+                dbg_correl_of(V0, T, 0);
+                dbg_mean_of(V, 10 + T);
+                dbg_mean_of(V, 31);
+                dbg_correl_of(V, T, 1);
 
-            dbg_correl_of(V0, V, 10);
-            dbg_correl_of(index0, index, 11);
+                dbg_hit_on(T, index0 + 1000);
+                dbg_hit_on(T, index + 2000);
 
-            dbg_auc_of(index0, T, 0, B);
-            dbg_auc_of(index0, T, 100*origDepth, 100*origDepth+B);
-            dbg_auc_of(index, T, 10000, 10000 + B);
-            dbg_auc_of(index, T, 10000+100*origDepth, 10000+100*origDepth+B);
+                dbg_correl_of(V0, V, 10);
+                dbg_correl_of(index0, index, 11);
+
+                dbg_auc_of(index0, T, 0, B);
+                dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
+                dbg_auc_of(index, T, 10000, 10000 + B);
+                dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+            }
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
