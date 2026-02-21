@@ -90,7 +90,8 @@ MovePicker::MovePicker(const Position&              p,
                        const PieceToHistory**       ch,
                        const PieceToHistory*        ttmah,
                        const SharedHistories*       sh,
-                       int                          pl) :
+                       int                          pl,
+                       bool                         pcap) :
     pos(p),
     mainHistory(mh),
     lowPlyHistory(lph),
@@ -100,7 +101,8 @@ MovePicker::MovePicker(const Position&              p,
     sharedHistory(sh),
     ttMove(ttm),
     depth(d),
-    ply(pl) {
+    ply(pl),
+    priorCapture(pcap) {
 
     if (pos.checkers())
         stage = EVASION_TT + !(ttm && pos.pseudo_legal(ttm));
@@ -163,13 +165,13 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             // histories
             m.value = 2 * (*mainHistory)[us][m.raw()];
             m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
-            m.value += (*continuationHistory[0])[pc][to];
+            m.value += (*continuationHistory[0])[pc][to] * (1 + priorCapture);
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to];
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
-            m.value2 = (*ttMoveAlternativeHistory)[pc][to];
-            //m.value2 = (*continuationHistory[0])[pc][to];
+            //m.value2 = (*ttMoveAlternativeHistory)[pc][to];
+            m.value2 = (*continuationHistory[0])[pc][to];
             //m.value2 = (*continuationHistory[1])[pc][to];
             //m.value2 = (*mainHistory)[us][m.raw()];
             //m.value2 = sharedHistory->pawn_entry(pos)[pc][to];
