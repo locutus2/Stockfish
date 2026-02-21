@@ -1342,9 +1342,10 @@ moves_loop:  // When in check, search starts here
             bool T = value > alpha;
             //int  V0 = cmh0[movedPiece][move.to_sq()];
             int V0 = extMove.value;
-            //int  V  = ttmah[movedPiece][move.to_sq()];
+            //int  V  = std::abs(ttmah[movedPiece][move.to_sq()]);
+            int V = ttmah[movedPiece][move.to_sq()];
             //int V = V0 + std::abs(extMove.value2) / 2;
-            int V = V0 + extMove.value2;
+            //int V = V0 + extMove.value2;
 
             dbg_hit_on(T, 10000);
             dbg_mean_of(V0, T);
@@ -1363,7 +1364,7 @@ moves_loop:  // When in check, search starts here
             constexpr int B  = 60;
             constexpr int D0 = 200000;
             //constexpr int D  = 30000;
-            constexpr int D  = 200000;
+            constexpr int D = 200000;
 
             const int index0 = std::clamp((D0 + V0) * B / (2 * D0), 0, B);
             dbg_hit_on(T, index0 + 1000);
@@ -1373,6 +1374,9 @@ moves_loop:  // When in check, search starts here
 
             dbg_correl_of(V0, V, 10);
             dbg_correl_of(index0, index, 11);
+
+            dbg_auc_of(index0, T, 0, B);
+            dbg_auc_of(index, T, 100, 100 + B);
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);

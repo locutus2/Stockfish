@@ -29,6 +29,7 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <map>
 #include <mutex>
 #include <sstream>
 #include <string_view>
@@ -311,6 +312,8 @@ struct DebugExtremes: public DebugInfo<3> {
     }
 };
 
+std::map<int, int>                       auc_slots;
+std::array<DebugInfo<2>, MaxDebugSlots>  auc;
 std::array<DebugInfo<2>, MaxDebugSlots>  hit;
 std::array<DebugInfo<2>, MaxDebugSlots>  mean;
 std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
@@ -318,6 +321,13 @@ std::array<DebugInfo<6>, MaxDebugSlots>  correl;
 std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
+
+void dbg_auc_of(int index, bool cond, int startSlot, int endSlot) {
+    auc_slots[startSlot] = endSlot;
+    ++auc.at(startSlot + index)[0];
+    if (cond)
+        ++auc.at(startSlot + index)[1];
+}
 
 void dbg_hit_on(bool cond, int slot) {
 
@@ -400,6 +410,47 @@ void dbg_print() {
                         * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
             std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << std::endl;
         }
+
+    for (auto slot : auc_slots)
+    {
+        int64_t N = 0;
+        int64_t K = 0;
+        for (int i = slot.first; i <= slot.second; i++)
+        {
+            N += auc[i][0];
+            K += auc[i][1];
+        }
+
+        if (N == 0)
+            continue;
+
+        double AUC = 0;
+
+        if (K > 0)
+        {
+            n = 0;
+            int64_t k = 0;
+            int64_t ni;
+            int64_t ki;
+            for (int i = slot.first; i <= slot.second; i++)
+            {
+                ni = auc.at(i)[0];
+                if (ni)
+                {
+                    ki          = auc.at(i)[1];
+                    double pPos = ki / double(K);
+                    double pNeg = (n - k + (ni - ki) * 0.5) / (N - K);
+
+                    AUC += pPos * pNeg;
+                    n += ni;
+                    k += ki;
+                }
+            }
+        }
+
+        std::cerr << "AUC #" << slot.first << ": Total " << N << " Hit Rate " << 100. * K / N
+                  << "% AUC " << AUC << std::endl;
+    }
 }
 
 void dbg_clear() {
