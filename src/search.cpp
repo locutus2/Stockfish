@@ -1343,7 +1343,8 @@ moves_loop:  // When in check, search starts here
             //int  V0 = cmh0[movedPiece][move.to_sq()];
             int V0 = extMove.value;
             //int  V  = ttmah[movedPiece][move.to_sq()];
-            int V = V0 + 2*std::abs(extMove.value2);
+            //int V = V0 + std::abs(extMove.value2) / 2;
+            int V = V0 + extMove.value2;
 
             dbg_hit_on(T, 10000);
             dbg_mean_of(V0, T);
