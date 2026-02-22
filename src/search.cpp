@@ -659,12 +659,12 @@ Value Search::Worker::search(
     SearchedList quietsSearched;
 
     // Step 1. Initialize node
-    ss->inCheck   = pos.checkers();
-    ss->priorCapture = priorCapture  = pos.captured_piece();
-    Color us      = pos.side_to_move();
-    ss->moveCount = 0;
-    bestValue     = -VALUE_INFINITE;
-    maxValue      = VALUE_INFINITE;
+    ss->inCheck      = pos.checkers();
+    ss->priorCapture = priorCapture = pos.captured_piece();
+    Color us                        = pos.side_to_move();
+    ss->moveCount                   = 0;
+    bestValue                       = -VALUE_INFINITE;
+    maxValue                        = VALUE_INFINITE;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -1012,7 +1012,7 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
-                  ss->ttMoveAlternativeHistory, &sharedHistory, ss->ply, ss);
+                  ss->ttMoveAlternativeHistory, &sharedHistory, ss->ply, ss, {improving});
 
     value = bestValue;
 
@@ -1338,10 +1338,12 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-	constexpr bool SELECT = false;
-        bool CC = true;
+        constexpr bool SELECT = true;
+        bool           CC     = true;
         //bool C = priorCapture;
-        bool C = !bool(ttData.move);
+        //bool C = !bool(ttData.move);
+        //bool C = (ss - 1)->currentMove == Move::null();
+        bool C = improving;
         //bool CC = (ss-1)->priorCapture;
         if (CC && mp.isQuiet() && (C || SELECT))
         //if (CC && ttData.move && mp.isQuiet())
@@ -1375,8 +1377,8 @@ moves_loop:  // When in check, search starts here
 
             if (SELECT)  // select condition
             {
-                V      = V0;
-                index  = index0;
+                V     = V0;
+                index = index0;
                 dbg_hit_on(T, 10000);
                 if (C)
                 {
@@ -1744,7 +1746,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
     MovePicker mp(pos, ttData.move, DEPTH_QS, &mainHistory, &lowPlyHistory, &captureHistory,
-                  contHist, ss->ttMoveAlternativeHistory, &sharedHistory, ss->ply, ss);
+                  contHist, ss->ttMoveAlternativeHistory, &sharedHistory, ss->ply, ss, {});
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.

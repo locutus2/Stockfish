@@ -49,7 +49,8 @@ class MovePicker {
                const PieceToHistory*,
                const SharedHistories*,
                int,
-               Search::Stack*);
+               Search::Stack*,
+               const std::vector<bool>&);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*, Search::Stack*);
     ExtMove next_move();
     void    skip_quiet_moves();
@@ -79,6 +80,7 @@ class MovePicker {
     bool                         skipQuiets = false;
     ExtMove                      moves[MAX_MOVES];
     Search::Stack*               ss = nullptr;
+    std::vector<bool>            condition;
 };
 
 }  // namespace Stockfish
