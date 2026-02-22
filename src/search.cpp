@@ -1338,10 +1338,10 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-	constexpr bool SELECT = true;
+	constexpr bool SELECT = false;
         bool CC = true;
         //bool C = priorCapture;
-        bool C = bool(ttData.move);
+        bool C = !bool(ttData.move);
         //bool CC = (ss-1)->priorCapture;
         if (CC && mp.isQuiet() && (C || SELECT))
         //if (CC && ttData.move && mp.isQuiet())
