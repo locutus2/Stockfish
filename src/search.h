@@ -8,7 +8,7 @@
   (at your option) any later version.
 
   Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
+
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
@@ -75,6 +75,7 @@ struct Stack {
     bool                        inCheck;
     bool                        ttPv;
     bool                        ttHit;
+    bool                        priorCapture;
     int                         cutoffCnt;
     int                         reduction;
 };

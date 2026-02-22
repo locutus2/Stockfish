@@ -660,7 +660,7 @@ Value Search::Worker::search(
 
     // Step 1. Initialize node
     ss->inCheck   = pos.checkers();
-    priorCapture  = pos.captured_piece();
+    ss->priorCapture = priorCapture  = pos.captured_piece();
     Color us      = pos.side_to_move();
     ss->moveCount = 0;
     bestValue     = -VALUE_INFINITE;
@@ -1338,9 +1338,10 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        //bool CC = true;
-        bool CC = priorCapture;
-        if (CC && ttData.move && mp.isQuiet())
+        bool CC = true;
+        //bool CC = (ss-1)->priorCapture;
+        if (CC && mp.isQuiet())
+        //if (CC && ttData.move && mp.isQuiet())
         //if (ttData.move && !ttCapture && mp.isQuiet())
         {
             bool T = value > alpha;
@@ -1369,7 +1370,8 @@ moves_loop:  // When in check, search starts here
             if (move == ttmahBestMove)
                 dbg_hit_on(T, 10011);
 
-            if (false)  // select condition
+	    constexpr bool SELECT = false;
+            if (SELECT)  // select condition
             {
                 bool C = priorCapture;
                 V      = V0;
