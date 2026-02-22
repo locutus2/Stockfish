@@ -91,7 +91,6 @@ MovePicker::MovePicker(const Position&              p,
                        const PieceToHistory*        ttmah,
                        const SharedHistories*       sh,
                        int                          pl,
-                       bool                         pcap,
                        Search::Stack*               s) :
     pos(p),
     mainHistory(mh),
@@ -103,7 +102,6 @@ MovePicker::MovePicker(const Position&              p,
     ttMove(ttm),
     depth(d),
     ply(pl),
-    priorCapture(pcap),
     ss(s) {
 
     if (pos.checkers())

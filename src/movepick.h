@@ -49,7 +49,6 @@ class MovePicker {
                const PieceToHistory*,
                const SharedHistories*,
                int,
-               bool,
                Search::Stack*);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*, Search::Stack*);
     ExtMove next_move();
@@ -78,7 +77,6 @@ class MovePicker {
     Depth                        depth;
     int                          ply;
     bool                         skipQuiets = false;
-    bool                         priorCapture;
     ExtMove                      moves[MAX_MOVES];
     Search::Stack*               ss = nullptr;
 };
