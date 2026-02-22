@@ -21,6 +21,7 @@
 
 #include "history.h"
 #include "movegen.h"
+#include "search.h"
 #include "types.h"
 
 namespace Stockfish {
@@ -48,8 +49,9 @@ class MovePicker {
                const PieceToHistory*,
                const SharedHistories*,
                int,
-               bool);
-    MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
+               bool,
+               Search::Stack*);
+    MovePicker(const Position&, Move, int, const CapturePieceToHistory*, Search::Stack*);
     ExtMove next_move();
     void    skip_quiet_moves();
     bool    isQuiet() const;
@@ -78,6 +80,7 @@ class MovePicker {
     bool                         skipQuiets = false;
     bool                         priorCapture;
     ExtMove                      moves[MAX_MOVES];
+    Search::Stack*               ss = nullptr;
 };
 
 }  // namespace Stockfish
