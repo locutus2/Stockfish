@@ -1338,9 +1338,12 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
+	constexpr bool SELECT = true;
         bool CC = true;
+        //bool C = priorCapture;
+        bool C = bool(ttData.move);
         //bool CC = (ss-1)->priorCapture;
-        if (CC && mp.isQuiet())
+        if (CC && mp.isQuiet() && (C || SELECT))
         //if (CC && ttData.move && mp.isQuiet())
         //if (ttData.move && !ttCapture && mp.isQuiet())
         {
@@ -1370,10 +1373,8 @@ moves_loop:  // When in check, search starts here
             if (move == ttmahBestMove)
                 dbg_hit_on(T, 10011);
 
-	    constexpr bool SELECT = false;
             if (SELECT)  // select condition
             {
-                bool C = priorCapture;
                 V      = V0;
                 index  = index0;
                 dbg_hit_on(T, 10000);
