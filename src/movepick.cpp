@@ -128,9 +128,9 @@ MovePicker::MovePicker(
 }
 
 constexpr int SCALE = 128;
-constexpr int W[2][7] = { // after 7.8 K
-	{-11,-3,17,-7,2,-10,8},
-	{11,-12,-7,-6,-2,-4,2},
+constexpr int W[2][7] = { 
+	//{-11,-3,17,-7,2,-10,8}, {11,-12,-7,-6,-2,-4,2}, // after 8 K
+	{-9,-8,9,-18,4,-13,5}, {11,-3,-7,-14,-4,-2,15}, // after 24 K
 };
 
 // Assigns a numerical value to each move in a list, used for sorting.
