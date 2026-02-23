@@ -118,11 +118,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     stage = PROBCUT_TT + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm));
 }
 
-constexpr int SCALE = 128;
-int W[2][7];
-
-TUNE(SetRange(-SCALE, SCALE), W);
-
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
 // with a good history. Quiets moves are ordered using the history tables.
@@ -164,14 +159,14 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()] * (SCALE + W[priorCapture][0]);
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (SCALE + W[priorCapture][1]);
-            m.value += (*continuationHistory[0])[pc][to] * (SCALE + W[priorCapture][2]);
-            m.value += (*continuationHistory[1])[pc][to] * (SCALE + W[priorCapture][3]);
-            m.value += (*continuationHistory[2])[pc][to] * (SCALE + W[priorCapture][4]);
-            m.value += (*continuationHistory[3])[pc][to] * (SCALE + W[priorCapture][5]);
-            m.value += (*continuationHistory[5])[pc][to] * (SCALE + W[priorCapture][6]);
-	    m.value /= SCALE;
+            m.value = (*mainHistory)[us][m.raw()] * 2 * (128 +  * priorCapture);
+            m.value += sharedHistory->pawn_entry(pos)[pc][to] * 2 * (128 + * priorCapture);
+            m.value += (*continuationHistory[0])[pc][to] * (128 + * priorCapture);
+            m.value += (*continuationHistory[1])[pc][to] * (128 + * priorCapture);
+            m.value += (*continuationHistory[2])[pc][to] * (128 + * priorCapture);
+            m.value += (*continuationHistory[3])[pc][to] * (128 + * priorCapture);
+            m.value += (*continuationHistory[5])[pc][to] * (128 + * priorCapture);
+	    m.value /= 128;
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
