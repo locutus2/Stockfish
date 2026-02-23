@@ -126,7 +126,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-    Color us = pos.side_to_move();
+    Color      us           = pos.side_to_move();
     const bool priorCapture = pos.captured_piece();
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
@@ -159,14 +159,14 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = (*mainHistory)[us][m.raw()] * 2 * (128 +  * priorCapture);
-            m.value += sharedHistory->pawn_entry(pos)[pc][to] * 2 * (128 + * priorCapture);
-            m.value += (*continuationHistory[0])[pc][to] * (128 + * priorCapture);
-            m.value += (*continuationHistory[1])[pc][to] * (128 + * priorCapture);
-            m.value += (*continuationHistory[2])[pc][to] * (128 + * priorCapture);
-            m.value += (*continuationHistory[3])[pc][to] * (128 + * priorCapture);
-            m.value += (*continuationHistory[5])[pc][to] * (128 + * priorCapture);
-	    m.value /= 128;
+            m.value = (*mainHistory)[us][m.raw()] * (246 + 18 * priorCapture);
+            m.value += sharedHistory->pawn_entry(pos)[pc][to] * (252 + 14 * priorCapture);
+            m.value += (*continuationHistory[0])[pc][to] * (136 - 26 * priorCapture);
+            m.value += (*continuationHistory[1])[pc][to] * (113 - 4 * priorCapture);
+            m.value += (*continuationHistory[2])[pc][to] * (115 - 2 * priorCapture);
+            m.value += (*continuationHistory[3])[pc][to] * 113;
+            m.value += (*continuationHistory[5])[pc][to] * (137 - 10 * priorCapture);
+            m.value /= 128;
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
