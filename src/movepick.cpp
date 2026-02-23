@@ -184,10 +184,11 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[5])[pc][to];
             //m.value2 = (*ttMoveAlternativeHistory)[pc][to];
             //m.value2 = (*continuationHistory[0])[pc][to];
-            //m.value2 = (*continuationHistory[1])[pc][to];
+            m.value2 = (*continuationHistory[1])[pc][to];
             //m.value2 = (*mainHistory)[us][m.raw()];
             //m.value2 = sharedHistory->pawn_entry(pos)[pc][to];
 
+	    /*
 	    m.value2 = 2 * (*mainHistory)[us][m.raw()] * (SCALE + W[priorCapture][0]);
             m.value2 += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (SCALE + W[priorCapture][1]);
             m.value2 += (*continuationHistory[0])[pc][to] * (SCALE + W[priorCapture][2]);
@@ -196,22 +197,23 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value2 += (*continuationHistory[3])[pc][to] * (SCALE + W[priorCapture][5]);
             m.value2 += (*continuationHistory[5])[pc][to] * (SCALE + W[priorCapture][6]);
 	    m.value2 /= SCALE;
+	    */
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
-            m.value2 += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            //m.value2 += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
             int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
             m.value += PieceValue[pt] * v;
-            m.value2 += PieceValue[pt] * v;
+            //m.value2 += PieceValue[pt] * v;
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
 	    {
                 m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
-                m.value2 += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+                //m.value2 += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
 	    }
         }
 
