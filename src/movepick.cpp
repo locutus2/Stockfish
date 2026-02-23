@@ -177,17 +177,30 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value = 2 * (*mainHistory)[us][m.raw()];
             m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
             m.value += (*continuationHistory[0])[pc][to];
-            // * (2 + bool(pos.captured_piece())) / 2;
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to];
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
             //m.value2 = (*ttMoveAlternativeHistory)[pc][to];
             //m.value2 = (*continuationHistory[0])[pc][to];
-            m.value2 = (*continuationHistory[1])[pc][to];
+            //m.value2 = (*continuationHistory[1])[pc][to];
+            //m.value2 = (*continuationHistory[2])[pc][to];
+            //m.value2 = (*continuationHistory[3])[pc][to];
+            //m.value2 = (*continuationHistory[5])[pc][to];
             //m.value2 = (*mainHistory)[us][m.raw()];
             //m.value2 = sharedHistory->pawn_entry(pos)[pc][to];
 
+	    constexpr int S = 1;
+	    constexpr int A = 1;
+            m.value2 = 2 * (*mainHistory)[us][m.raw()] * (8 * S + A * std::max(7 - depth, 0)) / (8 * S);
+            m.value2 += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (8 * S + A * std::max(7 - depth, 0)) / (8 * S);
+	   // * (8 * S + A * std::max(7 - depth, 0)) / (8 * S);
+	   // * std::max(7 - depth, 1);
+            m.value2 += (*continuationHistory[0])[pc][to];
+            m.value2 += (*continuationHistory[1])[pc][to];// * (8 * S - A * std::max(7 - depth, 0)) / (8 * S);
+            m.value2 += (*continuationHistory[2])[pc][to];
+            m.value2 += (*continuationHistory[3])[pc][to];// * (8 * S - A * std::max(7 - depth, 0)) / (8 * S);
+            m.value2 += (*continuationHistory[5])[pc][to];// * (8 * S - A * std::max(7 - depth, 0)) / (8 * S);
 	    /*
 	    m.value2 = 2 * (*mainHistory)[us][m.raw()] * (SCALE + W[priorCapture][0]);
             m.value2 += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (SCALE + W[priorCapture][1]);
@@ -201,19 +214,19 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
-            //m.value2 += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            m.value2 += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
             int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
             m.value += PieceValue[pt] * v;
-            //m.value2 += PieceValue[pt] * v;
+            m.value2 += PieceValue[pt] * v;
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
 	    {
                 m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
-                //m.value2 += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+                m.value2 += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
 	    }
         }
 

@@ -1362,11 +1362,11 @@ moves_loop:  // When in check, search starts here
 
             constexpr int B  = 60;
             constexpr int D0 = 200000;  // quiet score
-            constexpr int D  = 30000;   // cont && ttmah
+            //constexpr int D  = 30000;   // cont && ttmah
             //constexpr int D  = 7200; // main history
             //constexpr int D  = 50000; // threats
             //constexpr int D  = 8200; // pawn history
-            //constexpr int D = 200000; // quiet score
+            constexpr int D = 200000; // quiet score
             const int index0 = std::clamp((D0 + V0) * B / (2 * D0), 0, B);
             int       index  = std::clamp((D + V) * B / (2 * D), 0, B);
 
