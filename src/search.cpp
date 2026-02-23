@@ -1343,7 +1343,8 @@ moves_loop:  // When in check, search starts here
         //bool C = priorCapture;
         //bool C = !bool(ttData.move);
         //bool C = (ss - 1)->currentMove == Move::null();
-        bool C = !improving;
+        //bool C = !improving;
+	bool C = true;
         //bool CC = (ss-1)->priorCapture;
         if (CC && mp.isQuiet() && (C || SELECT))
         //if (CC && ttData.move && mp.isQuiet())
