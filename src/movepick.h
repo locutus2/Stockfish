@@ -21,7 +21,6 @@
 
 #include "history.h"
 #include "movegen.h"
-#include "search.h"
 #include "types.h"
 
 namespace Stockfish {
@@ -47,8 +46,7 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const SharedHistories*,
-               int,
-               NodeType);
+               int);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
     Move next_move();
     void skip_quiet_moves();
@@ -74,7 +72,6 @@ class MovePicker {
     Depth                        depth;
     int                          ply;
     bool                         skipQuiets = false;
-    NodeType                     nodeType;
     ExtMove                      moves[MAX_MOVES];
 };
 

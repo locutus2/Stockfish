@@ -88,8 +88,7 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const SharedHistories*       sh,
-                       int                          pl,
-                       NodeType                     nt) :
+                       int                          pl) :
     pos(p),
     mainHistory(mh),
     lowPlyHistory(lph),
@@ -98,8 +97,7 @@ MovePicker::MovePicker(const Position&              p,
     sharedHistory(sh),
     ttMove(ttm),
     depth(d),
-    ply(pl),
-    nodeType(nt) {
+    ply(pl) {
 
     if (pos.checkers())
         stage = EVASION_TT + !(ttm && pos.pseudo_legal(ttm));
@@ -121,10 +119,26 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
 }
 
 constexpr int SCALE = 256;
-int           Random;
-int           W[10][3];
+constexpr int N     = 10;
+constexpr int D     = 9;
 
-TUNE(SetRange(-SCALE, SCALE), Random, W);
+int Random;
+int W[N][D];
+int QuietWeight[N][D];
+
+void initParams() {
+    for (int i = 0; i < N; i++)
+    {
+        int sum = 0;
+        for (int d = D - 1; d >= 0; d--)
+        {
+            QuietWeight[i][d] = sum;
+            sum += W[i][d];
+        }
+    }
+}
+
+TUNE(SetRange(-SCALE, SCALE), Random, W, initParams);
 
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
@@ -135,7 +149,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
     Color     us = pos.side_to_move();
-    const int nt = (nodeType == PV ? 1 : nodeType == CUT ? 2 : 0);
+    const int d  = std::min(depth, D) - 1;
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
     if constexpr (Type == QUIETS)
@@ -167,26 +181,27 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()] * (SCALE + W[0][nt]);
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (SCALE + W[1][nt]);
-            m.value += (*continuationHistory[0])[pc][to] * (SCALE + W[2][nt]);
-            m.value += (*continuationHistory[1])[pc][to] * (SCALE + W[3][nt]);
-            m.value += (*continuationHistory[2])[pc][to] * (SCALE + W[4][nt]);
-            m.value += (*continuationHistory[3])[pc][to] * (SCALE + W[5][nt]);
-            m.value += (*continuationHistory[5])[pc][to] * (SCALE + W[6][nt]);
+            m.value = 2 * (*mainHistory)[us][m.raw()] * (SCALE + QuietWeight[0][d]);
+            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (SCALE + QuietWeight[1][d]);
+            m.value += (*continuationHistory[0])[pc][to] * (SCALE + QuietWeight[2][d]);
+            m.value += (*continuationHistory[1])[pc][to] * (SCALE + QuietWeight[3][d]);
+            m.value += (*continuationHistory[2])[pc][to] * (SCALE + QuietWeight[4][d]);
+            m.value += (*continuationHistory[3])[pc][to] * (SCALE + QuietWeight[5][d]);
+            m.value += (*continuationHistory[5])[pc][to] * (SCALE + QuietWeight[6][d]);
 
             // bonus for checks
-            m.value +=
-              (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384 * (SCALE + W[7][nt]);
+            m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384
+                     * (SCALE + QuietWeight[7][d]);
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
             int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
-            m.value += PieceValue[pt] * v * (SCALE + W[8][nt]);
+            m.value += PieceValue[pt] * v * (SCALE + QuietWeight[8][d]);
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply) * (SCALE + W[9][nt]);
+                m.value +=
+                  8 * (*lowPlyHistory)[ply][m.raw()] * (SCALE + QuietWeight[9][d]) / (1 + ply);
         }
 
         else  // Type == EVASIONS
