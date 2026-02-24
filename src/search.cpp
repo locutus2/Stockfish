@@ -1012,7 +1012,10 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
-                  ss->ttMoveAlternativeHistory, &sharedHistory, ss->ply, ss, {improving});
+                  ss->ttMoveAlternativeHistory, &sharedHistory, ss->ply, ss, {improving},
+                  (PvNode    ? PV
+                   : cutNode ? CUT
+                             : ALL));
 
     value = bestValue;
 
@@ -1344,8 +1347,8 @@ moves_loop:  // When in check, search starts here
         //bool C = !bool(ttData.move);
         //bool C = (ss - 1)->currentMove == Move::null();
         //bool C = !improving;
-	bool C = true;
-	//bool C = ttCapture;
+        bool C = true;
+        //bool C = ttCapture;
         //bool C = allNode;
         //bool C = PvNode;
         //bool C = cutNode;
@@ -1370,9 +1373,9 @@ moves_loop:  // When in check, search starts here
             //constexpr int D  = 7200; // main history
             //constexpr int D  = 50000; // threats
             //constexpr int D  = 8200; // pawn history
-            constexpr int D = 200000; // quiet score
-            const int index0 = std::clamp((D0 + V0) * B / (2 * D0), 0, B);
-            int       index  = std::clamp((D + V) * B / (2 * D), 0, B);
+            constexpr int D      = 200000;  // quiet score
+            const int     index0 = std::clamp((D0 + V0) * B / (2 * D0), 0, B);
+            int           index  = std::clamp((D + V) * B / (2 * D), 0, B);
 
             if (move == cmh0BestMove)
                 dbg_hit_on(T, 10010);
@@ -1751,7 +1754,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
     MovePicker mp(pos, ttData.move, DEPTH_QS, &mainHistory, &lowPlyHistory, &captureHistory,
-                  contHist, ss->ttMoveAlternativeHistory, &sharedHistory, ss->ply, ss, {});
+                  contHist, ss->ttMoveAlternativeHistory, &sharedHistory, ss->ply, ss, {},
+                  (PvNode ? PV : ALL));
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.

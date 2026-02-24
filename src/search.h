@@ -49,7 +49,9 @@ namespace Stockfish {
 enum NodeType {
     NonPV,
     PV,
-    Root
+    Root,
+    CUT,
+    ALL
 };
 
 class TranspositionTable;
