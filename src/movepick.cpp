@@ -161,13 +161,13 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = (*mainHistory)[us][m.raw()] * QuietWeight[0][priorCapture];
-            m.value += sharedHistory->pawn_entry(pos)[pc][to] * QuietWeight[1][priorCapture];
-            m.value += (*continuationHistory[0])[pc][to] * QuietWeight[2][priorCapture];
-            m.value += (*continuationHistory[1])[pc][to] * QuietWeight[3][priorCapture];
-            m.value += (*continuationHistory[2])[pc][to] * QuietWeight[4][priorCapture];
-            m.value += (*continuationHistory[3])[pc][to] * QuietWeight[5][priorCapture];
-            m.value += (*continuationHistory[5])[pc][to] * QuietWeight[6][priorCapture];
+            m.value = QuietWeight[0][priorCapture] * (*mainHistory)[us][m.raw()];
+            m.value += QuietWeight[1][priorCapture] * sharedHistory->pawn_entry(pos)[pc][to];
+            m.value += QuietWeight[2][priorCapture] * (*continuationHistory[0])[pc][to];
+            m.value += QuietWeight[3][priorCapture] * (*continuationHistory[1])[pc][to];
+            m.value += QuietWeight[4][priorCapture] * (*continuationHistory[2])[pc][to];
+            m.value += QuietWeight[5][priorCapture] * (*continuationHistory[3])[pc][to];
+            m.value += QuietWeight[6][priorCapture] * (*continuationHistory[5])[pc][to];
             m.value /= 128;
 
             // bonus for checks
