@@ -56,6 +56,16 @@ enum Stages {
     QCAPTURE
 };
 
+constexpr int QuietWeight[10][3] = {{2 * 256, 2 * 256, 2 * 256},
+                                    {2 * 256, 2 * 256, 2 * 256},
+                                    {256, 256, 256},
+                                    {256, 256, 256},
+                                    {256, 256, 256},
+                                    {256, 256, 256},
+                                    {256, 256, 256},
+                                    {16384 * 256, 16384 * 256, 16384 * 256},
+                                    {256, 256, 256},
+                                    {8 * 256, 8 * 256, 8 * 256}};
 
 // Sort moves in descending order up to and including a given limit.
 // The order of moves smaller than the limit is left unspecified.
@@ -120,12 +130,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     stage = PROBCUT_TT + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm));
 }
 
-constexpr int SCALE = 256;
-int           Random;
-int           W[10][3];
-
-TUNE(SetRange(-SCALE, SCALE), Random, W);
-
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
 // with a good history. Quiets moves are ordered using the history tables.
@@ -167,26 +171,26 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()] * (SCALE + W[0][nt]);
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (SCALE + W[1][nt]);
-            m.value += (*continuationHistory[0])[pc][to] * (SCALE + W[2][nt]);
-            m.value += (*continuationHistory[1])[pc][to] * (SCALE + W[3][nt]);
-            m.value += (*continuationHistory[2])[pc][to] * (SCALE + W[4][nt]);
-            m.value += (*continuationHistory[3])[pc][to] * (SCALE + W[5][nt]);
-            m.value += (*continuationHistory[5])[pc][to] * (SCALE + W[6][nt]);
+            m.value = (*mainHistory)[us][m.raw()] * QuietWeight[0][nt];
+            m.value += sharedHistory->pawn_entry(pos)[pc][to] * QuietWeight[1][nt];
+            m.value += (*continuationHistory[0])[pc][to] * QuietWeight[2][nt];
+            m.value += (*continuationHistory[1])[pc][to] * QuietWeight[3][nt];
+            m.value += (*continuationHistory[2])[pc][to] * QuietWeight[4][nt];
+            m.value += (*continuationHistory[3])[pc][to] * QuietWeight[5][nt];
+            m.value += (*continuationHistory[5])[pc][to] * QuietWeight[6][nt];
 
             // bonus for checks
             m.value +=
-              (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384 * (SCALE + W[7][nt]);
+              (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * QuietWeight[7][nt];
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
             int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
-            m.value += PieceValue[pt] * v * (SCALE + W[8][nt]);
+            m.value += PieceValue[pt] * v * QuietWeight[8][nt];
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] * (SCALE + W[9][nt]) / (1 + ply);
+                m.value += (*lowPlyHistory)[ply][m.raw()] * QuietWeight[9][nt] / (1 + ply);
         }
 
         else  // Type == EVASIONS
@@ -217,7 +221,7 @@ Move MovePicker::select(Pred filter) {
 // picking the move with the highest score from a list of generated moves.
 Move MovePicker::next_move() {
 
-    constexpr int goodQuietThreshold = -14000 * SCALE;
+    constexpr int goodQuietThreshold = -3584000;
 top:
     switch (stage)
     {
@@ -261,7 +265,7 @@ top:
 
             endCur = endGenerated = score<QUIETS>(ml);
 
-            partial_insertion_sort(cur, endCur, -3560 * SCALE * depth);
+            partial_insertion_sort(cur, endCur, -911360 * depth);
         }
 
         ++stage;
