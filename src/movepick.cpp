@@ -130,7 +130,9 @@ MovePicker::MovePicker(
 constexpr int SCALE = 128;
 constexpr int W[2][7] = { 
 	//{-11,-3,17,-7,2,-10,8}, {11,-12,-7,-6,-2,-4,2}, // after 8 K
-	{-9,-8,9,-18,4,-13,5}, {11,-3,-7,-14,-4,-2,15}, // after 24 K
+	//{-9,-8,9,-18,4,-13,5}, {11,-3,-7,-14,-4,-2,15}, // after 24 K
+	{-5,-2,8,-15,-13,-15,9}, {4,5,-18,-19,-11,-15,-1}, // after 50 K
+	//{-5,12,18,-29,-6,-22,13}, {2,8,-26,-30,-21,-11,-11}, // after 88 K
 };
 
 // Assigns a numerical value to each move in a list, used for sorting.
@@ -190,6 +192,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             //m.value2 = (*mainHistory)[us][m.raw()];
             //m.value2 = sharedHistory->pawn_entry(pos)[pc][to];
 
+	    /*
 	    constexpr int S = 1;
 	    constexpr int A = 1;
             m.value2 = 2 * (*mainHistory)[us][m.raw()] * (8 * S + A * std::max(7 - depth, 0)) / (8 * S);
@@ -201,7 +204,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value2 += (*continuationHistory[2])[pc][to];
             m.value2 += (*continuationHistory[3])[pc][to];// * (8 * S - A * std::max(7 - depth, 0)) / (8 * S);
             m.value2 += (*continuationHistory[5])[pc][to];// * (8 * S - A * std::max(7 - depth, 0)) / (8 * S);
-	    /*
+							  */
 	    m.value2 = 2 * (*mainHistory)[us][m.raw()] * (SCALE + W[priorCapture][0]);
             m.value2 += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (SCALE + W[priorCapture][1]);
             m.value2 += (*continuationHistory[0])[pc][to] * (SCALE + W[priorCapture][2]);
@@ -210,7 +213,6 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value2 += (*continuationHistory[3])[pc][to] * (SCALE + W[priorCapture][5]);
             m.value2 += (*continuationHistory[5])[pc][to] * (SCALE + W[priorCapture][6]);
 	    m.value2 /= SCALE;
-	    */
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
