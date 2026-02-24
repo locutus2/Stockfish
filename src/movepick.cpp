@@ -56,6 +56,8 @@ enum Stages {
     QCAPTURE
 };
 
+constexpr int QuietWeight[7][2] = {{2 * 128, 2 * 128}, {2 * 128, 2 * 128}, {128, 128}, {128, 128},
+                                   {128, 128},         {128, 128},         {128, 128}};
 
 // Sort moves in descending order up to and including a given limit.
 // The order of moves smaller than the limit is left unspecified.
@@ -159,13 +161,13 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = (*mainHistory)[us][m.raw()] * (246 + 18 * priorCapture);
-            m.value += sharedHistory->pawn_entry(pos)[pc][to] * (252 + 14 * priorCapture);
-            m.value += (*continuationHistory[0])[pc][to] * (136 - 26 * priorCapture);
-            m.value += (*continuationHistory[1])[pc][to] * (113 - 4 * priorCapture);
-            m.value += (*continuationHistory[2])[pc][to] * (115 - 2 * priorCapture);
-            m.value += (*continuationHistory[3])[pc][to] * 113;
-            m.value += (*continuationHistory[5])[pc][to] * (137 - 10 * priorCapture);
+            m.value = (*mainHistory)[us][m.raw()] * QuietWeight[0][priorCapture];
+            m.value += sharedHistory->pawn_entry(pos)[pc][to] * QuietWeight[1][priorCapture];
+            m.value += (*continuationHistory[0])[pc][to] * QuietWeight[2][priorCapture];
+            m.value += (*continuationHistory[1])[pc][to] * QuietWeight[3][priorCapture];
+            m.value += (*continuationHistory[2])[pc][to] * QuietWeight[4][priorCapture];
+            m.value += (*continuationHistory[3])[pc][to] * QuietWeight[5][priorCapture];
+            m.value += (*continuationHistory[5])[pc][to] * QuietWeight[6][priorCapture];
             m.value /= 128;
 
             // bonus for checks
