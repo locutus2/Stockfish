@@ -56,8 +56,8 @@ enum Stages {
     QCAPTURE
 };
 
-constexpr int QuietWeight[7][2] = {{2 * 128, 2 * 128}, {2 * 128, 2 * 128}, {128, 128}, {128, 128},
-                                   {128, 128},         {128, 128},         {128, 128}};
+constexpr int QuietWeight[7][2] = {{240, 264}, {279, 264}, {142, 107}, {98, 95},
+                                   {123, 106}, {105, 122}, {133, 108}};
 
 // Sort moves in descending order up to and including a given limit.
 // The order of moves smaller than the limit is left unspecified.
