@@ -88,7 +88,8 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const SharedHistories*       sh,
-                       int                          pl) :
+                       int                          pl,
+                       NodeType                     nt) :
     pos(p),
     mainHistory(mh),
     lowPlyHistory(lph),
@@ -97,7 +98,8 @@ MovePicker::MovePicker(const Position&              p,
     sharedHistory(sh),
     ttMove(ttm),
     depth(d),
-    ply(pl) {
+    ply(pl),
+    nodeType(nt) {
 
     if (pos.checkers())
         stage = EVASION_TT + !(ttm && pos.pseudo_legal(ttm));
@@ -118,10 +120,11 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     stage = PROBCUT_TT + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm));
 }
 
-constexpr int SCALE = 128;
-int W[2][7];
+constexpr int SCALE = 256;
+int           Random;
+int           W[10][3];
 
-TUNE(SetRange(-SCALE, SCALE), W);
+TUNE(SetRange(-SCALE, SCALE), Random, W);
 
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
@@ -131,8 +134,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-    Color us = pos.side_to_move();
-    const bool priorCapture = pos.captured_piece();
+    Color     us = pos.side_to_move();
+    const int nt = (nodeType == PV ? 1 : nodeType == CUT ? 2 : 0);
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
     if constexpr (Type == QUIETS)
@@ -164,26 +167,26 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()] * (SCALE + W[priorCapture][0]);
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (SCALE + W[priorCapture][1]);
-            m.value += (*continuationHistory[0])[pc][to] * (SCALE + W[priorCapture][2]);
-            m.value += (*continuationHistory[1])[pc][to] * (SCALE + W[priorCapture][3]);
-            m.value += (*continuationHistory[2])[pc][to] * (SCALE + W[priorCapture][4]);
-            m.value += (*continuationHistory[3])[pc][to] * (SCALE + W[priorCapture][5]);
-            m.value += (*continuationHistory[5])[pc][to] * (SCALE + W[priorCapture][6]);
-	    m.value /= SCALE;
+            m.value = 2 * (*mainHistory)[us][m.raw()] * (SCALE + W[0][nt]);
+            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (SCALE + W[1][nt]);
+            m.value += (*continuationHistory[0])[pc][to] * (SCALE + W[2][nt]);
+            m.value += (*continuationHistory[1])[pc][to] * (SCALE + W[3][nt]);
+            m.value += (*continuationHistory[2])[pc][to] * (SCALE + W[4][nt]);
+            m.value += (*continuationHistory[3])[pc][to] * (SCALE + W[5][nt]);
+            m.value += (*continuationHistory[5])[pc][to] * (SCALE + W[6][nt]);
 
             // bonus for checks
-            m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            m.value +=
+              (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384 * (SCALE + W[7][nt]);
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
             int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
-            m.value += PieceValue[pt] * v;
+            m.value += PieceValue[pt] * v * (SCALE + W[8][nt]);
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply) * (SCALE + W[9][nt]);
         }
 
         else  // Type == EVASIONS
@@ -214,7 +217,7 @@ Move MovePicker::select(Pred filter) {
 // picking the move with the highest score from a list of generated moves.
 Move MovePicker::next_move() {
 
-    constexpr int goodQuietThreshold = -14000;
+    constexpr int goodQuietThreshold = -14000 * SCALE;
 top:
     switch (stage)
     {
@@ -258,7 +261,7 @@ top:
 
             endCur = endGenerated = score<QUIETS>(ml);
 
-            partial_insertion_sort(cur, endCur, -3560 * depth);
+            partial_insertion_sort(cur, endCur, -3560 * SCALE * depth);
         }
 
         ++stage;
