@@ -56,20 +56,6 @@ enum Stages {
     QCAPTURE
 };
 
-#define S(s, v) (((v) - (s)) * 8 + (s))
-
-constexpr int QuietWeight[10][3] = {
-  {S(2 * 256, 529), S(2 * 256, 529), S(2 * 256, 510)},
-  {S(2 * 256, 499), S(2 * 256, 533), S(2 * 256, 493)},
-  {S(256, 249), S(256, 256), S(256, 255)},
-  {S(256, 248), S(256, 257), S(256, 256)},
-  {S(256, 261), S(256, 261), S(256, 255)},
-  {S(256, 261), S(256, 262), S(256, 260)},
-  {S(256, 249), S(256, 252), S(256, 254)},
-  {S(16384 * 256, 4250337), S(16384 * 256, 4371579), S(16384 * 256, 3986391)},
-  {S(256, 254), S(256, 264), S(256, 266)},
-  {S(8 * 256, 2058), S(8 * 256, 1963), S(8 * 256, 2109)}};
-
 // Sort moves in descending order up to and including a given limit.
 // The order of moves smaller than the limit is left unspecified.
 void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
@@ -141,8 +127,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-    Color     us = pos.side_to_move();
-    const int nt = (nodeType == PV ? 1 : nodeType == CUT ? 2 : 0);
+    Color     us     = pos.side_to_move();
+    const int weight = (nodeType == PV ? 23360 : nodeType == CUT ? 8192 : 18560);
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
     if constexpr (Type == QUIETS)
@@ -174,26 +160,25 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = QuietWeight[0][nt] * (*mainHistory)[us][m.raw()];
-            m.value += QuietWeight[1][nt] * sharedHistory->pawn_entry(pos)[pc][to];
-            m.value += QuietWeight[2][nt] * (*continuationHistory[0])[pc][to];
-            m.value += QuietWeight[3][nt] * (*continuationHistory[1])[pc][to];
-            m.value += QuietWeight[4][nt] * (*continuationHistory[2])[pc][to];
-            m.value += QuietWeight[5][nt] * (*continuationHistory[3])[pc][to];
-            m.value += QuietWeight[6][nt] * (*continuationHistory[5])[pc][to];
+            m.value = 2 * (*mainHistory)[us][m.raw()];
+            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
+            m.value += (*continuationHistory[0])[pc][to];
+            m.value += (*continuationHistory[1])[pc][to];
+            m.value += (*continuationHistory[2])[pc][to];
+            m.value += (*continuationHistory[3])[pc][to];
+            m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value +=
-              QuietWeight[7][nt] * (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75));
+            m.value += weight * (pos.check_squares(pt) & to && pos.see_ge(m, -75));
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
             int v = threatByLesser[pt] & to ? -19 : 20 * bool(threatByLesser[pt] & from);
-            m.value += QuietWeight[8][nt] * PieceValue[pt] * v;
+            m.value += PieceValue[pt] * v;
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += QuietWeight[9][nt] * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
         }
 
         else  // Type == EVASIONS
@@ -224,7 +209,7 @@ Move MovePicker::select(Pred filter) {
 // picking the move with the highest score from a list of generated moves.
 Move MovePicker::next_move() {
 
-    constexpr int goodQuietThreshold = -3584000;
+    constexpr int goodQuietThreshold = -14000;
 top:
     switch (stage)
     {
@@ -268,7 +253,7 @@ top:
 
             endCur = endGenerated = score<QUIETS>(ml);
 
-            partial_insertion_sort(cur, endCur, -911360 * depth);
+            partial_insertion_sort(cur, endCur, -3560 * depth);
         }
 
         ++stage;
