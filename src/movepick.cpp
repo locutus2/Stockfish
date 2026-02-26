@@ -138,7 +138,7 @@ constexpr int W[2][7] = {
   {-8,11,14,-30,-5,-23,5}, {4,4,-21,-33,-22,-6,-20}, // after 100 K
 };
 
-#define S(v) ((v) * 8)
+#define S(v) ((v) * 1)
 
 constexpr int SCALE2   = 256;
 constexpr int W2[10][3] = {
@@ -258,6 +258,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 m.value2 += 8 * (*lowPlyHistory)[ply][m.raw()] * (SCALE2 + W2[9][nt]) / (1 + ply);
             }
             m.value2 /= SCALE2;
+	    m.value = m.value2;
         }
 
         else  // Type == EVASIONS
