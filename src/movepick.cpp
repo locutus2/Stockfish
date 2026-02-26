@@ -56,7 +56,7 @@ enum Stages {
     QCAPTURE
 };
 
-#define S(s, v) (((v) - (s)) * 4 + (s))
+#define S(s, v) (((v) - (s)) * 8 + (s))
 
 constexpr int QuietWeight[10][3] = {
   {S(2 * 256, 529), S(2 * 256, 529), S(2 * 256, 510)},
