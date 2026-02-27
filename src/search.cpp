@@ -1436,8 +1436,8 @@ moves_loop:  // When in check, search starts here
                 //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
                 //dbg_auc_of(index, T, 10000, 10000 + B);
                 //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+                aucData0.push_back({T, V0});
                 aucData.push_back({T, V});
-                aucData.push_back({T, V0});
             }
         }
 
