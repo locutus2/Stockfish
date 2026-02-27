@@ -1046,12 +1046,15 @@ moves_loop:  // When in check, search starts here
 
     Depth origDepth = depth;
 
-    ExtMove extMove;
+    std::vector<AUCData> aucData0, aucData;
+
+    ExtMove        extMove;
+    constexpr bool SELECT = false;
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((Move) (extMove = mp.next_move()) != Move::none())
     {
-        Move move = extMove;
+        move = extMove;
 
         assert(move.is_ok());
 
@@ -1341,8 +1344,7 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        constexpr bool SELECT = false;
-        bool           CC     = true;
+        bool CC = true;
         //bool C = priorCapture;
         //bool C = !bool(ttData.move);
         //bool C = (ss - 1)->currentMove == Move::null();
@@ -1367,6 +1369,7 @@ moves_loop:  // When in check, search starts here
             //int V = V0 + std::abs(extMove.value2) / 2;
             //int V = V0 + std::abs(extMove.value2);
 
+            /*
             constexpr int B  = 60;
             constexpr int D0 = 200000;  // quiet score
             //constexpr int D  = 30000;   // cont && ttmah
@@ -1376,7 +1379,7 @@ moves_loop:  // When in check, search starts here
             constexpr int D      = 200000;  // quiet score
             const int     index0 = std::clamp((D0 + V0) * B / (2 * D0), 0, B);
             int           index  = std::clamp((D + V) * B / (2 * D), 0, B);
-
+*/
             if (move == cmh0BestMove)
                 dbg_hit_on(T, 10010);
 
@@ -1385,26 +1388,28 @@ moves_loop:  // When in check, search starts here
 
             if (SELECT)  // select condition
             {
-                V     = V0;
-                index = index0;
+                V = V0;
+                //index = index0;
                 dbg_hit_on(T, 10000);
                 if (C)
                 {
                     dbg_mean_of(V, 10 + T);
                     dbg_mean_of(V, 31);
                     dbg_correl_of(V, T, 1);
-                    dbg_hit_on(T, index + 2000);
-                    dbg_auc_of(index, T, 10000, 10000 + B);
-                    dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+                    //dbg_hit_on(T, index + 2000);
+                    //dbg_auc_of(index, T, 10000, 10000 + B);
+                    //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+                    aucData.push_back({T, V});
                 }
                 else
                 {
                     dbg_mean_of(V0, T);
                     dbg_mean_of(V0, 30);
                     dbg_correl_of(V0, T, 0);
-                    dbg_hit_on(T, index0 + 1000);
-                    dbg_auc_of(index0, T, 0, B);
-                    dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
+                    //dbg_hit_on(T, index0 + 1000);
+                    //dbg_auc_of(index0, T, 0, B);
+                    //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
+                    aucData0.push_back({T, V0});
                 }
 
 
@@ -1421,16 +1426,18 @@ moves_loop:  // When in check, search starts here
                 dbg_mean_of(V, 31);
                 dbg_correl_of(V, T, 1);
 
-                dbg_hit_on(T, index0 + 1000);
-                dbg_hit_on(T, index + 2000);
+                //dbg_hit_on(T, index0 + 1000);
+                //dbg_hit_on(T, index + 2000);
 
                 dbg_correl_of(V0, V, 10);
-                dbg_correl_of(index0, index, 11);
+                //dbg_correl_of(index0, index, 11);
 
-                dbg_auc_of(index0, T, 0, B);
-                dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
-                dbg_auc_of(index, T, 10000, 10000 + B);
-                dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+                //dbg_auc_of(index0, T, 0, B);
+                //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
+                //dbg_auc_of(index, T, 10000, 10000 + B);
+                //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+                aucData.push_back({T, V});
+                aucData.push_back({T, V0});
             }
         }
 
@@ -1492,6 +1499,37 @@ moves_loop:  // When in check, search starts here
                 // is not a problem when sorting because the sort is stable and the
                 // move position in the list is preserved - just the PV is pushed up.
                 rm.score = -VALUE_INFINITE;
+        }
+
+        if (SELECT)  // select condition
+        {
+            if (C)
+            {
+                //dbg_hit_on(T, index + 2000);
+                //dbg_auc_of(index, T, 10000, 10000 + B);
+                //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+                dbg_new_auc_of(aucData, 10000);
+                dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
+            }
+            else
+            {
+                //dbg_hit_on(T, index0 + 1000);
+                //dbg_auc_of(index0, T, 0, B);
+                //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
+                dbg_new_auc_of(aucData0, 0);
+                dbg_new_auc_of(aucData0, 100 * origDepth);
+            }
+        }
+        else
+        {
+            //dbg_auc_of(index0, T, 0, B);
+            //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
+            //dbg_auc_of(index, T, 10000, 10000 + B);
+            //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+            dbg_new_auc_of(aucData0, 0);
+            dbg_new_auc_of(aucData0, 100 * origDepth);
+            dbg_new_auc_of(aucData, 10000);
+            dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
         }
 
         // In case we have an alternative move equal in eval to the current bestmove,

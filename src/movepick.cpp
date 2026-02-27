@@ -135,18 +135,20 @@ constexpr int W[2][7] = {
   //{-9,-8,9,-18,4,-13,5}, {11,-3,-7,-14,-4,-2,15}, // after 24 K
   //{-5, -2, 8, -15, -13, -15, 9}, {4, 5, -18, -19, -11, -15, -1},  // after 50 K
   //{-5,12,18,-29,-6,-22,13}, {2,8,-26,-30,-21,-11,-11}, // after 88 K
-  {-8,11,14,-30,-5,-23,5}, {4,4,-21,-33,-22,-6,-20}, // after 100 K
+  {-8, 11, 14, -30, -5, -23, 5},
+  {4, 4, -21, -33, -22, -6, -20},  // after 100 K
 };
 
 #define S(v) ((v) * 1)
 
-constexpr int SCALE2   = 256;
+constexpr int SCALE2    = 256;
 constexpr int W2[10][3] = {
-	//{ 4, 8, 7}, { -8, 8, -5}, { -2, 0, 1}, { -9, -5, 3}, { 6, 7, 1}, { 2, -1, 6}, { -1, 0, -5}, { 0, 6, 1}, { 1, 4, 6}, { -4, -5, 7} // after 35 K
-	//{ 6, 5, 4}, { -7, 8, -7}, { -3, 0, 1}, { -7, -4, 0}, { 4, 2, -3}, { 3, -2, 7}, { -4, -1, -3}, { 2, 7, -1}, { 2, 3, 10}, { -4, -5, 6} // after 50 K
-	//{ 9, 7, 0}, { -7, 7, -11}, { -6, -1, -1}, { -10, 1, 1}, { 4, 6, -2}, { 2, -4, 6}, { -7, -4, -3}, { 2, 10, -9}, { -2, 6, 9}, { 1, -8, 7} // after 87 K
-	//{ 9, 9, -2}, { -6, 11, -10}, { -7, 0, -1}, { -8, 1, 0}, { 5, 6, -1}, { 5, -4, 4}, { -7, -4, -2}, { 3, 11, -13}, { -2, 8, 10}, { 1, -11, 8} // after 100 K
-	{ S(9), S(9), S(-2)}, { S(-6), S(11), S(-10)}, { S(-7), S(0), S(-1)}, { S(-8), S(1), S(0)}, { S(5), S(6), S(-1)}, { S(5), S(-4), S(4)}, { S(-7), S(-4), S(-2)}, { S(3), S(11), S(-13)}, { S(-2), S(8), S(10)}, { S(1), S(-11), S(8)} // after 100 K double effect
+  //{ 4, 8, 7}, { -8, 8, -5}, { -2, 0, 1}, { -9, -5, 3}, { 6, 7, 1}, { 2, -1, 6}, { -1, 0, -5}, { 0, 6, 1}, { 1, 4, 6}, { -4, -5, 7} // after 35 K
+  //{ 6, 5, 4}, { -7, 8, -7}, { -3, 0, 1}, { -7, -4, 0}, { 4, 2, -3}, { 3, -2, 7}, { -4, -1, -3}, { 2, 7, -1}, { 2, 3, 10}, { -4, -5, 6} // after 50 K
+  //{ 9, 7, 0}, { -7, 7, -11}, { -6, -1, -1}, { -10, 1, 1}, { 4, 6, -2}, { 2, -4, 6}, { -7, -4, -3}, { 2, 10, -9}, { -2, 6, 9}, { 1, -8, 7} // after 87 K
+  {9, 9, -2},   {-6, 11, -10}, {-7, 0, -1}, {-8, 1, 0}, {5, 6, -1}, {5, -4, 4},
+  {-7, -4, -2}, {3, 11, -13},  {-2, 8, 10}, {1, -11, 8}  // after 100 K
+  //{S(9), S(9), S(-2)},  {S(-6), S(11), S(-10)}, {S(-7), S(0), S(-1)},  {S(-8), S(1), S(0)}, {S(5), S(6), S(-1)},  {S(5), S(-4), S(4)},    {S(-7), S(-4), S(-2)}, {S(3), S(11), S(-13)}, {S(-2), S(8), S(10)}, {S(1), S(-11), S(8)}  // after 100 K double effect
 };
 
 // Assigns a numerical value to each move in a list, used for sorting.
@@ -159,7 +161,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
     Color      us           = pos.side_to_move();
     const bool priorCapture = pos.captured_piece();
-    const int nt = (nodeType == PV ? 1 : nodeType == CUT ? 2 : 0);
+    const int  nt           = (nodeType == PV ? 1 : nodeType == CUT ? 2 : 0);
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
     if constexpr (Type == QUIETS)
@@ -220,7 +222,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value2 += (*continuationHistory[3])[pc][to];// * (8 * S - A * std::max(7 - depth, 0)) / (8 * S);
             m.value2 += (*continuationHistory[5])[pc][to];// * (8 * S - A * std::max(7 - depth, 0)) / (8 * S);
 							  */
-	    /*
+            /*
             m.value2 = 2 * (*mainHistory)[us][m.raw()] * (SCALE + W[priorCapture][0]);
             m.value2 += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (SCALE + W[priorCapture][1]);
             m.value2 += (*continuationHistory[0])[pc][to] * (SCALE + W[priorCapture][2]);
@@ -241,7 +243,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
             //m.value2 += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
-            m.value2 += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384 * (SCALE2 + W[7][nt]);
+            m.value2 += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384
+                      * (SCALE2 + W[7][nt]);
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
@@ -258,7 +261,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 m.value2 += 8 * (*lowPlyHistory)[ply][m.raw()] * (SCALE2 + W2[9][nt]) / (1 + ply);
             }
             m.value2 /= SCALE2;
-	    m.value = m.value2;
+            //m.value = m.value2;
         }
 
         else  // Type == EVASIONS

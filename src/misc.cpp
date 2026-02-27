@@ -289,11 +289,11 @@ constexpr int MaxDebugSlots = 320000;
 
 namespace {
 
-template<size_t N>
+template<size_t N, typename T = int64_t>
 struct DebugInfo {
-    std::array<std::atomic<int64_t>, N> data = {0};
+    std::array<std::atomic<T>, N> data = {0};
 
-    [[nodiscard]] constexpr std::atomic<int64_t>& operator[](size_t index) {
+    [[nodiscard]] constexpr std::atomic<T>& operator[](size_t index) {
         assert(index < N);
         return data[index];
     }
@@ -312,15 +312,55 @@ struct DebugExtremes: public DebugInfo<3> {
     }
 };
 
-std::map<int, int>                       auc_slots;
-std::array<DebugInfo<2>, MaxDebugSlots>  auc;
-std::array<DebugInfo<2>, MaxDebugSlots>  hit;
-std::array<DebugInfo<2>, MaxDebugSlots>  mean;
-std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
-std::array<DebugInfo<6>, MaxDebugSlots>  correl;
-std::array<DebugExtremes, MaxDebugSlots> extremes;
+std::map<int, int>                              auc_slots;
+std::array<DebugInfo<2, double>, MaxDebugSlots> newAuc;
+std::array<DebugInfo<2>, MaxDebugSlots>         auc;
+std::array<DebugInfo<2>, MaxDebugSlots>         hit;
+std::array<DebugInfo<2>, MaxDebugSlots>         mean;
+std::array<DebugInfo<3>, MaxDebugSlots>         stdev;
+std::array<DebugInfo<6>, MaxDebugSlots>         correl;
+std::array<DebugExtremes, MaxDebugSlots>        extremes;
 
 }  // namespace
+
+void dbg_new_auc_of(std::vector<AUCData>& data, int slot) {
+    if (!data.empty())
+    {
+        std::stable_sort(data.begin(), data.end(), [](const AUCData& a, const AUCData& b) {
+            return a.value < b.value || (a.value == b.value && a.C < b.C);
+        });
+
+        int64_t N = 0;
+        int64_t K = 0;
+        for (int i = 0; i < int(data.size()); i++)
+        {
+            N++;
+            if (data[i].C)
+                K++;
+        }
+
+        double AUC = 0;
+
+        if (K > 0 && K < N)
+        {
+            int64_t k = 0;
+            for (int i = 0; i < int(data.size()); i++)
+            {
+                if (data[i].C)
+                {
+                    const double pNeg = (i + 1 - k) / double(N - K);
+                    AUC += pNeg;
+                    k++;
+                }
+            }
+            const double pPos = 1 / double(K);
+            AUC *= pPos;
+
+            newAuc.at(slot)[0] = newAuc.at(slot)[0] + 1;
+            newAuc.at(slot)[1] = newAuc.at(slot)[1] + AUC;
+        }
+    }
+}
 
 void dbg_auc_of(int index, bool cond, int startSlot, int endSlot) {
     auc_slots[startSlot] = endSlot;
@@ -451,6 +491,11 @@ void dbg_print() {
         std::cerr << "AUC #" << slot.first << ": Total " << N << " Hit Rate " << 100. * K / N
                   << "% AUC " << AUC << std::endl;
     }
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        if ((n = newAuc[i][0]))
+            std::cerr << "AUC #" << i << ": Total " << n << " AUC " << newAuc[i][1] / newAuc[i][0]
+                      << std::endl;
 }
 
 void dbg_clear() {
