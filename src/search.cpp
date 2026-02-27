@@ -1170,7 +1170,7 @@ moves_loop:  // When in check, search starts here
 
             // At PV nodes give negative extension instead of Multi-cut pruning occurs
             else if (PvNode && value >= beta && !is_decisive(value))
-                extension = -2;
+                extension = -3;
 
             // If the ttMove is assumed to fail high over current beta
             else if (ttData.value >= beta)
