@@ -1050,6 +1050,8 @@ moves_loop:  // When in check, search starts here
 
     ExtMove        extMove;
     constexpr bool SELECT = false;
+    bool           CC     = true;
+    bool           C      = true;
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((Move) (extMove = mp.next_move()) != Move::none())
@@ -1344,12 +1346,10 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        bool CC = true;
         //bool C = priorCapture;
         //bool C = !bool(ttData.move);
         //bool C = (ss - 1)->currentMove == Move::null();
         //bool C = !improving;
-        bool C = true;
         //bool C = ttCapture;
         //bool C = allNode;
         //bool C = PvNode;
@@ -1501,37 +1501,6 @@ moves_loop:  // When in check, search starts here
                 rm.score = -VALUE_INFINITE;
         }
 
-        if (SELECT)  // select condition
-        {
-            if (C)
-            {
-                //dbg_hit_on(T, index + 2000);
-                //dbg_auc_of(index, T, 10000, 10000 + B);
-                //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
-                dbg_new_auc_of(aucData, 10000);
-                dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
-            }
-            else
-            {
-                //dbg_hit_on(T, index0 + 1000);
-                //dbg_auc_of(index0, T, 0, B);
-                //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
-                dbg_new_auc_of(aucData0, 0);
-                dbg_new_auc_of(aucData0, 100 * origDepth);
-            }
-        }
-        else
-        {
-            //dbg_auc_of(index0, T, 0, B);
-            //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
-            //dbg_auc_of(index, T, 10000, 10000 + B);
-            //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
-            dbg_new_auc_of(aucData0, 0);
-            dbg_new_auc_of(aucData0, 100 * origDepth);
-            dbg_new_auc_of(aucData, 10000);
-            dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
-        }
-
         // In case we have an alternative move equal in eval to the current bestmove,
         // promote it to bestmove by pretending it just exceeds alpha (but not beta).
         int inc = (value == bestValue && ss->ply + 2 >= rootDepth && (int(nodes) & 14) == 0
@@ -1575,6 +1544,87 @@ moves_loop:  // When in check, search starts here
                 quietsSearched.push_back(move);
         }
     }
+
+    if ((Move) extMove != Move::none())
+    {
+        while ((Move) (extMove = mp.next_move()) != Move::none())
+        {
+            move = extMove;
+
+            assert(move.is_ok());
+
+            if (move == excludedMove)
+                continue;
+
+            // Check for legality
+            if (!pos.legal(move))
+                continue;
+
+            // At root obey the "searchmoves" option and skip moves not listed in Root
+            // Move List. In MultiPV mode we also skip PV moves that have been already
+            // searched and those of lower "TB rank" if we are in a TB root position.
+            if (rootNode
+                && !std::count(rootMoves.begin() + pvIdx, rootMoves.begin() + pvLast, move))
+                continue;
+
+            moveCount++;
+
+            if (CC && mp.isQuiet() && (C || SELECT))
+            {
+                bool T  = false;
+                int  V0 = extMove.value;
+                int  V  = extMove.value2;
+                if (SELECT)  // select condition
+                {
+                    if (C)
+                    {
+                        aucData.push_back({T, V});
+                    }
+                    else
+                    {
+                        aucData0.push_back({T, V0});
+                    }
+                }
+                else
+                {
+                    aucData0.push_back({T, V0});
+                    aucData.push_back({T, V});
+                }
+            }
+        }
+    }
+
+    if (SELECT)  // select condition
+    {
+        if (C)
+        {
+            //dbg_hit_on(T, index + 2000);
+            //dbg_auc_of(index, T, 10000, 10000 + B);
+            //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+            dbg_new_auc_of(aucData, 10000);
+            dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
+        }
+        else
+        {
+            //dbg_hit_on(T, index0 + 1000);
+            //dbg_auc_of(index0, T, 0, B);
+            //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
+            dbg_new_auc_of(aucData0, 0);
+            dbg_new_auc_of(aucData0, 100 * origDepth);
+        }
+    }
+    else
+    {
+        //dbg_auc_of(index0, T, 0, B);
+        //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
+        //dbg_auc_of(index, T, 10000, 10000 + B);
+        //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+        dbg_new_auc_of(aucData0, 0);
+        dbg_new_auc_of(aucData0, 100 * origDepth);
+        dbg_new_auc_of(aucData, 10000);
+        dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
+    }
+
 
     // Step 21. Check for mate and stalemate
     // All legal moves have been searched and if there are no legal moves, it
