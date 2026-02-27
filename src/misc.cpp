@@ -339,16 +339,15 @@ void dbg_new_auc_of(std::vector<AUCData>& data, int slot) {
                 K++;
         }
 
-        double AUC = 0;
-
         if (K > 0 && K < N)
         {
-            int64_t k = 0;
+            double  AUC = 0;
+            int64_t k   = 0;
             for (int i = 0; i < int(data.size()); i++)
             {
                 if (data[i].C)
                 {
-                    const double pNeg = (i + 1 - k) / double(N - K);
+                    const double pNeg = (i - k) / double(N - K);
                     AUC += pNeg;
                     k++;
                 }
