@@ -1163,7 +1163,7 @@ moves_loop:  // When in check, search starts here
                     return value;
                 }
 
-                extension = -1;
+                extension = -2;
             }
 
             // Negative extensions
