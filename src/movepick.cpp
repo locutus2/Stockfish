@@ -56,9 +56,6 @@ enum Stages {
     QCAPTURE
 };
 
-constexpr int QuietWeight[7][2] = {{240, 264}, {279, 264}, {142, 107}, {98, 95},
-                                   {123, 106}, {105, 122}, {133, 108}};
-
 // Sort moves in descending order up to and including a given limit.
 // The order of moves smaller than the limit is left unspecified.
 void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
@@ -128,8 +125,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-    Color      us           = pos.side_to_move();
-    const bool priorCapture = pos.captured_piece();
+    Color     us     = pos.side_to_move();
+    const int weight = pos.captured_piece() ? 1 : 3;
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
     if constexpr (Type == QUIETS)
@@ -161,14 +158,13 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = QuietWeight[0][priorCapture] * (*mainHistory)[us][m.raw()];
-            m.value += QuietWeight[1][priorCapture] * sharedHistory->pawn_entry(pos)[pc][to];
-            m.value += QuietWeight[2][priorCapture] * (*continuationHistory[0])[pc][to];
-            m.value += QuietWeight[3][priorCapture] * (*continuationHistory[1])[pc][to];
-            m.value += QuietWeight[4][priorCapture] * (*continuationHistory[2])[pc][to];
-            m.value += QuietWeight[5][priorCapture] * (*continuationHistory[3])[pc][to];
-            m.value += QuietWeight[6][priorCapture] * (*continuationHistory[5])[pc][to];
-            m.value /= 128;
+            m.value = 2 * (*mainHistory)[us][m.raw()];
+            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
+            m.value += (*continuationHistory[0])[pc][to] * weight / 2;
+            m.value += (*continuationHistory[1])[pc][to];
+            m.value += (*continuationHistory[2])[pc][to];
+            m.value += (*continuationHistory[3])[pc][to];
+            m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
