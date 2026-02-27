@@ -1171,7 +1171,7 @@ moves_loop:  // When in check, search starts here
             // At PV nodes give negative extension instead of Multi-cut pruning occurs
             else if (PvNode && value >= beta && !is_decisive(value))
             {
-                extension = -2;
+                extension = -1;
                 depth--;
             }
 
