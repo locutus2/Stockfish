@@ -326,8 +326,10 @@ std::array<DebugExtremes, MaxDebugSlots>        extremes;
 void dbg_new_auc_of(std::vector<AUCData>& data, int slot) {
     if (!data.empty())
     {
+        std::reverse(data.begin(), data.end());
         std::stable_sort(data.begin(), data.end(), [](const AUCData& a, const AUCData& b) {
-            return a.value < b.value || (a.value == b.value && a.C < b.C);
+            return a.value < b.value;
+            //return a.value < b.value || (a.value == b.value && a.C < b.C);
         });
 
         int64_t N = 0;
