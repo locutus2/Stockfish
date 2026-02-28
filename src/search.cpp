@@ -1051,8 +1051,8 @@ moves_loop:  // When in check, search starts here
     ExtMove        extMove;
     constexpr bool SELECT = true;
     bool           CC     = true;
-    //bool           C      = priorCapture;
-    bool           C      = improving;
+    bool           C      = priorCapture;
+    //bool           C      = improving;
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((Move) (extMove = mp.next_move()) != Move::none())
