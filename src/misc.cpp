@@ -495,7 +495,7 @@ void dbg_print() {
 
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = newAuc[i][0]))
-            std::cerr << "WightedAUC #" << i << ": Total_Weights " << n << " AUC "
+            std::cerr << "WeightedAUC #" << i << ": Total_Weights " << n << " AUC "
                       << newAuc[i][1] / newAuc[i][0] << std::endl;
 }
 
