@@ -1054,6 +1054,8 @@ moves_loop:  // When in check, search starts here
     constexpr bool SELECT = true;
     bool           CC     = true;
     bool           C      = priorCapture;
+    double         weight = origDepth;
+
     //bool           C      = improving;
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1358,7 +1360,7 @@ moves_loop:  // When in check, search starts here
         //bool C = PvNode;
         //bool C = cutNode;
         //bool CC = (ss-1)->priorCapture;
-        if (CC && mp.isQuiet())// && (C || SELECT))
+        if (CC && mp.isQuiet())  // && (C || SELECT))
         //if (CC && ttData.move && mp.isQuiet())
         //if (ttData.move && !ttCapture && mp.isQuiet())
         {
@@ -1551,7 +1553,7 @@ moves_loop:  // When in check, search starts here
         }
     }
 
-    if (CC)// && (C || SELECT))
+    if (CC)  // && (C || SELECT))
     {
         if ((Move) extMove != Move::none())
         {
@@ -1586,7 +1588,7 @@ moves_loop:  // When in check, search starts here
                     int V  = extMove.value;
                     if (SELECT)  // select condition
                     {
-			V = V0;
+                        V = V0;
                         aucData0.push_back({T, V0});
                         if (C)
                         {
@@ -1608,14 +1610,14 @@ moves_loop:  // When in check, search starts here
 
         if (SELECT)  // select condition
         {
-                dbg_new_auc_of(aucData0, 0);
-                dbg_new_auc_of(aucData0, 100 * origDepth);
+            dbg_new_auc_of(aucData0, 0, weight);
+            dbg_new_auc_of(aucData0, 100 * origDepth);
             if (C)
             {
                 //dbg_hit_on(T, index + 2000);
                 //dbg_auc_of(index, T, 10000, 10000 + B);
                 //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
-                dbg_new_auc_of(aucData2, 20000);
+                dbg_new_auc_of(aucData2, 20000, weight);
                 dbg_new_auc_of(aucData2, 20000 + 100 * origDepth);
             }
             else
@@ -1623,7 +1625,7 @@ moves_loop:  // When in check, search starts here
                 //dbg_hit_on(T, index0 + 1000);
                 //dbg_auc_of(index0, T, 0, B);
                 //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
-                dbg_new_auc_of(aucData1, 10000);
+                dbg_new_auc_of(aucData1, 10000, weight);
                 dbg_new_auc_of(aucData1, 10000 + 100 * origDepth);
             }
         }
@@ -1633,9 +1635,9 @@ moves_loop:  // When in check, search starts here
             //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
             //dbg_auc_of(index, T, 10000, 10000 + B);
             //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
-            dbg_new_auc_of(aucData0, 0);
+            dbg_new_auc_of(aucData0, 0, weight);
             dbg_new_auc_of(aucData0, 100 * origDepth);
-            dbg_new_auc_of(aucData1, 10000);
+            dbg_new_auc_of(aucData1, 10000, weight);
             dbg_new_auc_of(aucData1, 10000 + 100 * origDepth);
         }
     }

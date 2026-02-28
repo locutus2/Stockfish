@@ -323,7 +323,7 @@ std::array<DebugExtremes, MaxDebugSlots>        extremes;
 
 }  // namespace
 
-void dbg_new_auc_of(std::vector<AUCData>& data, int slot) {
+void dbg_new_auc_of(std::vector<AUCData>& data, int slot, double weight) {
     if (!data.empty())
     {
         std::reverse(data.begin(), data.end());
@@ -357,8 +357,8 @@ void dbg_new_auc_of(std::vector<AUCData>& data, int slot) {
             const double pPos = 1 / double(K);
             AUC *= pPos;
 
-            newAuc.at(slot)[0] = newAuc.at(slot)[0] + 1;
-            newAuc.at(slot)[1] = newAuc.at(slot)[1] + AUC;
+            newAuc.at(slot)[0] = newAuc.at(slot)[0] + weight;
+            newAuc.at(slot)[1] = newAuc.at(slot)[1] + AUC * weight;
         }
     }
 }
@@ -495,8 +495,8 @@ void dbg_print() {
 
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = newAuc[i][0]))
-            std::cerr << "AUC #" << i << ": Total " << n << " AUC " << newAuc[i][1] / newAuc[i][0]
-                      << std::endl;
+            std::cerr << "WightedAUC #" << i << ": Total_Weights " << n << " AUC "
+                      << newAuc[i][1] / newAuc[i][0] << std::endl;
 }
 
 void dbg_clear() {
