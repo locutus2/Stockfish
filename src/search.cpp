@@ -1046,7 +1046,7 @@ moves_loop:  // When in check, search starts here
 
     Depth origDepth = depth;
 
-    std::vector<AUCData> aucData0, aucData;
+    std::vector<AUCData> aucData0, aucData1, aucData2;
 
     ExtMove        extMove;
     constexpr bool SELECT = true;
@@ -1394,6 +1394,7 @@ moves_loop:  // When in check, search starts here
                 V = V0;
                 //index = index0;
                 dbg_hit_on(T, 10000);
+                aucData0.push_back({T, V0});
                 if (C)
                 {
                     dbg_mean_of(V, 10 + T);
@@ -1402,7 +1403,7 @@ moves_loop:  // When in check, search starts here
                     //dbg_hit_on(T, index + 2000);
                     //dbg_auc_of(index, T, 10000, 10000 + B);
                     //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
-                    aucData.push_back({T, V});
+                    aucData2.push_back({T, V});
                 }
                 else
                 {
@@ -1412,7 +1413,7 @@ moves_loop:  // When in check, search starts here
                     //dbg_hit_on(T, index0 + 1000);
                     //dbg_auc_of(index0, T, 0, B);
                     //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
-                    aucData0.push_back({T, V0});
+                    aucData1.push_back({T, V0});
                 }
 
 
@@ -1440,7 +1441,7 @@ moves_loop:  // When in check, search starts here
                 //dbg_auc_of(index, T, 10000, 10000 + B);
                 //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
                 aucData0.push_back({T, V0});
-                aucData.push_back({T, V});
+                aucData1.push_back({T, V});
             }
         }
 
@@ -1584,19 +1585,20 @@ moves_loop:  // When in check, search starts here
                     if (SELECT)  // select condition
                     {
 			V = V0;
+                        aucData0.push_back({T, V0});
                         if (C)
                         {
-                            aucData.push_back({T, V});
+                            aucData2.push_back({T, V});
                         }
                         else
                         {
-                            aucData0.push_back({T, V0});
+                            aucData1.push_back({T, V0});
                         }
                     }
                     else
                     {
                         aucData0.push_back({T, V0});
-                        aucData.push_back({T, V});
+                        aucData1.push_back({T, V});
                     }
                 }
             }
@@ -1604,21 +1606,23 @@ moves_loop:  // When in check, search starts here
 
         if (SELECT)  // select condition
         {
+                dbg_new_auc_of(aucData0, 0);
+                dbg_new_auc_of(aucData0, 100 * origDepth);
             if (C)
             {
                 //dbg_hit_on(T, index + 2000);
                 //dbg_auc_of(index, T, 10000, 10000 + B);
                 //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
-                dbg_new_auc_of(aucData, 10000);
-                dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
+                dbg_new_auc_of(aucData2, 20000);
+                dbg_new_auc_of(aucData2, 20000 + 100 * origDepth);
             }
             else
             {
                 //dbg_hit_on(T, index0 + 1000);
                 //dbg_auc_of(index0, T, 0, B);
                 //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
-                dbg_new_auc_of(aucData0, 0);
-                dbg_new_auc_of(aucData0, 100 * origDepth);
+                dbg_new_auc_of(aucData1, 10000);
+                dbg_new_auc_of(aucData1, 10000 + 100 * origDepth);
             }
         }
         else
@@ -1629,8 +1633,8 @@ moves_loop:  // When in check, search starts here
             //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
             dbg_new_auc_of(aucData0, 0);
             dbg_new_auc_of(aucData0, 100 * origDepth);
-            dbg_new_auc_of(aucData, 10000);
-            dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
+            dbg_new_auc_of(aucData1, 10000);
+            dbg_new_auc_of(aucData1, 10000 + 100 * origDepth);
         }
     }
 
