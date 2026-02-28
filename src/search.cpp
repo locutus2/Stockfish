@@ -1547,83 +1547,89 @@ moves_loop:  // When in check, search starts here
         }
     }
 
-    if ((Move) extMove != Move::none() && (CC && mp.isQuiet() && (C || SELECT)))
+    if (CC && (C || SELECT))
     {
-        while ((Move) (extMove = mp.next_move()) != Move::none())
+        if ((Move) extMove != Move::none())
         {
-            move = extMove;
-
-            assert(move.is_ok());
-
-            if (move == excludedMove)
-                continue;
-
-            // Check for legality
-            if (!pos.legal(move))
-                continue;
-
-            // At root obey the "searchmoves" option and skip moves not listed in Root
-            // Move List. In MultiPV mode we also skip PV moves that have been already
-            // searched and those of lower "TB rank" if we are in a TB root position.
-            if (rootNode
-                && !std::count(rootMoves.begin() + pvIdx, rootMoves.begin() + pvLast, move))
-                continue;
-
-            moveCount++;
-
-            bool T = false;
-            //int  V0 = extMove.value;
-            //int  V  = extMove.value2;
-            int V0 = -moveCount;
-            int V  = extMove.value;
-            if (SELECT)  // select condition
+            while ((Move) (extMove = mp.next_move()) != Move::none())
             {
-                if (C)
+                move = extMove;
+
+                assert(move.is_ok());
+
+                if (move == excludedMove)
+                    continue;
+
+                // Check for legality
+                if (!pos.legal(move))
+                    continue;
+
+                // At root obey the "searchmoves" option and skip moves not listed in Root
+                // Move List. In MultiPV mode we also skip PV moves that have been already
+                // searched and those of lower "TB rank" if we are in a TB root position.
+                if (rootNode
+                    && !std::count(rootMoves.begin() + pvIdx, rootMoves.begin() + pvLast, move))
+                    continue;
+
+                moveCount++;
+
+                if (mp.isQuiet())
                 {
-                    aucData.push_back({T, V});
+                    bool T = false;
+                    //int  V0 = extMove.value;
+                    //int  V  = extMove.value2;
+                    int V0 = -moveCount;
+                    int V  = extMove.value;
+                    if (SELECT)  // select condition
+                    {
+                        if (C)
+                        {
+                            aucData.push_back({T, V});
+                        }
+                        else
+                        {
+                            aucData0.push_back({T, V0});
+                        }
+                    }
+                    else
+                    {
+                        aucData0.push_back({T, V0});
+                        aucData.push_back({T, V});
+                    }
                 }
-                else
-                {
-                    aucData0.push_back({T, V0});
-                }
+            }
+        }
+
+        if (SELECT)  // select condition
+        {
+            if (C)
+            {
+                //dbg_hit_on(T, index + 2000);
+                //dbg_auc_of(index, T, 10000, 10000 + B);
+                //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
+                dbg_new_auc_of(aucData, 10000);
+                dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
             }
             else
             {
-                aucData0.push_back({T, V0});
-                aucData.push_back({T, V});
+                //dbg_hit_on(T, index0 + 1000);
+                //dbg_auc_of(index0, T, 0, B);
+                //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
+                dbg_new_auc_of(aucData0, 0);
+                dbg_new_auc_of(aucData0, 100 * origDepth);
             }
-        }
-    }
-
-    if (SELECT)  // select condition
-    {
-        if (C)
-        {
-            //dbg_hit_on(T, index + 2000);
-            //dbg_auc_of(index, T, 10000, 10000 + B);
-            //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
-            dbg_new_auc_of(aucData, 10000);
-            dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
         }
         else
         {
-            //dbg_hit_on(T, index0 + 1000);
             //dbg_auc_of(index0, T, 0, B);
             //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
+            //dbg_auc_of(index, T, 10000, 10000 + B);
+            //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
             dbg_new_auc_of(aucData0, 0);
             dbg_new_auc_of(aucData0, 100 * origDepth);
+            dbg_new_auc_of(aucData, 10000);
+            dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
         }
-    }
-    else
-    {
-        //dbg_auc_of(index0, T, 0, B);
-        //dbg_auc_of(index0, T, 100 * origDepth, 100 * origDepth + B);
-        //dbg_auc_of(index, T, 10000, 10000 + B);
-        //dbg_auc_of(index, T, 10000 + 100 * origDepth, 10000 + 100 * origDepth + B);
-        dbg_new_auc_of(aucData0, 0);
-        dbg_new_auc_of(aucData0, 100 * origDepth);
-        dbg_new_auc_of(aucData, 10000);
-        dbg_new_auc_of(aucData, 10000 + 100 * origDepth);
     }
 
 
