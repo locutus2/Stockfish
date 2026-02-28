@@ -1364,7 +1364,7 @@ moves_loop:  // When in check, search starts here
             //int V0 = extMove.value;
             //int V = extMove.value2;
             int V0 = -moveCount;
-            int V = extMove.value;
+            int V  = extMove.value;
             //int  V  = std::abs(ttmah[movedPiece][move.to_sq()]);
             //int V = ttmah[movedPiece][move.to_sq()];
             //int V = std::abs(extMove.value2);
@@ -1547,7 +1547,7 @@ moves_loop:  // When in check, search starts here
         }
     }
 
-    if ((Move) extMove != Move::none())
+    if ((Move) extMove != Move::none() && (CC && mp.isQuiet() && (C || SELECT)))
     {
         while ((Move) (extMove = mp.next_move()) != Move::none())
         {
@@ -1571,29 +1571,26 @@ moves_loop:  // When in check, search starts here
 
             moveCount++;
 
-            if (CC && mp.isQuiet() && (C || SELECT))
+            bool T = false;
+            //int  V0 = extMove.value;
+            //int  V  = extMove.value2;
+            int V0 = -moveCount;
+            int V  = extMove.value;
+            if (SELECT)  // select condition
             {
-                bool T  = false;
-                //int  V0 = extMove.value;
-                //int  V  = extMove.value2;
-                int V0 = -moveCount;
-                int V = extMove.value;
-                if (SELECT)  // select condition
+                if (C)
                 {
-                    if (C)
-                    {
-                        aucData.push_back({T, V});
-                    }
-                    else
-                    {
-                        aucData0.push_back({T, V0});
-                    }
+                    aucData.push_back({T, V});
                 }
                 else
                 {
                     aucData0.push_back({T, V0});
-                    aucData.push_back({T, V});
                 }
+            }
+            else
+            {
+                aucData0.push_back({T, V0});
+                aucData.push_back({T, V});
             }
         }
     }
