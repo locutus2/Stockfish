@@ -1049,9 +1049,10 @@ moves_loop:  // When in check, search starts here
     std::vector<AUCData> aucData0, aucData;
 
     ExtMove        extMove;
-    constexpr bool SELECT = false;
+    constexpr bool SELECT = true;
     bool           CC     = true;
-    bool           C      = true;
+    //bool           C      = priorCapture;
+    bool           C      = improving;
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((Move) (extMove = mp.next_move()) != Move::none())
@@ -1355,7 +1356,7 @@ moves_loop:  // When in check, search starts here
         //bool C = PvNode;
         //bool C = cutNode;
         //bool CC = (ss-1)->priorCapture;
-        if (CC && mp.isQuiet() && (C || SELECT))
+        if (CC && mp.isQuiet())// && (C || SELECT))
         //if (CC && ttData.move && mp.isQuiet())
         //if (ttData.move && !ttCapture && mp.isQuiet())
         {
@@ -1547,7 +1548,7 @@ moves_loop:  // When in check, search starts here
         }
     }
 
-    if (CC && (C || SELECT))
+    if (CC)// && (C || SELECT))
     {
         if ((Move) extMove != Move::none())
         {
@@ -1582,6 +1583,7 @@ moves_loop:  // When in check, search starts here
                     int V  = extMove.value;
                     if (SELECT)  // select condition
                     {
+			V = V0;
                         if (C)
                         {
                             aucData.push_back({T, V});
