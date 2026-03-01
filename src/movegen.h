@@ -39,6 +39,7 @@ enum GenType {
 struct ExtMove: public Move {
     int value;
     int value2;
+    int value3;
 
     ExtMove(Move m = Move::none()) :
         Move(m) {}

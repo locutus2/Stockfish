@@ -1085,7 +1085,7 @@ moves_loop:  // When in check, search starts here
 
     ExtMove        extMove;
     bool           CC     = true;
-    constexpr bool SELECT = false;
+    constexpr bool SELECT = true;
     bool           C      = priorCapture;
     double         weight = origDepth;
 
@@ -1480,6 +1480,7 @@ moves_loop:  // When in check, search starts here
                 aucData0.push_back({T, V0});
                 aucData1.push_back({T, V});
             }
+            dbg_correl_of(extMove.value2, extMove.value3, 23);
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
@@ -1638,6 +1639,7 @@ moves_loop:  // When in check, search starts here
                         aucData0.push_back({T, V0});
                         aucData1.push_back({T, V});
                     }
+                    dbg_correl_of(extMove.value2, extMove.value3, 23);
                 }
             }
         }
