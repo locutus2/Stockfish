@@ -565,7 +565,7 @@ void Search::Worker::do_move(
         ss->continuationHistory =
           &continuationHistory[ss->inCheck][capture][dirtyPiece.pc][move.to_sq()];
         ss->ttMoveContinuationHistory = ss->ttMove != move
-                                        ? ss->ttMoveContinuationHistoryBackup
+                                        ? ss->ttMoveContinuationHistoryCache
                                         : &continuationHistory[0][0][NO_PIECE][0];
         ss->continuationCorrectionHistory =
           &continuationCorrectionHistory[dirtyPiece.pc][move.to_sq()];
@@ -716,7 +716,7 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
-    ss->ttMoveContinuationHistoryBackup =
+    ss->ttMoveContinuationHistoryCache =
       ttData.move && pos.pseudo_legal(ttData.move)
         ? &continuationHistory[pos.gives_check(ttData.move)][ttCapture]
                               [pos.moved_piece(ttData.move)][ttData.move.to_sq()]
