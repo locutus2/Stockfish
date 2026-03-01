@@ -564,7 +564,7 @@ void Search::Worker::do_move(
         ss->currentMove = move;
         ss->continuationHistory =
           &continuationHistory[ss->inCheck][capture][dirtyPiece.pc][move.to_sq()];
-        ss->ttMoveContinuationHistory = ss->ttMove != move
+        ss->ttMoveContinuationHistory = ss->ttMove != move && !capture && !ss->inCheck
                                         ? ss->ttMoveContinuationHistoryCache
                                         : &continuationHistory[0][0][NO_PIECE][0];
         ss->continuationCorrectionHistory =
@@ -717,9 +717,8 @@ Value Search::Worker::search(
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
     ss->ttMoveContinuationHistoryCache =
-      ttData.move && pos.pseudo_legal(ttData.move)
-        ? &continuationHistory[pos.gives_check(ttData.move)][ttCapture]
-                              [pos.moved_piece(ttData.move)][ttData.move.to_sq()]
+      ttData.move && !ttCapture && pos.pseudo_legal(ttData.move) && !pos.gives_check(ttData.move)
+        ? &continuationHistory[0][0][pos.moved_piece(ttData.move)][ttData.move.to_sq()]
         : &continuationHistory[0][0][NO_PIECE][0];
 
     // Step 6. Static evaluation of the position
@@ -1002,10 +1001,12 @@ moves_loop:  // When in check, search starts here
         return probCutBeta;
 
     const PieceToHistory* contHist[] = {
-      (ss - 1)->continuationHistory,      (ss - 2)->continuationHistory,
-      (ss - 3)->continuationHistory,      (ss - 4)->continuationHistory,
-      (ss - 5)->continuationHistory,      (ss - 6)->continuationHistory,
-      (ss - 1)->ttMoveContinuationHistory};
+      (ss - 1)->continuationHistory,       (ss - 2)->continuationHistory,
+      (ss - 3)->continuationHistory,       (ss - 4)->continuationHistory,
+      (ss - 5)->continuationHistory,       (ss - 6)->continuationHistory,
+      (ss - 1)->ttMoveContinuationHistory, (ss - 2)->ttMoveContinuationHistory,
+      (ss - 3)->ttMoveContinuationHistory, (ss - 4)->ttMoveContinuationHistory,
+      (ss - 5)->ttMoveContinuationHistory, (ss - 6)->ttMoveContinuationHistory};
 
 
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,

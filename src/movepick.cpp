@@ -118,6 +118,11 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     stage = PROBCUT_TT + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm));
 }
 
+constexpr int SCALE = 128;
+int           W[6];
+
+TUNE(SetRange(-SCALE, SCALE), W);
+
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
 // with a good history. Quiets moves are ordered using the history tables.
@@ -165,7 +170,14 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[2])[pc][to];
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
-            m.value += (*continuationHistory[6])[pc][to];
+            m.value +=
+              (  W[0] * (*continuationHistory[6])[pc][to] 
+	       + W[1] * (*continuationHistory[7])[pc][to]
+               + W[2] * (*continuationHistory[8])[pc][to] 
+	       + W[3] * (*continuationHistory[9])[pc][to]
+               + W[4] * (*continuationHistory[10])[pc][to]
+               + W[5] * (*continuationHistory[11])[pc][to])
+              / SCALE;
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
