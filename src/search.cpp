@@ -556,16 +556,6 @@ void Search::Worker::do_move(
     // Preferable over fetch_add to avoid locking instructions
     nodes.store(nodes.load(std::memory_order_relaxed) + 1, std::memory_order_relaxed);
 
-    bool  ttMoveCheck = false, ttMoveCapture = false;
-    Piece ttMovePiece = NO_PIECE;
-
-    if (ss != nullptr && ss->ttMove && pos.pseudo_legal(ss->ttMove))
-    {
-        ttMoveCheck   = pos.gives_check(ss->ttMove);
-        ttMoveCapture = pos.capture_stage(ss->ttMove);
-        ttMovePiece   = pos.moved_piece(ss->ttMove);
-    }
-
     auto [dirtyPiece, dirtyThreats] = accumulatorStack.push();
     pos.do_move(move, st, givesCheck, dirtyPiece, dirtyThreats, &tt, &sharedHistory);
 
@@ -574,10 +564,9 @@ void Search::Worker::do_move(
         ss->currentMove = move;
         ss->continuationHistory =
           &continuationHistory[ss->inCheck][capture][dirtyPiece.pc][move.to_sq()];
-        ss->ttMoveContinuationHistory =
-          ss->ttMove && ss->ttMove != move
-            ? &continuationHistory[ttMoveCheck][ttMoveCapture][ttMovePiece][ss->ttMove.to_sq()]
-            : &continuationHistory[0][0][NO_PIECE][0];
+        ss->ttMoveContinuationHistory = ss->ttMove != move
+                                        ? ss->ttMoveContinuationHistoryBackup
+                                        : &continuationHistory[0][0][NO_PIECE][0];
         ss->continuationCorrectionHistory =
           &continuationCorrectionHistory[dirtyPiece.pc][move.to_sq()];
     }
@@ -727,6 +716,11 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+    ss->ttMoveContinuationHistoryBackup =
+      ttData.move && pos.pseudo_legal(ttData.move)
+        ? &continuationHistory[pos.gives_check(ttData.move)][ttCapture]
+                              [pos.moved_piece(ttData.move)][ttData.move.to_sq()]
+        : &continuationHistory[0][0][NO_PIECE][0];
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;

@@ -65,6 +65,7 @@ struct Stack {
     Move*                       pv;
     PieceToHistory*             continuationHistory;
     PieceToHistory*             ttMoveContinuationHistory;
+    PieceToHistory*             ttMoveContinuationHistoryBackup;
     CorrectionHistory<PieceTo>* continuationCorrectionHistory;
     int                         ply;
     Move                        currentMove;
