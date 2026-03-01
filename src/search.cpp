@@ -1057,10 +1057,12 @@ moves_loop:  // When in check, search starts here
       (ss - 1)->continuationHistory,       (ss - 2)->continuationHistory,
       (ss - 3)->continuationHistory,       (ss - 4)->continuationHistory,
       (ss - 5)->continuationHistory,       (ss - 6)->continuationHistory,
-      (ss - 1)->ttMoveContinuationHistory,
-      (ss - 1)->fromContinuationHistory,       (ss - 2)->fromContinuationHistory,
-      (ss - 3)->fromContinuationHistory,       (ss - 4)->fromContinuationHistory,
-      (ss - 5)->fromContinuationHistory,       (ss - 6)->fromContinuationHistory,
+      (ss - 1)->ttMoveContinuationHistory, (ss - 2)->ttMoveContinuationHistory,
+      (ss - 3)->ttMoveContinuationHistory, (ss - 4)->ttMoveContinuationHistory,
+      (ss - 5)->ttMoveContinuationHistory, (ss - 6)->ttMoveContinuationHistory,
+      (ss - 1)->fromContinuationHistory,   (ss - 2)->fromContinuationHistory,
+      (ss - 3)->fromContinuationHistory,   (ss - 4)->fromContinuationHistory,
+      (ss - 5)->fromContinuationHistory,   (ss - 6)->fromContinuationHistory,
     };
 
 
@@ -1103,7 +1105,7 @@ moves_loop:  // When in check, search starts here
 
     ExtMove        extMove;
     bool           CC     = true;
-    constexpr bool SELECT = true;
+    constexpr bool SELECT = false;
     bool           C      = priorCapture;
     double         weight = origDepth;
 

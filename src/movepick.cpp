@@ -201,8 +201,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[2])[pc][to];
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
-            m.value += -(*continuationHistory[7])[pc][to] / 2;
-            //m.value += -(*continuationHistory[6])[pc][to];
+
+            //m.value += (*continuationHistory[12])[pc][to]8;
             //m.value2 = (*ttMoveAlternativeHistory)[pc][to];
             //m.value2 = (*continuationHistory[0])[pc][to];
             //m.value2 = (*continuationHistory[1])[pc][to];
@@ -267,7 +267,20 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             //m.value = m.value2;
             //m.value2 = (*continuationHistory[0])[pc][to];
             m.value3 = (*continuationHistory[0])[pc][to];
-            m.value2 = (*continuationHistory[7])[pc][to];
+            //m.value2 = (*continuationHistory[7])[pc][to];
+	    m.value2 = 0;
+            m.value2 += (*continuationHistory[6])[pc][to];
+            //m.value2 += (*continuationHistory[7])[pc][to];
+            m.value2 += (*continuationHistory[8])[pc][to];
+            //m.value2 += (*continuationHistory[9])[pc][to];
+            //m.value2 += (*continuationHistory[11])[pc][to];
+	    //m.value += m.value2;
+	    m.value2 = 0;
+            m.value2 += (*continuationHistory[0])[pc][to];
+            m.value2 += (*continuationHistory[1])[pc][to];
+            m.value2 += (*continuationHistory[2])[pc][to];
+            m.value2 += (*continuationHistory[3])[pc][to];
+            m.value2 += (*continuationHistory[5])[pc][to];
         }
 
         else  // Type == EVASIONS
