@@ -1634,6 +1634,7 @@ moves_loop:  // When in check, search starts here
                     }
                     else
                     {
+                        dbg_correl_of(V0, V, 10);
                         aucData0.push_back({T, V0});
                         aucData1.push_back({T, V});
                     }
