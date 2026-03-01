@@ -64,10 +64,12 @@ namespace Search {
 struct Stack {
     Move*                       pv;
     PieceToHistory*             continuationHistory;
+    PieceToHistory*             ttMoveContinuationHistory;
     CorrectionHistory<PieceTo>* continuationCorrectionHistory;
     int                         ply;
     Move                        currentMove;
     Move                        excludedMove;
+    Move                        ttMove;
     Value                       staticEval;
     int                         statScore;
     int                         moveCount;

@@ -281,6 +281,8 @@ void Search::Worker::iterative_deepening() {
     {
         (ss - i)->continuationHistory =
           &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
+        (ss - i)->ttMoveContinuationHistory =
+          &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
     }
@@ -554,6 +556,16 @@ void Search::Worker::do_move(
     // Preferable over fetch_add to avoid locking instructions
     nodes.store(nodes.load(std::memory_order_relaxed) + 1, std::memory_order_relaxed);
 
+    bool  ttMoveCheck = false, ttMoveCapture = false;
+    Piece ttMovePiece = NO_PIECE;
+
+    if (ss != nullptr && ss->ttMove && pos.pseudo_legal(ss->ttMove))
+    {
+        ttMoveCheck   = pos.gives_check(ss->ttMove);
+        ttMoveCapture = pos.capture_stage(ss->ttMove);
+        ttMovePiece   = pos.moved_piece(ss->ttMove);
+    }
+
     auto [dirtyPiece, dirtyThreats] = accumulatorStack.push();
     pos.do_move(move, st, givesCheck, dirtyPiece, dirtyThreats, &tt, &sharedHistory);
 
@@ -562,6 +574,10 @@ void Search::Worker::do_move(
         ss->currentMove = move;
         ss->continuationHistory =
           &continuationHistory[ss->inCheck][capture][dirtyPiece.pc][move.to_sq()];
+        ss->ttMoveContinuationHistory =
+          ss->ttMove && ss->ttMove != move
+            ? &continuationHistory[ttMoveCheck][ttMoveCapture][ttMovePiece][ss->ttMove.to_sq()]
+            : &continuationHistory[0][0][NO_PIECE][0];
         ss->continuationCorrectionHistory =
           &continuationCorrectionHistory[dirtyPiece.pc][move.to_sq()];
     }
@@ -571,6 +587,7 @@ void Search::Worker::do_null_move(Position& pos, StateInfo& st, Stack* const ss)
     pos.do_null_move(st);
     ss->currentMove                   = Move::null();
     ss->continuationHistory           = &continuationHistory[0][0][NO_PIECE][0];
+    ss->ttMoveContinuationHistory     = &continuationHistory[0][0][NO_PIECE][0];
     ss->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
 }
 
@@ -703,8 +720,10 @@ Value Search::Worker::search(
     posKey                         = pos.key();
     auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
     // Need further processing of the saved data
-    ss->ttHit    = ttHit;
-    ttData.move  = rootNode ? rootMoves[pvIdx].pv[0] : ttHit ? ttData.move : Move::none();
+    ss->ttHit  = ttHit;
+    ss->ttMove = ttData.move = rootNode ? rootMoves[pvIdx].pv[0]
+                             : ttHit    ? ttData.move
+                                        : Move::none();
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
@@ -989,8 +1008,10 @@ moves_loop:  // When in check, search starts here
         return probCutBeta;
 
     const PieceToHistory* contHist[] = {
-      (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
-      (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
+      (ss - 1)->continuationHistory,      (ss - 2)->continuationHistory,
+      (ss - 3)->continuationHistory,      (ss - 4)->continuationHistory,
+      (ss - 5)->continuationHistory,      (ss - 6)->continuationHistory,
+      (ss - 1)->ttMoveContinuationHistory};
 
 
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
