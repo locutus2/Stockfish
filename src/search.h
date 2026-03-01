@@ -67,9 +67,12 @@ struct Stack {
     Move*                       pv;
     PieceToHistory*             continuationHistory;
     PieceToHistory*             ttMoveAlternativeHistory;
+    PieceToHistory*             ttMoveContinuationHistory;
+    PieceToHistory*             notPrevTTMoveHistory;
     CorrectionHistory<PieceTo>* continuationCorrectionHistory;
     int                         ply;
     Move                        currentMove;
+    Move                        ttMove;
     Move                        excludedMove;
     Value                       staticEval;
     int                         statScore;
@@ -297,6 +300,7 @@ class Worker {
     CapturePieceToHistory           captureHistory;
     ContinuationHistory             continuationHistory[2][2];
     TTMoveAlternativeHistory        ttMoveAlternativeHistory;
+    NotPrevTTMoveHistory            notPrevTTMoveHistory;
     CorrectionHistory<Continuation> continuationCorrectionHistory;
 
     TTMoveHistory    ttMoveHistory;

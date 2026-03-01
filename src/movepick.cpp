@@ -264,6 +264,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             }
             m.value2 /= SCALE2;
             //m.value = m.value2;
+            m.value2 = (*continuationHistory[6])[pc][to];
         }
 
         else  // Type == EVASIONS

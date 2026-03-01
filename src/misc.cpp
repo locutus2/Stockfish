@@ -323,7 +323,7 @@ std::array<DebugExtremes, MaxDebugSlots>        extremes;
 
 }  // namespace
 
-void dbg_new_auc_of(std::vector<AUCData>& data, int slot, double weight) {
+void dbg_new_auc_of(std::vector<AUCData> data, int slot, double weight) {
     if (!data.empty())
     {
         std::reverse(data.begin(), data.end());

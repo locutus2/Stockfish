@@ -281,8 +281,11 @@ void Search::Worker::iterative_deepening() {
     {
         (ss - i)->continuationHistory =
           &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
+        (ss - i)->ttMoveContinuationHistory =
+          &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->ttMoveAlternativeHistory =
-          &ttMoveAlternativeHistory[NO_PIECE][0];  // Use as a sentinel
+          &ttMoveAlternativeHistory[NO_PIECE][0];                             // Use as a sentinel
+        (ss - i)->notPrevTTMoveHistory = &notPrevTTMoveHistory[NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
     }
@@ -556,6 +559,10 @@ void Search::Worker::do_move(
     // Preferable over fetch_add to avoid locking instructions
     nodes.store(nodes.load(std::memory_order_relaxed) + 1, std::memory_order_relaxed);
 
+    Piece ttMovePiece   = ss->ttMove ? pos.moved_piece(ss->ttMove) : NO_PIECE;
+    bool  ttMoveCapture = ss->ttMove ? pos.capture_stage(ss->ttMove) : false;
+    bool  ttMoveCheck   = ss->ttMove ? pos.gives_check(ss->ttMove) : false;
+
     auto [dirtyPiece, dirtyThreats] = accumulatorStack.push();
     pos.do_move(move, st, givesCheck, dirtyPiece, dirtyThreats, &tt, &sharedHistory);
 
@@ -564,6 +571,10 @@ void Search::Worker::do_move(
         ss->currentMove = move;
         ss->continuationHistory =
           &continuationHistory[ss->inCheck][capture][dirtyPiece.pc][move.to_sq()];
+        ss->ttMoveContinuationHistory =
+          ss->ttMove && ss->ttMove != move
+            ? &continuationHistory[ttMoveCheck][ttMoveCapture][ttMovePiece][ss->ttMove.to_sq()]
+            : &continuationHistory[0][0][NO_PIECE][0];
         ss->continuationCorrectionHistory =
           &continuationCorrectionHistory[dirtyPiece.pc][move.to_sq()];
     }
@@ -573,6 +584,7 @@ void Search::Worker::do_null_move(Position& pos, StateInfo& st, Stack* const ss)
     pos.do_null_move(st);
     ss->currentMove                   = Move::null();
     ss->continuationHistory           = &continuationHistory[0][0][NO_PIECE][0];
+    ss->ttMoveContinuationHistory     = &continuationHistory[0][0][NO_PIECE][0];
     ss->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
 }
 
@@ -606,6 +618,10 @@ void Search::Worker::clear() {
                     h.fill(-541);
 
     for (auto& to : ttMoveAlternativeHistory)
+        for (auto& h : to)
+            h.fill(0);
+
+    for (auto& to : notPrevTTMoveHistory)
         for (auto& h : to)
             h.fill(0);
 
@@ -709,8 +725,10 @@ Value Search::Worker::search(
     posKey                         = pos.key();
     auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
     // Need further processing of the saved data
-    ss->ttHit    = ttHit;
-    ttData.move  = rootNode ? rootMoves[pvIdx].pv[0] : ttHit ? ttData.move : Move::none();
+    ss->ttHit  = ttHit;
+    ss->ttMove = ttData.move = rootNode ? rootMoves[pvIdx].pv[0]
+                             : ttHit    ? ttData.move
+                                        : Move::none();
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
@@ -721,10 +739,23 @@ Value Search::Worker::search(
     else
         ss->ttMoveAlternativeHistory = &ttMoveAlternativeHistory[NO_PIECE][0];
 
+    ss->notPrevTTMoveHistory =
+      (!(ss - 1)->ttMove || (ss - 1)->currentMove == (ss - 1)->ttMove
+         ? &notPrevTTMoveHistory[NO_PIECE][0]
+         : &notPrevTTMoveHistory[pos.moved_piece((ss - 1)->ttMove)][(ss - 1)->ttMove.to_sq()]);
+
     if (!ss->ttMoveAlternativeHistory)
     {
         std::cerr << "Assert: ply: " << ss->ply
                   << " oldttmah: " << (ss - 1)->ttMoveAlternativeHistory << std::endl;
+        std::terminate();
+    }
+
+
+    if (!ss->notPrevTTMoveHistory)
+    {
+        std::cerr << "Assert: ply: " << ss->ply << " oldttmah: " << (ss - 1)->notPrevTTMoveHistory
+                  << std::endl;
         std::terminate();
     }
 
@@ -1009,8 +1040,10 @@ moves_loop:  // When in check, search starts here
         return probCutBeta;
 
     const PieceToHistory* contHist[] = {
-      (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
-      (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
+      (ss - 1)->continuationHistory,      (ss - 2)->continuationHistory,
+      (ss - 3)->continuationHistory,      (ss - 4)->continuationHistory,
+      (ss - 5)->continuationHistory,      (ss - 6)->continuationHistory,
+      (ss - 1)->ttMoveContinuationHistory};
 
 
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
@@ -1051,8 +1084,8 @@ moves_loop:  // When in check, search starts here
     std::vector<AUCData> aucData0, aucData1, aucData2;
 
     ExtMove        extMove;
-    constexpr bool SELECT = true;
     bool           CC     = true;
+    constexpr bool SELECT = false;
     bool           C      = priorCapture;
     double         weight = origDepth;
 
@@ -1369,7 +1402,7 @@ moves_loop:  // When in check, search starts here
             //int V0 = extMove.value;
             //int V = extMove.value2;
             int V0 = -moveCount;
-            int V  = extMove.value;
+            int V  = extMove.value2;
             //int  V  = std::abs(ttmah[movedPiece][move.to_sq()]);
             //int V = ttmah[movedPiece][move.to_sq()];
             //int V = std::abs(extMove.value2);
@@ -1585,7 +1618,7 @@ moves_loop:  // When in check, search starts here
                     //int  V0 = extMove.value;
                     //int  V  = extMove.value2;
                     int V0 = -moveCount;
-                    int V  = extMove.value;
+                    int V  = extMove.value2;
                     if (SELECT)  // select condition
                     {
                         V = V0;

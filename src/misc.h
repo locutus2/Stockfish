@@ -138,7 +138,7 @@ struct AUCData {
     int  value = 0;
 };
 
-void dbg_new_auc_of(std::vector<AUCData>& data, int slot = 0, double weight = 1);
+void dbg_new_auc_of(std::vector<AUCData> data, int slot = 0, double weight = 1);
 void dbg_auc_of(int index, bool cond, int startSlot, int endSlot);
 void dbg_hit_on(bool cond, int slot = 0);
 void dbg_mean_of(int64_t value, int slot = 0);

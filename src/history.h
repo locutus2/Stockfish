@@ -150,6 +150,7 @@ using PieceToHistory = Stats<std::int16_t, 30000, PIECE_NB, SQUARE_NB>;
 using ContinuationHistory = MultiArray<PieceToHistory, PIECE_NB, SQUARE_NB>;
 
 using TTMoveAlternativeHistory = MultiArray<PieceToHistory, PIECE_NB, SQUARE_NB>;
+using NotPrevTTMoveHistory     = MultiArray<PieceToHistory, PIECE_NB, SQUARE_NB>;
 
 // PawnHistory is addressed by the pawn structure and a move's [piece][to]
 using PawnHistory =
