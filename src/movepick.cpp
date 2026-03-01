@@ -263,7 +263,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             }
             m.value2 /= SCALE2;
             //m.value = m.value2;
-            m.value2 = (*continuationHistory[0])[pc][to];
+            //m.value2 = (*continuationHistory[0])[pc][to];
+            m.value2 = (*continuationHistory[1])[pc][to];
             m.value3 = (*continuationHistory[6])[pc][to];
         }
 

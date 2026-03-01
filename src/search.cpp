@@ -1085,7 +1085,7 @@ moves_loop:  // When in check, search starts here
 
     ExtMove        extMove;
     bool           CC     = true;
-    constexpr bool SELECT = true;
+    constexpr bool SELECT = false;
     bool           C      = priorCapture;
     double         weight = origDepth;
 
