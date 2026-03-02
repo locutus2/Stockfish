@@ -573,6 +573,7 @@ void Search::Worker::do_move(
         ss->fromContinuationHistory =
           &fromContinuationHistory[ss->inCheck][capture][dirtyPiece.pc][move.from_sq()];
         ss->ttMoveContinuationHistory = ss->ttMove != move && !capture && !ss->inCheck
+		                        && ss->ttMove.from_sq() == move.from_sq()
                                         ? ss->ttMoveContinuationHistoryCache
                                         : &continuationHistory[0][0][NO_PIECE][0];
         ss->continuationCorrectionHistory =

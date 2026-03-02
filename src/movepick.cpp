@@ -276,11 +276,19 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             //m.value2 += (*continuationHistory[11])[pc][to];
 	    //m.value += m.value2;
 	    m.value2 = 0;
-            m.value2 += (*continuationHistory[0])[pc][to];
-            m.value2 += (*continuationHistory[1])[pc][to];
-            m.value2 += (*continuationHistory[2])[pc][to];
-            m.value2 += (*continuationHistory[3])[pc][to];
-            m.value2 += (*continuationHistory[5])[pc][to];
+            m.value2 += -9*(*continuationHistory[6])[pc][to];
+            m.value2 += 4*(*continuationHistory[7])[pc][to];
+            m.value2 += 5*(*continuationHistory[8])[pc][to];
+            m.value2 += -2*(*continuationHistory[9])[pc][to];
+            m.value2 += 7*(*continuationHistory[10])[pc][to];
+            m.value2 += 4*(*continuationHistory[11])[pc][to];
+	    m.value2 /= 128;
+            m.value2 = (*continuationHistory[6])[pc][to];
+            m.value2 += (*continuationHistory[7])[pc][to];
+            m.value2 += (*continuationHistory[8])[pc][to];
+            m.value2 += (*continuationHistory[9])[pc][to];
+            m.value2 += (*continuationHistory[11])[pc][to];
+	    //m.value += m.value2;
         }
 
         else  // Type == EVASIONS
