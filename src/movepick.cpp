@@ -118,6 +118,12 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     stage = PROBCUT_TT + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm));
 }
 
+constexpr int SCALE = 128;
+int           Random;
+int           W[6];
+
+TUNE(SetRange(0, 2*SCALE), Random, W);
+
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
 // with a good history. Quiets moves are ordered using the history tables.
@@ -158,7 +164,15 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()];
+            m.value = W[0] * (*continuationHistory[6])[pc][to];
+            m.value += W[1] * (*continuationHistory[7])[pc][to];
+            m.value += W[2] * (*continuationHistory[8])[pc][to];
+            m.value += W[3] * (*continuationHistory[9])[pc][to];
+            m.value += W[4] * (*continuationHistory[10])[pc][to];
+            m.value += W[5] * (*continuationHistory[11])[pc][to];
+            m.value /= SCALE;
+
+            m.value += 2 * (*mainHistory)[us][m.raw()];
             m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
             m.value += (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];

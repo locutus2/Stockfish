@@ -281,6 +281,8 @@ void Search::Worker::iterative_deepening() {
     {
         (ss - i)->continuationHistory =
           &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
+        (ss - i)->fromContinuationHistory =
+          &fromContinuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
     }
@@ -562,6 +564,8 @@ void Search::Worker::do_move(
         ss->currentMove = move;
         ss->continuationHistory =
           &continuationHistory[ss->inCheck][capture][dirtyPiece.pc][move.to_sq()];
+        ss->fromContinuationHistory =
+          &fromContinuationHistory[ss->inCheck][capture][dirtyPiece.pc][move.from_sq()];
         ss->continuationCorrectionHistory =
           &continuationCorrectionHistory[dirtyPiece.pc][move.to_sq()];
     }
@@ -571,6 +575,7 @@ void Search::Worker::do_null_move(Position& pos, StateInfo& st, Stack* const ss)
     pos.do_null_move(st);
     ss->currentMove                   = Move::null();
     ss->continuationHistory           = &continuationHistory[0][0][NO_PIECE][0];
+    ss->fromContinuationHistory       = &fromContinuationHistory[0][0][NO_PIECE][0];
     ss->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
 }
 
@@ -599,9 +604,15 @@ void Search::Worker::clear() {
 
     for (bool inCheck : {false, true})
         for (StatsType c : {NoCaptures, Captures})
+        {
             for (auto& to : continuationHistory[inCheck][c])
                 for (auto& h : to)
                     h.fill(-541);
+
+            for (auto& to : fromContinuationHistory[inCheck][c])
+                for (auto& h : to)
+                    h.fill(-541);
+        }
 
     for (size_t i = 1; i < reductions.size(); ++i)
         reductions[i] = int(2809 / 128.0 * std::log(i));
@@ -989,8 +1000,13 @@ moves_loop:  // When in check, search starts here
         return probCutBeta;
 
     const PieceToHistory* contHist[] = {
-      (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
-      (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
+      (ss - 1)->continuationHistory,     (ss - 2)->continuationHistory,
+      (ss - 3)->continuationHistory,     (ss - 4)->continuationHistory,
+      (ss - 5)->continuationHistory,     (ss - 6)->continuationHistory,
+      (ss - 1)->fromContinuationHistory, (ss - 2)->fromContinuationHistory,
+      (ss - 3)->fromContinuationHistory, (ss - 4)->fromContinuationHistory,
+      (ss - 5)->fromContinuationHistory, (ss - 6)->fromContinuationHistory,
+    };
 
 
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
@@ -1880,7 +1896,10 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
             break;
 
         if (((ss - i)->currentMove).is_ok())
+        {
             (*(ss - i)->continuationHistory)[pc][to] << (bonus * weight / 1024) + 82 * (i < 2);
+            (*(ss - i)->fromContinuationHistory)[pc][to] << (bonus * weight / 1024) + 82 * (i < 2);
+        }
     }
 }
 
