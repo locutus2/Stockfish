@@ -617,9 +617,6 @@ template<NodeType nodeType>
 Value Search::Worker::search(
   Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode) {
 
-    if (depth >= 10 && cutNode)
-        cutNode = cutNodeHistory[cutnode_history_index(pos)][pos.side_to_move()] > 1000;
-
     constexpr bool PvNode   = nodeType != NonPV;
     constexpr bool rootNode = nodeType == Root;
     const bool     allNode  = !(PvNode || cutNode);
@@ -714,6 +711,9 @@ Value Search::Worker::search(
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
 
+    //if (depth >= 10 && cutNode)
+    //    cutNode = cutNodeHistory[cutnode_history_index(pos)][pos.side_to_move()] > 1000;
+
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
     const auto correctionValue      = correction_value(*this, pos, ss);
@@ -754,6 +754,29 @@ Value Search::Worker::search(
     // for us than at the last ply.
     improving         = ss->staticEval > (ss - 2)->staticEval;
     opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
+
+    bool CC = cutNode;
+    int V = cutNodeHistory[cutnode_history_index(pos)][us] + 1*1024 * (2 * priorCapture - 1);
+    constexpr int M = 1024;
+    constexpr int D = 8192 + 2*M;
+    constexpr int K = D / M;
+    const int index = K + V / M;
+    //CC = CC && priorCapture;
+    //CC = CC && !improving;
+    std::vector<bool> C = {
+		    ss->ttPv,
+		    !ss->ttPv,
+		    improving,
+		    !improving,
+		    opponentWorsening,
+		    !opponentWorsening,
+		    ss->inCheck,
+		    !ss->inCheck,
+		    priorCapture,
+		    !priorCapture,
+		    bool(excludedMove),
+		    !excludedMove,
+    };
 
     // Hindsight adjustment of reductions based on static evaluation difference.
     if (priorReduction >= 3 && !opponentWorsening)
@@ -1460,9 +1483,25 @@ moves_loop:  // When in check, search starts here
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
 
+    if(CC)
+    {
+	    bool T = bestValue >= beta;
+	    /*
+	    for(int i = 0; i < int(C.size()); i++)
+	    {
+		    dbg_hit_on(
+	    }
+	    */
+	    dbg_hit_on(T, index);
+    }
+
     if (cutNode)
-        cutNodeHistory[cutnode_history_index(pos)][us]
-            << (bestValue >= beta ? std::min(800, 100 * depth) : std::max(-800, -100 * depth));
+    {
+	int v = (bestValue >= beta ? std::min(800, 100 * depth) : std::max(-800, -100 * depth));
+	//v += v * priorCapture;
+	//v *= (2 * !improving - 1);
+        cutNodeHistory[cutnode_history_index(pos)][us] << v;
+    }
 
     // If no good move is found and the previous position was ttPv, then the previous
     // opponent move is probably good and the new position is added to the search tree.
