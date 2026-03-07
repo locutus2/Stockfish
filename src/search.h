@@ -297,6 +297,8 @@ class Worker {
     TTMoveHistory    ttMoveHistory;
     SharedHistories& sharedHistory;
 
+    CutNodeHistory cutNodeHistory;
+
    private:
     void iterative_deepening();
 
