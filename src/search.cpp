@@ -1196,10 +1196,6 @@ moves_loop:  // When in check, search starts here
         r -= moveCount * 70;
         r -= std::abs(correctionValue) / 26878;
 
-        // Increase reduction for cut nodes
-        if (cutNode)
-            r += 3582 + 1015 * !ttData.move;
-
         // Increase reduction if ttMove is a capture
         if (ttCapture)
             r += 1075;
@@ -1226,6 +1222,9 @@ moves_loop:  // When in check, search starts here
         // Scale up reductions for expected ALL nodes
         if (allNode)
             r += r * 276 / (256 * depth + 254);
+
+        else if (cutNode)
+            r += r * 276 * (31 + 8 * !ttData.move) / (256 * depth + 254);
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
