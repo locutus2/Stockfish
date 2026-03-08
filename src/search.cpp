@@ -1220,11 +1220,8 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 454 / 4096;
 
         // Scale up reductions for expected ALL nodes
-        if (allNode)
+        if (!PvNode)
             r += r * 276 / (256 * depth + 254);
-
-        else if (cutNode)
-            r += r * 276 * (31 + 8 * !ttData.move) / (256 * depth + 254);
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
