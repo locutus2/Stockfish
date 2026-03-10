@@ -1221,7 +1221,7 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
         if (!PvNode)
-            r += r * 276 / (256 * depth + 254);
+            r += r * (cutNode ? 138 : 276) / (256 * depth + 254);
 
         // Increase reduction for cut nodes
         if (cutNode)
