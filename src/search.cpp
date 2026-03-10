@@ -54,11 +54,6 @@ namespace Stockfish {
 
 namespace TB = Tablebases;
 
-constexpr int SCALE = 128;
-int           W[8];
-
-TUNE(SetRange(0, SCALE), W);
-
 void syzygy_extend_pv(const OptionsMap&            options,
                       const Search::LimitsType&    limits,
                       Stockfish::Position&         pos,
@@ -1192,16 +1187,13 @@ moves_loop:  // When in check, search starts here
         newDepth += extension;
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
 
-        std::vector<int> red(8, 0);
-
         // Decrease reduction for PvNodes (*Scaler)
         if (ss->ttPv)
-            red[0] = -(2823 + PvNode * 1013 + (ttData.value > alpha) * 910
-                       + (ttData.depth >= depth) * (933 + cutNode * 979));
+            r -= 2823 + PvNode * 1013 + (ttData.value > alpha) * 910
+               + (ttData.depth >= depth) * (933 + cutNode * 979);
 
-        red[1] = 690;  // Base reduction offset to compensate for other tweaks
-        red[2] = -moveCount * 70;
-        red[3] = -std::abs(correctionValue) / 26878;
+        r += 690;  // Base reduction offset to compensate for other tweaks
+        r -= std::abs(correctionValue) / 26878;
 
         // Increase reduction for cut nodes
         if (cutNode)
@@ -1209,15 +1201,15 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
-            red[4] = 1075;
+            r += 1075;
 
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 1)
-            red[5] = 249 + 1073 * ((ss + 1)->cutoffCnt > 2) + 1064 * allNode;
+            r += 249 + 1073 * ((ss + 1)->cutoffCnt > 2) + 1064 * allNode;
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
-            red[6] = -2069;
+            r -= 2069;
 
         if (capture)
             ss->statScore = 892 * int(PieceValue[pos.captured_piece()]) / 128
@@ -1228,17 +1220,13 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[1])[movedPiece][move.to_sq()];
 
         // Decrease/increase reduction for moves with a good/bad history
-        red[7] = -ss->statScore * 454 / 4096;
-
-        for (int i = 0; i < int(red.size()); i++)
-            r += red[i] * (SCALE - W[i]) / SCALE;
+        r -= ss->statScore * 454 / 4096;
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
             r += r * 276 / (256 * depth + 254);
 
-        for (int i = 0; i < int(red.size()); i++)
-            r += red[i] * W[i] / SCALE;
+        r -= moveCount * 70;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
