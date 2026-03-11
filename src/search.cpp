@@ -1193,6 +1193,7 @@ moves_loop:  // When in check, search starts here
                + (ttData.depth >= depth) * (933 + cutNode * 979);
 
         r += 690;  // Base reduction offset to compensate for other tweaks
+        r -= moveCount * 57;
         r -= std::abs(correctionValue) / 26878;
 
         // Increase reduction for cut nodes
@@ -1226,7 +1227,7 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 276 / (256 * depth + 254);
 
-        r -= moveCount * 70;
+        r -= moveCount * 13;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
