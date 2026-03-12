@@ -1165,7 +1165,9 @@ moves_loop:  // When in check, search starts here
                     return value;
                 }
 
-                depth--;
+                depth -= 2;
+
+                assert(depth > 0);
             }
 
             // Negative extensions
