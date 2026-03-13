@@ -288,7 +288,8 @@ void Search::Worker::iterative_deepening() {
     for (int i = 0; i <= MAX_PLY + 2; ++i)
         (ss + i)->ply = i;
 
-    ss->pv = pv;
+    ss->pv               = pv;
+    totSingularRootNodes = 0;
 
     if (mainThread)
     {
@@ -322,7 +323,10 @@ void Search::Worker::iterative_deepening() {
     {
         // Age out PV variability metric
         if (mainThread)
+        {
             totBestMoveChanges /= 2;
+            totSingularRootNodes /= 2;
+        }
 
         // Save the last iteration's scores before the first PV line is searched and
         // all the move scores except the (new) PV are set to -VALUE_INFINITE.
@@ -481,9 +485,123 @@ void Search::Worker::iterative_deepening() {
             th->worker->bestMoveChanges = 0;
         }
 
-        // Do we have time for the next iteration? Can we stop searching now?
-        if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
-        {
+	/*
+	 * Mean #0: Total 16000 Mean 142.24
+	 * Mean #1: Total 16000 Mean 6446.37
+	 * Mean #2: Total 16000 Mean 7264.1
+	 * Mean #3: Total 16000 Mean 5747.99
+	 * Mean #4: Total 16000 Mean 87.9223
+	 * Mean #5: Total 16000 Mean 79.6508
+	 * Mean #6: Total 16000 Mean 73.6288
+	 * Stdev #0: Total 16000 Stdev 194.835
+	 * Stdev #1: Total 16000 Stdev 3426.74
+	 * Stdev #2: Total 16000 Stdev 2783.37
+	 * Stdev #3: Total 16000 Stdev 3949.04
+	 * Stdev #4: Total 16000 Stdev 14.819
+	 * Stdev #5: Total 16000 Stdev 23.4231
+	 * Stdev #6: Total 16000 Stdev 28.9832
+	 *
+	 * ===========================
+	 * Total time (ms) : 351687
+	 * Nodes searched  : 170531129
+	 * Nodes/second    : 484894
+	 *
+	 *
+	 * Mean #0: Total 16000 Mean 99.861
+	 * Mean #1: Total 16000 Mean 99.6661
+	 * Mean #2: Total 16000 Mean 99.416
+	 * Mean #3: Total 16000 Mean 99.2411
+	 * Mean #4: Total 16000 Mean 99.7069
+	 * Mean #5: Total 16000 Mean 99.8684
+	 * Mean #6: Total 16000 Mean 99.7311
+	 * Stdev #0: Total 16000 Stdev 136.906
+	 * Stdev #1: Total 16000 Stdev 53.3211
+	 * Stdev #2: Total 16000 Stdev 38.2547
+	 * Stdev #3: Total 16000 Stdev 68.5187
+	 * Stdev #4: Total 16000 Stdev 16.558
+	 * Stdev #5: Total 16000 Stdev 29.1405
+	 * Stdev #6: Total 16000 Stdev 38.9481
+	 *
+	 * Mean #0: Total 16000 Mean 99.861
+	 * Mean #1: Total 16000 Mean 99.6661
+	 * Mean #2: Total 16000 Mean 99.416
+	 * Mean #3: Total 16000 Mean 99.2411
+	 * Mean #4: Total 16000 Mean 99.7069
+	 * Mean #5: Total 16000 Mean 99.8684
+	 * Mean #6: Total 16000 Mean 99.7311
+	 * Mean #7: Total 16000 Mean 55.4639
+	 * Stdev #0: Total 16000 Stdev 136.906
+	 * Stdev #1: Total 16000 Stdev 53.3211
+	 * Stdev #2: Total 16000 Stdev 38.2547
+	 * Stdev #3: Total 16000 Stdev 68.5187
+	 * Stdev #4: Total 16000 Stdev 16.558
+	 * Stdev #5: Total 16000 Stdev 29.1405
+	 * Stdev #6: Total 16000 Stdev 38.9481
+	 * Stdev #7: Total 16000 Stdev 42.7014
+	 * */
+	/*
+	dbg_mean_of(100*totSingularRootNodes/1.4224, 0);
+	dbg_mean_of(10000/(1+totSingularRootNodes)/64.4637, 1);
+	dbg_mean_of(10000/(1+0.5*totSingularRootNodes)/72.641, 2);
+	dbg_mean_of(10000/(1+2*totSingularRootNodes)/57.4799, 3);
+	dbg_mean_of(100*std::exp(-0.1*totSingularRootNodes)/0.879223, 4);
+	dbg_mean_of(100*std::exp(-0.2*totSingularRootNodes)/0.796508, 5);
+	dbg_mean_of(100*std::exp(-0.3*totSingularRootNodes)/0.736288, 6);
+	dbg_mean_of(100*std::exp(-totSingularRootNodes)/0.554639, 7);
+
+	dbg_stdev_of(100*totSingularRootNodes/1.4224, 0);
+	dbg_stdev_of(10000/(1+totSingularRootNodes)/64.4637, 1);
+	dbg_stdev_of(10000/(1+0.5*totSingularRootNodes)/72.641, 2);
+	dbg_stdev_of(10000/(1+2*totSingularRootNodes)/57.4799, 3);
+	dbg_stdev_of(100*std::exp(-0.1*totSingularRootNodes)/0.879223, 4);
+	dbg_stdev_of(100*std::exp(-0.2*totSingularRootNodes)/0.796508, 5);
+	dbg_stdev_of(100*std::exp(-0.3*totSingularRootNodes)/0.736288, 6);
+	dbg_stdev_of(100*std::exp(-totSingularRootNodes)/0.554639, 7);
+
+
+
+	Mean #0: Total 16000 Mean 105.115
+	Mean #1: Total 16000 Mean 142.694
+	Mean #2: Total 16000 Mean 284.316
+	Mean #3: Total 16000 Mean 98.0845
+	Mean #4: Total 16000 Mean 99.6759
+	Stdev #0: Total 16000 Stdev 55.3116
+	Stdev #1: Total 16000 Stdev 23.0662
+	Stdev #2: Total 16000 Stdev 209.24
+	Stdev #3: Total 16000 Stdev 6.50406
+	Stdev #4: Total 16000 Stdev 16.5765
+	Correl. #100: Total 16000 Coefficient 1
+	Correl. #101: Total 16000 Coefficient 0.00303674
+	Correl. #102: Total 16000 Coefficient 0.0304856
+	Correl. #103: Total 16000 Coefficient 0.0369485
+	Correl. #104: Total 16000 Coefficient 0.0110518
+	Correl. #110: Total 16000 Coefficient 0.00303674
+	Correl. #111: Total 16000 Coefficient 1
+	Correl. #112: Total 16000 Coefficient 0.246497
+	Correl. #113: Total 16000 Coefficient 0.478542
+	Correl. #114: Total 16000 Coefficient 0.304808
+	Correl. #120: Total 16000 Coefficient 0.0304856
+	Correl. #121: Total 16000 Coefficient 0.246497
+	Correl. #122: Total 16000 Coefficient 1
+	Correl. #123: Total 16000 Coefficient 0.25448
+	Correl. #124: Total 16000 Coefficient 0.291978
+	Correl. #130: Total 16000 Coefficient 0.0369485
+	Correl. #131: Total 16000 Coefficient 0.478542
+	Correl. #132: Total 16000 Coefficient 0.25448
+	Correl. #133: Total 16000 Coefficient 1
+	Correl. #134: Total 16000 Coefficient 0.360634
+	Correl. #140: Total 16000 Coefficient 0.0110518
+	Correl. #141: Total 16000 Coefficient 0.304808
+	Correl. #142: Total 16000 Coefficient 0.291978
+	Correl. #143: Total 16000 Coefficient 0.360634
+	Correl. #144: Total 16000 Coefficient 1
+
+	===========================
+	Total time (ms) : 325823
+	Nodes searched  : 170531129
+	Nodes/second    : 523385
+	*/
+
             uint64_t nodesEffort =
               rootMoves[0].effort * 100000 / std::max(size_t(1), size_t(nodes));
 
@@ -504,8 +622,69 @@ void Search::Worker::iterative_deepening() {
 
             double highBestMoveEffort = nodesEffort >= 93340 ? 0.76 : 1.0;
 
+            double rootSingularity = std::exp(0.1276 - 0.1 * totSingularRootNodes);
+
+	double factor[5] = {100*fallingEval, 100*reduction, 100*bestMoveInstability, 100*highBestMoveEffort, 100*rootSingularity};
+
+	/*
+	 * Mean #0: Total 4000 Mean 105.638
+	 * Mean #1: Total 4000 Mean 130.635
+	 * Mean #2: Total 4000 Mean 204.064
+	 * Mean #3: Total 4000 Mean 94.342
+	 * Mean #4: Total 4000 Mean 86.6298
+	 * Stdev #0: Total 4000 Stdev 55.4536
+	 * Stdev #1: Total 4000 Stdev 29.5953
+	 * Stdev #2: Total 4000 Stdev 160.986
+	 * Stdev #3: Total 4000 Stdev 10.1872
+	 * Stdev #4: Total 4000 Stdev 18.1199
+	 * Correl. #100: Total 4000 Coefficient 1
+	 * Correl. #101: Total 4000 Coefficient 0.0236478
+	 * Correl. #102: Total 4000 Coefficient 0.0594131
+	 * Correl. #103: Total 4000 Coefficient 0.0787379
+	 * Correl. #104: Total 4000 Coefficient 0.0607587
+	 * Correl. #110: Total 4000 Coefficient 0.0236478
+	 * Correl. #111: Total 4000 Coefficient 1
+	 * Correl. #112: Total 4000 Coefficient 0.366569
+	 * Correl. #113: Total 4000 Coefficient 0.598045
+	 * Correl. #114: Total 4000 Coefficient 0.221251
+	 * Correl. #120: Total 4000 Coefficient 0.0594131
+	 * Correl. #121: Total 4000 Coefficient 0.366569
+	 * Correl. #122: Total 4000 Coefficient 1
+	 * Correl. #123: Total 4000 Coefficient 0.347357
+	 * Correl. #124: Total 4000 Coefficient 0.206365
+	 * Correl. #130: Total 4000 Coefficient 0.0787379
+	 * Correl. #131: Total 4000 Coefficient 0.598045
+	 * Correl. #132: Total 4000 Coefficient 0.347357
+	 * Correl. #133: Total 4000 Coefficient 1
+	 * Correl. #134: Total 4000 Coefficient 0.294549
+	 * Correl. #140: Total 4000 Coefficient 0.0607587
+	 * Correl. #141: Total 4000 Coefficient 0.221251
+	 * Correl. #142: Total 4000 Coefficient 0.206365
+	 * Correl. #143: Total 4000 Coefficient 0.294549
+	 * Correl. #144: Total 4000 Coefficient 1
+	 *
+	 * λ1=0.393412649116384 v1={0.57316978719497,6.615781215510757,−0.503755649535029,−6.794126196760243,1}
+	 * λ2=0.711842649122219 v2={−1.527649802426672,−9.244593357101775,24.366021333015398,−10.790251545117034,1}
+	 * λ3=0.834801589820068 v3={−0.175984340587645,−0.298139376050352,−0.227671461210325,−0.141092905568459,1}
+	 * λ4=0.996156008968572 v4={9.053770167512998,−1.51391526420696,−0.287748659287798,−0.541854762071234,1}
+	 * λ5=2.063787102972757 v5={0.274700587089143,1.512796172248184,1.237301755902848,1.55170518198673,1}
+	 * */
+	if(rootDepth >= 13)
+	{
+		for(int i = 0; i < 5; i++)
+		{
+			dbg_mean_of(factor[i], i);
+			dbg_stdev_of(factor[i], i);
+			for(int j = 0; j < 5; j++)
+			     dbg_correl_of(factor[i], factor[j], 100+10*i+j);
+		}
+	}
+
+        // Do we have time for the next iteration? Can we stop searching now?
+        if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
+        {
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
-                             * bestMoveInstability * highBestMoveEffort;
+                             * bestMoveInstability * highBestMoveEffort * rootSingularity;
 
             // Cap used time in case of a single legal move for a better viewer experience
             if (rootMoves.size() == 1)
@@ -1126,7 +1305,7 @@ moves_loop:  // When in check, search starts here
 
         // (*Scaler) Generally, higher singularBeta (i.e closer to ttValue)
         // and lower extension margins scale well.
-        if (!rootNode && move == ttData.move && !excludedMove && depth >= 6 + ss->ttPv
+        if ((!rootNode || !pvIdx) && move == ttData.move && !excludedMove && depth >= 6 + ss->ttPv
             && is_valid(ttData.value) && !is_decisive(ttData.value) && (ttData.bound & BOUND_LOWER)
             && ttData.depth >= depth - 3 && !is_shuffling(move, ss, pos))
         {
@@ -1137,7 +1316,12 @@ moves_loop:  // When in check, search starts here
             value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
             ss->excludedMove = Move::none();
 
-            if (value < singularBeta)
+            if (rootNode)
+            {
+                if (value < singularBeta)
+                    totSingularRootNodes++;
+            }
+            else if (value < singularBeta)
             {
                 int corrValAdj   = std::abs(correctionValue) / 220870;
                 int doubleMargin = -4 + 213 * PvNode - 196 * !ttCapture - corrValAdj
