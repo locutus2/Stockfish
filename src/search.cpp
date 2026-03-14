@@ -624,9 +624,9 @@ void Search::Worker::iterative_deepening() {
 
             double rootSingularity = std::exp(0.1276 - 0.1 * totSingularRootNodes);
 
-	double factor[5] = {100*fallingEval, 100*reduction, 100*bestMoveInstability, 100*highBestMoveEffort, 100*rootSingularity};
 
 	/*
+	    std::vector<double> factor = {100*fallingEval, 100*reduction, 100*bestMoveInstability, 100*highBestMoveEffort, 100*rootSingularity};
 	 * Mean #0: Total 4000 Mean 105.638
 	 * Mean #1: Total 4000 Mean 130.635
 	 * Mean #2: Total 4000 Mean 204.064
@@ -668,23 +668,199 @@ void Search::Worker::iterative_deepening() {
 	 * λ3=0.834801589820068 v3={−0.175984340587645,−0.298139376050352,−0.227671461210325,−0.141092905568459,1}
 	 * λ4=0.996156008968572 v4={9.053770167512998,−1.51391526420696,−0.287748659287798,−0.541854762071234,1}
 	 * λ5=2.063787102972757 v5={0.274700587089143,1.512796172248184,1.237301755902848,1.55170518198673,1}
+	 *
+	 * https://www.emathhelp.net/calculators/linear-algebra/eigenvalue-and-eigenvector-calculator/?i=%5B%5B1%2C0.0236478%2C0.0594131%2C0.0787379%2C0.0607587%5D%2C%5B0.0236478%2C1%2C0.366569%2C0.598045%2C0.221251%5D%2C%5B0.0594131%2C0.366569%2C1%2C0.347357%2C0.206365%5D%2C%5B0.0787379%2C0.598045%2C0.347357%2C1%2C0.294549%5D%2C%5B0.0607587%2C0.221251%2C0.206365%2C0.294549%2C1%5D%5D
 	 * */
+
+	    constexpr int S = 100;
+	    std::vector<double> factor = {S*fallingEval, S*reduction, S*bestMoveInstability, S*highBestMoveEffort};
+	    std::vector<double> mean = {105.638,130.635,204.064,94.342};
+	    std::vector<double> stdev = {55.4536,29.5953,160.986,10.1872};
+	    std::vector<double> eVal = {1.895285595526907, 0.993897206825365,0.712022921945506,0.398794275702222};
+	    std::vector<std::vector<double>> eVec = {
+	         {0.16824699079551,1.004218178579221,0.810320564093825,1},
+	         {-28.316776246950084,3.63971992500753,0.13468679407344,1},
+	         {0.131644693826228,0.834382967414471,-2.295451269270237,1},
+	         {-0.096271698260238,-1.025851606213005,0.057231985796526,1},
+	    };
+	    std::vector<double> pc(factor.size(), 0);
+	    for(int i = 0; i < int(factor.size()); i++)
+	    {
+		    double v = 0;
+		    for(int j = 0; j < int(factor.size()); j++)
+		    {
+			    v += (factor[j] - mean[j]) / stdev[j] * eVec[i][j];
+		    }
+		    pc[i] = S*v;
+	    }
+
+	    /*
+	    std::vector<double> factor = {100*fallingEval, 100*reduction, 100*bestMoveInstability, 100*highBestMoveEffort};
+	    std::vector<double> mean = {105.638,130.635,204.064,94.342};
+	    std::vector<double> stdev = {55.4536,29.5953,160.986,10.1872};
+	    std::vector<double> eVal = {1.895285595526907, 0.993897206825365,0.712022921945506,0.398794275702222};
+	    std::vector<std::vector<double>> eVec = {
+	         {0.16824699079551,1.004218178579221,0.810320564093825,1},
+	         {−28.316776246950084,3.63971992500753,0.13468679407344,1},
+	         {0.131644693826228,0.834382967414471,−2.295451269270237,1},
+	         {−0.096271698260238,−1.025851606213005,0.057231985796526,1},
+	    };
+
+	    Mean #0: Total 4000 Mean 105.638
+	    Mean #1: Total 4000 Mean 130.635
+	    Mean #2: Total 4000 Mean 204.064
+	    Mean #3: Total 4000 Mean 94.342
+	    Stdev #0: Total 4000 Stdev 55.4536
+	    Stdev #1: Total 4000 Stdev 29.5953
+	    Stdev #2: Total 4000 Stdev 160.986
+	    Stdev #3: Total 4000 Stdev 10.1872
+	    Correl. #100: Total 4000 Coefficient 1
+	    Correl. #101: Total 4000 Coefficient 0.0236478
+	    Correl. #102: Total 4000 Coefficient 0.0594131
+	    Correl. #103: Total 4000 Coefficient 0.0787379
+	    Correl. #110: Total 4000 Coefficient 0.0236478
+	    Correl. #111: Total 4000 Coefficient 1
+	    Correl. #112: Total 4000 Coefficient 0.366569
+	    Correl. #113: Total 4000 Coefficient 0.598045
+	    Correl. #120: Total 4000 Coefficient 0.0594131
+	    Correl. #121: Total 4000 Coefficient 0.366569
+	    Correl. #122: Total 4000 Coefficient 1
+	    Correl. #123: Total 4000 Coefficient 0.347357
+	    Correl. #130: Total 4000 Coefficient 0.0787379
+	    Correl. #131: Total 4000 Coefficient 0.598045
+	    Correl. #132: Total 4000 Coefficient 0.347357
+	    Correl. #133: Total 4000 Coefficient 1
+
+	    l1=0.398794275702222 v1={−0.096271698260238,−1.025851606213005,0.057231985796526,1}
+	    l2=0.712022921945506 v2={0.131644693826228,0.834382967414471,−2.295451269270237,1}
+	    l3=0.993897206825365 v3={−28.316776246950084,3.63971992500753,0.13468679407344,1}
+	    l4=1.895285595526907 v4={0.16824699079551,1.004218178579221,0.810320564093825,1}
+
+https://www.emathhelp.net/calculators/linear-algebra/eigenvalue-and-eigenvector-calculator/?i=%5B%5B1%2C0.0236478%2C0.0594131%2C0.0787379%5D%2C%5B0.0236478%2C1%2C0.366569%2C0.598045%5D%2C%5B0.0594131%2C0.366569%2C1%2C0.347357%5D%2C%5B0.0787379%2C0.598045%2C0.347357%2C1%5D%5D
+      //
+      //Mean #0: Total 4000 Mean 105.638
+      //Mean #1: Total 4000 Mean 130.635
+      //Mean #2: Total 4000 Mean 204.064
+      //Mean #3: Total 4000 Mean 94.342
+      //Mean #1000: Total 4000 Mean 1.97775
+      //Mean #1001: Total 4000 Mean -22.4405
+      //Mean #1002: Total 4000 Mean 0.97625
+      //Mean #1003: Total 4000 Mean -2.006
+      //Mean #2000: Total 16000 Mean 446.436
+      //Mean #2001: Total 16000 Mean 119.696
+      //Mean #2002: Total 16000 Mean 446.916
+      //Mean #2003: Total 16000 Mean 446.916
+      //Mean #2004: Total 16000 Mean 446.916
+      //Mean #2005: Total 16000 Mean 446.916
+      //Stdev #0: Total 4000 Stdev 55.4536
+      //Stdev #1: Total 4000 Stdev 29.5953
+      //Stdev #2: Total 4000 Stdev 160.986
+      //Stdev #3: Total 4000 Stdev 10.1872
+      //Stdev #1000: Total 4000 Stdev 225.614
+      //Stdev #1001: Total 4000 Stdev 2823.47
+      //Stdev #1002: Total 4000 Stdev 222.398
+      //Stdev #1003: Total 4000 Stdev 90.385
+      //Stdev #2000: Total 16000 Stdev 460.705
+      //Stdev #2001: Total 16000 Stdev 184.422
+      //Stdev #2002: Total 16000 Stdev 461.104
+      //Stdev #2003: Total 16000 Stdev 461.104
+      //Stdev #2004: Total 16000 Stdev 461.104
+      //Stdev #2005: Total 16000 Stdev 461.104
+      //Correl. #100: Total 4000 Coefficient 1
+      //Correl. #101: Total 4000 Coefficient 0.0236478
+      //Correl. #102: Total 4000 Coefficient 0.0594131
+      //Correl. #103: Total 4000 Coefficient 0.0787379
+      //Correl. #110: Total 4000 Coefficient 0.0236478
+      //Correl. #111: Total 4000 Coefficient 1
+      //Correl. #112: Total 4000 Coefficient 0.366569
+      //Correl. #113: Total 4000 Coefficient 0.598045
+      //Correl. #120: Total 4000 Coefficient 0.0594131
+      //Correl. #121: Total 4000 Coefficient 0.366569
+      //Correl. #122: Total 4000 Coefficient 1
+      //Correl. #123: Total 4000 Coefficient 0.347357
+      //Correl. #130: Total 4000 Coefficient 0.0787379
+      //Correl. #131: Total 4000 Coefficient 0.598045
+      //Correl. #132: Total 4000 Coefficient 0.347357
+      //Correl. #133: Total 4000 Coefficient 1
+      //Correl. #1000: Total 4000 Coefficient 1
+      //Correl. #1001: Total 4000 Coefficient 0.00193723
+      //Correl. #1002: Total 4000 Coefficient -0.00217142
+      //Correl. #1003: Total 4000 Coefficient -0.000821229
+      //Correl. #1010: Total 4000 Coefficient 0.00193723
+      //Correl. #1011: Total 4000 Coefficient 1
+      //Correl. #1012: Total 4000 Coefficient 0.000609842
+      //Correl. #1013: Total 4000 Coefficient -0.00155138
+      //Correl. #1020: Total 4000 Coefficient -0.00217142
+      //Correl. #1021: Total 4000 Coefficient 0.000609842
+      //Correl. #1022: Total 4000 Coefficient 1
+      //Correl. #1023: Total 4000 Coefficient 0.0011068
+      //Correl. #1030: Total 4000 Coefficient -0.000821229
+      //Correl. #1031: Total 4000 Coefficient -0.00155138
+      //Correl. #1032: Total 4000 Coefficient 0.0011068
+      //Correl. #1033: Total 4000 Coefficient 1
+	     * */
 	if(rootDepth >= 13)
 	{
-		for(int i = 0; i < 5; i++)
+		int n = int(factor.size());
+		for(int i = 0; i < n; i++)
 		{
 			dbg_mean_of(factor[i], i);
 			dbg_stdev_of(factor[i], i);
-			for(int j = 0; j < 5; j++)
+			for(int j = 0; j < n; j++)
 			     dbg_correl_of(factor[i], factor[j], 100+10*i+j);
+
+			dbg_mean_of(pc[i], 1000+i);
+			dbg_stdev_of(pc[i], 1000+i);
+			for(int j = 0; j < n; j++)
+			     dbg_correl_of(pc[i], pc[j], 1000+10*i+j);
 		}
 	}
+
+            double totalTime0 = S * fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
+            double totalTime1 = pc[0];
+            double totalTime2 = (pc[0] - 119.696) / 184.422 * 460.705 + 446.436;
+            double totalTime3 = (S * (  (S * fallingEval - 105.638) / 55.4536 * 0.16824699079551
+				      + (S * reduction - 130.635) / 29.5953 * 1.004218178579221
+				      + (S * bestMoveInstability - 204.064) / 160.986 * 0.810320564093825
+				      + (S * highBestMoveEffort - 94.342) / 10.1872 * 1) 
+			         - 119.696) / 184.422 * 460.705 + 446.436;
+
+            double totalTime4 = (   30.340138565487182076546878832033 * fallingEval - 32.050715577809349402022591860583
+				 + 339.31677617027737512375275803928 * reduction - 443.26647055004184899291441546462
+				 + 50.334846762688991589330749257699 * bestMoveInstability - 102.71530169781366379685190016523
+				 + 981.62399874352128160829275954139 * highBestMoveEffort - 926.08371289461284749489555520653
+			         - 119.696) / 184.422 * 460.705 + 446.436;
+
+            double totalTime5 =    75.792766252468643563728839292492 * fallingEval
+				+ 847.64797782004119925700296060123 * reduction
+				+ 125.74159036237131575950808471874 * bestMoveInstability
+				+ 2452.1970499242681545585667653534 * highBestMoveEffort
+			        - 3610.012796416911979048052835345;
+
+	    dbg_mean_of(totalTime0, 2000);
+	    dbg_stdev_of(totalTime0, 2000);
+	    dbg_mean_of(totalTime1, 2001);
+	    dbg_stdev_of(totalTime1, 2001);
+	    dbg_mean_of(totalTime2, 2002);
+	    dbg_stdev_of(totalTime2, 2002);
+	    dbg_mean_of(totalTime3, 2003);
+	    dbg_stdev_of(totalTime3, 2003);
+	    dbg_mean_of(totalTime4, 2004);
+	    dbg_stdev_of(totalTime4, 2004);
+	    dbg_mean_of(totalTime5, 2005);
+	    dbg_stdev_of(totalTime5, 2005);
 
         // Do we have time for the next iteration? Can we stop searching now?
         if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
         {
-            double totalTime = mainThread->tm.optimum() * fallingEval * reduction
-                             * bestMoveInstability * highBestMoveEffort * rootSingularity;
+            //double totalTime = mainThread->tm.optimum() * fallingEval * reduction
+            //                 * bestMoveInstability * highBestMoveEffort * rootSingularity;
+            double totalTime = mainThread->tm.optimum() * 
+                               (   0.7579 * fallingEval
+				+  8.4765 * reduction
+				+  1.2574 * bestMoveInstability
+				+ 24.522 * highBestMoveEffort
+			        - 36.1);
 
             // Cap used time in case of a single legal move for a better viewer experience
             if (rootMoves.size() == 1)
