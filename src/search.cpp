@@ -850,6 +850,16 @@ https://www.emathhelp.net/calculators/linear-algebra/eigenvalue-and-eigenvector-
 	    dbg_mean_of(totalTime5, 2005);
 	    dbg_stdev_of(totalTime5, 2005);
 
+            double tt0 = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
+            double tt1 = (   0.7579 * fallingEval
+				+  8.4765 * reduction
+				+  1.2574 * bestMoveInstability
+				+ 24.522 * highBestMoveEffort
+			        - 36.1);
+	    dbg_mean_of(1000*tt0, 3000);
+	    dbg_stdev_of(1000*tt0, 3000);
+	    dbg_mean_of(1000*tt1, 3001);
+	    dbg_stdev_of(1000*tt1, 3001);
         // Do we have time for the next iteration? Can we stop searching now?
         if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
         {
