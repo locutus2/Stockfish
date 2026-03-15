@@ -133,13 +133,14 @@ struct PipeDeleter {
 // Returns std::nullopt if the file does not exist.
 std::optional<std::string> read_file_to_string(const std::string& path);
 
-void dbg_hit_on(bool cond, int slot = 0);
-void dbg_mean_of(int64_t value, int slot = 0);
-void dbg_stdev_of(int64_t value, int slot = 0);
-void dbg_extremes_of(int64_t value, int slot = 0);
-void dbg_correl_of(int64_t value1, int64_t value2, int slot = 0);
-void dbg_print();
-void dbg_clear();
+void   dbg_hit_on(bool cond, int slot = 0);
+void   dbg_mean_of(int64_t value, int slot = 0);
+void   dbg_stdev_of(int64_t value, int slot = 0);
+void   dbg_extremes_of(int64_t value, int slot = 0);
+void   dbg_correl_of(int64_t value1, int64_t value2, int slot = 0);
+void   dbg_print();
+void   dbg_clear();
+double dbg_get_correl_of(int slot = 0);
 
 using TimePoint = std::chrono::milliseconds::rep;  // A value in milliseconds
 static_assert(sizeof(TimePoint) == sizeof(int64_t), "TimePoint should be 64 bits");

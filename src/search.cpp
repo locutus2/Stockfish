@@ -485,7 +485,7 @@ void Search::Worker::iterative_deepening() {
             th->worker->bestMoveChanges = 0;
         }
 
-	/*
+        /*
 	 * Mean #0: Total 16000 Mean 142.24
 	 * Mean #1: Total 16000 Mean 6446.37
 	 * Mean #2: Total 16000 Mean 7264.1
@@ -539,7 +539,7 @@ void Search::Worker::iterative_deepening() {
 	 * Stdev #6: Total 16000 Stdev 38.9481
 	 * Stdev #7: Total 16000 Stdev 42.7014
 	 * */
-	/*
+        /*
 	dbg_mean_of(100*totSingularRootNodes/1.4224, 0);
 	dbg_mean_of(10000/(1+totSingularRootNodes)/64.4637, 1);
 	dbg_mean_of(10000/(1+0.5*totSingularRootNodes)/72.641, 2);
@@ -602,30 +602,29 @@ void Search::Worker::iterative_deepening() {
 	Nodes/second    : 523385
 	*/
 
-            uint64_t nodesEffort =
-              rootMoves[0].effort * 100000 / std::max(size_t(1), size_t(nodes));
+        uint64_t nodesEffort = rootMoves[0].effort * 100000 / std::max(size_t(1), size_t(nodes));
 
-            double fallingEval = (11.85 + 2.24 * (mainThread->bestPreviousAverageScore - bestValue)
-                                  + 0.93 * (mainThread->iterValue[iterIdx] - bestValue))
-                               / 100.0;
-            fallingEval = std::clamp(fallingEval, 0.57, 1.70);
+        double fallingEval = (11.85 + 2.24 * (mainThread->bestPreviousAverageScore - bestValue)
+                              + 0.93 * (mainThread->iterValue[iterIdx] - bestValue))
+                           / 100.0;
+        fallingEval = std::clamp(fallingEval, 0.57, 1.70);
 
-            // If the bestMove is stable over several iterations, reduce time accordingly
-            double k      = 0.51;
-            double center = lastBestMoveDepth + 12.15;
+        // If the bestMove is stable over several iterations, reduce time accordingly
+        double k      = 0.51;
+        double center = lastBestMoveDepth + 12.15;
 
-            timeReduction = 0.66 + 0.85 / (0.98 + std::exp(-k * (completedDepth - center)));
+        timeReduction = 0.66 + 0.85 / (0.98 + std::exp(-k * (completedDepth - center)));
 
-            double reduction = (1.43 + mainThread->previousTimeReduction) / (2.28 * timeReduction);
+        double reduction = (1.43 + mainThread->previousTimeReduction) / (2.28 * timeReduction);
 
-            double bestMoveInstability = 1.02 + 2.14 * totBestMoveChanges / threads.size();
+        double bestMoveInstability = 1.02 + 2.14 * totBestMoveChanges / threads.size();
 
-            double highBestMoveEffort = nodesEffort >= 93340 ? 0.76 : 1.0;
+        double highBestMoveEffort = nodesEffort >= 93340 ? 0.76 : 1.0;
 
-            double rootSingularity = std::exp(0.1276 - 0.1 * totSingularRootNodes);
+        double rootSingularity = std::exp(0.1276 - 0.1 * totSingularRootNodes);
 
 
-	/*
+        /*
 	    std::vector<double> factor = {100*fallingEval, 100*reduction, 100*bestMoveInstability, 100*highBestMoveEffort, 100*rootSingularity};
 	 * Mean #0: Total 4000 Mean 105.638
 	 * Mean #1: Total 4000 Mean 130.635
@@ -743,8 +742,8 @@ Nodes searched  : 170531129
 Nodes/second    : 362123
 	 * */
 
-	    constexpr int S = 100;
-	    /*
+        constexpr int S = 100;
+        /*
 	    std::vector<double> factor = {fallingEval, reduction, bestMoveInstability, highBestMoveEffort};
 	    std::vector<double> mean = {1.05638,1.30635,2.04064,0.94342};
 	    std::vector<double> stdev = {0.554536,0.295953,1.60986,0.101872};
@@ -756,33 +755,35 @@ Nodes/second    : 362123
 	         {-0.096271698260238,-1.025851606213005,0.057231985796526,1},
 	    };
 	    */
-// LOg factors
-	    std::vector<double> factor = {std::log(fallingEval), std::log(reduction), std::log(bestMoveInstability), std::log(highBestMoveEffort)};
-	    std::vector<double> mean = {-0.0799225,0.238845,0.501007,-0.0636525};
-	    std::vector<double> stdev = {0.530551,0.247018,0.594107,0.114606};
-	    std::vector<double> eVal = {2.033587831919731, 0.995142604846552,0.595451927330311,0.375817635903406};
-	    std::vector<std::vector<double>> eVec = {
-	         {0.148623376297588,1.010530482804922,0.895967310847537,1},
-	         {-62.614851811814077,7.027537210049044,1.344346047296272,1},
-	         {0.055374831864647,0.722167081562255,-1.93980497170874,1},
-	         {-0.10219559332718,-1.074395346698586,0.112613374756117,1},
-	    };
+        // LOg factors
+        std::vector<double> factor = {std::log(fallingEval), std::log(reduction),
+                                      std::log(bestMoveInstability), std::log(highBestMoveEffort)};
+        std::vector<double> mean   = {-0.0799225, 0.238845, 0.501007, -0.0636525};
+        std::vector<double> stdev  = {0.530551, 0.247018, 0.594107, 0.114606};
+        std::vector<double> eVal   = {2.033587831919731, 0.995142604846552, 0.595451927330311,
+                                      0.375817635903406};
+        std::vector<std::vector<double>> eVec = {
+          {0.148623376297588, 1.010530482804922, 0.895967310847537, 1},
+          {-62.614851811814077, 7.027537210049044, 1.344346047296272, 1},
+          {0.055374831864647, 0.722167081562255, -1.93980497170874, 1},
+          {-0.10219559332718, -1.074395346698586, 0.112613374756117, 1},
+        };
 
 
-	    std::vector<double> pc(factor.size(), 0);
-	    for(int i = 0; i < int(factor.size()); i++)
-	    {
-		    double v = 0;
-		    for(int j = 0; j < int(factor.size()); j++)
-		    {
-			    //v += (factor[j] - mean[j]) / stdev[j] * eVec[i][j];
-			    v += factor[j] * eVec[i][j];
-		    }
-		    //pc[i] = S*v;
-		    pc[i] = v;
-	    }
+        std::vector<double> pc(factor.size(), 0);
+        for (int i = 0; i < int(factor.size()); i++)
+        {
+            double v = 0;
+            for (int j = 0; j < int(factor.size()); j++)
+            {
+                //v += (factor[j] - mean[j]) / stdev[j] * eVec[i][j];
+                v += factor[j] * eVec[i][j];
+            }
+            //pc[i] = S*v;
+            pc[i] = v;
+        }
 
-	    /*
+        /*
 	    std::vector<double> factor = {100*fallingEval, 100*reduction, 100*bestMoveInstability, 100*highBestMoveEffort};
 	    std::vector<double> mean = {105.638,130.635,204.064,94.342};
 	    std::vector<double> stdev = {55.4536,29.5953,160.986,10.1872};
@@ -887,78 +888,79 @@ https://www.emathhelp.net/calculators/linear-algebra/eigenvalue-and-eigenvector-
       //Correl. #1032: Total 4000 Coefficient 0.0011068
       //Correl. #1033: Total 4000 Coefficient 1
 	     * */
-	if(rootDepth >= 13)
-	{
-		int n = int(factor.size());
-		for(int i = 0; i < n; i++)
-		{
-			dbg_mean_of(S*factor[i], i);
-			dbg_stdev_of(S*factor[i], i);
-			for(int j = 0; j < n; j++)
-			     dbg_correl_of(S*factor[i], S*factor[j], 100+10*i+j);
+        if (rootDepth >= 13)
+        {
+            int n = int(factor.size());
+            for (int i = 0; i < n; i++)
+            {
+                dbg_mean_of(S * factor[i], i);
+                dbg_stdev_of(S * factor[i], i);
+                for (int j = 0; j < n; j++)
+                    dbg_correl_of(S * factor[i], S * factor[j], 100 + 10 * i + j);
 
-			dbg_mean_of(S*pc[i], 1000+i);
-			dbg_stdev_of(S*pc[i], 1000+i);
-			for(int j = 0; j < n; j++)
-			     dbg_correl_of(S*pc[i], S*pc[j], 1000+10*i+j);
-		}
-	}
+                dbg_mean_of(S * pc[i], 1000 + i);
+                dbg_stdev_of(S * pc[i], 1000 + i);
+                for (int j = 0; j < n; j++)
+                    dbg_correl_of(S * pc[i], S * pc[j], 1000 + 10 * i + j);
+            }
+        }
 
-            double totalTime0 = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
-            double totalTime1 = pc[0];
-            double totalTime2 = (pc[0] - 1.19696) / 1.84422 * 4.60705 + 4.46436;
-            double totalTime3 = ( (  (fallingEval - 1.05638) / 0.554536 * 0.16824699079551
-				      + (reduction - 1.30635) / 0.295953 * 1.004218178579221
-				      + (bestMoveInstability - 2.04064) / 1.60986 * 0.810320564093825
-				      + (highBestMoveEffort - 0.94342) / 0.101872 * 1) 
-			         - 1.19696) / 1.84422 * 4.60705 + 4.46436;
+        double totalTime0 = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
+        double totalTime1 = pc[0];
+        double totalTime2 = (pc[0] - 1.19696) / 1.84422 * 4.60705 + 4.46436;
+        double totalTime3 = (((fallingEval - 1.05638) / 0.554536 * 0.16824699079551
+                              + (reduction - 1.30635) / 0.295953 * 1.004218178579221
+                              + (bestMoveInstability - 2.04064) / 1.60986 * 0.810320564093825
+                              + (highBestMoveEffort - 0.94342) / 0.101872 * 1)
+                             - 1.19696)
+                            / 1.84422 * 4.60705
+                          + 4.46436;
 
-            double totalTime4 = (   30.340138565487182076546878832033 * fallingEval - 32.050715577809349402022591860583
-				 + 339.31677617027737512375275803928 * reduction - 443.26647055004184899291441546462
-				 + 50.334846762688991589330749257699 * bestMoveInstability - 102.71530169781366379685190016523
-				 + 981.62399874352128160829275954139 * highBestMoveEffort - 926.08371289461284749489555520653
-			         - 119.696) / 184.422 * 460.705 + 446.436;
+        double totalTime4 =
+          (30.340138565487182076546878832033 * fallingEval - 32.050715577809349402022591860583
+           + 339.31677617027737512375275803928 * reduction - 443.26647055004184899291441546462
+           + 50.334846762688991589330749257699 * bestMoveInstability
+           - 102.71530169781366379685190016523
+           + 981.62399874352128160829275954139 * highBestMoveEffort
+           - 926.08371289461284749489555520653 - 119.696)
+            / 184.422 * 460.705
+          + 446.436;
 
-            double totalTime5 =    75.792766252468643563728839292492 * fallingEval
-				+ 847.64797782004119925700296060123 * reduction
-				+ 125.74159036237131575950808471874 * bestMoveInstability
-				+ 2452.1970499242681545585667653534 * highBestMoveEffort
-			        - 3610.012796416911979048052835345;
+        double totalTime5 = 75.792766252468643563728839292492 * fallingEval
+                          + 847.64797782004119925700296060123 * reduction
+                          + 125.74159036237131575950808471874 * bestMoveInstability
+                          + 2452.1970499242681545585667653534 * highBestMoveEffort
+                          - 3610.012796416911979048052835345;
 
-	    dbg_mean_of(totalTime0, 2000);
-	    dbg_stdev_of(totalTime0, 2000);
-	    dbg_mean_of(totalTime1, 2001);
-	    dbg_stdev_of(totalTime1, 2001);
-	    dbg_mean_of(totalTime2, 2002);
-	    dbg_stdev_of(totalTime2, 2002);
-	    dbg_mean_of(totalTime3, 2003);
-	    dbg_stdev_of(totalTime3, 2003);
-	    dbg_mean_of(totalTime4, 2004);
-	    dbg_stdev_of(totalTime4, 2004);
-	    dbg_mean_of(totalTime5, 2005);
-	    dbg_stdev_of(totalTime5, 2005);
+        dbg_mean_of(totalTime0, 2000);
+        dbg_stdev_of(totalTime0, 2000);
+        dbg_mean_of(totalTime1, 2001);
+        dbg_stdev_of(totalTime1, 2001);
+        dbg_mean_of(totalTime2, 2002);
+        dbg_stdev_of(totalTime2, 2002);
+        dbg_mean_of(totalTime3, 2003);
+        dbg_stdev_of(totalTime3, 2003);
+        dbg_mean_of(totalTime4, 2004);
+        dbg_stdev_of(totalTime4, 2004);
+        dbg_mean_of(totalTime5, 2005);
+        dbg_stdev_of(totalTime5, 2005);
 
-            double tt0 = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
-            double tt1 = (   0.7579 * fallingEval
-				+  8.4765 * reduction
-				+  1.2574 * bestMoveInstability
-				+ 24.522 * highBestMoveEffort
-			        - 36.1);
-	    dbg_mean_of(1000*tt0, 3000);
-	    dbg_stdev_of(1000*tt0, 3000);
-	    dbg_mean_of(1000*tt1, 3001);
-	    dbg_stdev_of(1000*tt1, 3001);
+        double tt0 = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
+        double tt1 = (0.7579 * fallingEval + 8.4765 * reduction + 1.2574 * bestMoveInstability
+                      + 24.522 * highBestMoveEffort - 36.1);
+        dbg_mean_of(1000 * tt0, 3000);
+        dbg_stdev_of(1000 * tt0, 3000);
+        dbg_mean_of(1000 * tt1, 3001);
+        dbg_stdev_of(1000 * tt1, 3001);
         // Do we have time for the next iteration? Can we stop searching now?
         if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
         {
             //double totalTime = mainThread->tm.optimum() * fallingEval * reduction
             //                 * bestMoveInstability * highBestMoveEffort * rootSingularity;
-            double totalTime = mainThread->tm.optimum() * 
-                               (   0.7579 * fallingEval
-				+  8.4765 * reduction
-				+  1.2574 * bestMoveInstability
-				+ 24.522 * highBestMoveEffort
-			        - 36.1);
+            double totalTime =
+              mainThread->tm.optimum()
+              * (0.7579 * fallingEval + 8.4765 * reduction + 1.2574 * bestMoveInstability
+                 + 24.522 * highBestMoveEffort - 36.1);
 
             // Cap used time in case of a single legal move for a better viewer experience
             if (rootMoves.size() == 1)

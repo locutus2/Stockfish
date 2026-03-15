@@ -351,6 +351,22 @@ void dbg_extremes_of(int64_t value, int slot) {
     {}
 }
 
+double dbg_get_correl_of(int i) {
+    int64_t n;
+    auto    E   = [&n](int64_t x) { return double(x) / n; };
+    auto    sqr = [](double x) { return x * x; };
+
+    double r = 0;
+    if ((n = correl[i][0]))
+    {
+        double cov = E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]);
+        r          = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
+          / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
+             * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
+    }
+    return r;
+}
+
 void dbg_correl_of(int64_t value1, int64_t value2, int slot) {
 
     ++correl.at(slot)[0];
@@ -395,17 +411,14 @@ void dbg_print() {
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = correl[i][0]))
         {
- 	    double cov = E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]);
-	    double sx = sqrt(E(correl[i][2]) - sqr(E(correl[i][1])));
-	    double sy = sqrt(E(correl[i][4]) - sqr(E(correl[i][3])));
-            double r = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
+            double cov = E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]);
+            double sx  = sqrt(E(correl[i][2]) - sqr(E(correl[i][1])));
+            double sy  = sqrt(E(correl[i][4]) - sqr(E(correl[i][3])));
+            double r   = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
                      / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
                         * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
-            std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r 
-		      << " Cov " << cov 
-		      << " sigma(x) " << sx 
-		      << " sigma(y) " << sy 
-		      << std::endl;
+            std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << " Cov "
+                      << cov << " sigma(x) " << sx << " sigma(y) " << sy << std::endl;
         }
 }
 
