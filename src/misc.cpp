@@ -359,7 +359,7 @@ double dbg_get_correl_of(int i) {
     double r = 0;
     if ((n = correl[i][0]))
     {
-        double cov = E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]);
+        //double cov = E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]);
         r          = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
           / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
              * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
