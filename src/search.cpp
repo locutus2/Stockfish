@@ -670,12 +670,84 @@ void Search::Worker::iterative_deepening() {
 	 * λ5=2.063787102972757 v5={0.274700587089143,1.512796172248184,1.237301755902848,1.55170518198673,1}
 	 *
 	 * https://www.emathhelp.net/calculators/linear-algebra/eigenvalue-and-eigenvector-calculator/?i=%5B%5B1%2C0.0236478%2C0.0594131%2C0.0787379%2C0.0607587%5D%2C%5B0.0236478%2C1%2C0.366569%2C0.598045%2C0.221251%5D%2C%5B0.0594131%2C0.366569%2C1%2C0.347357%2C0.206365%5D%2C%5B0.0787379%2C0.598045%2C0.347357%2C1%2C0.294549%5D%2C%5B0.0607587%2C0.221251%2C0.206365%2C0.294549%2C1%5D%5D
+	 *
+	 * LOG Factors
+	 * Mean #0: Total 4000 Mean -7.99225
+Mean #1: Total 4000 Mean 23.8845
+Mean #2: Total 4000 Mean 50.1007
+Mean #3: Total 4000 Mean -6.36525
+Mean #1000: Total 4000 Mean 61.8495
+Mean #1001: Total 4000 Mean 737.568
+Mean #1002: Total 4000 Mean -87.1958
+Mean #1003: Total 4000 Mean -25.576
+Mean #2000: Total 16000 Mean 3.96219
+Mean #2001: Total 16000 Mean 0.61425
+Mean #2002: Total 16000 Mean 3.59306
+Mean #2003: Total 16000 Mean 4.08025
+Mean #2004: Total 16000 Mean 446.916
+Mean #2005: Total 16000 Mean 446.916
+Mean #3000: Total 16000 Mean 4468.9
+Mean #3001: Total 16000 Mean 4472.77
+Stdev #0: Total 4000 Stdev 53.0551
+Stdev #1: Total 4000 Stdev 24.7018
+Stdev #2: Total 4000 Stdev 59.4107
+Stdev #3: Total 4000 Stdev 11.4606
+Stdev #1000: Total 4000 Stdev 76.6673
+Stdev #1001: Total 4000 Stdev 3329.56
+Stdev #1002: Total 4000 Stdev 103.949
+Stdev #1003: Total 4000 Stdev 20.6375
+Stdev #2000: Total 16000 Stdev 4.61892
+Stdev #2001: Total 16000 Stdev 0.644843
+Stdev #2002: Total 16000 Stdev 1.8121
+Stdev #2003: Total 16000 Stdev 4.40805
+Stdev #2004: Total 16000 Stdev 461.104
+Stdev #2005: Total 16000 Stdev 461.104
+Stdev #3000: Total 16000 Stdev 4607
+Stdev #3001: Total 16000 Stdev 4613
+Correl. #100: Total 4000 Coefficient 1 Cov 2814.85 sigma(x) 53.0551 sigma(y) 53.0551
+Correl. #101: Total 4000 Coefficient 0.0205477 Cov 26.9289 sigma(x) 53.0551 sigma(y) 24.7018
+Correl. #102: Total 4000 Coefficient 0.0599808 Cov 189.062 sigma(x) 53.0551 sigma(y) 59.4107
+Correl. #103: Total 4000 Coefficient 0.0791104 Cov 48.1026 sigma(x) 53.0551 sigma(y) 11.4606
+Correl. #110: Total 4000 Coefficient 0.0205477 Cov 26.9289 sigma(x) 24.7018 sigma(y) 53.0551
+Correl. #111: Total 4000 Coefficient 1 Cov 610.18 sigma(x) 24.7018 sigma(y) 24.7018
+Correl. #112: Total 4000 Coefficient 0.470668 Cov 690.73 sigma(x) 24.7018 sigma(y) 59.4107
+Correl. #113: Total 4000 Coefficient 0.619715 Cov 175.44 sigma(x) 24.7018 sigma(y) 11.4606
+Correl. #120: Total 4000 Coefficient 0.0599808 Cov 189.062 sigma(x) 59.4107 sigma(y) 53.0551
+Correl. #121: Total 4000 Coefficient 0.470668 Cov 690.73 sigma(x) 59.4107 sigma(y) 24.7018
+Correl. #122: Total 4000 Coefficient 1 Cov 3529.64 sigma(x) 59.4107 sigma(y) 59.4107
+Correl. #123: Total 4000 Coefficient 0.441522 Cov 300.625 sigma(x) 59.4107 sigma(y) 11.4606
+Correl. #130: Total 4000 Coefficient 0.0791104 Cov 48.1026 sigma(x) 11.4606 sigma(y) 53.0551
+Correl. #131: Total 4000 Coefficient 0.619715 Cov 175.44 sigma(x) 11.4606 sigma(y) 24.7018
+Correl. #132: Total 4000 Coefficient 0.441522 Cov 300.625 sigma(x) 11.4606 sigma(y) 59.4107
+Correl. #133: Total 4000 Coefficient 1 Cov 131.345 sigma(x) 11.4606 sigma(y) 11.4606
+Correl. #1000: Total 4000 Coefficient 1 Cov 5877.88 sigma(x) 76.6673 sigma(y) 76.6673
+Correl. #1001: Total 4000 Coefficient -0.099233 Cov -25331 sigma(x) 76.6673 sigma(y) 3329.56
+Correl. #1002: Total 4000 Coefficient -0.81066 Cov -6460.58 sigma(x) 76.6673 sigma(y) 103.949
+Correl. #1003: Total 4000 Coefficient -0.336439 Cov -532.322 sigma(x) 76.6673 sigma(y) 20.6375
+Correl. #1010: Total 4000 Coefficient -0.099233 Cov -25331 sigma(x) 3329.56 sigma(y) 76.6673
+Correl. #1011: Total 4000 Coefficient 1 Cov 1.1086e+07 sigma(x) 3329.56 sigma(y) 3329.56
+Correl. #1012: Total 4000 Coefficient -0.0130442 Cov -4514.66 sigma(x) 3329.56 sigma(y) 103.949
+Correl. #1013: Total 4000 Coefficient 0.181467 Cov 12469.3 sigma(x) 3329.56 sigma(y) 20.6375
+Correl. #1020: Total 4000 Coefficient -0.81066 Cov -6460.58 sigma(x) 103.949 sigma(y) 76.6673
+Correl. #1021: Total 4000 Coefficient -0.0130442 Cov -4514.66 sigma(x) 103.949 sigma(y) 3329.56
+Correl. #1022: Total 4000 Coefficient 1 Cov 10805.5 sigma(x) 103.949 sigma(y) 103.949
+Correl. #1023: Total 4000 Coefficient -0.0999823 Cov -214.488 sigma(x) 103.949 sigma(y) 20.6375
+Correl. #1030: Total 4000 Coefficient -0.336439 Cov -532.322 sigma(x) 20.6375 sigma(y) 76.6673
+Correl. #1031: Total 4000 Coefficient 0.181467 Cov 12469.3 sigma(x) 20.6375 sigma(y) 3329.56
+Correl. #1032: Total 4000 Coefficient -0.0999823 Cov -214.488 sigma(x) 20.6375 sigma(y) 103.949
+Correl. #1033: Total 4000 Coefficient 1 Cov 425.907 sigma(x) 20.6375 sigma(y) 20.6375
+
+===========================
+Total time (ms) : 470920
+Nodes searched  : 170531129
+Nodes/second    : 362123
 	 * */
 
 	    constexpr int S = 100;
-	    std::vector<double> factor = {S*fallingEval, S*reduction, S*bestMoveInstability, S*highBestMoveEffort};
-	    std::vector<double> mean = {105.638,130.635,204.064,94.342};
-	    std::vector<double> stdev = {55.4536,29.5953,160.986,10.1872};
+	    /*
+	    std::vector<double> factor = {fallingEval, reduction, bestMoveInstability, highBestMoveEffort};
+	    std::vector<double> mean = {1.05638,1.30635,2.04064,0.94342};
+	    std::vector<double> stdev = {0.554536,0.295953,1.60986,0.101872};
 	    std::vector<double> eVal = {1.895285595526907, 0.993897206825365,0.712022921945506,0.398794275702222};
 	    std::vector<std::vector<double>> eVec = {
 	         {0.16824699079551,1.004218178579221,0.810320564093825,1},
@@ -683,15 +755,31 @@ void Search::Worker::iterative_deepening() {
 	         {0.131644693826228,0.834382967414471,-2.295451269270237,1},
 	         {-0.096271698260238,-1.025851606213005,0.057231985796526,1},
 	    };
+	    */
+// LOg factors
+	    std::vector<double> factor = {std::log(fallingEval), std::log(reduction), std::log(bestMoveInstability), std::log(highBestMoveEffort)};
+	    std::vector<double> mean = {-0.0799225,0.238845,0.501007,-0.0636525};
+	    std::vector<double> stdev = {0.530551,0.247018,0.594107,0.114606};
+	    std::vector<double> eVal = {2.033587831919731, 0.995142604846552,0.595451927330311,0.375817635903406};
+	    std::vector<std::vector<double>> eVec = {
+	         {0.148623376297588,1.010530482804922,0.895967310847537,1},
+	         {-62.614851811814077,7.027537210049044,1.344346047296272,1},
+	         {0.055374831864647,0.722167081562255,-1.93980497170874,1},
+	         {-0.10219559332718,-1.074395346698586,0.112613374756117,1},
+	    };
+
+
 	    std::vector<double> pc(factor.size(), 0);
 	    for(int i = 0; i < int(factor.size()); i++)
 	    {
 		    double v = 0;
 		    for(int j = 0; j < int(factor.size()); j++)
 		    {
-			    v += (factor[j] - mean[j]) / stdev[j] * eVec[i][j];
+			    //v += (factor[j] - mean[j]) / stdev[j] * eVec[i][j];
+			    v += factor[j] * eVec[i][j];
 		    }
-		    pc[i] = S*v;
+		    //pc[i] = S*v;
+		    pc[i] = v;
 	    }
 
 	    /*
@@ -804,26 +892,26 @@ https://www.emathhelp.net/calculators/linear-algebra/eigenvalue-and-eigenvector-
 		int n = int(factor.size());
 		for(int i = 0; i < n; i++)
 		{
-			dbg_mean_of(factor[i], i);
-			dbg_stdev_of(factor[i], i);
+			dbg_mean_of(S*factor[i], i);
+			dbg_stdev_of(S*factor[i], i);
 			for(int j = 0; j < n; j++)
-			     dbg_correl_of(factor[i], factor[j], 100+10*i+j);
+			     dbg_correl_of(S*factor[i], S*factor[j], 100+10*i+j);
 
-			dbg_mean_of(pc[i], 1000+i);
-			dbg_stdev_of(pc[i], 1000+i);
+			dbg_mean_of(S*pc[i], 1000+i);
+			dbg_stdev_of(S*pc[i], 1000+i);
 			for(int j = 0; j < n; j++)
-			     dbg_correl_of(pc[i], pc[j], 1000+10*i+j);
+			     dbg_correl_of(S*pc[i], S*pc[j], 1000+10*i+j);
 		}
 	}
 
-            double totalTime0 = S * fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
+            double totalTime0 = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
             double totalTime1 = pc[0];
-            double totalTime2 = (pc[0] - 119.696) / 184.422 * 460.705 + 446.436;
-            double totalTime3 = (S * (  (S * fallingEval - 105.638) / 55.4536 * 0.16824699079551
-				      + (S * reduction - 130.635) / 29.5953 * 1.004218178579221
-				      + (S * bestMoveInstability - 204.064) / 160.986 * 0.810320564093825
-				      + (S * highBestMoveEffort - 94.342) / 10.1872 * 1) 
-			         - 119.696) / 184.422 * 460.705 + 446.436;
+            double totalTime2 = (pc[0] - 1.19696) / 1.84422 * 4.60705 + 4.46436;
+            double totalTime3 = ( (  (fallingEval - 1.05638) / 0.554536 * 0.16824699079551
+				      + (reduction - 1.30635) / 0.295953 * 1.004218178579221
+				      + (bestMoveInstability - 2.04064) / 1.60986 * 0.810320564093825
+				      + (highBestMoveEffort - 0.94342) / 0.101872 * 1) 
+			         - 1.19696) / 1.84422 * 4.60705 + 4.46436;
 
             double totalTime4 = (   30.340138565487182076546878832033 * fallingEval - 32.050715577809349402022591860583
 				 + 339.31677617027737512375275803928 * reduction - 443.26647055004184899291441546462
