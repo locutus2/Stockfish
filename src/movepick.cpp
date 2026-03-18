@@ -181,6 +181,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
 
+	    double y = m.value;
 	    std::vector<double> X = { 
 		    (double)(*mainHistory)[us][m.raw()],
 		    (double)sharedHistory->pawn_entry(pos)[pc][to],
@@ -190,7 +191,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 		    (double)(*continuationHistory[3])[pc][to],
 		    (double)(*continuationHistory[5])[pc][to],
 	    };
-	    lgs(X, (double)m.value);
+	    lgs(X, y);
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;

@@ -268,7 +268,7 @@ void solveLgs(int n, int offset = 0)
 	        for(int k = i-1; k >= 0; k--)
 	        { 
 	            for(int j = 0; j < n; j++)
-			    Ainv[k][j] -= A[i][j] * A[k][i];
+			    Ainv[k][j] -= Ainv[i][j] * A[k][i];
 		    A[k][i] = 0;
 	        }
 	}
@@ -369,6 +369,7 @@ void UCIEngine::bench(std::istream& args) {
               << "\nNodes/second    : " << 1000 * nodes / elapsed << std::endl;
 
     solveLgs(7);
+    //solveLgs(2);
 
     // reset callback, to not capture a dangling reference to nodesSearched
     engine.set_on_update_full([&](const auto& i) { on_update_full(i, options["UCI_ShowWDL"]); });
