@@ -999,6 +999,62 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+/*
+ * CC=true
+ * Hit #0: Total 1677308 Hits 28582 Hit Rate (%) 1.70404
+Hit #1: Total 7319 Hits 392 Hit Rate (%) 5.35592
+Hit #2: Total 1633861 Hits 25959 Hit Rate (%) 1.58881
+Hit #3: Total 36128 Hits 2231 Hit Rate (%) 6.17527
+Hit #4: Total 205056 Hits 5839 Hit Rate (%) 2.84751
+Hit #5: Total 1472252 Hits 22743 Hit Rate (%) 1.54478
+Hit #6: Total 231813 Hits 2270 Hit Rate (%) 0.979238
+Hit #7: Total 1445495 Hits 26312 Hit Rate (%) 1.82028
+Hit #8: Total 67274 Hits 1871 Hit Rate (%) 2.78116
+Hit #9: Total 1610034 Hits 26711 Hit Rate (%) 1.65903
+Hit #10: Total 1673173 Hits 28467 Hit Rate (%) 1.70138
+Hit #11: Total 4135 Hits 115 Hit Rate (%) 2.78114
+Hit #12: Total 23082 Hits 1405 Hit Rate (%) 6.08699
+Hit #13: Total 1654226 Hits 27177 Hit Rate (%) 1.64288
+Hit #14: Total 1346608 Hits 25440 Hit Rate (%) 1.88919
+Hit #15: Total 330700 Hits 3142 Hit Rate (%) 0.950106
+Hit #16: Total 240380 Hits 4174 Hit Rate (%) 1.73642
+Hit #17: Total 1436928 Hits 24408 Hit Rate (%) 1.69862
+Hit #18: Total 1258303 Hits 20599 Hit Rate (%) 1.63705
+Hit #19: Total 419005 Hits 7983 Hit Rate (%) 1.90523
+Hit #20: Total 1016459 Hits 15458 Hit Rate (%) 1.52077
+Hit #21: Total 660849 Hits 13124 Hit Rate (%) 1.98593
+Hit #22: Total 1240 Hits 59 Hit Rate (%) 4.75806
+Hit #23: Total 1676068 Hits 28523 Hit Rate (%) 1.70178
+Hit #24: Total 1273 Hits 62 Hit Rate (%) 4.87038
+Hit #25: Total 314927 Hits 9249 Hit Rate (%) 2.93687
+Hit #26: Total 1361108 Hits 19271 Hit Rate (%) 1.41583
+Hit #27: Total 607489 Hits 18200 Hit Rate (%) 2.99594
+Hit #28: Total 1069819 Hits 10382 Hit Rate (%) 0.970445
+Hit #29: Total 1649892 Hits 27273 Hit Rate (%) 1.65302
+Hit #30: Total 27416 Hits 1309 Hit Rate (%) 4.77458
+Hit #31: Total 567525 Hits 17062 Hit Rate (%) 3.00639
+Hit #32: Total 88085 Hits 5983 Hit Rate (%) 6.7923
+Hit #33: Total 68590 Hits 886 Hit Rate (%) 1.29173
+Hit #34: Total 953108 Hits 4651 Hit Rate (%) 0.487982
+ * */
+    bool CC = true;
+    //bool CC = allNode;
+    //bool CC = (ss-1)->excludedMove;
+    bool MC = false;
+    std::vector<bool> C = {true,
+	                   PvNode, cutNode, allNode, 
+			   ss->ttPv, !ss->ttPv,
+			   ss->inCheck, !ss->inCheck,
+			   (ss-1)->inCheck, !(ss-1)->inCheck,
+			   (ss-1)->ttHit, !(ss-1)->ttHit,
+			   bool((ss-1)->excludedMove), !(ss-1)->excludedMove,
+			   ttData.value >= beta, ttData.value < beta,
+			   priorCapture, !priorCapture,
+			   improving, !improving,
+			   opponentWorsening, !opponentWorsening,
+                           (ss-1)->currentMove == Move::null(), (ss-1)->currentMove != Move::null(), 
+			   (ss-1)->moveCount == 0, (ss-1)->moveCount == 1, (ss-1)->moveCount > 1,
+			   (ss-1)->statScore > 0, (ss-1)->statScore <= 0};
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1137,6 +1193,8 @@ moves_loop:  // When in check, search starts here
             value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
             ss->excludedMove = Move::none();
 
+	    CC = CC && (ss+1)->moveCount == 1;
+
             if (value < singularBeta)
             {
                 int corrValAdj   = std::abs(correctionValue) / 210590;
@@ -1157,10 +1215,13 @@ moves_loop:  // When in check, search starts here
             // over the original beta, we assume this expected cut-node is not
             // singular (multiple moves fail high), and we can prune the whole
             // subtree by returning a softbound.
-            else if (value >= beta && !is_decisive(value))
+            else if (!CC&&value >= beta && !is_decisive(value))
             {
-                ttMoveHistory << std::max(-424 - 107 * depth, -3375);
-                return value;
+		if(!CC)
+		{
+			ttMoveHistory << std::max(-424 - 107 * depth, -3375);
+			return value;
+		}
             }
 
             // Negative extensions
@@ -1178,6 +1239,17 @@ moves_loop:  // When in check, search starts here
             // over current beta
             else if (cutNode)
                 extension = -2;
+
+            if (CC&&value >= beta && !is_decisive(value))
+	    {
+		MC = true;
+		C.push_back(value >= beta+1);
+		C.push_back(value < beta+1);
+		C.push_back((ss+1)->moveCount == 0);
+		C.push_back((ss+1)->moveCount == 1);
+		C.push_back((ss+1)->moveCount == 2);
+		C.push_back((ss+1)->moveCount > 2);
+	    }
         }
 
         // Step 16. Make the move
@@ -1478,6 +1550,13 @@ moves_loop:  // When in check, search starts here
         auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth * (bestMove ? 12 : 17) / 128,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *this, 1069 * bonus / 1024);
+    }
+
+    if(CC && MC)
+    {
+		bool T = bestValue < beta;
+		for(int i = 0; i < int(C.size()); i++)
+			if(C[i]) dbg_hit_on(T, i);
     }
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
