@@ -118,6 +118,21 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     stage = PROBCUT_TT + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm));
 }
 
+void lgs(const std::vector<double>& X, double Y, int offset = 0)
+{
+	const int n = int(X.size());
+	for(int i = 0; i < n; i++)
+	   for(int j = 0; j < n; j++)
+	   {
+		   dbg_sum_of(X[i] * X[j], offset+10*i+j);
+	   }
+
+	for(int i = 0; i < n; i++)
+	{
+	    dbg_sum_of(X[i] * Y, offset+100+i);
+	}
+}
+
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
 // with a good history. Quiets moves are ordered using the history tables.
@@ -165,6 +180,17 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[2])[pc][to];
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
+
+	    std::vector<double> X = { 
+		    (double)(*mainHistory)[us][m.raw()],
+		    (double)sharedHistory->pawn_entry(pos)[pc][to],
+		    (double)(*continuationHistory[0])[pc][to],
+		    (double)(*continuationHistory[1])[pc][to],
+		    (double)(*continuationHistory[2])[pc][to],
+		    (double)(*continuationHistory[3])[pc][to],
+		    (double)(*continuationHistory[5])[pc][to],
+	    };
+	    lgs(X, (double)m.value);
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;

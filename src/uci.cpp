@@ -227,6 +227,82 @@ void UCIEngine::go(std::istringstream& is) {
         engine.go(limits);
 }
 
+void solveLgs(int n, int offset = 0)
+{
+	std::vector<std::vector<long double>> A(n, std::vector<long double>(n, 0));
+	std::vector<std::vector<long double>> Ainv(n, std::vector<long double>(n, 0));
+
+	for(int i = 0; i < n; i++)
+		Ainv[i][i] = 1;
+
+	for(int i = 0; i < n; i++)
+	     for(int j = 0; j < n; j++)
+		     A[i][j] = dbg_get_sum_of(offset+10*i+j);
+
+	// forward
+	for(int i = 0; i < n; i++)
+	{
+		assert(A[i][i] != 0);
+	     for(int k = i+1; k < n; k++)
+	     {
+	          for(int j = i+1; j < n; j++)
+		     A[k][j] -= A[i][j] * A[k][i] / A[i][i];
+	          for(int j = 0; j < n; j++)
+		     Ainv[k][j] -= Ainv[i][j] * A[k][i] / A[i][i];
+
+		  A[k][i] = 0;
+	     }
+	}
+
+	// backward
+	for(int i = n-1; i >= 0; i--)
+	{
+		assert(A[i][i] != 0);
+		
+	        for(int j = i+1; j < n; j++)
+			A[i][j] /= A[i][i];
+	        for(int j = 0; j < n; j++)
+			Ainv[i][j] /= A[i][i];
+
+		A[i][i] = 1;
+	        for(int k = i-1; k >= 0; k--)
+	        { 
+	            for(int j = 0; j < n; j++)
+			    Ainv[k][j] -= A[i][j] * A[k][i];
+		    A[k][i] = 0;
+	        }
+	}
+
+        std::vector<long double> beta(n, 0);
+        for(int i = 0; i < n; i++)
+        {
+             for(int j = 0; j < n; j++)
+		     beta[i] += Ainv[i][j] * dbg_get_sum_of(offset + 100 + j);
+        }
+
+        std::cerr << "I:" << std::endl;
+        for(int i = 0; i < n; i++)
+        {
+             for(int j = 0; j < n; j++)
+		     std::cerr << A[i][j] << "\t";
+             std::cerr << std::endl;
+        }
+        std::cerr << "Inverse XtX:" << std::endl;
+        for(int i = 0; i < n; i++)
+        {
+             for(int j = 0; j < n; j++)
+		     std::cerr << Ainv[i][j] << "\t";
+             std::cerr << std::endl;
+        }
+
+        std::cerr << "beta:" << std::endl;
+        for(int i = 0; i < n; i++)
+        {
+		     std::cerr << beta[i] << "\t";
+        }
+        std::cerr << std::endl;
+}
+
 void UCIEngine::bench(std::istream& args) {
     std::string token;
     uint64_t    num, nodes = 0, cnt = 1;
@@ -291,6 +367,8 @@ void UCIEngine::bench(std::istream& args) {
               << "\nTotal time (ms) : " << elapsed  //
               << "\nNodes searched  : " << nodes    //
               << "\nNodes/second    : " << 1000 * nodes / elapsed << std::endl;
+
+    solveLgs(7);
 
     // reset callback, to not capture a dangling reference to nodesSearched
     engine.set_on_update_full([&](const auto& i) { on_update_full(i, options["UCI_ShowWDL"]); });
