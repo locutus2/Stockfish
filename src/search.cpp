@@ -1277,6 +1277,7 @@ Hit #32: Total 83223 Hits 5644 Hit Rate (%) 6.78178
             if (CC&&value >= beta && !is_decisive(value))
 	    {
 		MC = true;
+		// start 29
 		C.push_back(value >= beta+1);
 		C.push_back(value < beta+1);
 		C.push_back((ss+1)->moveCount == 0);
