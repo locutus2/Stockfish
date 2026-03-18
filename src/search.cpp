@@ -1174,13 +1174,13 @@ moves_loop:  // When in check, search starts here
             else
             {
                 // If beta not reached do an additional singular search with beta bound to hopefully trigger a Multi-cut
-                if (value < beta && !is_decisive(value))
+                if (value < beta && value >= beta - 3 && !is_decisive(value))
                 {
                     ss->excludedMove = move;
                     value = search<NonPV>(pos, ss, beta - 1, beta, singularDepth, cutNode);
                     ss->excludedMove = Move::none();
                 }
-#
+
                 // Multi-cut pruning
                 // Our ttMove is assumed to fail high based on the bound of the TT entry,
                 // and if after excluding the ttMove with a reduced search we fail high
