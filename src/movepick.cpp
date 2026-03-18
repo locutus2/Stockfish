@@ -183,6 +183,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
 	    double y = m.value;
 	    std::vector<double> X = { 
+		    1.0,
 		    (double)(*mainHistory)[us][m.raw()],
 		    (double)sharedHistory->pawn_entry(pos)[pc][to],
 		    (double)(*continuationHistory[0])[pc][to],

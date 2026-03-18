@@ -368,7 +368,7 @@ void UCIEngine::bench(std::istream& args) {
               << "\nNodes searched  : " << nodes    //
               << "\nNodes/second    : " << 1000 * nodes / elapsed << std::endl;
 
-    solveLgs(7);
+    solveLgs(8);
     //solveLgs(2);
 
     // reset callback, to not capture a dangling reference to nodesSearched
