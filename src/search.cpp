@@ -1036,6 +1036,40 @@ Hit #31: Total 567525 Hits 17062 Hit Rate (%) 3.00639
 Hit #32: Total 88085 Hits 5983 Hit Rate (%) 6.7923
 Hit #33: Total 68590 Hits 886 Hit Rate (%) 1.29173
 Hit #34: Total 953108 Hits 4651 Hit Rate (%) 0.487982
+
+CC=(ss+1)->moveCount == 1
+Hit #0: Total 83223 Hits 5644 Hit Rate (%) 6.78178
+Hit #1: Total 437 Hits 30 Hit Rate (%) 6.86499
+Hit #2: Total 78377 Hits 5120 Hit Rate (%) 6.53253
+Hit #3: Total 4409 Hits 494 Hit Rate (%) 11.2044
+Hit #4: Total 15646 Hits 1169 Hit Rate (%) 7.47156
+Hit #5: Total 67577 Hits 4475 Hit Rate (%) 6.62208
+Hit #6: Total 6902 Hits 334 Hit Rate (%) 4.83918
+Hit #7: Total 76321 Hits 5310 Hit Rate (%) 6.95746
+Hit #8: Total 6791 Hits 456 Hit Rate (%) 6.71477
+Hit #9: Total 76432 Hits 5188 Hit Rate (%) 6.78773
+Hit #10: Total 82945 Hits 5615 Hit Rate (%) 6.76955
+Hit #11: Total 278 Hits 29 Hit Rate (%) 10.4317
+Hit #12: Total 2804 Hits 361 Hit Rate (%) 12.8745
+Hit #13: Total 80419 Hits 5283 Hit Rate (%) 6.56934
+Hit #14: Total 78638 Hits 5593 Hit Rate (%) 7.11234
+Hit #15: Total 4585 Hits 51 Hit Rate (%) 1.11232
+Hit #16: Total 10812 Hits 602 Hit Rate (%) 5.56789
+Hit #17: Total 72411 Hits 5042 Hit Rate (%) 6.96303
+Hit #18: Total 60497 Hits 4095 Hit Rate (%) 6.76893
+Hit #19: Total 22726 Hits 1549 Hit Rate (%) 6.81598
+Hit #20: Total 48726 Hits 3227 Hit Rate (%) 6.62275
+Hit #21: Total 34497 Hits 2417 Hit Rate (%) 7.00641
+Hit #22: Total 242 Hits 16 Hit Rate (%) 6.61157
+Hit #23: Total 82981 Hits 5628 Hit Rate (%) 6.78228
+Hit #24: Total 242 Hits 16 Hit Rate (%) 6.61157
+Hit #25: Total 18270 Hits 1674 Hit Rate (%) 9.16256
+Hit #26: Total 64711 Hits 3954 Hit Rate (%) 6.11024
+Hit #27: Total 37301 Hits 3577 Hit Rate (%) 9.58956
+Hit #28: Total 45922 Hits 2067 Hit Rate (%) 4.50111
+Hit #29: Total 81787 Hits 5402 Hit Rate (%) 6.60496
+Hit #30: Total 1436 Hits 242 Hit Rate (%) 16.8524
+Hit #32: Total 83223 Hits 5644 Hit Rate (%) 6.78178
  * */
     bool CC = true;
     //bool CC = allNode;
