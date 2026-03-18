@@ -1174,7 +1174,7 @@ moves_loop:  // When in check, search starts here
             else
             {
                 // If beta not reached do an additional singular search with beta bound to hopefully trigger a Multi-cut
-                if (value < beta && value >= beta - 3 && !is_decisive(value))
+                if (value < beta && !is_decisive(value) && !ss->ttPv && !(ss - 2)->ttHit)
                 {
                     ss->excludedMove = move;
                     value = search<NonPV>(pos, ss, beta - 1, beta, singularDepth, cutNode);
