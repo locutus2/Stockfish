@@ -182,6 +182,7 @@ void Search::Worker::ensure_network_replicated() {
 void Search::Worker::start_searching() {
 
     accumulatorStack.reset();
+    lastIterationPV.clear();
 
     // Non-main threads go directly to iterative_deepening()
     if (!is_mainthread())
@@ -231,7 +232,7 @@ void Search::Worker::start_searching() {
     Skill   skill =
       Skill(options["Skill Level"], options["UCI_LimitStrength"] ? int(options["UCI_Elo"]) : 0);
 
-    if (int(options["MultiPV"]) == 1 && !limits.depth && !limits.mate && !skill.enabled()
+    if (int(options["MultiPV"]) == 1 && !limits.depth && !skill.enabled()
         && rootMoves[0].pv[0] != Move::none())
         bestThread = threads.get_best_thread()->worker.get();
 
@@ -261,9 +262,9 @@ void Search::Worker::iterative_deepening() {
 
     Move pv[MAX_PLY + 1];
 
-    Depth lastBestMoveDepth = 0;
-    Value lastBestScore     = -VALUE_INFINITE;
-    auto  lastBestPV        = std::vector{Move::none()};
+    Depth             lastBestMoveDepth = 0;
+    Value             lastBestScore     = -VALUE_INFINITE;
+    std::vector<Move> lastBestPV;
 
     Value  alpha, beta;
     Value  bestValue     = -VALUE_INFINITE;
@@ -442,7 +443,10 @@ void Search::Worker::iterative_deepening() {
         }
 
         if (!threads.stop)
-            completedDepth = rootDepth;
+        {
+            completedDepth  = rootDepth;
+            lastIterationPV = rootMoves[0].pv;
+        }
 
         // We make sure not to pick an unproven mated-in score,
         // in case this thread prematurely stopped search (aborted-search).
@@ -450,29 +454,41 @@ void Search::Worker::iterative_deepening() {
             && is_loss(rootMoves[0].score))
         {
             // Bring the last best move to the front for best thread selection.
-            Utility::move_to_front(rootMoves, [&lastBestPV = std::as_const(lastBestPV)](
-                                                const auto& rm) { return rm == lastBestPV[0]; });
-            rootMoves[0].pv    = lastBestPV;
-            rootMoves[0].score = rootMoves[0].uciScore = lastBestScore;
+            // For an aborted d1 search we label the loss score as inexact.
+            if (!lastBestPV.empty())
+            {
+                Utility::move_to_front(rootMoves,
+                                       [&lastBestPV = std::as_const(lastBestPV)](const auto& rm) {
+                                           return rm == lastBestPV[0];
+                                       });
+                rootMoves[0].pv    = lastBestPV;
+                rootMoves[0].score = rootMoves[0].uciScore = lastBestScore;
+            }
+            else
+            {
+                if (!rootMoves[0].scoreLowerbound)
+                    rootMoves[0].scoreUpperbound = true;
+                if (mainThread)
+                    main_manager()->pv(*this, threads, tt, rootDepth);
+            }
         }
-        else if (rootMoves[0].pv[0] != lastBestPV[0])
+        else if (lastBestPV.empty() || rootMoves[0].pv[0] != lastBestPV[0])
         {
             lastBestPV        = rootMoves[0].pv;
             lastBestScore     = rootMoves[0].score;
             lastBestMoveDepth = rootDepth;
         }
 
-        if (!mainThread)
-            continue;
-
-        // Have we found a "mate in x"?
-        if (limits.mate && rootMoves[0].score == rootMoves[0].uciScore
+        // Have we found a "mate in x" after a completed iteration?
+        if (limits.mate && !threads.stop
             && ((rootMoves[0].score >= VALUE_MATE_IN_MAX_PLY
                  && VALUE_MATE - rootMoves[0].score <= 2 * limits.mate)
-                || (rootMoves[0].score != -VALUE_INFINITE
-                    && rootMoves[0].score <= VALUE_MATED_IN_MAX_PLY
+                || (rootMoves[0].score <= VALUE_MATED_IN_MAX_PLY
                     && VALUE_MATE + rootMoves[0].score <= 2 * limits.mate)))
             threads.stop = true;
+
+        if (!mainThread)
+            continue;
 
         // If the skill level is enabled and time is up, pick a sub-optimal best move
         if (skill.enabled() && skill.time_to_pick(rootDepth))
@@ -1121,6 +1137,10 @@ Value Search::Worker::search(
     bestValue     = -VALUE_INFINITE;
     maxValue      = VALUE_INFINITE;
 
+    ss->followPV = rootNode
+                || ((ss - 1)->followPV && static_cast<size_t>(ss->ply - 1) < lastIterationPV.size()
+                    && (ss - 1)->currentMove == lastIterationPV[ss->ply - 1]);
+
     // Check for the available remaining time
     if (is_mainthread())
         main_manager()->check_time(*this);
@@ -1388,7 +1408,7 @@ Value Search::Worker::search(
     // Step 10. Internal iterative reductions
     // At sufficient depth, reduce depth for PV/Cut nodes without a TTMove.
     // (*Scaler) Making IIR more aggressive scales poorly.
-    if (!allNode && depth >= 6 && !ttData.move && priorReduction <= 3)
+    if (!ss->followPV && !allNode && depth >= 6 && !ttData.move && priorReduction <= 3)
         depth--;
 
     // Step 11. ProbCut
@@ -1538,7 +1558,7 @@ moves_loop:  // When in check, search starts here
                     && !pos.see_ge(move, -margin))
                     continue;
             }
-            else
+            else if (!ss->followPV || !PvNode)
             {
                 int history = (*contHist[0])[movedPiece][move.to_sq()]
                             + (*contHist[1])[movedPiece][move.to_sq()]
@@ -1939,8 +1959,9 @@ moves_loop:  // When in check, search starts here
     if (!ss->inCheck && !(bestMove && pos.capture(bestMove))
         && (bestValue > ss->staticEval) == bool(bestMove))
     {
-        auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth * (bestMove ? 12 : 17) / 128,
-                                -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
+        auto bonus =
+          std::clamp(int(bestValue - ss->staticEval) * depth * (bestMove ? 12 : 17) / 128,
+                     -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *this, 1069 * bonus / 1024);
     }
 
