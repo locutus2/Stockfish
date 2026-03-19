@@ -21,12 +21,62 @@
 #include <cassert>
 #include <limits>
 #include <utility>
+#include <iostream>
 
 #include "bitboard.h"
 #include "misc.h"
 #include "position.h"
 
 namespace Stockfish {
+
+constexpr int SCALE = 128;
+constexpr double B[5] = {1.03638,-0.0713816,-0.0142814,0.0237446,0.0255354};
+constexpr double EV[5][6] = {
+	{0.842415, 1.01132, 0.876589, 1.05802, 0, 1},
+	{-1.94406, 0.0850495, -0.343454, 0.805999, 0, 1},
+	{1.40054, 1.4072, -4.29948, 0.156808, 0, 1},
+	{0.509304, -1.46188, -0.0759772, 0.109621, 0, 1},
+	{-0.153756, 0.499881, 0.289916, -1.54076, 0, 1},
+};
+
+#define S(i,j) (int(B[(i)]*EV[(i)][(j)]*SCALE))
+
+/*
+constexpr int SCALED_EV[5][6] = {
+	{S(0,0),S(0,1),S(0,2),S(0,3),S(0,4),S(0,5)},
+	{S(1,0),S(1,1),S(1,2),S(1,3),S(1,4),S(1,5)},
+	{S(2,0),S(2,1),S(2,2),S(2,3),S(2,4),S(2,5)},
+	{S(3,0),S(3,1),S(3,2),S(3,3),S(3,4),S(3,5)},
+	{S(4,0),S(4,1),S(4,2),S(4,3),S(4,4),S(4,5)}
+};
+*/
+
+constexpr int SCALED_EV[5][6] = {
+	{ 111, 134, 116, 140, 132 },
+	{  17,   0,   3,  -7,  -9 },
+	{  -2,  -2,   7,   0,  -1 },
+	{   1,  -4,   0,   0,   3 },
+	{   0,   1,   0,  -5,   3 }
+};
+
+int W[5];
+int Random[5];
+
+void init()
+{
+	/*
+	std::cerr << "SCALED_EV:" << std::endl;
+	for(int i = 0; i < 5; i++)
+	{
+	     for(int j : {0,1,2,3,5})
+		     std::cerr << SCALED_EV[i][j] << "\t";
+	     std::cerr << std::endl;
+	}
+	*/
+}
+
+TUNE(SetRange(-SCALE,SCALE), W, Random, init);
+UPDATE_ON_LAST();
 
 namespace {
 
@@ -158,13 +208,18 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()];
+            m.value = 0;
+            for(int c : {0,1,2,3,5})
+            {
+                int w = 0;
+                for(int i = 0; i < 5; i++)
+                    w += (SCALE + W[i]) * EV[i][c];
+                m.value += (*continuationHistory[c])[pc][to] * w / SCALE;
+            }
+            m.value /= SCALE;
+
+            m.value += 2 * (*mainHistory)[us][m.raw()];
             m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
-            m.value += (*continuationHistory[0])[pc][to];
-            m.value += (*continuationHistory[1])[pc][to];
-            m.value += (*continuationHistory[2])[pc][to];
-            m.value += (*continuationHistory[3])[pc][to];
-            m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
