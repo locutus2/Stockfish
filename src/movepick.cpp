@@ -272,7 +272,8 @@ Wolfram alpha
 
 { {1,         0.351996,  0.0264105, 0.0621023, 0.0147296, 0.0762523, 0.0735225}, {0.351996,  1,         0.0610171, 0.0912389, 0.0500264, 0.0998193,     0.102667}, {0.0264105, 0.0610171, 1,         0.286815,  0.21815,   0.268853,  0.262502}, {0.0621023, 0.0912389, 0.286815, 1, 0.261919, 0.339889, 0.30987}, {0.0147296, 0.0500264, 0.21815, 0.261919, 1, 0.333123, 0.296777}, {0.0762523, 0.0998193, 0.268853, 0.339889, 0.333123, 1, 0.380507}, {0.0735225,     0.102667, 0.262502, 0.30987, 0.296777, 0.380507, 1}}
 
-{{1,         0.286815,  0.21815,   0.268853,  0.262502}, {0.286815, 1, 0.261919, 0.339889, 0.30987}, {0.21815, 0.261919, 1, 0.333123, 0.296777},        {0.268853, 0.339889, 0.333123, 1, 0.380507}, {0.262502, 0.30987, 0.296777, 0.380507, 1}}
+corr of only cmh
+{{1,0.286815,0.21815,0.268853,0.262502},{0.286815,1,0.261919,0.339889,0.30987},{0.21815,0.261919,1,0.333123,0.296777},{0.268853,0.339889,0.333123,1,0.380507},{0.262502,0.30987,0.296777,0.380507,1}}
  
 ONly cmh hist
 Input:
@@ -293,7 +294,109 @@ Corresponding eigenvalues:
 λ_3≈0.71461
 λ_4≈0.683208
 λ_5≈0.610067	
-	
+
+--------------------
+bench 16 1 16 pos1000.fen
+
+Sum #0: Total 914374875 Average 2.40237e+08
+Sum #100: Total 914374875 Average 2.50837e+08
+Correl. #0: Total 914374875 Coefficient 1
+Correl. #1: Total 914374875 Coefficient 0.132906
+Correl. #2: Total 914374875 Coefficient 0.108003
+Correl. #3: Total 914374875 Coefficient 0.115345
+Correl. #4: Total 914374875 Coefficient 0.109248
+Correl. #10: Total 914374875 Coefficient 0.132906
+Correl. #11: Total 914374875 Coefficient 1
+Correl. #12: Total 914374875 Coefficient 0.120423
+Correl. #13: Total 914374875 Coefficient 0.171158
+Correl. #14: Total 914374875 Coefficient 0.154068
+Correl. #20: Total 914374875 Coefficient 0.108003
+Correl. #21: Total 914374875 Coefficient 0.120423
+Correl. #22: Total 914374875 Coefficient 1
+Correl. #23: Total 914374875 Coefficient 0.140482
+Correl. #24: Total 914374875 Coefficient 0.117659
+Correl. #30: Total 914374875 Coefficient 0.115345
+Correl. #31: Total 914374875 Coefficient 0.171158
+Correl. #32: Total 914374875 Coefficient 0.140482
+Correl. #33: Total 914374875 Coefficient 1
+Correl. #34: Total 914374875 Coefficient 0.184791
+Correl. #40: Total 914374875 Coefficient 0.109248
+Correl. #41: Total 914374875 Coefficient 0.154068
+Correl. #42: Total 914374875 Coefficient 0.117659
+Correl. #43: Total 914374875 Coefficient 0.184791
+Correl. #44: Total 914374875 Coefficient 1
+Correl. #100: Total 914374875 Coefficient 1
+Correl. #101: Total 914374875 Coefficient -0.0297756
+Correl. #102: Total 914374875 Coefficient -0.0956135
+Correl. #103: Total 914374875 Coefficient -0.0547608
+Correl. #104: Total 914374875 Coefficient -0.00188724
+Correl. #110: Total 914374875 Coefficient -0.0297756
+Correl. #111: Total 914374875 Coefficient 1
+Correl. #112: Total 914374875 Coefficient 0.00101075
+Correl. #113: Total 914374875 Coefficient -0.0693329
+Correl. #114: Total 914374875 Coefficient 0.0208709
+Correl. #120: Total 914374875 Coefficient -0.0956135
+Correl. #121: Total 914374875 Coefficient 0.00101075
+Correl. #122: Total 914374875 Coefficient 1
+Correl. #123: Total 914374875 Coefficient 0.0139638
+Correl. #124: Total 914374875 Coefficient -0.0404246
+Correl. #130: Total 914374875 Coefficient -0.0547608
+Correl. #131: Total 914374875 Coefficient -0.0693329
+Correl. #132: Total 914374875 Coefficient 0.0139638
+Correl. #133: Total 914374875 Coefficient 1
+Correl. #134: Total 914374875 Coefficient -0.0457782
+Correl. #140: Total 914374875 Coefficient -0.00188724
+Correl. #141: Total 914374875 Coefficient 0.0208709
+Correl. #142: Total 914374875 Coefficient -0.0404246
+Correl. #143: Total 914374875 Coefficient -0.0457782
+Correl. #144: Total 914374875 Coefficient 1
+Correl. #200: Total 914374875 Coefficient 1
+Correl. #201: Total 914374875 Coefficient 0.998547
+Correl. #210: Total 914374875 Coefficient 0.998547
+Correl. #211: Total 914374875 Coefficient 1
+
+===========================
+Total time (ms) : 3712975
+Nodes searched  : 182896450
+Nodes/second    : 49258
+I:
+1
+Inverse XtX:
+4.16255e-09
+XtY:
+2.50837e+08
+beta:
+1.04412
+
+beta:
+-9.68742e-11    1.04268 -0.0140372      -0.0388051      -0.017137       0.0272964
+
+
+
+
+Wolfram alpha: corr
+{{1,0.132906,0.108003,0.115345,0.109248},{0.132906,1,0.120423,0.171158,0.154068},{0.108003,0.120423,1,0.140482,0.117659},{0.115345,0.171158,0.140482,1,0.184791},{0.109248,0.154068,0.117659,0.184791,1}}
+reduced corr
+{{1,0.13291,0.108,0.11535,0.10925},{0.13291,1,0.12042,0.17116,0.15407},{0.108,0.12042,1,0.14048,0.11766},{0.11535,0.17116,0.14048,1,0.18479},{0.10925,0.15407,0.11766,0.18479,1}}
+
+eigenvectors | (1 | 0.13291 | 0.108 | 0.11535 | 0.10925
+0.13291 | 1 | 0.12042 | 0.17116 | 0.15407
+0.108 | 0.12042 | 1 | 0.14048 | 0.11766
+0.11535 | 0.17116 | 0.14048 | 1 | 0.18479
+0.10925 | 0.15407 | 0.11766 | 0.18479 | 1)
+Result:
+v_1≈(0.842415, 1.01132, 0.876589, 1.05802, 1)
+v_2≈(-1.94406, 0.0850495, -0.343454, 0.805999, 1)
+v_3≈(1.40054, 1.4072, -4.29948, 0.156808, 1)
+v_4≈(0.509304, -1.46188, -0.0759772, 0.109621, 1)
+v_5≈(-0.153756, 0.499881, 0.289916, -1.54076, 1)
+Corresponding eigenvalues:
+λ_1≈1.5465
+λ_2≈0.909245
+λ_3≈0.892917
+λ_4≈0.841727
+λ_5≈0.809613
+
 	* */
 void corr(const std::vector<double>& X, int offset = 0)
 {
@@ -361,11 +464,19 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 	    corr(F);
 
 	    std::vector<std::vector<double>> eVec = {
+		    // bench 16 1 16 pos1000.fen
+                    {0.842415, 1.01132, 0.876589, 1.05802, 1},
+                    {-1.94406, 0.0850495, -0.343454, 0.805999, 1},
+                    {1.40054, 1.4072, -4.29948, 0.156808, 1},
+                    {0.509304, -1.46188, -0.0759772, 0.109621, 1},
+                    {-0.153756, 0.499881, 0.289916, -1.54076, 1},
+		    /* bench
 		    {0.855136, 0.964462, 0.909978, 1.04287, 1},
 		    {-4.38987, -1.35432, 3.05071, 1.23126, 1},
 		    {-1.40177, 1.40841, -1.9617, 0.599733, 1},
 		    {0.321395, -1.13675, -0.464457, 0.234128, 1},
 		    {-0.0785987, 0.385916, 0.363473, -1.5685, 1},
+		    */
 		    //{1,0,0,0,0},
 		    //{0,1,0,0,0},
 		    //{0,0,1,0,0},
@@ -378,7 +489,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 	    std::vector<double> Y = {y, 1.04167*X[0]};
 	    corr(Y, 200);
 
-	    //X.insert(X.begin(), 1); // bias
+	    X.resize(1);
+	    X.insert(X.begin(), 1); // bias
 	    lgs(X, y);
 
             m.value += 2 * (*mainHistory)[us][m.raw()];
