@@ -39,6 +39,7 @@
 #include "search.h"
 #include "types.h"
 #include "ucioption.h"
+#include "movepick.h"
 
 namespace Stockfish {
 
@@ -295,6 +296,12 @@ void solveLgs(int n, int offset = 0)
 		     std::cerr << Ainv[i][j] << "\t";
              std::cerr << std::endl;
         }
+        std::cerr << "XtY:" << std::endl;
+        for(int i = 0; i < n; i++)
+        {
+	    std::cerr << dbg_get_sum_of(offset + 100 + i) << "\t";
+        }
+        std::cerr << std::endl;
 
         std::cerr << "beta:" << std::endl;
         for(int i = 0; i < n; i++)
@@ -369,8 +376,7 @@ void UCIEngine::bench(std::istream& args) {
               << "\nNodes searched  : " << nodes    //
               << "\nNodes/second    : " << 1000 * nodes / elapsed << std::endl;
 
-    solveLgs(8);
-    //solveLgs(2);
+    solveLgs(N_LGS);
 
     // reset callback, to not capture a dangling reference to nodesSearched
     engine.set_on_update_full([&](const auto& i) { on_update_full(i, options["UCI_ShowWDL"]); });

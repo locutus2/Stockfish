@@ -28,6 +28,8 @@
 
 namespace Stockfish {
 
+int N_LGS;
+
 namespace {
 
 enum Stages {
@@ -121,6 +123,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
 void lgs(const std::vector<double>& X, double Y, int offset = 0)
 {
 	const int n = int(X.size());
+	N_LGS = n;
 	for(int i = 0; i < n; i++)
 	   for(int j = 0; j < n; j++)
 	   {
