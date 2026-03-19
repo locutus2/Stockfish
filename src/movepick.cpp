@@ -461,7 +461,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 		    (double)(*continuationHistory[3])[pc][to],
 		    (double)(*continuationHistory[5])[pc][to],
 	    };
-	    corr(F);
+	    //corr(F);
 
 	    std::vector<std::vector<double>> eVec = {
 		    // bench 16 1 16 pos1000.fen
@@ -486,7 +486,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 	    std::vector<double> X = pca(F, eVec);
 	    corr(X, 100);
 	    double y = m.value;
-	    std::vector<double> Y = {y, 1.04167*X[0]};
+	    std::vector<double> Y = {y, X[0]};
 	    corr(Y, 200);
 
 	    X.resize(1);
