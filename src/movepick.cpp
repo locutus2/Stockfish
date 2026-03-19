@@ -484,12 +484,12 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 		    //{0,0,0,0,1},
 	    };
 	    std::vector<double> X = pca(F, eVec);
-	    corr(X, 100);
+	    //corr(X, 100);
 	    double y = m.value;
 	    std::vector<double> Y = {y, X[0]};
 	    corr(Y, 200);
 
-	    X.resize(1);
+	    //X.resize(1);
 	    X.insert(X.begin(), 1); // bias
 	    lgs(X, y);
 

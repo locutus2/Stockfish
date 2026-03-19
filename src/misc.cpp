@@ -304,6 +304,22 @@ struct DebugInfo {
     }
 };
 
+template<size_t N>
+struct DebugInfo2 {
+    std::array<long double, N> data = {0};
+
+    [[nodiscard]] constexpr long double& operator[](size_t index) {
+        assert(index < N);
+        return data[index];
+    }
+
+    constexpr DebugInfo2& operator=(const DebugInfo2& other) {
+        for (size_t i = 0; i < N; i++)
+            data[i]= other.data[i];
+        return *this;
+    }
+};
+
 struct DebugExtremes: public DebugInfo<3> {
     DebugExtremes() {
         data[1] = std::numeric_limits<int64_t>::min();
@@ -315,7 +331,7 @@ std::array<std::pair<int64_t, long double>, MaxDebugSlots>  sum;
 std::array<DebugInfo<2>, MaxDebugSlots>  hit;
 std::array<DebugInfo<2>, MaxDebugSlots>  mean;
 std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
-std::array<DebugInfo<6>, MaxDebugSlots>  correl;
+std::array<DebugInfo2<6>, MaxDebugSlots>  correl;
 std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
@@ -363,7 +379,7 @@ void dbg_extremes_of(int64_t value, int slot) {
     {}
 }
 
-void dbg_correl_of(int64_t value1, int64_t value2, int slot) {
+void dbg_correl_of(long double value1, long double value2, int slot) {
 
     ++correl.at(slot)[0];
     correl.at(slot)[1] += value1;
