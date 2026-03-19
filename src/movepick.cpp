@@ -397,6 +397,12 @@ Corresponding eigenvalues:
 λ_4≈0.841727
 λ_5≈0.809613
 
+beta(all):
+1.47172e-10     1.03638 -0.0713816      -0.0142814      0.0237446       0.0255354
+
+beta(pc1):
+189.396 1.04387
+
 	* */
 void corr(const std::vector<double>& X, int offset = 0)
 {
