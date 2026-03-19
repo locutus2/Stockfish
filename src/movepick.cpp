@@ -21,6 +21,7 @@
 #include <cassert>
 #include <limits>
 #include <utility>
+#include <iostream>
 
 #include "bitboard.h"
 #include "misc.h"
@@ -120,6 +121,21 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     stage = PROBCUT_TT + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm));
 }
 
+// https://www.emathhelp.net/calculators/linear-algebra/eigenvalue-and-eigenvector-calculator
+std::vector<double> pca(const std::vector<double>& X, const std::vector<std::vector<double>>& eVec)
+{
+	const int n = int(X.size());
+	std::vector<double> v;
+	for(int i = 0; i < int(eVec.size()); i++)
+	{
+		double s = 0;
+	    for(int j = 0; j < n; j++)
+		    s += X[j] * eVec[i][j];
+	    v.push_back(s);
+	}
+	return v;
+}
+
 void lgs(const std::vector<double>& X, double Y, int offset = 0)
 {
 	const int n = int(X.size());
@@ -134,6 +150,159 @@ void lgs(const std::vector<double>& X, double Y, int offset = 0)
 	{
 	    dbg_sum_of(X[i] * Y, offset+100+i);
 	}
+}
+
+/*
+Correl. #0: Total 13279839 Coefficient 1
+Correl. #1: Total 13279839 Coefficient 0.351996
+Correl. #2: Total 13279839 Coefficient 0.0264105
+Correl. #3: Total 13279839 Coefficient 0.0621023
+Correl. #4: Total 13279839 Coefficient 0.0147296
+Correl. #5: Total 13279839 Coefficient 0.0762523
+Correl. #6: Total 13279839 Coefficient 0.0735225
+Correl. #10: Total 13279839 Coefficient 0.351996
+Correl. #11: Total 13279839 Coefficient 1
+Correl. #12: Total 13279839 Coefficient 0.0610171
+Correl. #13: Total 13279839 Coefficient 0.0912389
+Correl. #14: Total 13279839 Coefficient 0.0500264
+Correl. #15: Total 13279839 Coefficient 0.0998193
+Correl. #16: Total 13279839 Coefficient 0.102667
+Correl. #20: Total 13279839 Coefficient 0.0264105
+Correl. #21: Total 13279839 Coefficient 0.0610171
+Correl. #22: Total 13279839 Coefficient 1
+Correl. #23: Total 13279839 Coefficient 0.286815
+Correl. #24: Total 13279839 Coefficient 0.21815
+Correl. #25: Total 13279839 Coefficient 0.268853
+Correl. #26: Total 13279839 Coefficient 0.262502
+Correl. #30: Total 13279839 Coefficient 0.0621023
+Correl. #31: Total 13279839 Coefficient 0.0912389
+Correl. #32: Total 13279839 Coefficient 0.286815
+Correl. #33: Total 13279839 Coefficient 1
+Correl. #34: Total 13279839 Coefficient 0.261919
+Correl. #35: Total 13279839 Coefficient 0.339889
+Correl. #36: Total 13279839 Coefficient 0.30987
+Correl. #40: Total 13279839 Coefficient 0.0147296
+Correl. #41: Total 13279839 Coefficient 0.0500264
+Correl. #42: Total 13279839 Coefficient 0.21815
+Correl. #43: Total 13279839 Coefficient 0.261919
+Correl. #44: Total 13279839 Coefficient 1
+Correl. #45: Total 13279839 Coefficient 0.333123
+Correl. #46: Total 13279839 Coefficient 0.296777
+Correl. #50: Total 13279839 Coefficient 0.0762523
+Correl. #51: Total 13279839 Coefficient 0.0998193
+Correl. #52: Total 13279839 Coefficient 0.268853
+Correl. #53: Total 13279839 Coefficient 0.339889
+Correl. #54: Total 13279839 Coefficient 0.333123
+Correl. #55: Total 13279839 Coefficient 1
+Correl. #56: Total 13279839 Coefficient 0.380507
+Correl. #60: Total 13279839 Coefficient 0.0735225
+Correl. #61: Total 13279839 Coefficient 0.102667
+Correl. #62: Total 13279839 Coefficient 0.262502
+Correl. #63: Total 13279839 Coefficient 0.30987
+Correl. #64: Total 13279839 Coefficient 0.296777
+Correl. #65: Total 13279839 Coefficient 0.380507
+Correl. #66: Total 13279839 Coefficient 1
+
+1
+0.351996
+0.0264105
+0.0621023
+0.0147296
+0.0762523
+0.0735225
+
+0.351996
+1
+0.0610171
+0.0912389
+0.0500264
+0.0998193
+0.102667
+
+0.0264105
+0.0610171
+1
+0.286815
+0.21815
+0.268853
+0.262502
+
+0.0621023
+0.0912389
+0.286815
+1
+0.261919
+0.339889
+0.30987
+
+0.0147296
+0.0500264
+0.21815
+0.261919
+1
+0.333123
+0.296777
+
+0.0762523
+0.0998193
+0.268853
+0.339889
+0.333123
+1
+0.380507
+
+0.0735225
+0.102667
+0.262502
+0.30987
+0.296777
+0.380507
+1
+
+Wolfram alpha
+{
+	{1,         0.351996,  0.0264105, 0.0621023, 0.0147296, 0.0762523, 0.0735225},
+        {0.351996,  1,         0.0610171, 0.0912389, 0.0500264, 0.0998193, 0.102667},
+        {0.0264105, 0.0610171, 1,         0.286815,  0.21815,   0.268853,  0.262502},
+	{0.0621023, 0.0912389, 0.286815, 1, 0.261919, 0.339889, 0.30987},
+	{0.0147296, 0.0500264, 0.21815, 0.261919, 1, 0.333123, 0.296777},
+	{0.0762523, 0.0998193, 0.268853, 0.339889, 0.333123, 1, 0.380507},
+	{0.0735225, 0.102667, 0.262502, 0.30987, 0.296777, 0.380507, 1}
+}
+
+{ {1,         0.351996,  0.0264105, 0.0621023, 0.0147296, 0.0762523, 0.0735225}, {0.351996,  1,         0.0610171, 0.0912389, 0.0500264, 0.0998193,     0.102667}, {0.0264105, 0.0610171, 1,         0.286815,  0.21815,   0.268853,  0.262502}, {0.0621023, 0.0912389, 0.286815, 1, 0.261919, 0.339889, 0.30987}, {0.0147296, 0.0500264, 0.21815, 0.261919, 1, 0.333123, 0.296777}, {0.0762523, 0.0998193, 0.268853, 0.339889, 0.333123, 1, 0.380507}, {0.0735225,     0.102667, 0.262502, 0.30987, 0.296777, 0.380507, 1}}
+
+{{1,         0.286815,  0.21815,   0.268853,  0.262502}, {0.286815, 1, 0.261919, 0.339889, 0.30987}, {0.21815, 0.261919, 1, 0.333123, 0.296777},        {0.268853, 0.339889, 0.333123, 1, 0.380507}, {0.262502, 0.30987, 0.296777, 0.380507, 1}}
+ 
+ONly cmh hist
+Input:
+eigenvectors | (1 | 0.2868 | 0.218 | 0.2689 | 0.2625
+0.2868 | 1 | 0.2619 | 0.3399 | 0.31
+0.218 | 0.2619 | 1 | 0.3331 | 0.2968
+0.2689 | 0.3399 | 0.3331 | 1 | 0.3805
+0.2625 | 0.31 | 0.2968 | 0.3805 | 1)
+Result:
+v_1≈(0.855136, 0.964462, 0.909978, 1.04287, 1)
+v_2≈(-4.38987, -1.35432, 3.05071, 1.23126, 1)
+v_3≈(-1.40177, 1.40841, -1.9617, 0.599733, 1)
+v_4≈(0.321395, -1.13675, -0.464457, 0.234128, 1)
+v_5≈(-0.0785987, 0.385916, 0.363473, -1.5685, 1)
+Corresponding eigenvalues:
+λ_1≈2.19035
+λ_2≈0.801766
+λ_3≈0.71461
+λ_4≈0.683208
+λ_5≈0.610067	
+	
+	* */
+void corr(const std::vector<double>& X, int offset = 0)
+{
+	const int n = int(X.size());
+	for(int i = 0; i < n; i++)
+	   for(int j = 0; j < n; j++)
+	   {
+		   dbg_correl_of(X[i], X[j], offset+10*i+j);
+	   }
 }
 
 // Assigns a numerical value to each move in a list, used for sorting.
@@ -176,26 +345,44 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()];
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
-            m.value += (*continuationHistory[0])[pc][to];
+            m.value = (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to];
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
 
-	    double y = m.value;
-	    std::vector<double> X = { 
-		    1.0,
-		    (double)(*mainHistory)[us][m.raw()],
-		    (double)sharedHistory->pawn_entry(pos)[pc][to],
+	    std::vector<double> F = { 
 		    (double)(*continuationHistory[0])[pc][to],
 		    (double)(*continuationHistory[1])[pc][to],
 		    (double)(*continuationHistory[2])[pc][to],
 		    (double)(*continuationHistory[3])[pc][to],
 		    (double)(*continuationHistory[5])[pc][to],
 	    };
+	    corr(F);
+
+	    std::vector<std::vector<double>> eVec = {
+		    {0.855136, 0.964462, 0.909978, 1.04287, 1},
+		    {-4.38987, -1.35432, 3.05071, 1.23126, 1},
+		    {-1.40177, 1.40841, -1.9617, 0.599733, 1},
+		    {0.321395, -1.13675, -0.464457, 0.234128, 1},
+		    {-0.0785987, 0.385916, 0.363473, -1.5685, 1},
+		    //{1,0,0,0,0},
+		    //{0,1,0,0,0},
+		    //{0,0,1,0,0},
+		    //{0,0,0,1,0},
+		    //{0,0,0,0,1},
+	    };
+	    std::vector<double> X = pca(F, eVec);
+	    corr(X, 100);
+	    double y = m.value;
+	    std::vector<double> Y = {y, 1.04167*X[0]};
+	    corr(Y, 200);
+
+	    //X.insert(X.begin(), 1); // bias
 	    lgs(X, y);
+
+            m.value += 2 * (*mainHistory)[us][m.raw()];
+            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
 
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
