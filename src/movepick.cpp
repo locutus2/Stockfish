@@ -29,8 +29,11 @@
 
 namespace Stockfish {
 
-constexpr int SCALE = 128;
-constexpr double B[5] = {1.03638,-0.0713816,-0.0142814,0.0237446,0.0255354};
+constexpr double EV_LEN[5] = {2.1494756965236894717896241189081,
+                           2.356734550000752630371545118127,
+                           4.8427101039463429768825494126532,
+                           1.8477751479486999529656430645896,
+                           1.9317128633295891577058290228724};
 constexpr double EV[5][6] = {
 	{0.842415, 1.01132, 0.876589, 1.05802, 0, 1},
 	{-1.94406, 0.0850495, -0.343454, 0.805999, 0, 1},
@@ -39,7 +42,16 @@ constexpr double EV[5][6] = {
 	{-0.153756, 0.499881, 0.289916, -1.54076, 0, 1},
 };
 
-#define S(i,j) (int(B[(i)]*EV[(i)][(j)]*SCALE))
+constexpr int SCALE_EV = 1024;
+constexpr int SCALED_EV[5][6] = {
+	{  401,  481,  417,  504, 0, 476 },
+	{ -844,   36, -149,  350, 0, 434 },
+	{  296,  297, -909,   33, 0, 211 },
+	{  282, -810,  -42,   60, 0, 554 },
+	{  -81,  264,  153, -816, 0, 530 }
+};
+
+#define S(i,j) (int(EV[(i)][(j)]/EV_LEN[(i)]*SCALE_EV))
 
 /*
 constexpr int SCALED_EV[5][6] = {
@@ -51,31 +63,26 @@ constexpr int SCALED_EV[5][6] = {
 };
 */
 
-constexpr int SCALED_EV[5][6] = {
-	{ 111, 134, 116, 140, 0, 132 },
-	{  17,   0,   3,  -7, 0,  -9 },
-	{  -2,  -2,   7,   0, 0,  -1 },
-	{   1,  -4,   0,   0, 0,   3 },
-	{   0,   1,   0,  -5, 0,   3 }
-};
+constexpr int SCALE_W = 1024;
+constexpr int CMH[6] = {SCALE_W,SCALE_W,SCALE_W,SCALE_W,0,SCALE_W}; // current master cmh weights
 
 int W[5];
 int Random[5];
 
 void init()
 {
-	/*
+/*
 	std::cerr << "SCALED_EV:" << std::endl;
 	for(int i = 0; i < 5; i++)
 	{
 	     for(int j : {0,1,2,3,5})
 		     std::cerr << SCALED_EV[i][j] << "\t";
 	     std::cerr << std::endl;
-	}
-	*/
+ 	}
+*/
 }
 
-TUNE(SetRange(-SCALE,SCALE), W, Random, init);
+TUNE(SetRange(-SCALE_W,SCALE_W), W, Random, init);
 UPDATE_ON_LAST();
 
 namespace {
@@ -213,10 +220,14 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             {
                 int w = 0;
                 for(int i = 0; i < 5; i++)
-                    w += (SCALE + W[i]) * SCALED_EV[i][c];
-                m.value += (*continuationHistory[c])[pc][to] * w / SCALE;
+                    w += W[i] * SCALED_EV[i][c];
+		w /= SCALE_EV;
+		w += CMH[c];
+		//std::cerr << w << " ";
+                m.value += (*continuationHistory[c])[pc][to] * w;
             }
-            m.value /= SCALE;
+	    //std::exit(1);
+            m.value /= SCALE_W;
 
             m.value += 2 * (*mainHistory)[us][m.raw()];
             m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
