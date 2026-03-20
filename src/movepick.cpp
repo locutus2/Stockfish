@@ -59,6 +59,7 @@ constexpr int SCALED_EV[5][6] = {
 	{   0,   1,   0,  -5, 0,   3 }
 };
 
+//int W[5]={-7,3,4,6-2};
 int W[5];
 int Random[5];
 
@@ -214,8 +215,10 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 int w = 0;
                 for(int i = 0; i < 5; i++)
                     w += (SCALE + W[i]) * SCALED_EV[i][c];
+		//std::cerr << " " << w/SCALE;
                 m.value += (*continuationHistory[c])[pc][to] * w / SCALE;
             }
+	    //std::exit(1);
             m.value /= SCALE;
 
             m.value += 2 * (*mainHistory)[us][m.raw()];
