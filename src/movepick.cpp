@@ -33,6 +33,7 @@ namespace {
 enum Stages {
     // generate main search moves
     MAIN_TT,
+    FOLLOW_PV_TT,
     CAPTURE_INIT,
     GOOD_CAPTURE,
     QUIET_INIT,
@@ -88,7 +89,8 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const SharedHistories*       sh,
-                       int                          pl) :
+                       int                          pl,
+                       Move                         fpvm) :
     pos(p),
     mainHistory(mh),
     lowPlyHistory(lph),
@@ -96,6 +98,7 @@ MovePicker::MovePicker(const Position&              p,
     continuationHistory(ch),
     sharedHistory(sh),
     ttMove(ttm),
+    followPvMove(fpvm),
     depth(d),
     ply(pl) {
 
@@ -196,7 +199,7 @@ template<typename Pred>
 Move MovePicker::select(Pred filter) {
 
     for (; cur < endCur; ++cur)
-        if (*cur != ttMove && filter())
+        if (*cur != ttMove && *cur != followPvMove && filter())
             return *cur++;
 
     return Move::none();
@@ -218,6 +221,12 @@ top:
     case PROBCUT_TT :
         ++stage;
         return ttMove;
+
+    case FOLLOW_PV_TT :
+        ++stage;
+        if (followPvMove && followPvMove != ttMove && pos.pseudo_legal(followPvMove))
+            return followPvMove;
+        [[fallthrough]];
 
     case CAPTURE_INIT :
     case PROBCUT_INIT :
