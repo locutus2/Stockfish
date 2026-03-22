@@ -78,9 +78,10 @@ constexpr int CMH[6] = {SCALE_W,SCALE_W,SCALE_W,SCALE_W,0,SCALE_W}; // current m
 29K 1020 965 975 1080 1024
 45K 1004 962 993 1046 1021
 55K 995 989 1006 1025 991
+77K 1004 991 1020 1005 989
 */
 
-//int W[5]={-51,12,-9,3,-28};
+//int W[5]={-52,-5,-20,1,-10};
 int W[5];
 int Random[5];
 
