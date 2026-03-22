@@ -66,6 +66,17 @@ constexpr int SCALED_EV[5][6] = {
 constexpr int SCALE_W = 1024;
 constexpr int CMH[6] = {SCALE_W,SCALE_W,SCALE_W,SCALE_W,0,SCALE_W}; // current master cmh weights
 
+/*
+ * CMH weights
+3K 1012 1006 1029 1030 1037 
+7K 1004 1006 1012 1038 1031
+11K 1033 1003 979 1058 1023
+17K 1023 975 996 1074 1037
+20K 1036 957 1008 1063 1037
+25K 1027 956 987 1076 1038
+27K 1025 964 995 1079 1031
+*/
+
 int W[5];
 int Random[5];
 
