@@ -158,12 +158,12 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = (*continuationHistory[0])[pc][to];
-            m.value += (*continuationHistory[1])[pc][to];
-            m.value += (*continuationHistory[2])[pc][to];
-            m.value += (*continuationHistory[3])[pc][to];
-            m.value += (*continuationHistory[5])[pc][to];
-            m.value -= m.value / 16;
+            m.value = 995 * (*continuationHistory[0])[pc][to];
+            m.value += 989 * (*continuationHistory[1])[pc][to];
+            m.value += 1006 * (*continuationHistory[2])[pc][to];
+            m.value += 1025 * (*continuationHistory[3])[pc][to];
+            m.value += 991 * (*continuationHistory[5])[pc][to];
+            m.value /= 1024;
 
             m.value += 2 * (*mainHistory)[us][m.raw()];
             m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
