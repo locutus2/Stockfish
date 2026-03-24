@@ -92,6 +92,8 @@ constexpr int CMH[6] = {SCALE_W,SCALE_W,SCALE_W,SCALE_W,0,SCALE_W}; // current m
 int W[5];
 int Random[5];
 
+int w[6];
+
 void init()
 {
 /*
@@ -103,6 +105,17 @@ void init()
 	     std::cerr << std::endl;
  	}
 */
+	//std::cerr << "CMH_WEIGHTS:" << std::endl;
+        for(int c : {0,1,2,3,5})
+	{
+		w[c] = 0;
+		for(int i = 0; i < 5; i++)
+		    w[c] += W[i] * SCALED_EV[i][c];
+		w[c] /= SCALE_EV;
+		w[c] += CMH[c];
+		//std::cerr << w[c] << " ";
+	}
+	//std::cerr << std::endl;
 }
 
 TUNE(SetRange(-SCALE_W,SCALE_W), W, Random, init);
@@ -238,18 +251,11 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 0;
-            for(int c : {0,1,2,3,5})
-            {
-                int w = 0;
-                for(int i = 0; i < 5; i++)
-                    w += W[i] * SCALED_EV[i][c];
-		w /= SCALE_EV;
-		w += CMH[c];
-		//std::cerr << w << " ";
-                m.value += (*continuationHistory[c])[pc][to] * w;
-            }
-	    //std::exit(1);
+            m.value = w[0] * (*continuationHistory[0])[pc][to];
+            m.value += w[1] * (*continuationHistory[1])[pc][to];
+            m.value += w[2] * (*continuationHistory[2])[pc][to];
+            m.value += w[3] * (*continuationHistory[3])[pc][to];
+            m.value += w[5] * (*continuationHistory[5])[pc][to];
             m.value /= SCALE_W;
 
             m.value += 2 * (*mainHistory)[us][m.raw()];
