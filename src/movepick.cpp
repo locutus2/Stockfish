@@ -86,9 +86,10 @@ constexpr int CMH[6] = {SCALE_W,SCALE_W,SCALE_W,SCALE_W,0,SCALE_W}; // current m
 /*
  * CMH weights C=25
  * 6K 1026 1030 1027 1020 1018
+ * 11K 1016 1033 1027 1023 1019
  * */
 
-//int W[5]={0,-6,-2,-8,2};
+//int W[5]={0,4,-4,-13,2};
 int W[5];
 int Random[5];
 
