@@ -644,8 +644,10 @@ void Search::Worker::iterative_deepening() {
 		    //double y1 = 0.89778 * std::pow(fallingEval,0.142) * std::pow(reduction,1.0725836) * std::pow(bestMoveInstability,1.057) * std::pow(highBestMoveEffort,1.12546); // 1 pc
 		    //double y1 = 1.013227 * std::pow(fallingEval,0.998782) * std::pow(reduction,0.95743) * std::pow(bestMoveInstability,1.009) * std::pow(highBestMoveEffort,1.0471162); // 2 pc
 		    //double y1 = 1.013227 * fallingEval * std::pow(reduction,0.95743) * bestMoveInstability * std::pow(highBestMoveEffort,1.0471162); // 2 pc simplified
-                    double highBestMoveEffort2 = nodesEffort > 86000 ? 0.739226 : 0.970829;
-		    double y1 = fallingEval * std::pow(reduction,0.95743) * bestMoveInstability * highBestMoveEffort2; // 2 pc simplified more
+                    //double highBestMoveEffort2 = nodesEffort > 86000 ? 0.739226 : 0.970829;
+		    //double y1 = fallingEval * std::pow(reduction,0.95743) * bestMoveInstability * highBestMoveEffort2; // 2 pc simplified more
+                    double highBestMoveEffort3 = nodesEffort > 86000 ? 0.7468438 : 0.9808335;
+		    double y1 = fallingEval * std::pow(reduction,0.95743) * bestMoveInstability * highBestMoveEffort3; // 2 pc simplified more v3
 		    std::cerr << y0 << ";" << y1 << std::endl;
 		    dbg_correl_of(y0,y1, 0);
 		    dbg_correl_of(std::log(y0),std::log(y1), 1);
