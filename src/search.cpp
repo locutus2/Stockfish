@@ -518,6 +518,8 @@ void Search::Worker::iterative_deepening() {
 
             double highBestMoveEffort = nodesEffort > 86000 ? 0.74 : 0.96;
 
+	    if(rootDepth >= 13)
+	    {
             double y = std::log(fallingEval * reduction * bestMoveInstability * highBestMoveEffort);
 
    std::vector<double> F = {
@@ -543,6 +545,7 @@ void Search::Worker::iterative_deepening() {
             //X.resize(1); // take only first pc
             //X.insert(X.begin(), 1); // bias
             //PCA::updateLgs(X, y);
+	    }
 
         // Do we have time for the next iteration? Can we stop searching now?
         if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
