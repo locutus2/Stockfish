@@ -608,6 +608,8 @@ void Search::Worker::iterative_deepening() {
                     double y0 = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
 		    double y1 = 0.89778 * std::pow(fallingEval,0.142) * std::pow(reduction,1.0725836) * std::pow(bestMoveInstability,1.057) * std::pow(highBestMoveEffort,1.12546);
 		    std::cerr << y0 << ";" << y1 << std::endl;
+		    dbg_correl_of(y0,y1, 0);
+		    dbg_correl_of(std::log(y0),std::log(y1), 1);
 	    }
 
         // Do we have time for the next iteration? Can we stop searching now?
