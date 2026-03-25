@@ -553,6 +553,13 @@ void Search::Worker::iterative_deepening() {
 			v_3≈(0.586808, 7.20818, -8.45796, 1)
 			v_4≈(-0.0170571, -0.631781, -0.421378, 1)
 
+			// 1 pc
+			Correl. #100: Total 4000 Coefficient 1 Cov 0.724
+			Correl. #200: Total 4000 Coefficient 1 Cov 1.10919
+			Correl. #201: Total 4000 Coefficient 0.909256 Cov 0.814813
+			Correl. #210: Total 4000 Coefficient 0.909256 Cov 0.814813
+			Correl. #211: Total 4000 Coefficient 1 Cov 0.724
+
 			I:
 			1       0
 			0       1
@@ -564,14 +571,31 @@ void Search::Worker::iterative_deepening() {
 			beta:
 			-0.107827       1.12546
 
-			Correl. #100: Total 4000 Coefficient 1 Cov 0.724
-			Correl. #200: Total 4000 Coefficient 1 Cov 1.10919
-			Correl. #201: Total 4000 Coefficient 0.909256 Cov 0.814813
-			Correl. #210: Total 4000 Coefficient 0.909256 Cov 0.814813
-			Correl. #211: Total 4000 Coefficient 1 Cov 0.724
-		     * */
 
-		    /*
+			// 2 pc
+			Correl. #100: Total 4000 Coefficient 1 Cov 0.724
+			Correl. #101: Total 4000 Coefficient -0.0860913 Cov -0.954038
+			Correl. #110: Total 4000 Coefficient -0.0860913 Cov -0.954038
+			Correl. #111: Total 4000 Coefficient 1 Cov 169.619
+			
+			===========================
+			Total time (ms) : 318756
+			Nodes searched  : 182896450
+			Nodes/second    : 573781
+			I:
+			1       0       0
+			0       1       0
+			0       0       1
+			Inverse XtX:
+			1.66026 -0.926388       -0.0212678
+			-0.926388       1.39193 0.00783443
+			-0.0212678      0.00783443      0.00593971
+			XtY:
+			0.62396 1.22031 -5.06321
+			beta:
+					    0.0131403       1.0809  -0.0337838/
+		     * */
+/*
             double y = std::log(fallingEval * reduction * bestMoveInstability * highBestMoveEffort);
 
    std::vector<double> F = {
@@ -585,6 +609,9 @@ void Search::Worker::iterative_deepening() {
             std::vector<std::vector<double>> eVec = {
                     // bench 16 1 16 pos1000.fen
                     {0.126141,0.953018,0.93918,1},
+		    {-25.5281, 2.15152, 0.18071, 1},
+		    //{0.586808, 7.20818, -8.45796, 1},
+		    //{-0.0170571, -0.631781, -0.421378, 1},
                     //{1,0,0,0},
                     //{0,1,0,0},
                     //{0,0,1,0},
@@ -592,21 +619,33 @@ void Search::Worker::iterative_deepening() {
             };
             std::vector<double> X = PCA::pca(F, eVec);
             PCA::corr(X, 100);
-            std::vector<double> Y = {y, X[0]};
-            PCA::corr(Y, 200);
+            //std::vector<double> Y = {y, X[0]};
+            //PCA::corr(Y, 200);
 
-            X.resize(1); // take only first pc
+            //X.resize(1); // take only first pc
             X.insert(X.begin(), 1); // bias
             PCA::updateLgs(X, y);
-
-	    formulas
+*/
+	    /*
+	    formulas (1 pc)
 	    exp(-0.107827 + 1.12546 * (0.126141*log(a) + 0.953018*log(b) + 0.93918*log(c) + log(d)))
 	    =exp(-0.107827) * (a^0.126141 * b^0.953018 * c^0.93918 * d)^1.12546
 	    =0,89778289943794015148644197549982 * a^0,14196664986 * b^1,07258363828 * c^1,0570095228 * d^1.12546
 	    =0,89778 * a^0,142 * b^1,0725836 * c^1,057 * d^1.12546
 	    */
+	    /*
+	    formulas (2 pc)
+	    exp(0.0131403 + 1.0809    * (0.126141*log(a) + 0.953018*log(b) + 0.93918*log(c) + log(d))
+	                  - 0.0337838 * (-25.5281*log(a) + 2.15152*log(b) + 0.18071*log(c) + log(d)))
+	    exp(0,0131403) * exp(0,99878203168*log(a) + 0,957430634824*log(b) + 1,009054591502*log(c) + 1,0471162*log(d))
+	    1.013227  * a^0.998782* b^0.95743 * c^1.009 * d^1.0471162
+	     * */
                     double y0 = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
-		    double y1 = 0.89778 * std::pow(fallingEval,0.142) * std::pow(reduction,1.0725836) * std::pow(bestMoveInstability,1.057) * std::pow(highBestMoveEffort,1.12546);
+		    //double y1 = 0.89778 * std::pow(fallingEval,0.142) * std::pow(reduction,1.0725836) * std::pow(bestMoveInstability,1.057) * std::pow(highBestMoveEffort,1.12546); // 1 pc
+		    //double y1 = 1.013227 * std::pow(fallingEval,0.998782) * std::pow(reduction,0.95743) * std::pow(bestMoveInstability,1.009) * std::pow(highBestMoveEffort,1.0471162); // 2 pc
+		    //double y1 = 1.013227 * fallingEval * std::pow(reduction,0.95743) * bestMoveInstability * std::pow(highBestMoveEffort,1.0471162); // 2 pc simplified
+                    double highBestMoveEffort2 = nodesEffort > 86000 ? 0.739226 : 0.970829;
+		    double y1 = fallingEval * std::pow(reduction,0.95743) * bestMoveInstability * highBestMoveEffort2; // 2 pc simplified more
 		    std::cerr << y0 << ";" << y1 << std::endl;
 		    dbg_correl_of(y0,y1, 0);
 		    dbg_correl_of(std::log(y0),std::log(y1), 1);
