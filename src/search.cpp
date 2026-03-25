@@ -520,6 +520,58 @@ void Search::Worker::iterative_deepening() {
 
 	    if(rootDepth >= 13)
 	    {
+		    /*
+		     * Correl. #0: Total 4000 Coefficient 1 Cov 0.260525
+		     * Correl. #1: Total 4000 Coefficient 0.0290886 Cov 0.0043325
+		     * Correl. #2: Total 4000 Coefficient 0.0678175 Cov 0.0209225
+		     * Correl. #3: Total 4000 Coefficient 0.0582121 Cov 0.00376
+		     * Correl. #10: Total 4000 Coefficient 0.0290886 Cov 0.0043325
+		     * Correl. #11: Total 4000 Coefficient 1 Cov 0.0851497
+		     * Correl. #12: Total 4000 Coefficient 0.52134 Cov 0.0919517
+		     * Correl. #13: Total 4000 Coefficient 0.637153 Cov 0.023528
+		     * Correl. #20: Total 4000 Coefficient 0.0678175 Cov 0.0209225
+		     * Correl. #21: Total 4000 Coefficient 0.52134 Cov 0.0919517
+		     * Correl. #22: Total 4000 Coefficient 1 Cov 0.365338
+		     * Correl. #23: Total 4000 Coefficient 0.608639 Cov 0.046554
+		     * Correl. #30: Total 4000 Coefficient 0.0582121 Cov 0.00376
+		     * Correl. #31: Total 4000 Coefficient 0.637153 Cov 0.023528
+		     * Correl. #32: Total 4000 Coefficient 0.608639 Cov 0.046554
+		     * Correl. #33: Total 4000 Coefficient 1 Cov 0.016014
+		     *
+		     {{1,0.0290886,0.0678175,0.0582121},{0.0290886,1,0.52134,0.637153},{0.0678175,0.52134,1,0.608639},{0.0582121,0.637153,0.608639,1}}
+
+			Eigenvalues:
+
+			λ_1≈2.18618
+			λ_2≈0.994788
+			λ_3≈0.479029
+			λ_4≈0.339999
+			Eigenvectors:
+
+			v_1≈(0.126141, 0.953018, 0.93918, 1)
+			v_2≈(-25.5281, 2.15152, 0.18071, 1)
+			v_3≈(0.586808, 7.20818, -8.45796, 1)
+			v_4≈(-0.0170571, -0.631781, -0.421378, 1)
+
+			I:
+			1       0
+			0       1
+			Inverse XtX:
+			1.58411 -0.898336
+			-0.898336       1.3816
+			XtY:
+			0.62396 1.22031
+			beta:
+			-0.107827       1.12546
+
+			Correl. #100: Total 4000 Coefficient 1 Cov 0.724
+			Correl. #200: Total 4000 Coefficient 1 Cov 1.10919
+			Correl. #201: Total 4000 Coefficient 0.909256 Cov 0.814813
+			Correl. #210: Total 4000 Coefficient 0.909256 Cov 0.814813
+			Correl. #211: Total 4000 Coefficient 1 Cov 0.724
+		     * */
+
+		    /*
             double y = std::log(fallingEval * reduction * bestMoveInstability * highBestMoveEffort);
 
    std::vector<double> F = {
@@ -532,19 +584,30 @@ void Search::Worker::iterative_deepening() {
 
             std::vector<std::vector<double>> eVec = {
                     // bench 16 1 16 pos1000.fen
-                    {1,0,0,0},
+                    {0.126141,0.953018,0.93918,1},
+                    //{1,0,0,0},
                     //{0,1,0,0},
                     //{0,0,1,0},
                     //{0,0,0,1},
             };
-            //std::vector<double> X = PCA::pca(F, eVec);
-            //PCA::corr(X, 100);
-            //std::vector<double> Y = {y, X[0]};
-            //PCA::corr(Y, 200);
+            std::vector<double> X = PCA::pca(F, eVec);
+            PCA::corr(X, 100);
+            std::vector<double> Y = {y, X[0]};
+            PCA::corr(Y, 200);
 
-            //X.resize(1); // take only first pc
-            //X.insert(X.begin(), 1); // bias
-            //PCA::updateLgs(X, y);
+            X.resize(1); // take only first pc
+            X.insert(X.begin(), 1); // bias
+            PCA::updateLgs(X, y);
+
+	    formulas
+	    exp(-0.107827 + 1.12546 * (0.126141*log(a) + 0.953018*log(b) + 0.93918*log(c) + log(d)))
+	    =exp(-0.107827) * (a^0.126141 * b^0.953018 * c^0.93918 * d)^1.12546
+	    =0,89778289943794015148644197549982 * a^0,14196664986 * b^1,07258363828 * c^1,0570095228 * d^1.12546
+	    =0,89778 * a^0,142 * b^1,0725836 * c^1,057 * d^1.12546
+	    */
+                    double y0 = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
+		    double y1 = 0.89778 * std::pow(fallingEval,0.142) * std::pow(reduction,1.0725836) * std::pow(bestMoveInstability,1.057) * std::pow(highBestMoveEffort,1.12546);
+		    std::cerr << y0 << ";" << y1 << std::endl;
 	    }
 
         // Do we have time for the next iteration? Can we stop searching now?
