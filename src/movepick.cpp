@@ -168,6 +168,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
 
+	    /*
 	    std::vector<double> F = { 
 		    (double)(*continuationHistory[0])[pc][to],
 		    (double)(*continuationHistory[1])[pc][to],
@@ -184,13 +185,6 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                     //{1.40054, 1.4072, -4.29948, 0.156808, 1},
                     //{0.509304, -1.46188, -0.0759772, 0.109621, 1},
                     //{-0.153756, 0.499881, 0.289916, -1.54076, 1},
-		    /* bench
-		    {0.855136, 0.964462, 0.909978, 1.04287, 1},
-		    {-4.38987, -1.35432, 3.05071, 1.23126, 1},
-		    {-1.40177, 1.40841, -1.9617, 0.599733, 1},
-		    {0.321395, -1.13675, -0.464457, 0.234128, 1},
-		    {-0.0785987, 0.385916, 0.363473, -1.5685, 1},
-		    */
 		    //{1,0,0,0,0},
 		    //{0,1,0,0,0},
 		    //{0,0,1,0,0},
@@ -206,6 +200,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 	    //X.resize(1);
 	    X.insert(X.begin(), 1); // bias
 	    PCA::updateLgs(X, y);
+	    */
 
             m.value += 2 * (*mainHistory)[us][m.raw()];
             m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];

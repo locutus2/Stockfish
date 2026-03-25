@@ -49,6 +49,7 @@
 #include "types.h"
 #include "uci.h"
 #include "ucioption.h"
+#include "pca.h"
 
 namespace Stockfish {
 
@@ -497,9 +498,6 @@ void Search::Worker::iterative_deepening() {
             th->worker->bestMoveChanges = 0;
         }
 
-        // Do we have time for the next iteration? Can we stop searching now?
-        if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
-        {
             uint64_t nodesEffort =
               rootMoves[0].effort * 100000 / std::max(size_t(1), size_t(nodes));
 
@@ -520,6 +518,56 @@ void Search::Worker::iterative_deepening() {
 
             double highBestMoveEffort = nodesEffort > 86000 ? 0.74 : 0.96;
 
+            double y = std::log(fallingEval * reduction * bestMoveInstability * highBestMoveEffort);
+
+   std::vector<double> F = {
+                    std::log(fallingEval),
+                    std::log(reduction),
+                    std::log(bestMoveInstability),
+                    std::log(highBestMoveEffort),
+            };
+            PCA::corr(F);
+
+            std::vector<std::vector<double>> eVec = {
+                    // bench 16 1 16 pos1000.fen
+                    {1,0,0,0},
+                    //{0,1,0,0},
+                    //{0,0,1,0},
+                    //{0,0,0,1},
+            };
+            //std::vector<double> X = PCA::pca(F, eVec);
+            //PCA::corr(X, 100);
+            //std::vector<double> Y = {y, X[0]};
+            //PCA::corr(Y, 200);
+
+            //X.resize(1); // take only first pc
+            //X.insert(X.begin(), 1); // bias
+            //PCA::updateLgs(X, y);
+
+        // Do we have time for the next iteration? Can we stop searching now?
+        if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
+        {
+/*
+            uint64_t nodesEffort =
+              rootMoves[0].effort * 100000 / std::max(size_t(1), size_t(nodes));
+
+            double fallingEval = (12.44 + 2.318 * (mainThread->bestPreviousAverageScore - bestValue)
+                                  + 0.95 * (mainThread->iterValue[iterIdx] - bestValue))
+                               / 100.0;
+            fallingEval = std::clamp(fallingEval, 0.581, 1.655);
+
+            // If the bestMove is stable over several iterations, reduce time accordingly
+            double k      = 0.476;
+            double center = lastBestMoveDepth + 11.565;
+
+            timeReduction = 0.64 + 0.93 / (0.953 + std::exp(-k * (completedDepth - center)));
+
+            double reduction = (1.5 + mainThread->previousTimeReduction) / (2.255 * timeReduction);
+
+            double bestMoveInstability = 1.088 + 2.315 * totBestMoveChanges / threads.size();
+
+            double highBestMoveEffort = nodesEffort > 86000 ? 0.74 : 0.96;
+*/
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort;
 
