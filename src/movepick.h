@@ -25,8 +25,6 @@
 
 namespace Stockfish {
 
-extern int N_LGS;
-
 class Position;
 
 // The MovePicker class is used to pick one pseudo-legal move at a time from the
