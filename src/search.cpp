@@ -1181,7 +1181,7 @@ moves_loop:  // When in check, search starts here
             {
                 if (value >= beta && !is_decisive(value))
                 {
-                    if (cutNode || (ss - 1)->statScore <= 0)
+                    if (cutNode || (ss - 1)->moveCount != 0)
                     {
                         ttMoveHistory << std::max(-424 - 107 * depth, -3375);
                         return value;
