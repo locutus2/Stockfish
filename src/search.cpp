@@ -520,8 +520,9 @@ void Search::Worker::iterative_deepening() {
 
             double highBestMoveEffort = nodesEffort > 86000 ? 0.74 : 0.96;
 
-            double totalTime = mainThread->tm.optimum() * fallingEval * reduction
-                             * bestMoveInstability * highBestMoveEffort;
+            double totalTime = mainThread->tm.optimum() * 0.89778 * std::pow(fallingEval, 0.142)
+                             * std::pow(reduction, 1.0725836) * std::pow(bestMoveInstability, 1.057)
+                             * std::pow(highBestMoveEffort, 1.12546);
 
             // Cap used time in case of a single legal move for a better viewer experience
             if (rootMoves.size() == 1)
