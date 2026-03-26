@@ -498,103 +498,6 @@ void Search::Worker::iterative_deepening() {
             th->worker->bestMoveChanges = 0;
         }
 
-            uint64_t nodesEffort =
-              rootMoves[0].effort * 100000 / std::max(size_t(1), size_t(nodes));
-
-            double fallingEval = (12.44 + 2.318 * (mainThread->bestPreviousAverageScore - bestValue)
-                                  + 0.95 * (mainThread->iterValue[iterIdx] - bestValue))
-                               / 100.0;
-            fallingEval = std::clamp(fallingEval, 0.581, 1.655);
-
-            // If the bestMove is stable over several iterations, reduce time accordingly
-            double k      = 0.476;
-            double center = lastBestMoveDepth + 11.565;
-
-            timeReduction = 0.64 + 0.93 / (0.953 + std::exp(-k * (completedDepth - center)));
-
-            double reduction = (1.5 + mainThread->previousTimeReduction) / (2.255 * timeReduction);
-
-            double bestMoveInstability = 1.088 + 2.315 * totBestMoveChanges / threads.size();
-
-            double highBestMoveEffort = nodesEffort > 86000 ? 0.74 : 0.96;
-
-	    if(rootDepth >= 13)
-	    {
-		    /*
-		     * Correl. #0: Total 4000 Coefficient 1 Cov 0.260525
-		     * Correl. #1: Total 4000 Coefficient 0.0290886 Cov 0.0043325
-		     * Correl. #2: Total 4000 Coefficient 0.0678175 Cov 0.0209225
-		     * Correl. #3: Total 4000 Coefficient 0.0582121 Cov 0.00376
-		     * Correl. #10: Total 4000 Coefficient 0.0290886 Cov 0.0043325
-		     * Correl. #11: Total 4000 Coefficient 1 Cov 0.0851497
-		     * Correl. #12: Total 4000 Coefficient 0.52134 Cov 0.0919517
-		     * Correl. #13: Total 4000 Coefficient 0.637153 Cov 0.023528
-		     * Correl. #20: Total 4000 Coefficient 0.0678175 Cov 0.0209225
-		     * Correl. #21: Total 4000 Coefficient 0.52134 Cov 0.0919517
-		     * Correl. #22: Total 4000 Coefficient 1 Cov 0.365338
-		     * Correl. #23: Total 4000 Coefficient 0.608639 Cov 0.046554
-		     * Correl. #30: Total 4000 Coefficient 0.0582121 Cov 0.00376
-		     * Correl. #31: Total 4000 Coefficient 0.637153 Cov 0.023528
-		     * Correl. #32: Total 4000 Coefficient 0.608639 Cov 0.046554
-		     * Correl. #33: Total 4000 Coefficient 1 Cov 0.016014
-		     *
-		     {{1,0.0290886,0.0678175,0.0582121},{0.0290886,1,0.52134,0.637153},{0.0678175,0.52134,1,0.608639},{0.0582121,0.637153,0.608639,1}}
-
-			Eigenvalues:
-
-			λ_1≈2.18618
-			λ_2≈0.994788
-			λ_3≈0.479029
-			λ_4≈0.339999
-			Eigenvectors:
-
-			v_1≈(0.126141, 0.953018, 0.93918, 1)
-			v_2≈(-25.5281, 2.15152, 0.18071, 1)
-			v_3≈(0.586808, 7.20818, -8.45796, 1)
-			v_4≈(-0.0170571, -0.631781, -0.421378, 1)
-
-			// 1 pc
-			Correl. #100: Total 4000 Coefficient 1 Cov 0.724
-			Correl. #200: Total 4000 Coefficient 1 Cov 1.10919
-			Correl. #201: Total 4000 Coefficient 0.909256 Cov 0.814813
-			Correl. #210: Total 4000 Coefficient 0.909256 Cov 0.814813
-			Correl. #211: Total 4000 Coefficient 1 Cov 0.724
-
-			I:
-			1       0
-			0       1
-			Inverse XtX:
-			1.58411 -0.898336
-			-0.898336       1.3816
-			XtY:
-			0.62396 1.22031
-			beta:
-			-0.107827       1.12546
-
-
-			// 2 pc
-			Correl. #100: Total 4000 Coefficient 1 Cov 0.724
-			Correl. #101: Total 4000 Coefficient -0.0860913 Cov -0.954038
-			Correl. #110: Total 4000 Coefficient -0.0860913 Cov -0.954038
-			Correl. #111: Total 4000 Coefficient 1 Cov 169.619
-			
-			===========================
-			Total time (ms) : 318756
-			Nodes searched  : 182896450
-			Nodes/second    : 573781
-			I:
-			1       0       0
-			0       1       0
-			0       0       1
-			Inverse XtX:
-			1.66026 -0.926388       -0.0212678
-			-0.926388       1.39193 0.00783443
-			-0.0212678      0.00783443      0.00593971
-			XtY:
-			0.62396 1.22031 -5.06321
-			beta:
-					    0.0131403       1.0809  -0.0337838/
-		     * */
 /*
             double y = std::log(fallingEval * reduction * bestMoveInstability * highBestMoveEffort);
 
@@ -640,6 +543,7 @@ void Search::Worker::iterative_deepening() {
 	    exp(0,0131403) * exp(0,99878203168*log(a) + 0,957430634824*log(b) + 1,009054591502*log(c) + 1,0471162*log(d))
 	    1.013227  * a^0.998782* b^0.95743 * c^1.009 * d^1.0471162
 	     * */
+	/*
                     double y0 = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
 		    //double y1 = 0.89778 * std::pow(fallingEval,0.142) * std::pow(reduction,1.0725836) * std::pow(bestMoveInstability,1.057) * std::pow(highBestMoveEffort,1.12546); // 1 pc
 		    //double y1 = 1.013227 * std::pow(fallingEval,0.998782) * std::pow(reduction,0.95743) * std::pow(bestMoveInstability,1.009) * std::pow(highBestMoveEffort,1.0471162); // 2 pc
@@ -651,12 +555,12 @@ void Search::Worker::iterative_deepening() {
 		    std::cerr << y0 << ";" << y1 << std::endl;
 		    dbg_correl_of(y0,y1, 0);
 		    dbg_correl_of(std::log(y0),std::log(y1), 1);
+		    */
 	    }
 
         // Do we have time for the next iteration? Can we stop searching now?
         if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
         {
-/*
             uint64_t nodesEffort =
               rootMoves[0].effort * 100000 / std::max(size_t(1), size_t(nodes));
 
@@ -676,7 +580,7 @@ void Search::Worker::iterative_deepening() {
             double bestMoveInstability = 1.088 + 2.315 * totBestMoveChanges / threads.size();
 
             double highBestMoveEffort = nodesEffort > 86000 ? 0.74 : 0.96;
-*/
+
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort;
 
