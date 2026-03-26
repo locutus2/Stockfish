@@ -92,10 +92,11 @@ constexpr int CMH[6] = {SCALE_W,SCALE_W,SCALE_W,SCALE_W,0,SCALE_W}; // current m
  * 36K 1018 1033 1027 1016 1016
  * 50K 1016 1034 1026 1019 1020
  * 92K 1015 1031 1018 1024 1024
+ * 100K 1012 1034 1017 1027 1021
  * */
 
-int W[5]={-3,9,5,-9,1};
-//int W[5];
+//int W[5]={-3,11,5,-13,-2};
+int W[5];
 int Random[5];
 
 int w[6];
@@ -119,7 +120,7 @@ void init()
 		    w[c] += W[i] * SCALED_EV[i][c];
 		w[c] /= SCALE_EV;
 		w[c] += CMH[c];
-		std::cerr << w[c] << " ";
+		//std::cerr << w[c] << " ";
 	}
 	//std::cerr << std::endl;
 }
