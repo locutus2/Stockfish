@@ -249,6 +249,9 @@ void Search::Worker::start_searching() {
         || bestThread->rootMoves[0].extract_ponder_from_tt(tt, rootPos))
         ponder = UCIEngine::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
+    main_manager()->expectedPositionKey =
+      bestThread->rootMoves[0].extract_expected_position_two_moves_later(rootPos);
+
     auto bestmove = UCIEngine::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
     main_manager()->updates.onBestmove(bestmove, ponder);
 }
@@ -520,8 +523,12 @@ void Search::Worker::iterative_deepening() {
 
             double highBestMoveEffort = nodesEffort > 86000 ? 0.74 : 0.96;
 
+            double opponentPlayedExpectedMove =
+              (rootPos.key() == mainThread->expectedPositionKey ? 0.9 : 1.1);
+
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
-                             * bestMoveInstability * highBestMoveEffort;
+                             * bestMoveInstability * highBestMoveEffort
+                             * opponentPlayedExpectedMove;
 
             // Cap used time in case of a single legal move for a better viewer experience
             if (rootMoves.size() == 1)
@@ -2232,6 +2239,21 @@ bool RootMove::extract_ponder_from_tt(const TranspositionTable& tt, Position& po
 
     pos.undo_move(pv[0]);
     return pv.size() > 1;
+}
+
+Key RootMove::extract_expected_position_two_moves_later(Position& pos) const {
+    Key key = 0;
+
+    if (pv.size() >= 2 && pv[0] != Move::none() && pv[1] != Move::none())
+    {
+        StateInfo st, st2;
+        pos.do_move(pv[0], st);
+        pos.do_move(pv[1], st2);
+        key = pos.key();
+        pos.undo_move(pv[1]);
+        pos.undo_move(pv[0]);
+    }
+    return key;
 }
 
 
