@@ -521,7 +521,7 @@ void Search::Worker::iterative_deepening() {
             double highBestMoveEffort = nodesEffort > 86000 ? 0.74 : 0.96;
 
             double opponentPlayedExpectedMove =
-              (rootPos.key() == mainThread->expectedPositionKey ? 0.9 : 1.1);
+              (rootPos.key() == mainThread->expectedPositionKey ? 0.8 : 1.0);
 
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort
