@@ -258,7 +258,8 @@ void ThreadPool::clear() {
     for (auto&& th : threads)
         th->wait_for_search_finished();
 
-    // These two affect the time taken on the first move of a game:
+    // These three affect the time taken on the first move of a game:
+    main_manager()->expectedPositionKey      = 0;
     main_manager()->bestPreviousAverageScore = VALUE_INFINITE;
     main_manager()->previousTimeReduction    = 0.85;
 

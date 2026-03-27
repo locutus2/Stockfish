@@ -88,6 +88,7 @@ struct RootMove {
     explicit RootMove(Move m) :
         pv(1, m) {}
     bool extract_ponder_from_tt(const TranspositionTable& tt, Position& pos);
+    Key  extract_expected_position_two_moves_later(Position& pos) const;
     bool operator==(const Move& m) const { return pv[0] == m; }
     // Sort in descending order
     bool operator<(const RootMove& m) const {
@@ -248,6 +249,7 @@ class SearchManager: public ISearchManager {
     std::atomic_bool          ponder;
 
     std::array<Value, 4> iterValue;
+    Key                  expectedPositionKey;
     double               previousTimeReduction;
     Value                bestPreviousScore;
     Value                bestPreviousAverageScore;
