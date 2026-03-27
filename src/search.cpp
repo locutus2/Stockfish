@@ -52,6 +52,11 @@
 
 namespace Stockfish {
 
+constexpr double SCALE = 1000;
+int A = 0, B = 0;
+
+TUNE(SetRange(-SCALE, SCALE), A, B);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -524,7 +529,7 @@ void Search::Worker::iterative_deepening() {
             double highBestMoveEffort = nodesEffort > 86000 ? 0.74 : 0.96;
 
             double opponentPlayedExpectedMove =
-              (rootPos.key() == mainThread->expectedPositionKey ? 0.9 : 1.1);
+              (rootPos.key() == mainThread->expectedPositionKey ? 1.0 + A / SCALE : 1.0 + B / SCALE);
 
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort
