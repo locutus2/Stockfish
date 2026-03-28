@@ -54,8 +54,9 @@ namespace Stockfish {
 
 constexpr double SCALE = 1000;
 int A = 0, B = 0;
+int Random1 = 0, Random2 = 0;
 
-TUNE(SetRange(-SCALE, SCALE), A, B);
+TUNE(SetRange(SCALE, SCALE), A, B, Random1, Random2);
 
 namespace TB = Tablebases;
 
