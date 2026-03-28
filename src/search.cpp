@@ -56,7 +56,7 @@ constexpr double SCALE = 1000;
 int A = 0, B = 0;
 int Random1 = 0, Random2 = 0;
 
-TUNE(SetRange(SCALE, SCALE), A, B, Random1, Random2);
+TUNE(SetRange(0, SCALE), A, B, Random1, Random2);
 
 namespace TB = Tablebases;
 
@@ -530,7 +530,7 @@ void Search::Worker::iterative_deepening() {
             double highBestMoveEffort = nodesEffort > 86000 ? 0.74 : 0.96;
 
             double opponentPlayedExpectedMove =
-              (rootPos.key() == mainThread->expectedPositionKey ? 1.0 + A / SCALE : 1.0 + B / SCALE);
+              (rootPos.key() == mainThread->expectedPositionKey ? 1.0 - A / SCALE : 1.0 + B / SCALE);
 
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort
