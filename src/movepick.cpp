@@ -157,7 +157,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
         else if constexpr (Type == QUIETS)
         {
-#define S(x) (1*((x)-1024)+1024)
+#define S(x) (2*((x)-1024)+1024)
             // histories
             m.value = S(1109) * (*continuationHistory[0])[pc][to];
             m.value += S(1004) * (*continuationHistory[1])[pc][to];
