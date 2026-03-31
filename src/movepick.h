@@ -54,7 +54,7 @@ class MovePicker {
    private:
     template<typename Pred>
     Move select(Pred);
-    template<GenType T>
+    template<GenType T, bool HANGING = false>
     ExtMove* score(MoveList<T>&);
     ExtMove* begin() { return cur; }
     ExtMove* end() { return endCur; }

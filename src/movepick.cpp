@@ -53,7 +53,9 @@ enum Stages {
     // generate qsearch moves
     QSEARCH_TT,
     QCAPTURE_INIT,
-    QCAPTURE
+    QCAPTURE,
+    QHANGING_INIT,
+    QHANGING
 };
 
 
@@ -121,7 +123,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
 // with a good history. Quiets moves are ordered using the history tables.
-template<GenType Type>
+template<GenType Type, bool HANGING>
 ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
@@ -157,26 +159,32 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
 
         else if constexpr (Type == QUIETS)
         {
-            // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()];
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
-            m.value += (*continuationHistory[0])[pc][to];
-            m.value += (*continuationHistory[1])[pc][to];
-            m.value += (*continuationHistory[2])[pc][to];
-            m.value += (*continuationHistory[3])[pc][to];
-            m.value += (*continuationHistory[5])[pc][to];
+            if (HANGING)
+                m.value = pc;
 
-            // bonus for checks
-            m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            else
+            {
+                // histories
+                m.value = 2 * (*mainHistory)[us][m.raw()];
+                m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
+                m.value += (*continuationHistory[0])[pc][to];
+                m.value += (*continuationHistory[1])[pc][to];
+                m.value += (*continuationHistory[2])[pc][to];
+                m.value += (*continuationHistory[3])[pc][to];
+                m.value += (*continuationHistory[5])[pc][to];
 
-            // penalty for moving to a square threatened by a lesser piece
-            // or bonus for escaping an attack by a lesser piece.
-            int v = 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
-            m.value += PieceValue[pt] * v;
+                // bonus for checks
+                m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+
+                // penalty for moving to a square threatened by a lesser piece
+                // or bonus for escaping an attack by a lesser piece.
+                int v = 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
+                m.value += PieceValue[pt] * v;
 
 
-            if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+                if (ply < LOW_PLY_HISTORY_SIZE)
+                    m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+            }
         }
 
         else  // Type == EVASIONS
@@ -297,7 +305,39 @@ top:
     }
 
     case EVASION :
+        return select([]() { return true; });
+
     case QCAPTURE :
+        if (select([]() { return true; }))
+            return *(cur - 1);
+
+        ++stage;
+        [[fallthrough]];
+
+    case QHANGING_INIT : {
+        const Color us = pos.side_to_move();
+        Bitboard    hangingPieces, threatByLesser, pieces;
+        pieces         = pos.pieces(us, QUEEN);
+        threatByLesser = pos.attacks_by<ROOK>(~us);
+        hangingPieces  = pieces & threatByLesser;
+        pieces |= pos.pieces(us, ROOK);
+        threatByLesser |= pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us);
+        hangingPieces |= pieces & threatByLesser;
+        pieces |= pos.pieces(us, KNIGHT, BISHOP);
+        threatByLesser |= pos.attacks_by<PAWN>(~us);
+        hangingPieces |= pieces & threatByLesser;
+
+        MoveList<QUIETS> ml(pos, hangingPieces);
+
+        cur    = moves;
+        endCur = score<QUIETS, true>(ml);
+
+        partial_insertion_sort(cur, endCur, std::numeric_limits<int>::min());
+        ++stage;
+        [[fallthrough]];
+    }
+
+    case QHANGING :
         return select([]() { return true; });
 
     case PROBCUT :
