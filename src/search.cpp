@@ -716,9 +716,9 @@ Value Search::Worker::search(
     (ss + 2)->cutoffCnt = 0;
 
     // Step 4. Transposition table lookup
-    excludedMove                   = ss->excludedMove;
-    posKey                         = pos.key();
-    auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
+    excludedMove         = ss->excludedMove;
+    posKey               = pos.key();
+    auto [ttHit, ttData] = tt.probe(posKey);
     // Need further processing of the saved data
     ss->ttHit    = ttHit;
     ttData.move  = rootNode ? rootMoves[pvIdx].pv[0] : ttHit ? ttData.move : Move::none();
@@ -754,8 +754,8 @@ Value Search::Worker::search(
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
         // Static evaluation is saved as it was before adjustment by correction history
-        ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
-                       unadjustedStaticEval, tt.generation());
+        tt.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
+                 unadjustedStaticEval, tt.generation());
     }
 
     // Set up the improving flag, which is true if current static evaluation is
@@ -800,8 +800,8 @@ Value Search::Worker::search(
                 && !is_decisive(ttData.value))
             {
                 pos.do_move(ttData.move, st);
-                Key nextPosKey                             = pos.key();
-                auto [ttHitNext, ttDataNext, ttWriterNext] = tt.probe(nextPosKey);
+                Key nextPosKey               = pos.key();
+                auto [ttHitNext, ttDataNext] = tt.probe(nextPosKey);
                 pos.undo_move(ttData.move);
 
                 // Check that the ttValue after the tt move would also trigger a cutoff
@@ -852,9 +852,9 @@ Value Search::Worker::search(
 
                 if (b == BOUND_EXACT || (b == BOUND_LOWER ? value >= beta : value <= alpha))
                 {
-                    ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, b,
-                                   std::min(MAX_PLY - 1, depth + 6), Move::none(), VALUE_NONE,
-                                   tt.generation());
+                    tt.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, b,
+                             std::min(MAX_PLY - 1, depth + 6), Move::none(), VALUE_NONE,
+                             tt.generation());
 
                     return value;
                 }
@@ -988,8 +988,8 @@ Value Search::Worker::search(
             if (value >= probCutBeta)
             {
                 // Save ProbCut data into transposition table
-                ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
-                               probCutDepth + 1, move, unadjustedStaticEval, tt.generation());
+                tt.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
+                         probCutDepth + 1, move, unadjustedStaticEval, tt.generation());
 
                 if (!is_decisive(value))
                     return value - (probCutBeta - beta);
@@ -1480,12 +1480,12 @@ moves_loop:  // When in check, search starts here
     // Write gathered information in transposition table. Note that the
     // static evaluation is saved as it was before correction history.
     if (!excludedMove && !(rootNode && pvIdx))
-        ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
-                       bestValue >= beta    ? BOUND_LOWER
-                       : PvNode && bestMove ? BOUND_EXACT
-                                            : BOUND_UPPER,
-                       moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6), bestMove,
-                       unadjustedStaticEval, tt.generation());
+        tt.write(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
+                 bestValue >= beta    ? BOUND_LOWER
+                 : PvNode && bestMove ? BOUND_EXACT
+                                      : BOUND_UPPER,
+                 moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6), bestMove,
+                 unadjustedStaticEval, tt.generation());
 
     // Adjust correction history if the best move is not a capture
     // and the error direction matches whether we are above/below bounds.
@@ -1558,8 +1558,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     // Step 3. Transposition table lookup
-    posKey                         = pos.key();
-    auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
+    posKey               = pos.key();
+    auto [ttHit, ttData] = tt.probe(posKey);
     // Need further processing of the saved data
     ss->ttHit    = ttHit;
     ttData.move  = ttHit ? ttData.move : Move::none();
@@ -1610,9 +1610,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 bestValue = (bestValue + beta) / 2;
 
             if (!ss->ttHit)
-                ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
-                               DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval,
-                               tt.generation());
+                tt.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
+                         DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval, tt.generation());
             return bestValue;
         }
 
@@ -1741,9 +1740,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
-    ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), pvHit,
-                   bestValue >= beta ? BOUND_LOWER : BOUND_UPPER, DEPTH_QS, bestMove,
-                   unadjustedStaticEval, tt.generation());
+    tt.write(posKey, value_to_tt(bestValue, ss->ply), pvHit,
+             bestValue >= beta ? BOUND_LOWER : BOUND_UPPER, DEPTH_QS, bestMove,
+             unadjustedStaticEval, tt.generation());
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
@@ -2220,7 +2219,7 @@ bool RootMove::extract_ponder_from_tt(const TranspositionTable& tt, Position& po
 
     if (!pos.is_draw(1))
     {
-        auto [ttHit, ttData, ttWriter] = tt.probe(pos.key());
+        auto [ttHit, ttData] = tt.probe(pos.key());
         if (ttHit && MoveList<LEGAL>(pos).contains(ttData.move))
             pv.push_back(ttData.move);
     }
