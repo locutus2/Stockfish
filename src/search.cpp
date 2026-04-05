@@ -1176,8 +1176,13 @@ moves_loop:  // When in check, search starts here
             // subtree by returning a softbound.
             else if (value >= beta && !is_decisive(value))
             {
-                ttMoveHistory << std::max(-424 - 107 * depth, -3375);
-                return value;
+                if (!PvNode)
+                {
+                    ttMoveHistory << std::max(-424 - 107 * depth, -3375);
+                    return value;
+                }
+
+                newDepth = depth = singularDepth;
             }
 
             // Negative extensions
