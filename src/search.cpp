@@ -1020,95 +1020,116 @@ moves_loop:  // When in check, search starts here
 
     int moveCount = 0;
 /*
+ *  newDepth 0 depth = singularDepth;
+ *
  * CC=true
- * Hit #0: Total 1677308 Hits 28582 Hit Rate (%) 1.70404
-Hit #1: Total 7319 Hits 392 Hit Rate (%) 5.35592
-Hit #2: Total 1633861 Hits 25959 Hit Rate (%) 1.58881
-Hit #3: Total 36128 Hits 2231 Hit Rate (%) 6.17527
-Hit #4: Total 205056 Hits 5839 Hit Rate (%) 2.84751
-Hit #5: Total 1472252 Hits 22743 Hit Rate (%) 1.54478
-Hit #6: Total 231813 Hits 2270 Hit Rate (%) 0.979238
-Hit #7: Total 1445495 Hits 26312 Hit Rate (%) 1.82028
-Hit #8: Total 67274 Hits 1871 Hit Rate (%) 2.78116
-Hit #9: Total 1610034 Hits 26711 Hit Rate (%) 1.65903
-Hit #10: Total 1673173 Hits 28467 Hit Rate (%) 1.70138
-Hit #11: Total 4135 Hits 115 Hit Rate (%) 2.78114
-Hit #12: Total 23082 Hits 1405 Hit Rate (%) 6.08699
-Hit #13: Total 1654226 Hits 27177 Hit Rate (%) 1.64288
-Hit #14: Total 1346608 Hits 25440 Hit Rate (%) 1.88919
-Hit #15: Total 330700 Hits 3142 Hit Rate (%) 0.950106
-Hit #16: Total 240380 Hits 4174 Hit Rate (%) 1.73642
-Hit #17: Total 1436928 Hits 24408 Hit Rate (%) 1.69862
-Hit #18: Total 1258303 Hits 20599 Hit Rate (%) 1.63705
-Hit #19: Total 419005 Hits 7983 Hit Rate (%) 1.90523
-Hit #20: Total 1016459 Hits 15458 Hit Rate (%) 1.52077
-Hit #21: Total 660849 Hits 13124 Hit Rate (%) 1.98593
-Hit #22: Total 1240 Hits 59 Hit Rate (%) 4.75806
-Hit #23: Total 1676068 Hits 28523 Hit Rate (%) 1.70178
-Hit #24: Total 1273 Hits 62 Hit Rate (%) 4.87038
-Hit #25: Total 314927 Hits 9249 Hit Rate (%) 2.93687
-Hit #26: Total 1361108 Hits 19271 Hit Rate (%) 1.41583
-Hit #27: Total 607489 Hits 18200 Hit Rate (%) 2.99594
-Hit #28: Total 1069819 Hits 10382 Hit Rate (%) 0.970445
-Hit #29: Total 1649892 Hits 27273 Hit Rate (%) 1.65302
-Hit #30: Total 27416 Hits 1309 Hit Rate (%) 4.77458
-Hit #31: Total 567525 Hits 17062 Hit Rate (%) 3.00639
-Hit #32: Total 88085 Hits 5983 Hit Rate (%) 6.7923
-Hit #33: Total 68590 Hits 886 Hit Rate (%) 1.29173
-Hit #34: Total 953108 Hits 4651 Hit Rate (%) 0.487982
-
-CC=(ss+1)->moveCount == 1
-Hit #0: Total 83223 Hits 5644 Hit Rate (%) 6.78178
-Hit #1: Total 437 Hits 30 Hit Rate (%) 6.86499
-Hit #2: Total 78377 Hits 5120 Hit Rate (%) 6.53253
-Hit #3: Total 4409 Hits 494 Hit Rate (%) 11.2044
-Hit #4: Total 15646 Hits 1169 Hit Rate (%) 7.47156
-Hit #5: Total 67577 Hits 4475 Hit Rate (%) 6.62208
-Hit #6: Total 6902 Hits 334 Hit Rate (%) 4.83918
-Hit #7: Total 76321 Hits 5310 Hit Rate (%) 6.95746
-Hit #8: Total 6791 Hits 456 Hit Rate (%) 6.71477
-Hit #9: Total 76432 Hits 5188 Hit Rate (%) 6.78773
-Hit #10: Total 82945 Hits 5615 Hit Rate (%) 6.76955
-Hit #11: Total 278 Hits 29 Hit Rate (%) 10.4317
-Hit #12: Total 2804 Hits 361 Hit Rate (%) 12.8745
-Hit #13: Total 80419 Hits 5283 Hit Rate (%) 6.56934
-Hit #14: Total 78638 Hits 5593 Hit Rate (%) 7.11234
-Hit #15: Total 4585 Hits 51 Hit Rate (%) 1.11232
-Hit #16: Total 10812 Hits 602 Hit Rate (%) 5.56789
-Hit #17: Total 72411 Hits 5042 Hit Rate (%) 6.96303
-Hit #18: Total 60497 Hits 4095 Hit Rate (%) 6.76893
-Hit #19: Total 22726 Hits 1549 Hit Rate (%) 6.81598
-Hit #20: Total 48726 Hits 3227 Hit Rate (%) 6.62275
-Hit #21: Total 34497 Hits 2417 Hit Rate (%) 7.00641
-Hit #22: Total 242 Hits 16 Hit Rate (%) 6.61157
-Hit #23: Total 82981 Hits 5628 Hit Rate (%) 6.78228
-Hit #24: Total 242 Hits 16 Hit Rate (%) 6.61157
-Hit #25: Total 18270 Hits 1674 Hit Rate (%) 9.16256
-Hit #26: Total 64711 Hits 3954 Hit Rate (%) 6.11024
-Hit #27: Total 37301 Hits 3577 Hit Rate (%) 9.58956
-Hit #28: Total 45922 Hits 2067 Hit Rate (%) 4.50111
-Hit #29: Total 81787 Hits 5402 Hit Rate (%) 6.60496
-Hit #30: Total 1436 Hits 242 Hit Rate (%) 16.8524
-Hit #32: Total 83223 Hits 5644 Hit Rate (%) 6.78178
- * */
-    bool CC = true;
+ * Hit #0: Total 1346020 Hits 2120 Hit Rate (%) 0.157501
+ * Hit #1: Total 4702 Hits 124 Hit Rate (%) 2.63718
+ * Hit #2: Total 1322126 Hits 1829 Hit Rate (%) 0.138338
+ * Hit #3: Total 19192 Hits 167 Hit Rate (%) 0.870154
+ * Hit #4: Total 124164 Hits 306 Hit Rate (%) 0.246448
+ * Hit #5: Total 1221856 Hits 1814 Hit Rate (%) 0.148463
+ * Hit #6: Total 161129 Hits 143 Hit Rate (%) 0.0887488
+ * Hit #7: Total 1184891 Hits 1977 Hit Rate (%) 0.166851
+ * Hit #8: Total 45662 Hits 162 Hit Rate (%) 0.354781
+ * Hit #9: Total 1300358 Hits 1958 Hit Rate (%) 0.150574
+ * Hit #10: Total 1342568 Hits 2115 Hit Rate (%) 0.157534
+ * Hit #11: Total 3452 Hits 5 Hit Rate (%) 0.144844
+ * Hit #12: Total 13272 Hits 87 Hit Rate (%) 0.655515
+ * Hit #13: Total 1332748 Hits 2033 Hit Rate (%) 0.152542
+ * Hit #14: Total 958410 Hits 527 Hit Rate (%) 0.0549869
+ * Hit #15: Total 387610 Hits 1593 Hit Rate (%) 0.41098
+ * Hit #16: Total 158004 Hits 322 Hit Rate (%) 0.203792
+ * Hit #17: Total 1188016 Hits 1798 Hit Rate (%) 0.151345
+ * Hit #18: Total 1068788 Hits 1722 Hit Rate (%) 0.161117
+ * Hit #19: Total 277232 Hits 398 Hit Rate (%) 0.143562
+ * Hit #20: Total 889791 Hits 1381 Hit Rate (%) 0.155205
+ * Hit #21: Total 456229 Hits 739 Hit Rate (%) 0.16198
+ * Hit #22: Total 575 Hits 6 Hit Rate (%) 1.04348
+ * Hit #23: Total 1345445 Hits 2114 Hit Rate (%) 0.157123
+ * Hit #24: Total 618 Hits 9 Hit Rate (%) 1.45631
+ * Hit #25: Total 201867 Hits 717 Hit Rate (%) 0.355184
+ * Hit #26: Total 1143535 Hits 1394 Hit Rate (%) 0.121903
+ * Hit #27: Total 385876 Hits 1111 Hit Rate (%) 0.287916
+ * Hit #28: Total 960144 Hits 1009 Hit Rate (%) 0.105088
+ * Hit #29: Total 1324156 Hits 1982 Hit Rate (%) 0.14968
+ * Hit #30: Total 21864 Hits 138 Hit Rate (%) 0.631175
+ * Hit #31: Total 345799 Hits 550 Hit Rate (%) 0.159052
+ * Hit #32: Total 15596 Hits 66 Hit Rate (%) 0.423185
+ * Hit #33: Total 63163 Hits 129 Hit Rate (%) 0.204233
+ * Hit #34: Total 921462 Hits 1375 Hit Rate (%) 0.149219
+ *
+    CC = PvNode;
+    Hit #0: Total 4408 Hits 123 Hit Rate (%) 2.79038
+    Hit #1: Total 4408 Hits 123 Hit Rate (%) 2.79038
+    Hit #4: Total 4408 Hits 123 Hit Rate (%) 2.79038
+    Hit #6: Total 494 Hits 7 Hit Rate (%) 1.417
+    Hit #7: Total 3914 Hits 116 Hit Rate (%) 2.96372
+    Hit #8: Total 355 Hits 11 Hit Rate (%) 3.09859
+    Hit #9: Total 4053 Hits 112 Hit Rate (%) 2.76339
+    Hit #10: Total 4406 Hits 123 Hit Rate (%) 2.79165
+    Hit #11: Total 2 Hits 0 Hit Rate (%) 0
+    Hit #13: Total 4408 Hits 123 Hit Rate (%) 2.79038
+    Hit #14: Total 2303 Hits 50 Hit Rate (%) 2.17108
+    Hit #15: Total 2105 Hits 73 Hit Rate (%) 3.46793
+    Hit #16: Total 849 Hits 19 Hit Rate (%) 2.23793
+    Hit #17: Total 3559 Hits 104 Hit Rate (%) 2.92217
+    Hit #18: Total 2956 Hits 82 Hit Rate (%) 2.77402
+    Hit #19: Total 1452 Hits 41 Hit Rate (%) 2.82369
+    Hit #20: Total 2136 Hits 52 Hit Rate (%) 2.43446
+    Hit #21: Total 2272 Hits 71 Hit Rate (%) 3.125
+    Hit #23: Total 4408 Hits 123 Hit Rate (%) 2.79038
+    Hit #25: Total 4343 Hits 120 Hit Rate (%) 2.76307
+    Hit #26: Total 65 Hits 3 Hit Rate (%) 4.61538
+    Hit #27: Total 2770 Hits 94 Hit Rate (%) 3.3935
+    Hit #28: Total 1638 Hits 29 Hit Rate (%) 1.77045
+    Hit #29: Total 4224 Hits 106 Hit Rate (%) 2.50947
+    Hit #30: Total 184 Hits 17 Hit Rate (%) 9.23913
+    Hit #31: Total 19 Hits 6 Hit Rate (%) 31.5789
+    Hit #32: Total 68 Hits 0 Hit Rate (%) 0
+    Hit #33: Total 112 Hits 2 Hit Rate (%) 1.78571
+    Hit #34: Total 4209 Hits 115 Hit Rate (%) 2.73224
+ * 
+    CC = allNode;
+     * Hit #0: Total 19184 Hits 165 Hit Rate (%) 0.860092
+     * Hit #3: Total 19184 Hits 165 Hit Rate (%) 0.860092
+     * Hit #4: Total 1837 Hits 39 Hit Rate (%) 2.12303
+     * Hit #5: Total 17347 Hits 126 Hit Rate (%) 0.72635
+     * Hit #6: Total 2676 Hits 16 Hit Rate (%) 0.597907
+     * Hit #7: Total 16508 Hits 149 Hit Rate (%) 0.902593
+     * Hit #8: Total 1806 Hits 14 Hit Rate (%) 0.775194
+     * Hit #9: Total 17378 Hits 151 Hit Rate (%) 0.868915
+     * Hit #10: Total 19074 Hits 164 Hit Rate (%) 0.859809
+     * Hit #11: Total 110 Hits 1 Hit Rate (%) 0.909091
+     * Hit #12: Total 4903 Hits 30 Hit Rate (%) 0.61187
+     * Hit #13: Total 14281 Hits 135 Hit Rate (%) 0.945312
+     * Hit #14: Total 16464 Hits 92 Hit Rate (%) 0.558795
+     * Hit #15: Total 2720 Hits 73 Hit Rate (%) 2.68382
+     * Hit #16: Total 4627 Hits 30 Hit Rate (%) 0.648368
+     * Hit #17: Total 14557 Hits 135 Hit Rate (%) 0.927389
+     * Hit #18: Total 12412 Hits 113 Hit Rate (%) 0.910409
+     * Hit #19: Total 6772 Hits 52 Hit Rate (%) 0.767868
+     * Hit #20: Total 9824 Hits 102 Hit Rate (%) 1.03827
+     * Hit #21: Total 9360 Hits 63 Hit Rate (%) 0.673077
+     * Hit #22: Total 569 Hits 2 Hit Rate (%) 0.351494
+     * Hit #23: Total 18615 Hits 163 Hit Rate (%) 0.875638
+     * Hit #24: Total 576 Hits 2 Hit Rate (%) 0.347222
+     * Hit #25: Total 17688 Hits 139 Hit Rate (%) 0.785844
+     * Hit #26: Total 920 Hits 24 Hit Rate (%) 2.6087
+     * Hit #27: Total 13213 Hits 114 Hit Rate (%) 0.862787
+     * Hit #28: Total 5971 Hits 51 Hit Rate (%) 0.854128
+     * Hit #29: Total 18748 Hits 135 Hit Rate (%) 0.720077
+     * Hit #30: Total 436 Hits 30 Hit Rate (%) 6.88073
+     * Hit #31: Total 1335 Hits 58 Hit Rate (%) 4.34457
+     * Hit #32: Total 479 Hits 7 Hit Rate (%) 1.46138
+     * Hit #33: Total 1721 Hits 12 Hit Rate (%) 0.697269
+     * Hit #34: Total 15649 Hits 88 Hit Rate (%) 0.562336
+     * */
+    bool CC = allNode;
     //bool CC = allNode;
     //bool CC = (ss-1)->excludedMove;
     bool MC = false;
-    std::vector<bool> C = {true,
-	                   PvNode, cutNode, allNode, 
-			   ss->ttPv, !ss->ttPv,
-			   ss->inCheck, !ss->inCheck,
-			   (ss-1)->inCheck, !(ss-1)->inCheck,
-			   (ss-1)->ttHit, !(ss-1)->ttHit,
-			   bool((ss-1)->excludedMove), !(ss-1)->excludedMove,
-			   ttData.value >= beta, ttData.value < beta,
-			   priorCapture, !priorCapture,
-			   improving, !improving,
-			   opponentWorsening, !opponentWorsening,
-                           (ss-1)->currentMove == Move::null(), (ss-1)->currentMove != Move::null(), 
-			   (ss-1)->moveCount == 0, (ss-1)->moveCount == 1, (ss-1)->moveCount > 1,
-			   (ss-1)->statScore > 0, (ss-1)->statScore <= 0};
+    std::vector<bool> C;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1247,8 +1268,6 @@ Hit #32: Total 83223 Hits 5644 Hit Rate (%) 6.78178
             value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
             ss->excludedMove = Move::none();
 
-	    CC = CC && (ss+1)->moveCount == 1;
-
             if (value < singularBeta)
             {
                 int corrValAdj   = std::abs(correctionValue) / 210590;
@@ -1269,13 +1288,39 @@ Hit #32: Total 83223 Hits 5644 Hit Rate (%) 6.78178
             // over the original beta, we assume this expected cut-node is not
             // singular (multiple moves fail high), and we can prune the whole
             // subtree by returning a softbound.
-            else if (!CC&&value >= beta && !is_decisive(value))
+            else if (value >= beta && !is_decisive(value))
             {
+		CC = CC && true;
 		if(!CC)
 		{
 			ttMoveHistory << std::max(-424 - 107 * depth, -3375);
 			return value;
 		}
+
+		newDepth = depth = singularDepth;
+		MC = true;
+
+                C = {true,
+	                   PvNode, cutNode, allNode,  // 3
+			   ss->ttPv, !ss->ttPv,
+			   ss->inCheck, !ss->inCheck,
+			   (ss-1)->inCheck, !(ss-1)->inCheck,
+			   (ss-1)->ttHit, !(ss-1)->ttHit, // 11
+			   bool((ss-1)->excludedMove), !(ss-1)->excludedMove, // 13
+			   ttData.value >= beta, ttData.value < beta, // 15
+			   priorCapture, !priorCapture,
+			   improving, !improving,
+			   opponentWorsening, !opponentWorsening,
+                           (ss-1)->currentMove == Move::null(), (ss-1)->currentMove != Move::null(), 
+			   (ss-1)->moveCount == 0, (ss-1)->moveCount == 1, (ss-1)->moveCount > 1,
+			   (ss-1)->statScore > 0, (ss-1)->statScore <= 0};
+		// start 29
+		C.push_back(value >= beta+1);
+		C.push_back(value < beta+1);
+		C.push_back((ss+1)->moveCount == 0);
+		C.push_back((ss+1)->moveCount == 1);
+		C.push_back((ss+1)->moveCount == 2);
+		C.push_back((ss+1)->moveCount > 2);
             }
 
             // Negative extensions
@@ -1293,18 +1338,6 @@ Hit #32: Total 83223 Hits 5644 Hit Rate (%) 6.78178
             // over current beta
             else if (cutNode)
                 extension = -2;
-
-            if (CC&&value >= beta && !is_decisive(value))
-	    {
-		MC = true;
-		// start 29
-		C.push_back(value >= beta+1);
-		C.push_back(value < beta+1);
-		C.push_back((ss+1)->moveCount == 0);
-		C.push_back((ss+1)->moveCount == 1);
-		C.push_back((ss+1)->moveCount == 2);
-		C.push_back((ss+1)->moveCount > 2);
-	    }
         }
 
         // Step 16. Make the move
