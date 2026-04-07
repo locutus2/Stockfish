@@ -1182,7 +1182,7 @@ moves_loop:  // When in check, search starts here
                     return value;
                 }
 
-                newDepth = depth = singularDepth;
+                newDepth = depth = (depth + singularDepth) / 2;
             }
 
             // Negative extensions
