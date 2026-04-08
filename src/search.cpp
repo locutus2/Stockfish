@@ -1124,9 +1124,93 @@ moves_loop:  // When in check, search starts here
      * Hit #32: Total 479 Hits 7 Hit Rate (%) 1.46138
      * Hit #33: Total 1721 Hits 12 Hit Rate (%) 0.697269
      * Hit #34: Total 15649 Hits 88 Hit Rate (%) 0.562336
+     *
+     * full depth
+     * use depth conditions
+     * CC=true
+Hit #0: Total 1689188 Hits 14800 Hit Rate (%) 0.876161
+Hit #1: Total 318934 Hits 3937 Hit Rate (%) 1.23442
+Hit #2: Total 310912 Hits 3020 Hit Rate (%) 0.971336
+Hit #3: Total 281606 Hits 2722 Hit Rate (%) 0.966599
+Hit #4: Total 223708 Hits 1694 Hit Rate (%) 0.757237
+Hit #5: Total 181917 Hits 1326 Hit Rate (%) 0.728904
+Hit #6: Total 132147 Hits 821 Hit Rate (%) 0.621278
+Hit #7: Total 94067 Hits 594 Hit Rate (%) 0.631465
+Hit #8: Total 60407 Hits 333 Hit Rate (%) 0.551261
+Hit #9: Total 37648 Hits 193 Hit Rate (%) 0.512643
+Hit #10: Total 21531 Hits 81 Hit Rate (%) 0.376202
+Hit #11: Total 12099 Hits 34 Hit Rate (%) 0.281015
+Hit #12: Total 6371 Hits 29 Hit Rate (%) 0.455188
+     *
+     * full depth
+     * use depth conditions
+     * CC=PvNode
+     * Hit #0: Total 4932 Hits 264 Hit Rate (%) 5.3528
+Hit #2: Total 2023 Hits 122 Hit Rate (%) 6.03065
+Hit #3: Total 1297 Hits 63 Hit Rate (%) 4.85736
+Hit #4: Total 783 Hits 41 Hit Rate (%) 5.23627
+Hit #5: Total 458 Hits 21 Hit Rate (%) 4.58515
+Hit #6: Total 209 Hits 9 Hit Rate (%) 4.30622
+Hit #7: Total 107 Hits 5 Hit Rate (%) 4.6729
+Hit #8: Total 34 Hits 1 Hit Rate (%) 2.94118
+Hit #9: Total 14 Hits 1 Hit Rate (%) 7.14286
+Hit #10: Total 4 Hits 0 Hit Rate (%) 0
+Hit #11: Total 2 Hits 1 Hit Rate (%) 50
+Hit #12: Total 1 Hits 0 Hit Rate (%) 0
+     *
+     * full depth
+     * use depth conditions
+     * CC=ttValue<beta
+     * Hit #0: Total 378100 Hits 4555 Hit Rate (%) 1.20471
+Hit #1: Total 78337 Hits 1272 Hit Rate (%) 1.62375
+Hit #2: Total 72074 Hits 934 Hit Rate (%) 1.29589
+Hit #3: Total 64762 Hits 912 Hit Rate (%) 1.40823
+Hit #4: Total 48925 Hits 550 Hit Rate (%) 1.12417
+Hit #5: Total 39424 Hits 412 Hit Rate (%) 1.04505
+Hit #6: Total 26309 Hits 213 Hit Rate (%) 0.809609
+Hit #7: Total 18552 Hits 128 Hit Rate (%) 0.689953
+Hit #8: Total 11673 Hits 69 Hit Rate (%) 0.591108
+Hit #9: Total 7311 Hits 42 Hit Rate (%) 0.574477
+Hit #10: Total 4307 Hits 12 Hit Rate (%) 0.278616
+Hit #11: Total 2626 Hits 8 Hit Rate (%) 0.304646
+Hit #12: Total 1443 Hits 1 Hit Rate (%) 0.0693001
+     *
+     * full depth
+     * use depth conditions
+     * CC=!ttCapture
+     * Hit #0: Total 952940 Hits 10037 Hit Rate (%) 1.05327
+Hit #1: Total 187551 Hits 2519 Hit Rate (%) 1.3431
+Hit #2: Total 184612 Hits 2084 Hit Rate (%) 1.12885
+Hit #3: Total 163527 Hits 1818 Hit Rate (%) 1.11174
+Hit #4: Total 126507 Hits 1148 Hit Rate (%) 0.90746
+Hit #5: Total 99154 Hits 930 Hit Rate (%) 0.937935
+Hit #6: Total 71092 Hits 612 Hit Rate (%) 0.860856
+Hit #7: Total 48733 Hits 438 Hit Rate (%) 0.898775
+Hit #8: Total 30354 Hits 219 Hit Rate (%) 0.721486
+Hit #9: Total 18112 Hits 148 Hit Rate (%) 0.817138
+Hit #10: Total 10181 Hits 58 Hit Rate (%) 0.569689
+Hit #11: Total 5940 Hits 38 Hit Rate (%) 0.639731
+Hit #12: Total 3177 Hits 14 Hit Rate (%) 0.440667
+     *
+     * full depth
+     * use depth conditions
+     * CC=allNode
+     * Hit #0: Total 20494 Hits 615 Hit Rate (%) 3.00088
+Hit #1: Total 7779 Hits 271 Hit Rate (%) 3.48374
+Hit #2: Total 5107 Hits 120 Hit Rate (%) 2.34972
+Hit #3: Total 2682 Hits 57 Hit Rate (%) 2.12528
+Hit #4: Total 1948 Hits 41 Hit Rate (%) 2.10472
+Hit #5: Total 1140 Hits 40 Hit Rate (%) 3.50877
+Hit #6: Total 801 Hits 34 Hit Rate (%) 4.24469
+Hit #7: Total 474 Hits 24 Hit Rate (%) 5.06329
+Hit #8: Total 275 Hits 11 Hit Rate (%) 4
+Hit #9: Total 149 Hits 8 Hit Rate (%) 5.36913
+Hit #10: Total 68 Hits 3 Hit Rate (%) 4.41176
+Hit #11: Total 33 Hits 3 Hit Rate (%) 9.09091
+Hit #12: Total 20 Hits 0 Hit Rate (%) 0
      * */
+    //bool CC = !ttCapture;
     bool CC = allNode;
-    //bool CC = allNode;
     //bool CC = (ss-1)->excludedMove;
     bool MC = false;
     std::vector<bool> C;
@@ -1297,9 +1381,10 @@ moves_loop:  // When in check, search starts here
 			return value;
 		}
 
-		newDepth = depth = singularDepth;
+		//newDepth = depth = singularDepth;
+		//newDepth = depth = (depth + singularDepth) / 2;
 		MC = true;
-
+/*
                 C = {true,
 	                   PvNode, cutNode, allNode,  // 3
 			   ss->ttPv, !ss->ttPv,
@@ -1321,6 +1406,22 @@ moves_loop:  // When in check, search starts here
 		C.push_back((ss+1)->moveCount == 1);
 		C.push_back((ss+1)->moveCount == 2);
 		C.push_back((ss+1)->moveCount > 2);
+		*/
+		C = {
+			true,
+			depth == 6,
+			depth == 7,
+			depth == 8,
+			depth == 9,
+			depth == 10,
+			depth == 11,
+			depth == 12,
+			depth == 13,
+			depth == 14,
+			depth == 15,
+			depth == 16,
+			depth == 17,
+		};
             }
 
             // Negative extensions
