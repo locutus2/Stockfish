@@ -1094,7 +1094,7 @@ moves_loop:  // When in check, search starts here
                     && !pos.see_ge(move, -margin))
                     continue;
             }
-            else if (!ss->followPV || !PvNode)
+            else
             {
                 int history = (*contHist[0])[movedPiece][move.to_sq()]
                             + (*contHist[1])[movedPiece][move.to_sq()]
@@ -1126,7 +1126,7 @@ moves_loop:  // When in check, search starts here
                 lmrDepth = std::max(lmrDepth, 0);
 
                 // Prune moves with negative SEE
-                if (!pos.see_ge(move, -25 * lmrDepth * lmrDepth))
+                if ((!ss->followPV || !PvNode) && !pos.see_ge(move, -25 * lmrDepth * lmrDepth))
                     continue;
             }
         }
