@@ -84,6 +84,32 @@ struct StatsEntry {
     }
 };
 
+template<typename T, int D, int P>
+struct OptimisticStatsEntry {
+    static_assert(std::is_arithmetic_v<T>, "Not an arithmetic type");
+
+   private:
+    T entry;
+    T optimisticEntry;
+
+   public:
+    void operator=(const T& v) { optimisticEntry = entry = v; }
+
+    operator T() const { return optimisticEntry; }
+
+    void operator<<(int bonus) {
+        // Make sure that bonus is in range [-D, D]
+        int clampedBonus = std::clamp(bonus, -D, D);
+
+        entry = entry + clampedBonus - entry * std::abs(clampedBonus) / D;
+        optimisticEntry =
+          (entry > optimisticEntry ? entry : (entry + (P - 1) * optimisticEntry) / P);
+
+        assert(std::abs(T(entry)) <= D);
+        assert(std::abs(T(optimisticEntry)) <= D);
+    }
+};
+
 enum StatsType {
     NoCaptures,
     Captures
@@ -91,6 +117,9 @@ enum StatsType {
 
 template<typename T, int D, std::size_t... Sizes>
 using Stats = MultiArray<StatsEntry<T, D>, Sizes...>;
+
+template<typename T, int D, int P, std::size_t... Sizes>
+using OptimisticStats = MultiArray<OptimisticStatsEntry<T, D, P>, Sizes...>;
 
 template<typename T, int D, std::size_t... Sizes>
 using AtomicStats = MultiArray<StatsEntry<T, D, true>, Sizes...>;
@@ -142,7 +171,7 @@ using LowPlyHistory = Stats<std::int16_t, 7183, LOW_PLY_HISTORY_SIZE, UINT_16_HI
 using CapturePieceToHistory = Stats<std::int16_t, 10692, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
 
 // PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
-using PieceToHistory = Stats<std::int16_t, 30000, PIECE_NB, SQUARE_NB>;
+using PieceToHistory = OptimisticStats<std::int16_t, 30000, 2, PIECE_NB, SQUARE_NB>;
 
 // ContinuationHistory is the combined history of a given pair of moves, usually
 // the current one given a previous one. The nested history table is based on
