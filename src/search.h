@@ -301,7 +301,7 @@ class Worker {
     SharedHistories& sharedHistory;
 
    private:
-    void iterative_deepening();
+    bool iterative_deepening();
 
     void do_move(Position& pos, const Move move, StateInfo& st, Stack* const ss);
     void
