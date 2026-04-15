@@ -1109,8 +1109,14 @@ moves_loop:  // When in check, search starts here
 		//CC = true;
 		CC = priorCapture;
 		//C = improving;
-		C = depth;
-                V = history - 0*CC * (*contHist[0])[movedPiece][move.to_sq()] + 4097 * depth;
+		//C = depth;
+		C = 0;
+                V = history + 4097 * depth;
+                //V = history + 1*CC * (*contHist[2])[movedPiece][move.to_sq()] + 4097 * depth;
+                //V = history + 1*CC * mainHistory[us][move.raw()] + 4097 * depth;
+                //V = history + 1*CC * (mainHistory[us][move.raw()] + 3840) + 4097 * depth;
+                //V = history + 1*CC * (mainHistory[us][move.raw()] + 1920) + 4097 * depth;
+                //V = history + 1*CC * sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()] + 4097 * depth;
                 //if (history < -4097 * depth)
                 if (V + OFF*CC < 0)
 		{
@@ -1329,8 +1335,17 @@ moves_loop:  // When in check, search starts here
 		constexpr int CMAX = 4;
 		constexpr int VD = 128;//32;
 		if(V <= VMAX && C <= CMAX)
-		    dbg_hit_on_diff(T, V + OFF, (V + OFF) / VD + 1000 * C);
+		{
+		    int index = (V + OFF) / VD + 1000 * C;
+		    dbg_hit_on_diff(T, V + OFF, index);
 		    //dbg_hit_on(T, V + 1000 * C);
+		    for(int th = -OFF/VD; th < OFF/VD; th++)
+		    {
+		            int index2 = (th + OFF) / VD + 1000 * C;
+			    bool P = (V + OFF) / VD < th;
+			    dbg_correl_of(P, T, index2);
+		    }
+		}
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
