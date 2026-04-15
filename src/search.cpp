@@ -1112,8 +1112,8 @@ moves_loop:  // When in check, search starts here
 		//C = depth;
 		C = 0;
                 V = history + 4097 * depth;
-                //V = history + 1*CC * (*contHist[2])[movedPiece][move.to_sq()] + 4097 * depth;
-                //V = history + 1*CC * mainHistory[us][move.raw()] + 4097 * depth;
+                //V += CC * (*contHist[2])[movedPiece][move.to_sq()];
+                V += CC * mainHistory[us][move.raw()];
                 //V = history + 1*CC * (mainHistory[us][move.raw()] + 3840) + 4097 * depth;
                 //V = history + 1*CC * (mainHistory[us][move.raw()] + 1920) + 4097 * depth;
                 //V = history + 1*CC * sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()] + 4097 * depth;
@@ -2003,7 +2003,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        dbg_print();
+        //dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI
