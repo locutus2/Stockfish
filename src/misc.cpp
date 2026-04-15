@@ -284,7 +284,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+constexpr int MaxDebugSlots = 32000;
 
 namespace {
 
@@ -311,6 +311,7 @@ struct DebugExtremes: public DebugInfo<3> {
     }
 };
 
+std::array<DebugInfo<4>, MaxDebugSlots>  hitDiff;
 std::array<DebugInfo<2>, MaxDebugSlots>  hit;
 std::array<DebugInfo<2>, MaxDebugSlots>  mean;
 std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
@@ -318,6 +319,16 @@ std::array<DebugInfo<6>, MaxDebugSlots>  correl;
 std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
+
+void dbg_hit_on_diff(bool cond, int v, int slot) {
+
+    ++hitDiff.at(slot)[0];
+    if (cond)
+        ++hitDiff.at(slot)[1];
+    hitDiff.at(slot)[2] += v;
+    if (cond)
+        hitDiff.at(slot)[3] += v;
+}
 
 void dbg_hit_on(bool cond, int slot) {
 
@@ -366,6 +377,17 @@ void dbg_print() {
     int64_t n;
     auto    E   = [&n](int64_t x) { return double(x) / n; };
     auto    sqr = [](double x) { return x * x; };
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        if ((n = hitDiff[i][0]))
+	{
+	    double weighted = hitDiff[i][3] / double(hitDiff[i][2]);
+	    double diff = weighted - E(hitDiff[i][1]);
+            std::cerr << "Hit #" << i << ": Total " << n << " Hits " << hitDiff[i][1]
+                      << " Hit Rate (%) " << 100.0 * E(hitDiff[i][1]) 
+                      << " Hit Diff Rate (%) " << 100.0 * weighted
+		      << " Diff % " << 100.0 * diff << std::endl;
+	}
 
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = hit[i][0]))
