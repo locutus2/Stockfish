@@ -1341,7 +1341,7 @@ moves_loop:  // When in check, search starts here
 		    //dbg_hit_on(T, V + 1000 * C);
 		    for(int th = -OFF/VD; th < OFF/VD; th++)
 		    {
-		            int index2 = (th + OFF) / VD + 1000 * C;
+		            int index2 = th + OFF / VD + 1000 * C;
 			    bool P = V / VD < th;
 			    dbg_correl_of(P, T, index2);
 		    }
