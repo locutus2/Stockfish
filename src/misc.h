@@ -201,6 +201,12 @@ class ValueList {
         assert(size_ < MaxSize);
         values_[size_++] = value;
     }
+    // pushes back value if value < max
+    void push_back_if_lt(const T& value, const T& max) {
+        assert(size_ < MaxSize);
+        values_[size_] = value;
+        size_ += (value < max);
+    }
     const T* begin() const { return values_; }
     const T* end() const { return values_ + size_; }
     const T& operator[](int index) const { return values_[index]; }
@@ -365,6 +371,12 @@ inline uint64_t mul_hi64(uint64_t a, uint64_t b) {
     uint64_t c3 = aL * bH + uint32_t(c2);
     return aH * bH + (c2 >> 32) + (c3 >> 32);
 #endif
+}
+
+template<typename T1, typename T2>
+inline constexpr T2 interpolate(T1 x, T1 x0, T1 x1, T2 y0, T2 y1) {
+    assert(x0 != x1);
+    return T2(y0 + (y1 - y0) * (x - x0) / (x1 - x0));
 }
 
 uint64_t hash_bytes(const char*, size_t);
