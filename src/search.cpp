@@ -1106,7 +1106,7 @@ moves_loop:  // When in check, search starts here
                 if (history < -4097 * depth)
                     continue;
 
-                history += (71 - 32 * priorCapture) * mainHistory[us][move.raw()] / 32;
+                history += 71 * mainHistory[us][move.raw()] / 32;
 
                 // (*Scaler): Generally, lower divisors scales well
                 lmrDepth += history / 2995;
