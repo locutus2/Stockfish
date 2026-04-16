@@ -424,6 +424,7 @@ void dbg_print() {
         }
 
     // CSV result
+    int64_t totalNN = hit[0][0];
     int64_t totalN = hit[0][1];
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = hitDiff[i][0]))
@@ -431,6 +432,7 @@ void dbg_print() {
  	    constexpr char S = ' ';
             int N = n;
 	    totalN += N;
+	    totalNN += N;
 	    double fh = E(hitDiff[i][1]);
 	    n = correl[i][0];
             double r = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
