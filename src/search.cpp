@@ -1111,9 +1111,9 @@ moves_loop:  // When in check, search starts here
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
-		CC = true;
+		//CC = true;
 		//CC = ss->inCheck;
-		//CC = priorCapture;
+		CC = priorCapture;
 		//CC = !priorCapture;
 		//C = improving;
 		//C = depth;
@@ -1122,14 +1122,15 @@ moves_loop:  // When in check, search starts here
 		V = V0;
                 //V += -CC * (*contHist[0])[movedPiece][move.to_sq()];
                 //V += -CC * (*contHist[1])[movedPiece][move.to_sq()] / 2;
-                //V += CC * mainHistory[us][move.raw()];
-                V += CC * pruneHistory[us][move.raw()];
+                //V += CC * (1697 + mainHistory[us][move.raw()] / 2);
+                //V += CC * pruneHistory[us][move.raw()];
 		//V += CC * 4096;
                 //V += CC * mainHistory[us][move.raw()] * 71 / 32;
                 //V += -CC * sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
                 //V = history + 1*CC * (mainHistory[us][move.raw()] + 3840) + 4097 * depth;
                 //V = history + 1*CC * (mainHistory[us][move.raw()] + 1920) + 4097 * depth;
                 //if (history < -4097 * depth)
+                dbg_hit_on (V + OFF*CC < 0, 0);
                 if (V + OFF*CC < 0)
 		{
 		//	for(int d = 1; d <= 20; d++)

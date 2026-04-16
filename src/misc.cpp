@@ -424,17 +424,19 @@ void dbg_print() {
         }
 
     // CSV result
+    int64_t totalN = hit[0][1];
     for (int i = 0; i < MaxDebugSlots; ++i)
         if ((n = hitDiff[i][0]))
 	{
  	    constexpr char S = ' ';
             int N = n;
+	    totalN += N;
 	    double fh = E(hitDiff[i][1]);
 	    n = correl[i][0];
             double r = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
                      / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
                         * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
-            std::cerr << 100.0 * fh << S << N << S <<  r << std::endl;
+            std::cerr << 100.0 * fh << S << N << S <<  r << S << totalN <<std::endl;
 	}
 }
 
