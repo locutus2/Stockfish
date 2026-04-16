@@ -597,6 +597,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(0);
+    pruneHistory.fill(0);
     captureHistory.fill(-678);
 
     // Each thread is responsible for clearing their part of shared history
@@ -1066,6 +1067,10 @@ moves_loop:  // When in check, search starts here
 	int C = 0;
 	int V = 0 ;
 	constexpr int OFF = 10000;
+	constexpr int HIST_PRUNE_MARGIN = 1024;
+	bool AlmostPruned = false;
+	int AlmostPrunedWeight = 0;
+	
         // Step 14. Pruning at shallow depths.
         // Depth conditions are important for mate finding.
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
@@ -1106,20 +1111,22 @@ moves_loop:  // When in check, search starts here
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
-		//CC = true;
-		CC = ss->inCheck;
+		CC = true;
+		//CC = ss->inCheck;
 		//CC = priorCapture;
 		//CC = !priorCapture;
 		//C = improving;
 		//C = depth;
 		C = 0;
-                V = history + 4097 * depth;
+                int V0 = history + 4097 * depth;
+		V = V0;
                 //V += -CC * (*contHist[0])[movedPiece][move.to_sq()];
-                //V += -CC * (*contHist[0])[movedPiece][move.to_sq()] / 2;
+                //V += -CC * (*contHist[1])[movedPiece][move.to_sq()] / 2;
                 //V += CC * mainHistory[us][move.raw()];
+                V += CC * pruneHistory[us][move.raw()];
 		//V += CC * 4096;
                 //V += CC * mainHistory[us][move.raw()] * 71 / 32;
-                V += -CC * sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
+                //V += -CC * sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
                 //V = history + 1*CC * (mainHistory[us][move.raw()] + 3840) + 4097 * depth;
                 //V = history + 1*CC * (mainHistory[us][move.raw()] + 1920) + 4097 * depth;
                 //if (history < -4097 * depth)
@@ -1128,6 +1135,12 @@ moves_loop:  // When in check, search starts here
 		//	for(int d = 1; d <= 20; d++)
 	//			dbg_hit_on(d == depth, d);
                     continue;
+		}
+
+		if(V >= 0 && V < HIST_PRUNE_MARGIN)
+		{
+			AlmostPruned = true;
+			AlmostPrunedWeight = std::max(HIST_PRUNE_MARGIN - V, 0);
 		}
 
                 history += 71 * mainHistory[us][move.raw()] / 32;
@@ -1332,6 +1345,12 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+	if(AlmostPruned)
+	{
+		bool T = value > alpha;
+		pruneHistory[us][move.raw()] << (T ? AlmostPrunedWeight : -AlmostPrunedWeight);
+	}
 
 	if(CC)
 	{
