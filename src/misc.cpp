@@ -422,6 +422,20 @@ void dbg_print() {
                         * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
             std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << std::endl;
         }
+
+    // CSV result
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        if ((n = hitDiff[i][0]))
+	{
+ 	    constexpr char S = ' ';
+            int N = n;
+	    double fh = E(hitDiff[i][1]);
+	    n = correl[i][0];
+            double r = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
+                     / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
+                        * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
+            std::cerr << 100.0 * fh << S << N << S <<  r << std::endl;
+	}
 }
 
 void dbg_clear() {
