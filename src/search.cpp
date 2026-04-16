@@ -1115,8 +1115,8 @@ moves_loop:  // When in check, search starts here
                 V = history + 4097 * depth;
                 //V += CC * (*contHist[5])[movedPiece][move.to_sq()];
                 //V += -CC * (*contHist[0])[movedPiece][move.to_sq()] / 2;
-                //V += CC * mainHistory[us][move.raw()];
-		V += CC * 4096;
+                V += CC * mainHistory[us][move.raw()] * 3 / 2;
+		//V += CC * 4096;
                 //V += CC * mainHistory[us][move.raw()] * 71 / 32;
                 //V += -CC * sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
                 //V = history + 1*CC * (mainHistory[us][move.raw()] + 3840) + 4097 * depth;
