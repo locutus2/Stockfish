@@ -1120,9 +1120,10 @@ moves_loop:  // When in check, search starts here
 		C = 0;
                 int V0 = history + 4097 * depth;
 		V = V0;
-                //V += -CC * (*contHist[0])[movedPiece][move.to_sq()];
-                //V += -CC * (*contHist[1])[movedPiece][move.to_sq()] / 2;
+                //V += -CC * (3639 + (*contHist[1])[movedPiece][move.to_sq()]);
+                //V += -CC * (*contHist[0])[movedPiece][move.to_sq()] / 4;
                 //V += CC * (1697 + mainHistory[us][move.raw()] / 2);
+                V += CC * (3395 + mainHistory[us][move.raw()]) * 2;
                 //V += CC * pruneHistory[us][move.raw()];
 		//V += CC * 4096;
                 //V += CC * mainHistory[us][move.raw()];
