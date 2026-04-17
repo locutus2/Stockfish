@@ -1016,6 +1016,11 @@ moves_loop:  // When in check, search starts here
 
     int moveCount = 0;
 
+    bool good = false;
+    bool good0 = false;
+    bool good1 = false;
+    bool C0 = false;
+
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move()) != Move::none())
@@ -1062,6 +1067,7 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 1013;
 
+	bool CC = false, P0 = false, P1 = false;
         // Step 14. Pruning at shallow depths.
         // Depth conditions are important for mate finding.
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
@@ -1101,9 +1107,11 @@ moves_loop:  // When in check, search starts here
                             + (*contHist[1])[movedPiece][move.to_sq()]
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
+                P0 = (history < -4097 * depth);
+                P1 = (history + priorCapture * (3395 + mainHistory[us][move.raw()]) < -4097 * depth);
                 // Continuation history based pruning
-                if (history < -4097 * depth)
-                    continue;
+                //if (P0 == P1 && history < -4097 * depth)
+                //    continue;
 
                 history += 71 * mainHistory[us][move.raw()] / 32;
 
@@ -1129,6 +1137,14 @@ moves_loop:  // When in check, search starts here
                 // Prune moves with negative SEE
                 if (!pos.see_ge(move, -25 * lmrDepth * lmrDepth))
                     continue;
+
+		for(int i : {0,1})
+		    for(int j : {0,1})
+		        dbg_hit_on(i==P0&&j==P1,100+10*i+j);
+
+		if(P0 && P1) continue;
+		C0 |= P0 || P1;
+		CC = true;
             }
         }
 
@@ -1308,6 +1324,24 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
+	bool T = value > alpha;
+	good |= T;
+	if(CC && P0 != P1)
+	{
+		good0 |= T && !P0;
+		good1 |= T && !P1;
+		dbg_hit_on(T, 0);
+		dbg_hit_on(P0, 1);
+		dbg_hit_on(P1, 2);
+		if(P0) dbg_hit_on(T, 10);
+		if(P1) dbg_hit_on(T, 11);
+	}
+	else
+	{
+		good0 |= T;
+		good1 |= T;
+	}
+
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
         // Step 20. Check for a new best move
@@ -1418,6 +1452,21 @@ moves_loop:  // When in check, search starts here
     // return a fail low score.
 
     assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
+
+    if(C0)
+    {
+	    dbg_hit_on(good != good0, 200);
+	    dbg_hit_on(good != good1, 201);
+	    dbg_hit_on(good != good0, 210 + 10*good);
+	    dbg_hit_on(good != good1, 211 + 10*good);
+	    if(good0 != good1)
+	    {
+		    dbg_hit_on(good != good0, 300);
+		    dbg_hit_on(good != good1, 301);
+		    dbg_hit_on(good != good0, 310 + 10*good);
+		    dbg_hit_on(good != good1, 311 + 10*good);
+	    }
+    }
 
     // Adjust best value for fail high cases
     if (bestValue >= beta && !is_decisive(bestValue) && !is_decisive(alpha))
