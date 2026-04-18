@@ -1111,11 +1111,11 @@ moves_loop:  // When in check, search starts here
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
-		//CC = true;
+		CC = true;
 		//CC = PvNode;
 		//CC = cutNode;
 		//CC = allNode;
-		CC = priorCapture && allNode;
+		//CC = priorCapture && allNode;
 		//CC = ss->inCheck;
 		//CC = priorCapture;
 		//CC = priorCapture && PvNode;
@@ -1132,7 +1132,7 @@ moves_loop:  // When in check, search starts here
                 //V += CC * (3395 + mainHistory[us][move.raw()]) * 2;
                 //V += CC * pruneHistory[us][move.raw()];
 		//V += CC * 4096;
-                V += CC * mainHistory[us][move.raw()];
+                //V += CC * mainHistory[us][move.raw()];
                 //V += -CC * sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
                 //V = history + 1*CC * (mainHistory[us][move.raw()] + 3840) + 4097 * depth;
                 //V = history + 1*CC * (mainHistory[us][move.raw()] + 1920) + 4097 * depth;
