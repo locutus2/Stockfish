@@ -1100,10 +1100,10 @@ moves_loop:  // When in check, search starts here
                 int history = (*contHist[0])[movedPiece][move.to_sq()]
                             + (*contHist[1])[movedPiece][move.to_sq()]
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()]
-                            + priorCapture * (3395 + mainHistory[us][move.raw()]);
+                            + priorCapture * mainHistory[us][move.raw()];
 
                 // Continuation history based pruning
-                if (history < -4097 * depth)
+                if (history < -2780 * priorCapture - (4097 + 382 * priorCapture) * depth)
                     continue;
 
                 history += 71 * mainHistory[us][move.raw()] / 32;
