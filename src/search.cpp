@@ -1016,11 +1016,10 @@ moves_loop:  // When in check, search starts here
 
     int moveCount = 0;
 
-    bool good = false;
+    //bool good = false;
     bool good0 = false;
     bool good1 = false;
     bool C0 = false;
-
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move()) != Move::none())
@@ -1107,8 +1106,27 @@ moves_loop:  // When in check, search starts here
                             + (*contHist[1])[movedPiece][move.to_sq()]
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
+		bool CC = priorCapture;
                 P0 = (history < -4097 * depth);
-                P1 = (history + priorCapture * (3395 + mainHistory[us][move.raw()]) < -4097 * depth);
+		//int V1 = history + CC * (3456 + mainHistory[us][move.raw()]) + 4097 * depth;
+		//int V1 = history + CC * (3406 + mainHistory[us][move.raw()]) + 4097 * depth;
+		//int V1 = history + CC * (1408 + mainHistory[us][move.raw()] / 2) + 4097 * depth;
+		int V1 = history + CC * (1334 + mainHistory[us][move.raw()] / 2) + 4097 * depth;
+                P1 = (V1 < 0);
+                //P1 = (history + CC * (3395 + mainHistory[us][move.raw()]) < -4097 * depth);
+                //P1 = (history + CC * (0 + mainHistory[us][move.raw()]) < -4097 * depth);
+
+		std::vector<int> VP;
+		if(CC)
+		{
+                        constexpr int BUCKET = 1;//2;//128;
+
+			for(int i = -78; i <= 78; i++)
+			{
+				VP.push_back(V1 + i * BUCKET);
+			}
+		}
+
                 // Continuation history based pruning
                 //if (P0 == P1 && history < -4097 * depth)
                 //    continue;
@@ -1142,7 +1160,15 @@ moves_loop:  // When in check, search starts here
 		    for(int j : {0,1})
 		        dbg_hit_on(i==P0&&j==P1,100+10*i+j);
 
+		if(CC)
+		{
+		    dbg_hit_on(P0, 1000);
+		    for(int i = 0; i < int(VP.size()); i++)
+		        dbg_hit_on((VP[i]<0), 2000+i);
+		}
+
 		if(P0 && P1) continue;
+		//C0 |= (P0 != P1);
 		C0 |= P0 || P1;
 		CC = true;
             }
@@ -1325,21 +1351,16 @@ moves_loop:  // When in check, search starts here
         undo_move(pos, move);
 
 	bool T = value > alpha;
-	good |= T;
+	//good |= T;
+	good0 |= T && !P0;
+	good1 |= T && !P1;
 	if(CC && P0 != P1)
 	{
-		good0 |= T && !P0;
-		good1 |= T && !P1;
 		dbg_hit_on(T, 0);
 		dbg_hit_on(P0, 1);
 		dbg_hit_on(P1, 2);
 		if(P0) dbg_hit_on(T, 10);
 		if(P1) dbg_hit_on(T, 11);
-	}
-	else
-	{
-		good0 |= T;
-		good1 |= T;
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
@@ -1453,12 +1474,13 @@ moves_loop:  // When in check, search starts here
 
     assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
 
-    if(C0)
+    //if(C0)
     {
-	    dbg_hit_on(good != good0, 200);
-	    dbg_hit_on(good != good1, 201);
-	    dbg_hit_on(good != good0, 210 + 10*good);
-	    dbg_hit_on(good != good1, 211 + 10*good);
+	    for(int i : {0,1})
+	        for(int j : {0,1})
+	            dbg_hit_on(good0==i&&good1==j, 200+10*i+j);
+
+	    /*
 	    if(good0 != good1)
 	    {
 		    dbg_hit_on(good != good0, 300);
@@ -1466,6 +1488,7 @@ moves_loop:  // When in check, search starts here
 		    dbg_hit_on(good != good0, 310 + 10*good);
 		    dbg_hit_on(good != good1, 311 + 10*good);
 	    }
+	    */
     }
 
     // Adjust best value for fail high cases
