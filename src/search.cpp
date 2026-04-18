@@ -1101,13 +1101,14 @@ moves_loop:  // When in check, search starts here
                 int dIndex  = std::clamp(int(depth), 1, int(lmrDivisor.size())) - 1;
                 int history = (*contHist[0])[movedPiece][move.to_sq()]
                             + (*contHist[1])[movedPiece][move.to_sq()]
-                            + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
+                            + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()]
+                            + mainHistory[us][move.raw()];
 
                 // Continuation history based pruning
-                if (history < -4097 * depth)
+                if (history < -4446 * depth - 2466)
                     continue;
 
-                history += 71 * mainHistory[us][move.raw()] / 32;
+                history += 39 * mainHistory[us][move.raw()] / 32;
 
                 // (*Scaler): Generally, lower divisors scales well
                 lmrDepth += history / lmrDivisor[dIndex];
