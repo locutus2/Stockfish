@@ -600,6 +600,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(0);
+    pruningHistory.fill(0);
     captureHistory.fill(-678);
 
     // Each thread is responsible for clearing their part of shared history
@@ -1063,6 +1064,8 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 1013;
 
+        int historyPruningMargin = -1;
+
         // Step 14. Pruning at shallow depths.
         // Depth conditions are important for mate finding.
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
@@ -1103,8 +1106,9 @@ moves_loop:  // When in check, search starts here
                             + (*contHist[1])[movedPiece][move.to_sq()]
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
-                // Continuation history based pruning
-                if (history < -4097 * depth)
+                historyPruningMargin =
+                  history + pruningHistory[us][move.raw()] + 4194 * depth + 5629;
+                if (historyPruningMargin < 0)
                     continue;
 
                 history += 71 * mainHistory[us][move.raw()] / 32;
@@ -1309,6 +1313,12 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+        if (historyPruningMargin >= 0)
+        {
+            int bonus = std::max(1024 - historyPruningMargin / 8, 0);
+            pruningHistory[us][move.raw()] << (value > alpha ? bonus : -bonus);
+        }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
