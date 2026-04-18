@@ -1062,7 +1062,6 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 1013;
 
-	constexpr bool PHASE = 2;
 	bool CC = false;
 	bool P0 = false;
 	bool P1 = false;
@@ -1117,7 +1116,8 @@ moves_loop:  // When in check, search starts here
 			*/
 		int hist2 = (hist1 + 1559.62) / 9812.07 * 9040.88 + 834.991; // factor 0,9214039443257131267917982647902
                 //hist1 < -2466 - 4446 * depth;
-		P0 = history < -4097*depth;
+		P0 = hist0 < -4097*depth;
+		//P1 = P0;
 		P1 = hist1 < -2466 - 4446 * depth;
 
                 // Continuation history based pruning
@@ -1157,27 +1157,22 @@ moves_loop:  // When in check, search starts here
 			Stdev #0: Total 73669826 Stdev 9040.88
 			Stdev #1: Total 73669826 Stdev 9812.07
 			*/
-			if(PHASE == 1)
-			{
 				dbg_mean_of(hist0, 0);
 				dbg_stdev_of(hist0, 0);
 				dbg_mean_of(hist1, 1);
 				dbg_stdev_of(hist1, 1);
 				dbg_mean_of(hist2, 2);
 				dbg_stdev_of(hist2, 2);
-			}
-			else if(PHASE == 2)
-			{
+			
 				dbg_hit_on(P0, 0);
 				dbg_hit_on(P1, 1);
 				dbg_hit_on(!P0&&!P1, 100);
 				dbg_hit_on(!P0&&P1, 101);
 				dbg_hit_on(P0&&!P1, 110);
 				dbg_hit_on(P0&&P1, 111);
-			}
 		}
 
-                if (P0 && (PHASE == 1 || P1 || !CC))
+                if (P0 && (P1 || !CC))
                     continue;
             }
         }
@@ -1358,7 +1353,7 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-	if(CC && PHASE == 2)
+	if(CC)
 	{
 		bool T = value > alpha;
 		if(P0) dbg_hit_on(T, 10);
