@@ -1062,6 +1062,11 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 1013;
 
+	constexpr bool PHASE = 2;
+	bool CC = false;
+	bool P0 = false;
+	bool P1 = false;
+
         // Step 14. Pruning at shallow depths.
         // Depth conditions are important for mate finding.
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
@@ -1101,9 +1106,23 @@ moves_loop:  // When in check, search starts here
                             + (*contHist[1])[movedPiece][move.to_sq()]
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
+		CC = true;
+		int hist0 = history;
+		int hist1 = history + CC * mainHistory[us][move.raw()];
+		/*
+			 * Mean #0: Total 73669826 Mean 834.991
+			Mean #1: Total 73669826 Mean -1559.62
+			Stdev #0: Total 73669826 Stdev 9040.88
+			Stdev #1: Total 73669826 Stdev 9812.07
+			*/
+		int hist2 = (hist1 + 1559.62) / 9812.07 * 9040.88 + 834.991; // factor 0,9214039443257131267917982647902
+                //hist1 < -2466 - 4446 * depth;
+		P0 = history < -4097*depth;
+		P1 = hist1 < -2466 - 4446 * depth;
+
                 // Continuation history based pruning
-                if (history < -4097 * depth)
-                    continue;
+                //if (history < -4097 * depth)
+                //    continue;
 
                 history += 71 * mainHistory[us][move.raw()] / 32;
 
@@ -1128,6 +1147,37 @@ moves_loop:  // When in check, search starts here
 
                 // Prune moves with negative SEE
                 if (!pos.see_ge(move, -25 * lmrDepth * lmrDepth))
+                    continue;
+
+		if(CC)
+		{
+			/*
+			 * Mean #0: Total 73669826 Mean 834.991
+			Mean #1: Total 73669826 Mean -1559.62
+			Stdev #0: Total 73669826 Stdev 9040.88
+			Stdev #1: Total 73669826 Stdev 9812.07
+			*/
+			if(PHASE == 1)
+			{
+				dbg_mean_of(hist0, 0);
+				dbg_stdev_of(hist0, 0);
+				dbg_mean_of(hist1, 1);
+				dbg_stdev_of(hist1, 1);
+				dbg_mean_of(hist2, 2);
+				dbg_stdev_of(hist2, 2);
+			}
+			else if(PHASE == 2)
+			{
+				dbg_hit_on(P0, 0);
+				dbg_hit_on(P1, 1);
+				dbg_hit_on(!P0&&!P1, 100);
+				dbg_hit_on(!P0&&P1, 101);
+				dbg_hit_on(P0&&!P1, 110);
+				dbg_hit_on(P0&&P1, 111);
+			}
+		}
+
+                if (P0 && (PHASE == 1 || P1 || !CC))
                     continue;
             }
         }
@@ -1307,6 +1357,17 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+	if(CC && PHASE == 2)
+	{
+		bool T = value > alpha;
+		if(P0) dbg_hit_on(T, 10);
+		if(P1) dbg_hit_on(T, 11);
+		if(!P0&&!P1) dbg_hit_on(T, 200);
+		if(!P0&&P1) dbg_hit_on(T, 201);
+		if(P0&&!P1) dbg_hit_on(T, 210);
+		if(P0&&P1) dbg_hit_on(T, 211);
+	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
