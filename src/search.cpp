@@ -1110,7 +1110,7 @@ moves_loop:  // When in check, search starts here
 		CC = true;
 		int hist0 = history;
 		//int hist1 = history + CC * mainHistory[us][move.raw()] / 8;
-		int hist1 = history + CC * (*contHist[3])[movedPiece][move.to_sq()];
+		int hist1 = history + CC * (*contHist[3])[movedPiece][move.to_sq()] / 2;
 		//int hist2 = (hist1 + 1559.62) / 9812.07 * 9040.88 + 834.991; // factor 0,9214039443257131267917982647902
 		//int hist2 = (hist1 + 1385.49) / 9206.6 * 8929.47 - 70.262; // factor 0,96989876827493320009558360306736
 		//int hist2 = (hist1 + 1471.81) / 9329.07 * 9048.21 - 154.901; // factor 0,96989410520019680418305361627686
@@ -1119,7 +1119,8 @@ moves_loop:  // When in check, search starts here
 		//int hist2 = (hist1 + 48.0659) / 9224.74 * 9165.41 + 528.209; // factor 0,9935683824151141387182728185293
 		//int hist2 = (hist1 + 1777.6) / 9972.28 * 9165.41 + 528.209; // factor 0,91908871391497230322453842050163
 		//int hist2 = (hist1 + 240.19) / 9182.56 * 9165.41 + 528.209; // factor 0,99813232911083619382830060462442
-		int hist2 = (hist1 + 660.101) / 11409.3 * 9165.41 + 528.209; // factor 0,80332798681777146713645885374212
+		//int hist2 = (hist1 + 660.101) / 11409.3 * 9165.41 + 528.209; // factor 0,80332798681777146713645885374212
+		int hist2 = (hist1 + 65.8596) / 10006.4 * 9165.41 + 528.209; // factor 0,91595378957467220978573712823793
 		P0 = hist0 < -4097*depth;
 		//P1 = P0;
 		//P1 = hist1 < -2466 - 4446 * depth; //old: main
@@ -1129,15 +1130,16 @@ moves_loop:  // When in check, search starts here
 		//P1 = hist1 < -1165 - 4194 * depth; // main/2
 		//P1 = hist1 < -580 - 4124 * depth; // main/4
 		//P1 = hist1 < -769 - 4105 * depth; // main/8
-		P1 = hist1 < -1318 - 5100 * depth; // cmh3
+		//P1 = hist1 < -1318 - 5100 * depth; // cmh3
+		P1 = hist1 < -643 - 4473 * depth; // cmh3/2
 
 		/*
 		 * Mean #0: Total 70535670 Mean 528.209
-		Mean #1: Total 70535670 Mean -660.101
-		Mean #2: Total 70535670 Mean 109.097
+		Mean #1: Total 70535670 Mean -65.8596
+		Mean #2: Total 70535670 Mean 1005.55
 		Stdev #0: Total 70535670 Stdev 9165.41
-		Stdev #1: Total 70535670 Stdev 11409.3
-		Stdev #2: Total 70535670 Stdev 11387.7
+		Stdev #1: Total 70535670 Stdev 10006.4
+		Stdev #2: Total 70535670 Stdev 8038.06
 		 * */
                 // Continuation history based pruning
                 //if (history < -4097 * depth)
