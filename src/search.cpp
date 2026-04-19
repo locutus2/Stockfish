@@ -1117,20 +1117,22 @@ moves_loop:  // When in check, search starts here
 			Stdev #1: Total 73669826 Stdev 9812.07
 			*/
 		//int hist2 = (hist1 + 1559.62) / 9812.07 * 9040.88 + 834.991; // factor 0,9214039443257131267917982647902
-		int hist2 = (hist1 + 1385.49) / 9206.6 * 8929.47 - 70.262; // factor 0,96989876827493320009558360306736
+		//int hist2 = (hist1 + 1385.49) / 9206.6 * 8929.47 - 70.262; // factor 0,96989876827493320009558360306736
+		int hist2 = (hist1 + 1471.81) / 9329.07 * 9048.21 - 154.901; // factor 0,96989410520019680418305361627686
                 //hist1 < -2466 - 4446 * depth;
 		P0 = hist0 < -4097*depth;
 		//P1 = P0;
 		//P1 = hist1 < -2466 - 4446 * depth;
-		P1 = hist1 < -1313 - 4224 * depth; 
+		//P1 = hist1 < -1313 - 4224 * depth; 
+		P1 = hist1 < -1312 - 4224 * depth; 
 
 		/*
-		 * Mean #0: Total 75068785 Mean -70.262
-		Mean #1: Total 75068785 Mean -1385.49
-		Mean #2: Total 75068785 Mean 995.411
-		Stdev #0: Total 75068785 Stdev 8929.47
-		Stdev #1: Total 75068785 Stdev 9206.6
-		Stdev #2: Total 75068785 Stdev 8482.61
+		 * Mean #0: Total 76190774 Mean -154.901
+		Mean #1: Total 76190774 Mean -1471.81
+		Mean #2: Total 76190774 Mean -153.951
+		Stdev #0: Total 76190774 Stdev 9048.21
+		Stdev #1: Total 76190774 Stdev 9329.07
+		Stdev #2: Total 76190774 Stdev 9047.87
 		 * */
                 // Continuation history based pruning
                 //if (history < -4097 * depth)
@@ -1163,12 +1165,6 @@ moves_loop:  // When in check, search starts here
 
 		if(CC)
 		{
-			/*
-			 * Mean #0: Total 73669826 Mean 834.991
-			Mean #1: Total 73669826 Mean -1559.62
-			Stdev #0: Total 73669826 Stdev 9040.88
-			Stdev #1: Total 73669826 Stdev 9812.07
-			*/
 				dbg_mean_of(hist0, 0);
 				dbg_stdev_of(hist0, 0);
 				dbg_mean_of(hist1, 1);
