@@ -1102,13 +1102,13 @@ moves_loop:  // When in check, search starts here
                 int history = (*contHist[0])[movedPiece][move.to_sq()]
                             + (*contHist[1])[movedPiece][move.to_sq()]
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()]
-                            + mainHistory[us][move.raw()];
+                            + mainHistory[us][move.raw()] / 2;
 
                 // Continuation history based pruning
-                if (history < -4446 * depth - 2466)
+                if (history < -4224 * depth - 1313)
                     continue;
 
-                history += 39 * mainHistory[us][move.raw()] / 32;
+                history += 55 * mainHistory[us][move.raw()] / 32;
 
                 // (*Scaler): Generally, lower divisors scale well
                 lmrDepth += history / lmrDivisor[dIndex];
