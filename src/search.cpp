@@ -1109,7 +1109,7 @@ moves_loop:  // When in check, search starts here
 
 		CC = true;
 		int hist0 = history;
-		int hist1 = history + CC * mainHistory[us][move.raw()] / 2;
+		int hist1 = history + CC * mainHistory[us][move.raw()] / 4;
 		/*
 			 * Mean #0: Total 73669826 Mean 834.991
 			Mean #1: Total 73669826 Mean -1559.62
@@ -1118,27 +1118,28 @@ moves_loop:  // When in check, search starts here
 			*/
 		//int hist2 = (hist1 + 1559.62) / 9812.07 * 9040.88 + 834.991; // factor 0,9214039443257131267917982647902
 		//int hist2 = (hist1 + 1385.49) / 9206.6 * 8929.47 - 70.262; // factor 0,96989876827493320009558360306736
-		int hist2 = (hist1 + 1471.81) / 9329.07 * 9048.21 - 154.901; // factor 0,96989410520019680418305361627686
+		//int hist2 = (hist1 + 1471.81) / 9329.07 * 9048.21 - 154.901; // factor 0,96989410520019680418305361627686
+		int hist2 = (hist1 + 434.254) / 9140.06 * 9066.48 + 186.95; // factor 0,99194972461887558724997428900904
                 //hist1 < -2466 - 4446 * depth;
 		P0 = hist0 < -4097*depth;
 		//P1 = P0;
-		//P1 = hist1 < -2466 - 4446 * depth;
-		//P1 = hist1 < -1313 - 4224 * depth; 
-		P1 = hist1 < -1312 - 4224 * depth; 
+		//P1 = hist1 < -2466 - 4446 * depth; // main
+		//P1 = hist1 < -1312 - 4224 * depth; // main/2
+		P1 = hist1 < -623 - 4130 * depth; // main/4
 
 		/*
-		 * Mean #0: Total 76190774 Mean -154.901
-		Mean #1: Total 76190774 Mean -1471.81
-		Mean #2: Total 76190774 Mean -153.951
-		Stdev #0: Total 76190774 Stdev 9048.21
-		Stdev #1: Total 76190774 Stdev 9329.07
-		Stdev #2: Total 76190774 Stdev 9047.87
+		 * Mean #0: Total 73119395 Mean 186.95
+		Mean #1: Total 73119395 Mean -434.254
+		Mean #2: Total 73119395 Mean 851.401
+		Stdev #0: Total 73119395 Stdev 9066.48
+		Stdev #1: Total 73119395 Stdev 9140.06
+		Stdev #2: Total 73119395 Stdev 8864.5
 		 * */
                 // Continuation history based pruning
                 //if (history < -4097 * depth)
                 //    continue;
 
-                history += (71 - 32*CC/2) * mainHistory[us][move.raw()] / 32;
+                history += (71 - 32*CC/4) * mainHistory[us][move.raw()] / 32;
 
                 // (*Scaler): Generally, lower divisors scales well
                 lmrDepth += history / lmrDivisor[dIndex];
