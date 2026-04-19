@@ -1109,8 +1109,8 @@ moves_loop:  // When in check, search starts here
 
 		CC = true;
 		int hist0 = history;
-		//int hist1 = history + CC * mainHistory[us][move.raw()] / 8;
-		int hist1 = history + CC * (*contHist[3])[movedPiece][move.to_sq()] / 4;
+		int hist1 = history + CC * mainHistory[us][move.raw()];
+		//int hist1 = history + CC * (*contHist[3])[movedPiece][move.to_sq()] / 4;
 		//int hist2 = (hist1 + 1559.62) / 9812.07 * 9040.88 + 834.991; // factor 0,9214039443257131267917982647902
 		//int hist2 = (hist1 + 1385.49) / 9206.6 * 8929.47 - 70.262; // factor 0,96989876827493320009558360306736
 		//int hist2 = (hist1 + 1471.81) / 9329.07 * 9048.21 - 154.901; // factor 0,96989410520019680418305361627686
@@ -1122,7 +1122,7 @@ moves_loop:  // When in check, search starts here
 		//int hist2 = (hist1 + 660.101) / 11409.3 * 9165.41 + 528.209; // factor 0,80332798681777146713645885374212
 		int hist2 = (hist1 + 65.8596) / 10006.4 * 9165.41 + 528.209; // factor 0,91595378957467220978573712823793
 		P0 = hist0 < -4097*depth;
-		P1 = P0;
+		//P1 = P0;
 		//P1 = hist1 < -2466 - 4446 * depth; //old: main
 		//P1 = hist1 < -1312 - 4224 * depth; //old: main/2
 		//P1 = hist1 < -623 - 4130 * depth; //old: main/4
@@ -1132,6 +1132,7 @@ moves_loop:  // When in check, search starts here
 		//P1 = hist1 < -769 - 4105 * depth; // main/8
 		//P1 = hist1 < -1318 - 5100 * depth; // cmh3
 		//P1 = hist1 < -643 - 4473 * depth; // cmh3/2
+		P1 = hist1 < -1347 - 4458 * depth; //new: main
 
 		/*
 		 * Mean #0: Total 70535670 Mean 528.209
