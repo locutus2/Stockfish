@@ -1107,24 +1107,34 @@ moves_loop:  // When in check, search starts here
 
 		CC = true;
 		int hist0 = history;
-		int hist1 = history + CC * mainHistory[us][move.raw()];
+		int hist1 = history + CC * mainHistory[us][move.raw()] / 2;
 		/*
 			 * Mean #0: Total 73669826 Mean 834.991
 			Mean #1: Total 73669826 Mean -1559.62
 			Stdev #0: Total 73669826 Stdev 9040.88
 			Stdev #1: Total 73669826 Stdev 9812.07
 			*/
-		int hist2 = (hist1 + 1559.62) / 9812.07 * 9040.88 + 834.991; // factor 0,9214039443257131267917982647902
+		//int hist2 = (hist1 + 1559.62) / 9812.07 * 9040.88 + 834.991; // factor 0,9214039443257131267917982647902
+		int hist2 = (hist1 + 1385.49) / 9206.6 * 8929.47 - 70.262; // factor 0,96989876827493320009558360306736
                 //hist1 < -2466 - 4446 * depth;
 		P0 = hist0 < -4097*depth;
 		//P1 = P0;
-		P1 = hist1 < -2466 - 4446 * depth;
+		//P1 = hist1 < -2466 - 4446 * depth;
+		P1 = hist1 < -1313 - 4224 * depth; 
 
+		/*
+		 * Mean #0: Total 75068785 Mean -70.262
+		Mean #1: Total 75068785 Mean -1385.49
+		Mean #2: Total 75068785 Mean 995.411
+		Stdev #0: Total 75068785 Stdev 8929.47
+		Stdev #1: Total 75068785 Stdev 9206.6
+		Stdev #2: Total 75068785 Stdev 8482.61
+		 * */
                 // Continuation history based pruning
                 //if (history < -4097 * depth)
                 //    continue;
 
-                history += (71 - 32*CC) * mainHistory[us][move.raw()] / 32;
+                history += (71 - 32*CC/2) * mainHistory[us][move.raw()] / 32;
 
                 // (*Scaler): Generally, lower divisors scales well
                 lmrDepth += history / 2995;
