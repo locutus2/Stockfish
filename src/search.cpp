@@ -1105,7 +1105,7 @@ moves_loop:  // When in check, search starts here
                             + mainHistory[us][move.raw()] / 4;
 
                 // Continuation history based pruning
-                if (history < -4130 * depth - 623)
+                if (history < -4124 * depth - 580)
                     continue;
 
                 history += 63 * mainHistory[us][move.raw()] / 32;
