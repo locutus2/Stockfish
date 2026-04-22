@@ -1108,6 +1108,102 @@ moves_loop:  // When in check, search starts here
             }
             else if (!ss->followPV || !PvNode)
             {
+		    /* results
+		     *pruneHist(8192) < -5690 - 572 * depth
+		     Hit #0: Total 69358019 Hits 2999836 Hit Rate (%) 4.32515
+		     Hit #1: Total 69358019 Hits 3204814 Hit Rate (%) 4.62068
+		     Hit #10: Total 1868556 Hits 150788 Hit Rate (%) 8.06976
+		     Hit #11: Total 2073534 Hits 239171 Hit Rate (%) 11.5345
+		     Hit #100: Total 69358019 Hits 64284649 Hit Rate (%) 92.6852
+		     Hit #101: Total 69358019 Hits 2073534 Hit Rate (%) 2.98961
+		     Hit #110: Total 69358019 Hits 1868556 Hit Rate (%) 2.69407
+		     Hit #111: Total 69358019 Hits 1131280 Hit Rate (%) 1.63107
+		     Hit #200: Total 64284649 Hits 3286223 Hit Rate (%) 5.11199
+		     Hit #201: Total 2073534 Hits 239171 Hit Rate (%) 11.5345
+		     Hit #210: Total 1868556 Hits 150788 Hit Rate (%) 8.06976
+		     Mean #0: Total 69358019 Mean 389.626
+		     Mean #1: Total 69358019 Mean -5666.24
+		     Mean #2: Total 69358019 Mean 172.681
+		     Stdev #0: Total 69358019 Stdev 9317.05
+		     Stdev #1: Total 69358019 Stdev 1260.09
+		     Stdev #2: Total 69358019 Stdev 9026.66
+
+		     history + pruneHist(8192) < -5629 - 4194 * depth
+		     Hit #0: Total 71353397 Hits 2979497 Hit Rate (%) 4.17569
+		     Hit #1: Total 71353397 Hits 3032694 Hit Rate (%) 4.25024
+		     Hit #10: Total 170221 Hits 26615 Hit Rate (%) 15.6356
+		     Hit #11: Total 223418 Hits 13907 Hit Rate (%) 6.22466
+		     Hit #100: Total 71353397 Hits 68150482 Hit Rate (%) 95.5112
+		     Hit #101: Total 71353397 Hits 223418 Hit Rate (%) 0.313115
+		     Hit #110: Total 71353397 Hits 170221 Hit Rate (%) 0.23856
+		     Hit #111: Total 71353397 Hits 2809276 Hit Rate (%) 3.93713
+		     Hit #200: Total 68150482 Hits 3648423 Hit Rate (%) 5.35348
+		     Hit #201: Total 223418 Hits 13907 Hit Rate (%) 6.22466
+		     Hit #210: Total 170221 Hits 26615 Hit Rate (%) 15.6356
+		     Mean #0: Total 71353397 Mean 454.352
+		     Mean #1: Total 71353397 Mean -5172.32
+		     Mean #2: Total 71353397 Mean 446.242
+		     Stdev #0: Total 71353397 Stdev 9148.48
+		     Stdev #1: Total 71353397 Stdev 9367.98
+		     Stdev #2: Total 71353397 Stdev 9147.97
+
+		     history + pruneHist(4096) < -5445 - 4194 * depth
+		     Hit #0: Total 72079846 Hits 2970499 Hit Rate (%) 4.12112
+		     Hit #1: Total 72079846 Hits 3066205 Hit Rate (%) 4.2539
+		     Hit #10: Total 157539 Hits 21810 Hit Rate (%) 13.8442
+		     Hit #11: Total 253245 Hits 17452 Hit Rate (%) 6.89135
+		     Hit #100: Total 72079846 Hits 68856102 Hit Rate (%) 95.5275
+		     Hit #101: Total 72079846 Hits 253245 Hit Rate (%) 0.35134
+		     Hit #110: Total 72079846 Hits 157539 Hit Rate (%) 0.218562
+		     Hit #111: Total 72079846 Hits 2812960 Hit Rate (%) 3.90256
+		     Hit #200: Total 68856102 Hits 3638433 Hit Rate (%) 5.28411
+		     Hit #201: Total 253245 Hits 17452 Hit Rate (%) 6.89135
+		     Hit #210: Total 157539 Hits 21810 Hit Rate (%) 13.8442
+		     Mean #0: Total 72079846 Mean 533.918
+		     Mean #1: Total 72079846 Mean -4927.24
+		     Mean #2: Total 72079846 Mean 504.775
+		     Stdev #0: Total 72079846 Stdev 9180.65
+		     Stdev #1: Total 72079846 Stdev 9405.05
+		     Stdev #2: Total 72079846 Stdev 9187.15
+
+		     history + pruneHist(2048) < -5218 - 4199 * depth
+		     Hit #0: Total 70116782 Hits 2878977 Hit Rate (%) 4.10597
+		     Hit #1: Total 70116782 Hits 3005363 Hit Rate (%) 4.28622
+		     Hit #10: Total 154376 Hits 18694 Hit Rate (%) 12.1094
+		     Hit #11: Total 280762 Hits 21392 Hit Rate (%) 7.61926
+		     Hit #100: Total 70116782 Hits 66957043 Hit Rate (%) 95.4936
+		     Hit #101: Total 70116782 Hits 280762 Hit Rate (%) 0.400421
+		     Hit #110: Total 70116782 Hits 154376 Hit Rate (%) 0.22017
+		     Hit #111: Total 70116782 Hits 2724601 Hit Rate (%) 3.8858
+		     Hit #200: Total 66957043 Hits 3546535 Hit Rate (%) 5.29673
+		     Hit #201: Total 280762 Hits 21392 Hit Rate (%) 7.61926
+		     Hit #210: Total 154376 Hits 18694 Hit Rate (%) 12.1094
+		     Mean #0: Total 70116782 Mean 528.777
+		    Mean #1: Total 70116782 Mean -4707.42
+			    Mean #2: Total 70116782 Mean 497.773
+			    Stdev #0: Total 70116782 Stdev 9183.6
+			    Stdev #1: Total 70116782 Stdev 9410.22
+			    Stdev #2: Total 70116782 Stdev 9181.22
+
+			    history + pruneHist(1024) < -4878 - 4216 * depth
+			    Hit #0: Total 72208786 Hits 3031806 Hit Rate (%) 4.19867
+			    Hit #1: Total 72208786 Hits 3205502 Hit Rate (%) 4.43921
+			    Hit #10: Total 177923 Hits 20573 Hit Rate (%) 11.5629
+			    Hit #11: Total 351619 Hits 29338 Hit Rate (%) 8.34369
+			    Hit #100: Total 72208786 Hits 68825361 Hit Rate (%) 95.3144
+			    Hit #101: Total 72208786 Hits 351619 Hit Rate (%) 0.486948
+			    Hit #110: Total 72208786 Hits 177923 Hit Rate (%) 0.246401
+			    Hit #111: Total 72208786 Hits 2853883 Hit Rate (%) 3.95227
+			    Hit #200: Total 68825361 Hits 3651298 Hit Rate (%) 5.30516
+			    Hit #201: Total 351619 Hits 29338 Hit Rate (%) 8.34369
+			    Hit #210: Total 177923 Hits 20573 Hit Rate (%) 11.5629
+			    Mean #0: Total 72208786 Mean 388.945
+			    Mean #1: Total 72208786 Mean -4525.17
+			    Mean #2: Total 72208786 Mean 342.725
+			    Stdev #0: Total 72208786 Stdev 9321.29
+			    Stdev #1: Total 72208786 Stdev 9582.86
+			    Stdev #2: Total 72208786 Stdev 9313.07
+		     * */
                 int dIndex  = std::min(int(depth), int(lmrDivisor.size())) - 1;
                 int history = (*contHist[0])[movedPiece][move.to_sq()]
                             + (*contHist[1])[movedPiece][move.to_sq()]
@@ -1167,7 +1263,6 @@ moves_loop:  // When in check, search starts here
 		//P1 = hist1 < -5445 - 4194 * depth; // pruneHist(4096)
 		//P1 = hist1 < -5629 - 4194 * depth; // pruneHist(8192)
 		P1 = hist1 < -5690 - 572 * depth; // only pruneHist(8192)
-
 		/*
 		 *Mean #0: Total 70535670 Mean 528.209
 		 Mean #1: Total 70535670 Mean -5616.6
