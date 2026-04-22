@@ -1069,7 +1069,7 @@ moves_loop:  // When in check, search starts here
 	bool P1 = false;
 
 	constexpr int MAX_PRUNING_BONUS = 1024;
-	constexpr int MAX_PRUNING_MARGIN = 1024;
+	constexpr int MAX_PRUNING_MARGIN = 2*1024;
 
 	int pruningBonus = 0;
 
@@ -1135,14 +1135,15 @@ moves_loop:  // When in check, search starts here
 		//int hist2 = (hist1 + 2107.98) / 7764.55 * 10227.1 - 4991.35; // factor 1,3171529579949900509366286520146
 		//int hist2 = (hist1 + 3549.79) / 8609.91 * 10227.1 - 4991.35; // factor 1,1878289087806957331725883313531
 		//int hist2 = (hist1 - 2834.01) / 9904.32 * 9165.41 + 528.209; // factor 0,92539518109269490484960098219767
-		int hist2 = (hist1 + 4903.26) / 9382.4 * 9165.41 + 528.209; // factor 0,97687265518417462482946793997271
+		//int hist2 = (hist1 + 4334.32) / 9430.53 * 9165.41 + 528.209; // factor 0,97188705194723944465475429270677
+		int hist2 = (hist1 + 4676.23) / 9393.62 * 9165.41 + 528.209; // factor 0,97570585141830306101375188691899
 		P0 = hist0 < -4097*depth;
 		if(!P0)
 		{
 		     pruningBonus = std::max(MAX_PRUNING_MARGIN - history - 4097 * depth, 0) * MAX_PRUNING_BONUS / MAX_PRUNING_MARGIN;
 		     //std::cerr << "pruningMargin: " << pruningMargin << std::endl;
 		}
-		P1 = P0;
+		//P1 = P0;
 		//P1 = hist1 < -2466 - 4446 * depth; //old: main
 		//P1 = hist1 < -1312 - 4224 * depth; //old: main/2
 		//P1 = hist1 < -623 - 4130 * depth; //old: main/4
@@ -1158,15 +1159,16 @@ moves_loop:  // When in check, search starts here
 		//P1 = hist1 < 652 - 3449 * depth; // -cmh1/2
 		//P1 = hist1 < 289 - 3743 * depth; // -cmh1/4
 		//P1 = hist1 < 2263 - 4427 * depth; // -main
-		//P1 = hist1 < -5444 - 4194 * depth; // pruneHist
+		//P1 = hist1 < -4878 - 4216 * depth; // pruneHist(1024)
+		P1 = hist1 < -5218 - 4199 * depth; // pruneHist(2048)
 
 		/*
-		 * Mean #0: Total 70535670 Mean 528.209
-		Mean #1: Total 70535670 Mean -4903.26
-		Mean #2: Total 70535670 Mean -6631.52
-		Stdev #0: Total 70535670 Stdev 9165.41
-		Stdev #1: Total 70535670 Stdev 9382.4
-		Stdev #2: Total 70535670 Stdev 8682.13
+		 *Mean #0: Total 70535670 Mean 528.209
+		 Mean #1: Total 70535670 Mean -4676.23
+		 Mean #2: Total 70535670 Mean 195.92
+		 Stdev #0: Total 70535670 Stdev 9165.41
+		 Stdev #1: Total 70535670 Stdev 9393.62
+		 Stdev #2: Total 70535670 Stdev 9129.16
 		 * */
                 // Continuation history based pruning
                 //if (history < -4097 * depth)
