@@ -1068,10 +1068,10 @@ moves_loop:  // When in check, search starts here
 	bool P0 = false;
 	bool P1 = false;
 
-	constexpr int MAX_PRUNING_MARGIN = 4*1024;
-	constexpr int MAX_PRUNING_DIVISOR = 4;
+	constexpr int MAX_PRUNING_BONUS = 1024;
+	constexpr int MAX_PRUNING_MARGIN = 1024;
 
-	int pruningMargin = 0;
+	int pruningBonus = 0;
 
         // Step 14. Pruning at shallow depths.
         // Depth conditions are important for mate finding.
@@ -1139,10 +1139,10 @@ moves_loop:  // When in check, search starts here
 		P0 = hist0 < -4097*depth;
 		if(!P0)
 		{
-		     pruningMargin = std::max(MAX_PRUNING_MARGIN - history - 4097 * depth, 0) / MAX_PRUNING_DIVISOR;
+		     pruningBonus = std::max(MAX_PRUNING_MARGIN - history - 4097 * depth, 0) * MAX_PRUNING_BONUS / MAX_PRUNING_MARGIN;
 		     //std::cerr << "pruningMargin: " << pruningMargin << std::endl;
 		}
-		//P1 = P0;
+		P1 = P0;
 		//P1 = hist1 < -2466 - 4446 * depth; //old: main
 		//P1 = hist1 < -1312 - 4224 * depth; //old: main/2
 		//P1 = hist1 < -623 - 4130 * depth; //old: main/4
@@ -1158,7 +1158,7 @@ moves_loop:  // When in check, search starts here
 		//P1 = hist1 < 652 - 3449 * depth; // -cmh1/2
 		//P1 = hist1 < 289 - 3743 * depth; // -cmh1/4
 		//P1 = hist1 < 2263 - 4427 * depth; // -main
-		P1 = hist1 < -5444 - 4194 * depth; // pruneHist
+		//P1 = hist1 < -5444 - 4194 * depth; // pruneHist
 
 		/*
 		 * Mean #0: Total 70535670 Mean 528.209
@@ -1395,9 +1395,9 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-	if(pruningMargin > 0)
+	if(pruningBonus > 0)
 	{
-		int bonus = (value > alpha ? pruningMargin : -pruningMargin);
+		int bonus = (value > alpha ? pruningBonus : -pruningBonus);
 		pruningHistory[us][move.raw()] << bonus;
 		//std::cerr << "update pruningHistory: " << bonus << " => " << pruningHistory[us][move.raw()] << std::endl;
 	}
