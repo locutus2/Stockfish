@@ -1069,7 +1069,7 @@ moves_loop:  // When in check, search starts here
 	bool P1 = false;
 
 	constexpr int MAX_PRUNING_BONUS = 1024;
-	constexpr int MAX_PRUNING_MARGIN = 2*1024;
+	constexpr int MAX_PRUNING_MARGIN = 8*1024;
 
 	int pruningBonus = 0;
 
@@ -1118,7 +1118,8 @@ moves_loop:  // When in check, search starts here
 		int hist0 = history;
 		//int hist1 = history - CC * (*contHist[1])[movedPiece][move.to_sq()] / 8;
 		//int hist1 = history + CC * mainHistory[us][move.raw()] / 16;
-		int hist1 = history + CC * pruningHistory[us][move.raw()];
+		//int hist1 = history + CC * pruningHistory[us][move.raw()];
+		int hist1 = CC * pruningHistory[us][move.raw()];
 		//int hist1 = history - CC * mainHistory[us][move.raw()];
 		//int hist1 = history + CC * (*contHist[3])[movedPiece][move.to_sq()] / 4;
 		//int hist2 = (hist1 + 1559.62) / 9812.07 * 9040.88 + 834.991; // factor 0,9214039443257131267917982647902
@@ -1136,7 +1137,9 @@ moves_loop:  // When in check, search starts here
 		//int hist2 = (hist1 + 3549.79) / 8609.91 * 10227.1 - 4991.35; // factor 1,1878289087806957331725883313531
 		//int hist2 = (hist1 - 2834.01) / 9904.32 * 9165.41 + 528.209; // factor 0,92539518109269490484960098219767
 		//int hist2 = (hist1 + 4334.32) / 9430.53 * 9165.41 + 528.209; // factor 0,97188705194723944465475429270677
-		int hist2 = (hist1 + 4676.23) / 9393.62 * 9165.41 + 528.209; // factor 0,97570585141830306101375188691899
+		//int hist2 = (hist1 + 4903.26) / 9382.4 * 9165.41 + 528.209; // factor 0,97687265518417462482946793997271
+		//int hist2 = (hist1 + 5088.39) / 9385.44 * 9165.41 + 528.209; // factor 0,97687265518417462482946793997271
+		int hist2 = (hist1 + 5616.6) / 1279.4 * 9165.41 + 528.209; // factor 7,163834609973425042988901047366
 		P0 = hist0 < -4097*depth;
 		if(!P0)
 		{
@@ -1160,15 +1163,18 @@ moves_loop:  // When in check, search starts here
 		//P1 = hist1 < 289 - 3743 * depth; // -cmh1/4
 		//P1 = hist1 < 2263 - 4427 * depth; // -main
 		//P1 = hist1 < -4878 - 4216 * depth; // pruneHist(1024)
-		P1 = hist1 < -5218 - 4199 * depth; // pruneHist(2048)
+		//P1 = hist1 < -5218 - 4199 * depth; // pruneHist(2048)
+		//P1 = hist1 < -5445 - 4194 * depth; // pruneHist(4096)
+		//P1 = hist1 < -5629 - 4194 * depth; // pruneHist(8192)
+		P1 = hist1 < -5690 - 572 * depth; // only pruneHist(8192)
 
 		/*
 		 *Mean #0: Total 70535670 Mean 528.209
-		 Mean #1: Total 70535670 Mean -4676.23
-		 Mean #2: Total 70535670 Mean 195.92
+		 Mean #1: Total 70535670 Mean -5616.6
+		 Mean #2: Total 70535670 Mean 12.4631
 		 Stdev #0: Total 70535670 Stdev 9165.41
-		 Stdev #1: Total 70535670 Stdev 9393.62
-		 Stdev #2: Total 70535670 Stdev 9129.16
+		 Stdev #1: Total 70535670 Stdev 1279.4
+		 Stdev #2: Total 70535670 Stdev 1249.02
 		 * */
                 // Continuation history based pruning
                 //if (history < -4097 * depth)
