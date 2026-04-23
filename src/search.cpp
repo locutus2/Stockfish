@@ -1105,18 +1105,43 @@ moves_loop:  // When in check, search starts here
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
 		CC = true;
-		C = (ss-1)->moveCount == 0;
+		C = allNode;
+		//C = (ss-1)->moveCount == 0;
 		//C = priorCapture;
 		//C = !ss->inCheck;
 		int Delta = 2048;
-		double C0 = 0.9054971;
-		double C1 = 0.0945029;
-		double P0 = 0.05431;
-		double P1 = 0.0333192;
+		double C0 = 0.34905;
+		double C1 = 0.65095;
+		double P0 = 0.0666229;
+		double P1 = 0.0462196;
 
 		/*
 		 * master Bench: 188650198
 		 * */
+		/*
+		C = allNode
+		Hit #0: Total 237082044 Hits 154328450 Hit Rate (%) 65.095
+		Hit #10: Total 237082044 Hits 12646276 Hit Rate (%) 5.33413
+		Hit #11: Total 82753594 Hits 5513282 Hit Rate (%) 6.66229
+		Hit #12: Total 154328450 Hits 7132994 Hit Rate (%) 4.62196
+		Hit #20: Total 70060962 Hits 3742756 Hit Rate (%) 5.34214
+		Hit #21: Total 31043311 Hits 2826284 Hit Rate (%) 9.10433
+		Hit #22: Total 39017651 Hits 916472 Hit Rate (%) 2.34887
+		double C0 = 0.34905;
+		double C1 = 0.65095;
+		double P0 = 0.0666229;
+		double P1 = 0.0462196;
+                W = 0,43596035182324608178691431186347
+		Delta=2048
+                Hit #0: Total 235480744 Hits 154099687 Hit Rate (%) 65.4405
+		Hit #10: Total 235480744 Hits 12465313 Hit Rate (%) 5.29356
+		Hit #11: Total 81381057 Hits 4325431 Hit Rate (%) 5.31503
+		Hit #12: Total 154099687 Hits 8139882 Hit Rate (%) 5.28222
+		Hit #20: Total 69129083 Hits 3659988 Hit Rate (%) 5.29443
+		Hit #21: Total 30600701 Hits 2778851 Hit Rate (%) 9.081
+		Hit #22: Total 38528382 Hits 881137 Hit Rate (%) 2.28698
+		Bench: 182930004
+		*/
 		/*
 		C = (ss-1)->moveCount == 0;
                 Hit #0: Total 237082044 Hits 22404945 Hit Rate (%) 9.45029
