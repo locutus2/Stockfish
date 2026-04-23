@@ -1105,14 +1105,87 @@ moves_loop:  // When in check, search starts here
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
 		CC = true;
-		C = priorCapture;
+		C = (ss-1)->moveCount == 0;
+		//C = priorCapture;
+		//C = !ss->inCheck;
 		int Delta = 2048;
+		double C0 = 0.9054971;
+		double C1 = 0.0945029;
+		double P0 = 0.05431;
+		double P1 = 0.0333192;
+
+		/*
+		 * master Bench: 188650198
+		 * */
+		/*
+		C = (ss-1)->moveCount == 0;
+                Hit #0: Total 237082044 Hits 22404945 Hit Rate (%) 9.45029
+		Hit #10: Total 237082044 Hits 12646276 Hit Rate (%) 5.33413
+		Hit #11: Total 214677099 Hits 11899762 Hit Rate (%) 5.5431
+		Hit #12: Total 22404945 Hits 746514 Hit Rate (%) 3.33192
+		Hit #20: Total 70060962 Hits 3742756 Hit Rate (%) 5.34214
+		Hit #21: Total 67627830 Hits 3696655 Hit Rate (%) 5.46617
+		Hit #22: Total 2433132 Hits 46101 Hit Rate (%) 1.89472
+		double C0 = 0.9054971;
+		double C1 = 0.0945029;
+		double P0 = 0.05431;
+		double P1 = 0.0333192;
+                W = 0,9398245143917515594670330775086
+		Delta=2048
+                Hit #0: Total 236892936 Hits 22435651 Hit Rate (%) 9.4708
+		Hit #10: Total 236892936 Hits 12455030 Hit Rate (%) 5.25766
+		Hit #11: Total 214457285 Hits 11381695 Hit Rate (%) 5.30721
+		Hit #12: Total 22435651 Hits 1073335 Hit Rate (%) 4.78406
+		Hit #20: Total 69967565 Hits 3727953 Hit Rate (%) 5.32812
+		Hit #21: Total 67589148 Hits 3683652 Hit Rate (%) 5.45006
+		Hit #22: Total 2378417 Hits 44301 Hit Rate (%) 1.86263
+                Bench: 186799359
+		*/
+		/*
+		Delta * C - Delta * (1 - W)
+		 * C=!ss->inCheck
+		Hit #0: Total 237082044 Hits 227709205 Hit Rate (%) 96.04658
+			Hit #10: Total 237082044 Hits 12646276 Hit Rate (%) 5.33413
+			Hit #11: Total 9372839 Hits 2679368 Hit Rate (%) 28.5865
+			Hit #12: Total 227709205 Hits 9966908 Hit Rate (%) 4.37703
+			Hit #20: Total 70060962 Hits 3742756 Hit Rate (%) 5.34214
+			Hit #21: Total 6089356 Hits 526100 Hit Rate (%) 8.63967
+			Hit #22: Total 63971606 Hits 3216656 Hit Rate (%) 5.02826
+		double C0 = 0.0395342;
+		double C1 = 0.9604658;
+		double P0 = 0.285865;
+		double P1 = 0.0437703;
+		W = 0,21187034782462368327439511604421
+		Delta=2048
+                Hit #0: Total 233127100 Hits 224284460 Hit Rate (%) 96.2069
+		Hit #10: Total 233127100 Hits 12846781 Hit Rate (%) 5.51063
+		Hit #11: Total 8842640 Hits 2085995 Hit Rate (%) 23.5902
+		Hit #12: Total 224284460 Hits 10760786 Hit Rate (%) 4.79783
+		Hit #20: Total 69166062 Hits 3664822 Hit Rate (%) 5.29858
+		Hit #21: Total 6131991 Hits 517525 Hit Rate (%) 8.43975
+		Hit #22: Total 63034071 Hits 3147297 Hit Rate (%) 4.99301
+                Bench: 182929169
+			*/
+		/*
+		 * C=priorCapture
 		double C0 = 0.654296;
 		double C1 = 0.345704;
 		double P0 = 0.0680625;
 		double P1 = 0.0254794;
+		W = 0,834868630663948763683257916538 
+		Delta=2048
+                Hit #0: Total 232241770 Hits 79880389 Hit Rate (%) 34.3954
+		Hit #10: Total 232241770 Hits 12311152 Hit Rate (%) 5.30101
+		Hit #11: Total 152361381 Hits 9586596 Hit Rate (%) 6.29201
+		Hit #12: Total 79880389 Hits 2724556 Hit Rate (%) 3.41079
+		Hit #20: Total 68530887 Hits 3655609 Hit Rate (%) 5.33425
+		Hit #21: Total 53130480 Hits 3330316 Hit Rate (%) 6.26818
+		Hit #22: Total 15400407 Hits 325293 Hit Rate (%) 2.11224
+                Bench: 184367218
+		 */
 		double W = P0*C0 / (P1*C1+P0*C0);
-		int margin = CC * Delta * (W*C - (1-W)*!C); 
+		//int margin = CC * Delta * (W*C - (1-W)*!C); 
+		int margin = CC * (C * Delta - int((1-W) * Delta)); 
 
 		if(CC)
 		{
