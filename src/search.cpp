@@ -1109,7 +1109,7 @@ moves_loop:  // When in check, search starts here
 		//C = (ss-1)->moveCount == 0;
 		//C = priorCapture;
 		//C = !ss->inCheck;
-		int Delta = 2*2048;
+		int Delta = 8*2048;
 		double C0 = 0.34905;
 		double C1 = 0.65095;
 		double P0 = 0.0666229;
@@ -1150,6 +1150,15 @@ moves_loop:  // When in check, search starts here
 		Hit #21: Total 30988352 Hits 2828487 Hit Rate (%) 9.12758
 		Hit #22: Total 38330361 Hits 875590 Hit Rate (%) 2.28432
 		Bench: 184694320
+		Delta=8*2048
+		Hit #0: Total 236184506 Hits 155510943 Hit Rate (%) 65.843
+		Hit #10: Total 236184506 Hits 21626000 Hit Rate (%) 9.1564
+		Hit #11: Total 80673563 Hits 860025 Hit Rate (%) 1.06606
+		Hit #12: Total 155510943 Hits 20765975 Hit Rate (%) 13.3534
+		Hit #20: Total 68660364 Hits 3632610 Hit Rate (%) 5.29069
+		Hit #21: Total 31373080 Hits 2840015 Hit Rate (%) 9.05239
+		Hit #22: Total 37287284 Hits 792595 Hit Rate (%) 2.12564
+		Bench: 184113603
 		*/
 		/*
 		C = (ss-1)->moveCount == 0;
