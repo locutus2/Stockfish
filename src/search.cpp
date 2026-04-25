@@ -1065,7 +1065,7 @@ moves_loop:  // When in check, search starts here
 
 	bool CC = false, C = false;
 	int V1 = 0;
-	constexpr int MARGIN = 1024;//2048;
+	constexpr int MARGIN = 4096;//1024;//2048;
 
         // Step 14. Pruning at shallow depths.
         // Depth conditions are important for mate finding.
@@ -1108,21 +1108,44 @@ moves_loop:  // When in check, search starts here
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
 		CC = true;
-		//C = allNode;
+		C = allNode;
 		//C = (ss-1)->moveCount == 0;
-		C = priorCapture;
+		//C = priorCapture;
 		//C = !ss->inCheck;
 		int Delta = MARGIN;
-		double C1 = 0.195904;
+		double C1 = 0.564155;
 		double C0 = 1 - C1;
-		double P0 = 0.466871;
-		double P1 = 0.453436;
+		double P0 = 0.365576;
+		double P1 = 0.361068;
 
 		/*
 		 * master Bench: 188650198
 		 * */
 		/*
 		C = allNode
+		Margin=4096
+		Hit #0: Total 18082477 Hits 10201317 Hit Rate (%) 56.4155
+		Hit #10: Total 18082477 Hits 6564532 Hit Rate (%) 36.3033
+		Hit #11: Total 7881160 Hits 2881160 Hit Rate (%) 36.5576
+		Hit #12: Total 10201317 Hits 3683372 Hit Rate (%) 36.1068
+		Hit #20: Total 2351182 Hits 230900 Hit Rate (%) 9.82059
+		Hit #21: Total 1221026 Hits 177745 Hit Rate (%) 14.557
+		Hit #22: Total 1130156 Hits 53155 Hit Rate (%) 4.70333
+		double C1 = 0.564155;
+		double C0 = 1 - C1;
+		double P0 = 0.365576;
+		double P1 = 0.361068;
+		W = 0,4388982935805460913037748120901
+		Delta=4096
+		Hit #0: Total 17945457 Hits 12440149 Hit Rate (%) 69.322
+		Hit #10: Total 17945457 Hits 6551141 Hit Rate (%) 36.5058
+		Hit #11: Total 5505308 Hits 1903962 Hit Rate (%) 34.5841
+		Hit #12: Total 12440149 Hits 4647179 Hit Rate (%) 37.3563
+		Hit #20: Total 2245476 Hits 184809 Hit Rate (%) 8.23028
+		Hit #21: Total 885709 Hits 123611 Hit Rate (%) 13.9562
+		Hit #22: Total 1359767 Hits 61198 Hit Rate (%) 4.50062
+		Bench: 182104507
+
 		Margin=2048
 		Hit #0: Total 8870606 Hits 4991301 Hit Rate (%) 56.2679
 		Hit #10: Total 8870606 Hits 3796295 Hit Rate (%) 42.7963
