@@ -1209,13 +1209,13 @@ moves_loop:  // When in check, search starts here
                             + (*contHist[1])[movedPiece][move.to_sq()]
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
-		CC = true;
-		//CC = ss->inCheck;
+		//CC = true;
+		CC = ss->inCheck;
 		int hist0 = history;
-		//int hist1 = history - CC * (*contHist[1])[movedPiece][move.to_sq()] / 8;
+		int hist1 = history - CC * (*contHist[1])[movedPiece][move.to_sq()];
 		//int hist1 = history + CC * mainHistory[us][move.raw()] / 16;
 		//int hist1 = history + CC * pruningHistory[us][move.raw()];
-		int hist1 = CC * pruningHistory[us][move.raw()];
+		//int hist1 = CC * pruningHistory[us][move.raw()];
 		//int hist1 = history - CC * mainHistory[us][move.raw()];
 		//int hist1 = history + CC * (*contHist[3])[movedPiece][move.to_sq()] / 4;
 		//int hist2 = (hist1 + 1559.62) / 9812.07 * 9040.88 + 834.991; // factor 0,9214039443257131267917982647902
@@ -1235,7 +1235,8 @@ moves_loop:  // When in check, search starts here
 		//int hist2 = (hist1 + 4334.32) / 9430.53 * 9165.41 + 528.209; // factor 0,97188705194723944465475429270677
 		//int hist2 = (hist1 + 4903.26) / 9382.4 * 9165.41 + 528.209; // factor 0,97687265518417462482946793997271
 		//int hist2 = (hist1 + 5088.39) / 9385.44 * 9165.41 + 528.209; // factor 0,97687265518417462482946793997271
-		int hist2 = (hist1 + 5616.6) / 1279.4 * 9165.41 + 528.209; // factor 7,163834609973425042988901047366
+		//int hist2 = (hist1 + 5616.6) / 1279.4 * 9165.41 + 528.209; // factor 7,163834609973425042988901047366
+		int hist2 = (hist1 + 2107.98) / 7764.55 * 10227.1 - 4991.35; // factor 1,3171529579949900509366286520146
 		P0 = hist0 < -4097*depth;
 		if(!P0)
 		{
@@ -1262,19 +1263,21 @@ moves_loop:  // When in check, search starts here
 		//P1 = hist1 < -5218 - 4199 * depth; // pruneHist(2048)
 		//P1 = hist1 < -5445 - 4194 * depth; // pruneHist(4096)
 		//P1 = hist1 < -5629 - 4194 * depth; // pruneHist(8192)
-		P1 = hist1 < -5690 - 572 * depth; // only pruneHist(8192)
+		//P1 = hist1 < -5690 - 572 * depth; // only pruneHist(8192)
+		P1 = hist1 < 1682 - 3110 * depth; // -ss->inCheck * cmh1
 		/*
-		 *Mean #0: Total 70535670 Mean 528.209
-		 Mean #1: Total 70535670 Mean -5616.6
-		 Mean #2: Total 70535670 Mean 12.4631
-		 Stdev #0: Total 70535670 Stdev 9165.41
-		 Stdev #1: Total 70535670 Stdev 1279.4
-		 Stdev #2: Total 70535670 Stdev 1249.02
+		 *Mean #0: Total 7998245 Mean -4991.35
+		Mean #1: Total 7998245 Mean -2107.98
+		Mean #2: Total 7998245 Mean 25663.2
+		Stdev #0: Total 7998245 Stdev 10227.1
+		Stdev #1: Total 7998245 Stdev 7764.55
+		Stdev #2: Total 7998245 Stdev 55623.6
 		 * */
                 // Continuation history based pruning
                 //if (history < -4097 * depth)
                 //    continue;
 
+		//history = hist1;
                 history += 71 * mainHistory[us][move.raw()] / 32;
 
                 // (*Scaler): Generally, lower divisors scale well
