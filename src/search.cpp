@@ -1065,7 +1065,9 @@ moves_loop:  // When in check, search starts here
 
 	bool CC = false, C = false;
 	int V1 = 0;
-	constexpr int MARGIN = 4096;//1024;//2048;
+	constexpr int MARGIN = 512;//4096;//1024;//2048;
+        constexpr int USE_DEPTH = true;
+	int DF = (USE_DEPTH ? depth : 1);
 
         // Step 14. Pruning at shallow depths.
         // Depth conditions are important for mate finding.
@@ -1113,16 +1115,118 @@ moves_loop:  // When in check, search starts here
 		//C = priorCapture;
 		//C = !ss->inCheck;
 		int Delta = MARGIN;
-		double C1 = 0.564155;
+		double C1 = 0.600454;
 		double C0 = 1 - C1;
-		double P0 = 0.365576;
-		double P1 = 0.361068;
+		double P0 = 0.414651;
+		double P1 = 0.411308;
 
 		/*
 		 * master Bench: 188650198
 		 * */
 		/*
+		 * Mean #0: Total 237082044 Mean 474.108
+                   Mean #1: Total 237082044 Mean -265.75
+		   equivalent to history < -4097 * depth + 2048 * allNode - 1149
+		   history < (474 * allNode - 266 - 4097) * depth
+		 * */
+		/*
+		CC = true;
 		C = allNode
+	        USE_DEPTH=true
+	        Margin=512
+		Hit #0: Total 6727014 Hits 4039260 Hit Rate (%) 60.0454
+		Hit #10: Total 6727014 Hits 2775859 Hit Rate (%) 41.2644
+		Hit #11: Total 2687754 Hits 1114481 Hit Rate (%) 41.4651
+		Hit #12: Total 4039260 Hits 1661378 Hit Rate (%) 41.1308
+		Hit #20: Total 518867 Hits 35984 Hit Rate (%) 6.93511
+		Hit #21: Total 225308 Hits 25833 Hit Rate (%) 11.4656
+		Hit #22: Total 293559 Hits 10151 Hit Rate (%) 3.45791
+		double C1 = 0.600454;
+		double C0 = 1 - C1;
+		double P0 = 0.414651;
+		double P1 = 0.411308;
+		W = 0,40148960364885918739358560178945 
+		Delta=512
+		Hit #0: Total 6714092 Hits 4564557 Hit Rate (%) 67.9847
+		Hit #10: Total 6714092 Hits 2756197 Hit Rate (%) 41.0509
+		Hit #11: Total 2149535 Hits 895681 Hit Rate (%) 41.6686
+		Hit #12: Total 4564557 Hits 1860516 Hit Rate (%) 40.7601
+		Hit #20: Total 511930 Hits 33167 Hit Rate (%) 6.47882
+		Hit #21: Total 189288 Hits 22145 Hit Rate (%) 11.6991
+		Hit #22: Total 322642 Hits 11022 Hit Rate (%) 3.41617
+		Bench: 185244150
+
+	        USE_DEPTH=true
+	        Margin=1024
+		Hit #0: Total 14449072 Hits 8702525 Hit Rate (%) 60.229
+		Hit #10: Total 14449072 Hits 4772200 Hit Rate (%) 33.0277
+		Hit #11: Total 5746547 Hits 1921428 Hit Rate (%) 33.4362
+		Hit #12: Total 8702525 Hits 2850772 Hit Rate (%) 32.758
+		Hit #20: Total 1221102 Hits 81908 Hit Rate (%) 6.70771
+		Hit #21: Total 525016 Hits 58162 Hit Rate (%) 11.0781
+		Hit #22: Total 696086 Hits 23746 Hit Rate (%) 3.41136
+		double C1 = 0.60229;
+		double C0 = 1 - C1;
+		double P0 = 0.334362;
+		double P1 = 0.32758;
+		W = 0,40262871051965033562656994769493
+		Delta=1024
+		Hit #0: Total 14982310 Hits 11300770 Hit Rate (%) 75.4274
+		Hit #10: Total 14982310 Hits 4840499 Hit Rate (%) 32.3081
+		Hit #11: Total 3681540 Hits 1264168 Hit Rate (%) 34.338
+		Hit #12: Total 11300770 Hits 3576331 Hit Rate (%) 31.6468
+		Hit #20: Total 1226485 Hits 71381 Hit Rate (%) 5.81997
+		Hit #21: Total 366043 Hits 42967 Hit Rate (%) 11.7382
+		Hit #22: Total 860442 Hits 28414 Hit Rate (%) 3.30226
+		Bench: 180196672
+
+	        USE_DEPTH=true
+	        Margin=2048
+		Hit #0: Total 38520183 Hits 23720184 Hit Rate (%) 61.5786
+		Hit #10: Total 38520183 Hits 7338557 Hit Rate (%) 19.0512
+		Hit #11: Total 14799999 Hits 2974115 Hit Rate (%) 20.0954
+		Hit #12: Total 23720184 Hits 4364442 Hit Rate (%) 18.3997
+		Hit #20: Total 3762662 Hits 224828 Hit Rate (%) 5.97524
+		Hit #21: Total 1604386 Hits 157789 Hit Rate (%) 9.83485
+		Hit #22: Total 2158276 Hits 67039 Hit Rate (%) 3.10614
+		double C1 = 0.615786;
+		double C0 = 1 - C1;
+		double P0 = 0.200954;
+		double P1 = 0.183997;
+		W = 0,40527259606203979353466550526024 
+		Delta=2048
+		Hit #0: Total 52941006 Hits 46632245 Hit Rate (%) 88.0834
+		Hit #10: Total 52941006 Hits 8740476 Hit Rate (%) 16.5098
+		Hit #11: Total 6308761 Hits 1450385 Hit Rate (%) 22.99
+		Hit #12: Total 46632245 Hits 7290091 Hit Rate (%) 15.6332
+		Hit #20: Total 5260199 Hits 193195 Hit Rate (%) 3.67277
+		Hit #21: Total 736852 Hits 85594 Hit Rate (%) 11.6162
+		Hit #22: Total 4523347 Hits 107601 Hit Rate (%) 2.37879
+		Bench: 185095361
+
+		Hit #0: Total 4397425 Hits 2472941 Hit Rate (%) 56.2361
+		Hit #10: Total 4397425 Hits 2041458 Hit Rate (%) 46.4239
+		Hit #11: Total 1924484 Hits 894590 Hit Rate (%) 46.4847
+		Hit #12: Total 2472941 Hits 1146868 Hit Rate (%) 46.3767
+		Hit #20: Total 485047 Hits 46880 Hit Rate (%) 9.66504
+		Hit #21: Total 252961 Hits 36152 Hit Rate (%) 14.2915
+		Hit #22: Total 232086 Hits 10728 Hit Rate (%) 4.62242
+		Margin=1024
+		double C1 = 0.562361;
+		double C0 = 1 - C1;
+		double P0 = 0.464847;
+		double P1 = 0.463767;
+		W = 0,43821154910058762561088757698032 
+		Delta=1024
+		Hit #0: Total 4325976 Hits 2591737 Hit Rate (%) 59.911
+		Hit #10: Total 4325976 Hits 2005600 Hit Rate (%) 46.3618
+		Hit #11: Total 1734239 Hits 803276 Hit Rate (%) 46.3186
+		Hit #12: Total 2591737 Hits 1202324 Hit Rate (%) 46.3907
+		Hit #20: Total 467035 Hits 42836 Hit Rate (%) 9.1719
+		Hit #21: Total 227419 Hits 31843 Hit Rate (%) 14.0019
+		Hit #22: Total 239616 Hits 10993 Hit Rate (%) 4.58776
+		Bench: 186215679
+
 		Margin=4096
 		Hit #0: Total 18082477 Hits 10201317 Hit Rate (%) 56.4155
 		Hit #10: Total 18082477 Hits 6564532 Hit Rate (%) 36.3033
@@ -1333,11 +1437,11 @@ moves_loop:  // When in check, search starts here
 		 */
 		double W = P0*C0 / (P1*C1+P0*C0);
 		//int margin = CC * Delta * (W*C - (1-W)*!C); 
-		int margin = CC * (C * Delta - int((1-W) * Delta)); 
+		int margin = CC * DF * (C * Delta - int((1-W) * Delta)); 
 
 		if(CC)
 		{
-			V1 = history - margin + 4097 * depth;
+			V1 = (history - margin + 4097 * depth) / DF;
 			if(!MARGIN || std::abs(V1) < MARGIN)
 			{
 				dbg_hit_on(C, 0);
