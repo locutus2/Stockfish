@@ -1122,8 +1122,11 @@ moves_loop:  // When in check, search starts here
                             + (*contHist[1])[movedPiece][move.to_sq()]
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
+                static constexpr int HistoryMargin[5] = {785, 1184, 1289, 1294, 1233};
+
                 // Continuation history based pruning
-                if (history < -4097 * depth)
+                if (history
+                    < -4097 * depth + 2048 * allNode - HistoryMargin[std::min(depth, 5) - 1])
                     continue;
 
                 history += 71 * mainHistory[us][move.raw()] / 32;
