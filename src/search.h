@@ -52,6 +52,18 @@ enum NodeType {
     Root
 };
 
+enum Caller {
+    ITERATIVE_DEEPENING,
+    NULL_MOVE_SEARCH,
+    VERIFICATION_SEARCH,
+    PROBCUT_SEARCH,
+    SINGULAR_SEARCH,
+    LMR_SEARCH,
+    LMR_RESEARCH,
+    FULL_SEARCH,
+    PV_SEARCH
+};
+
 class TranspositionTable;
 class ThreadPool;
 class OptionsMap;
@@ -352,7 +364,8 @@ class Worker {
 
     // This is the main search function, for both PV and non-PV nodes
     template<NodeType nodeType>
-    Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
+    Value search(
+      Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode, Caller caller);
 
     // Quiescence search function, which is called by the main search
     template<NodeType nodeType>
