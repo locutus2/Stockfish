@@ -1262,7 +1262,7 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
-            r += r * (273 - 136 * ((ss - 1)->currentMove == Move::null())) / (256 * depth + 260);
+            r += r * (273 - 68 * ((ss - 1)->currentMove == Move::null())) / (256 * depth + 260);
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
