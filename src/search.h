@@ -356,7 +356,7 @@ class Worker {
                  Value     beta,
                  Depth     depth,
                  bool      cutNode,
-                 bool      isVerification = false);
+                 bool      isProbcut = false);
 
     // Quiescence search function, which is called by the main search
     template<NodeType nodeType>

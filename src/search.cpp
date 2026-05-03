@@ -646,13 +646,8 @@ void Search::Worker::clear() {
 
 // Main search function for both PV and non-PV nodes
 template<NodeType nodeType>
-Value Search::Worker::search(Position& pos,
-                             Stack*    ss,
-                             Value     alpha,
-                             Value     beta,
-                             Depth     depth,
-                             bool      cutNode,
-                             bool      isVerification) {
+Value Search::Worker::search(
+  Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode, bool isProbcut) {
 
     constexpr bool PvNode   = nodeType != NonPV;
     constexpr bool rootNode = nodeType == Root;
@@ -956,7 +951,7 @@ Value Search::Worker::search(Position& pos,
             // until ply exceeds nmpMinPly.
             nmpMinPly = ss->ply + 3 * (depth - R) / 4;
 
-            Value v = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false, true);
+            Value v = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false);
 
             nmpMinPly = 0;
 
@@ -1005,7 +1000,7 @@ Value Search::Worker::search(Position& pos,
             // If the qsearch held, perform the regular search
             if (value >= probCutBeta && probCutDepth > 0)
                 value = -search<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1, probCutDepth,
-                                       !cutNode);
+                                       !cutNode, true);
 
             undo_move(pos, move);
 
@@ -1266,8 +1261,8 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 428 / 4096;
 
         // Scale up reductions for expected ALL nodes
-        if (allNode && !isVerification)
-            r += r * 273 / (256 * depth + 260);
+        if (allNode)
+            r += r * (273 + 273 * isProbcut) / (256 * depth + 260);
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
