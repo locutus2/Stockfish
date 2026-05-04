@@ -1264,7 +1264,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 428 / 4096;
 
         // Scale up reductions for expected ALL nodes
-        if (allNode && caller != VERIFICATION_SEARCH)
+        if (allNode)
             r += r * 273 / (256 * depth + 260);
 
         // Step 17. Late moves reduction / extension (LMR)
@@ -1280,6 +1280,9 @@ moves_loop:  // When in check, search starts here
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true, LMR_SEARCH);
             ss->reduction = 0;
+
+	    bool CC = true;
+	    bool T = value > alpha;
 
             // Do a full-depth search when reduced LMR search fails high
             // (*Scaler) Shallower searches here don't scale well
@@ -1299,6 +1302,12 @@ moves_loop:  // When in check, search starts here
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1426);
             }
+
+	    if(CC)
+	    {
+		    dbg_hit_on(T, 0);
+		    dbg_hit_on(T, 10+caller);
+	    }
         }
 
         // Step 18. Full-depth search when LMR is skipped
