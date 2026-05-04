@@ -938,6 +938,14 @@ Value Search::Worker::search(
 
         Value nullValue =
           -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false, NULL_MOVE_SEARCH);
+		bool CC = true;
+		bool T = nullValue >= beta;
+		if(false&&CC)
+		{
+			dbg_hit_on(T, 0);
+			dbg_hit_on(T, 10+caller);
+		}
+
 
         undo_null_move(pos);
 
@@ -954,6 +962,13 @@ Value Search::Worker::search(
             nmpMinPly = ss->ply + 3 * (depth - R) / 4;
 
             Value v = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false, VERIFICATION_SEARCH);
+		bool CC = true;
+		bool T = v >= beta;
+		if(false&&CC)
+		{
+			dbg_hit_on(T, 0);
+			dbg_hit_on(T, 10+caller);
+		}
 
             nmpMinPly = 0;
 
@@ -1001,8 +1016,17 @@ Value Search::Worker::search(
 
             // If the qsearch held, perform the regular search
             if (value >= probCutBeta && probCutDepth > 0)
+	    {
                 value = -search<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1, probCutDepth,
                                        !cutNode, PROBCUT_SEARCH);
+		bool CC = true;
+		bool T = value >= probCutBeta;
+		if(false&&CC)
+		{
+			dbg_hit_on(T, 0);
+			dbg_hit_on(T, 10+caller);
+		}
+	    }
 
             undo_move(pos, move);
 
@@ -1155,6 +1179,8 @@ moves_loop:  // When in check, search starts here
             }
         }
 
+        bool CC = false;
+        bool T  = false;
         // Step 15. Extensions
         // Singular extension search. If all moves but one
         // fail low on a search of (alpha-s, beta-s), and just one fails high on
@@ -1176,6 +1202,9 @@ moves_loop:  // When in check, search starts here
             value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode,
                                   SINGULAR_SEARCH);
             ss->excludedMove = Move::none();
+
+            //CC = true;
+            //T = value >= singularBeta;
 
             if (value < singularBeta)
             {
@@ -1281,8 +1310,8 @@ moves_loop:  // When in check, search starts here
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true, LMR_SEARCH);
             ss->reduction = 0;
 
-	    bool CC = true;
-	    bool T = value > alpha;
+            //CC = true;
+            //T = value > alpha;
 
             // Do a full-depth search when reduced LMR search fails high
             // (*Scaler) Shallower searches here don't scale well
@@ -1296,18 +1325,17 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode,
                                            LMR_RESEARCH);
+                    //CC    = true;
+                    //T     = value > alpha;
+                }
 
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1426);
             }
 
-	    if(CC)
-	    {
-		    dbg_hit_on(T, 0);
-		    dbg_hit_on(T, 10+caller);
-	    }
         }
 
         // Step 18. Full-depth search when LMR is skipped
@@ -1321,6 +1349,8 @@ moves_loop:  // When in check, search starts here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 4628) - (r > 5772 && newDepth > 2), !cutNode,
                                    FULL_SEARCH);
+		//CC = true;
+		//T = value > alpha;
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
@@ -1338,11 +1368,18 @@ moves_loop:  // When in check, search starts here
                 newDepth = std::max(newDepth, 1);
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false, PV_SEARCH);
+	    CC = true;
+	    T = value > alpha;
         }
 
         // Step 19. Undo move
         undo_move(pos, move);
 
+        if (CC)
+        {
+                dbg_hit_on(T, 0);
+                dbg_hit_on(T, 10 + caller);
+        }
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
         // Step 20. Check for a new best move
