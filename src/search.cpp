@@ -1375,11 +1375,16 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
+	CC = allNode;
+	T = value > alpha;
         if (CC)
         {
                 dbg_hit_on(T, 0);
                 dbg_hit_on(T, 10 + caller);
+                dbg_hit_on(T, 100+depth);
+                dbg_hit_on(T, 1000+depth + 100*caller);
         }
+
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
         // Step 20. Check for a new best move
