@@ -52,6 +52,13 @@
 
 namespace Stockfish {
 
+int A[CALLER_NB];  // scaling nominator
+int B[CALLER_NB];  // scaling denominator
+int Random[CALLER_NB];  // random walk parameters
+
+TUNE(SetRange(-256, 256), A, B, Random);
+
+
 static constexpr std::array<int, 16> lmrDivisor = {3307, 2930, 2874, 2818, 3215, 3225, 3224, 2782,
                                                    2858, 2919, 3088, 3275, 3180, 2868, 3006, 3599};
 
@@ -1267,8 +1274,8 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 445 / 4096;
 
         // Scale up reductions for expected ALL nodes
-        if (allNode && caller != VERIFICATION_SEARCH)
-            r += r * 272 / (256 * depth + 285);
+        if (allNode)
+            r += r * (272 + A[caller]) / (256 * depth + 285 + B[caller]);
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)

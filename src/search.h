@@ -61,7 +61,8 @@ enum Caller {
     LMR_SEARCH,
     LMR_RESEARCH,
     FULL_SEARCH,
-    PV_SEARCH
+    PV_SEARCH,
+    CALLER_NB
 };
 
 class TranspositionTable;
