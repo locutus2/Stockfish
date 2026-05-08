@@ -1264,7 +1264,7 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
-            r += r * (272 + 546 * isProbcut) / (256 * depth + 285);
+            r += r * 272 / (256 * depth + 285 - 361 * isProbcut);
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
