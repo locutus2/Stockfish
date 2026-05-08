@@ -52,6 +52,17 @@
 
 namespace Stockfish {
 
+int R_log[CALLER_NB] = { 2834, 2834, 2834, 2834, 2834, 2834, 2834, 2834, 2834 };
+int R_delta[CALLER_NB] = { 617, 617, 617, 617, 617, 617, 617, 617, 617 };
+int R_imp[CALLER_NB] = { 194, 194, 194, 194, 194, 194, 194, 194, 194 };
+int R_offset[CALLER_NB] = { 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027 };
+
+int Random[CALLER_NB];  // random walk parameters
+
+TUNE(R_log, R_delta, R_imp, R_offset);
+TUNE(SetRange(-1024, 1024), Random);
+
+
 static constexpr std::array<int, 16> lmrDivisor = {3307, 2930, 2874, 2818, 3215, 3225, 3224, 2782,
                                                    2858, 2919, 3088, 3275, 3180, 2868, 3006, 3599};
 
@@ -638,8 +649,9 @@ void Search::Worker::clear() {
                 for (auto& h : to)
                     h.fill(-552);
 
-    for (size_t i = 1; i < reductions.size(); ++i)
-        reductions[i] = int(2834 / 128.0 * std::log(i));
+    for (size_t c = 0; c < reductions.size(); ++c)
+        for (size_t i = 1; i < reductions[c].size(); ++i)
+            reductions[c][i] = int(R_log[c] / 128.0 * std::log(i));
 
     refreshTable.clear(network[numaAccessToken]);
 }
@@ -1079,7 +1091,7 @@ moves_loop:  // When in check, search starts here
 
         int delta = beta - alpha;
 
-        int r = reduction(improving, depth, moveCount, delta);
+        int r = reduction(improving, depth, moveCount, delta, caller);
 
         // Increase reduction for ttPv nodes (*Scaler)
         // Larger values scale well
@@ -1772,9 +1784,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     return bestValue;
 }
 
-int Search::Worker::reduction(bool i, Depth d, int mn, int delta) const {
-    int reductionScale = reductions[d] * reductions[mn];
-    return reductionScale - delta * 617 / rootDelta + !i * reductionScale * 194 / 512 + 1027;
+int Search::Worker::reduction(bool i, Depth d, int mn, int delta, Caller caller) const {
+    int reductionScale = reductions[caller][d] * reductions[caller][mn];
+    return reductionScale - delta * R_delta[caller] / rootDelta + !i * reductionScale * R_imp[caller] / 512 + R_offset[caller];
 }
 
 // elapsed() returns the time elapsed since the search started. If the

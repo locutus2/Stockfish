@@ -61,7 +61,8 @@ enum Caller {
     LMR_SEARCH,
     LMR_RESEARCH,
     FULL_SEARCH,
-    PV_SEARCH
+    PV_SEARCH,
+    CALLER_NB
 };
 
 class TranspositionTable;
@@ -371,7 +372,7 @@ class Worker {
     template<NodeType nodeType>
     Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta);
 
-    int reduction(bool i, Depth d, int mn, int delta) const;
+    int reduction(bool i, Depth d, int mn, int delta, Caller caller) const;
 
     // Pointer to the search manager, only allowed to be called by the main thread
     SearchManager* main_manager() const {
@@ -404,7 +405,7 @@ class Worker {
     NumaReplicatedAccessToken numaAccessToken;
 
     // Reductions lookup table initialized at startup
-    std::array<int, MAX_MOVES> reductions;  // [depth or moveNumber]
+    std::array<std::array<int, MAX_MOVES>, CALLER_NB> reductions;  // [caller][depth or moveNumber]
 
     // The main thread has a SearchManager, the others have a NullSearchManager
     std::unique_ptr<ISearchManager> manager;
