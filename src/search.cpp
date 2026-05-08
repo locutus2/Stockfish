@@ -52,6 +52,13 @@
 
 namespace Stockfish {
 
+int A[CALLER_NB];  // scaling nominator
+int B[CALLER_NB];  // scaling denominator
+int Random[CALLER_NB];  // random walk parameters
+
+TUNE(SetRange(-256, 256), A, B, Random);
+
+
 static constexpr std::array<int, 16> lmrDivisor = {3307, 2930, 2874, 2818, 3215, 3225, 3224, 2782,
                                                    2858, 2919, 3088, 3275, 3180, 2868, 3006, 3599};
 
@@ -91,9 +98,10 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const int   bnpcv  = shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack;
     const int   cntcv =
       m.is_ok()
-        ? 8363 * ((*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-                  + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
-        : 64549;
+          ? 8363
+            * ((*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+               + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
+          : 64549;
 
     return 13345 * pcv + 9280 * micv + 11840 * (wnpcv + bnpcv) + cntcv;
 }
@@ -1267,7 +1275,7 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
-            r += r * 272 / (256 * depth + 285);
+            r += r * (272 + A[caller]) / (256 * depth + 285 + B[caller]);
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
