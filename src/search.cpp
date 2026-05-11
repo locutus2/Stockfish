@@ -52,16 +52,12 @@
 
 namespace Stockfish {
 
-int R_log[CALLER_NB] = { 2834, 2834, 2834, 2834, 2834, 2834, 2834, 2834, 2834 };
-int R_delta[CALLER_NB] = { 617, 617, 617, 617, 617, 617, 617, 617, 617 };
-int R_imp[CALLER_NB] = { 194, 194, 194, 194, 194, 194, 194, 194, 194 };
-int R_offset[CALLER_NB] = { 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027 };
+#define S(x,y) ((x)+1*((y)-(x)))
 
-int Random[CALLER_NB];  // random walk parameters
-
-TUNE(R_log, R_delta, R_imp, R_offset);
-TUNE(SetRange(-1024, 1024), Random);
-
+static constexpr int R_log[CALLER_NB] = { S(2834,2834), S(2834,2834), S(2834,2834), S(2834,2834), S(2834,2834), S(2834,2834), S(2834,2834), S(2834,2834), S(2834,2834) };
+static constexpr int R_delta[CALLER_NB] = { S(617,617), S(617,617), S(617,617), S(617,617), S(617,617), S(617,617), S(617,617), S(617,617), S(617,617) };
+static constexpr int R_imp[CALLER_NB] = { S(194,194), S(194,194), S(194,194), S(194,194), S(194,194), S(194,194), S(194,194), S(194,194), S(194,194) };
+static constexpr int R_offset[CALLER_NB] = { S(1027,1027), S(1027,1027), S(1027,1027), S(1027,1027), S(1027,1027), S(1027,1027), S(1027,1027), S(1027,1027), S(1027,1027) };
 
 static constexpr std::array<int, 16> lmrDivisor = {3307, 2930, 2874, 2818, 3215, 3225, 3224, 2782,
                                                    2858, 2919, 3088, 3275, 3180, 2868, 3006, 3599};
