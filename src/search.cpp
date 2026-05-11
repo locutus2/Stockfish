@@ -50,10 +50,12 @@
 #include "uci.h"
 #include "ucioption.h"
 
+#define S(x) (x)
+
 namespace Stockfish {
 
-static constexpr std::array<int, CALLER_NB> ScalingFactor = { 272, 280, 277, 283, 255, 272, 285, 261, 272 };
-static constexpr std::array<int, CALLER_NB> ScalingDivisor = { 285, 280, 259, 287, 294, 285, 306, 289, 285 };
+static constexpr std::array<int, CALLER_NB> ScalingFactor = { 272, 272+S(12), 272+S(7), 272+S(16), 272+S(-14), 272, 272+S(6), 272+S(-19), 272 };
+static constexpr std::array<int, CALLER_NB> ScalingDivisor = { 285, 285+S(-2), 285+S(-29), 285+S(5), 285+S(14), 285, 285+S(22), 285+S(12), 285 };
 
 static constexpr std::array<int, 16> lmrDivisor = {3307, 2930, 2874, 2818, 3215, 3225, 3224, 2782,
                                                    2858, 2919, 3088, 3275, 3180, 2868, 3006, 3599};
