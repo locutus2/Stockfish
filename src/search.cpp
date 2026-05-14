@@ -52,7 +52,7 @@
 
 namespace Stockfish {
 
-#define S(x,y) ((x)+1*((y)-(x)))
+#define S(x,y) ((x)+2*((y)-(x)))
 
 static constexpr int R_log[CALLER_NB] = { S(2834,2966), S(2834,3015), S(2834,2789), S(2834,2551), S(2834,2558), S(2834,3027), S(2834,2984), S(2834,2868), S(2834,2796) };
 static constexpr int R_delta[CALLER_NB] = { S(617,655), S(617,597), S(617,603), S(617,604), S(617,588), S(617,661), S(617,661), S(617,582), S(617,613) };
