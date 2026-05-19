@@ -1926,8 +1926,10 @@ void update_continuation_histories(
       {{1, 1040}, {2, 780}, {3, 300}, {4, 537}, {5, 129}, {6, 423}}};
 
     // Multipliers for positive history consistency
-    constexpr int CMHCMultipliers[] = {96, 113, 101, 105, 127, 121, 126};
-    int           positiveCount     = 0;
+    constexpr int   CMHCMultipliers[] = {96, 113, 101, 105, 127, 121, 126};
+    int             positiveCount     = 0;
+    bool            isQuiet           = !ss->inCheck;
+    PieceToHistory* cmh2              = &workerThread.continuationHistory[0][0][pc][to];
 
     for (const auto [i, weight] : conthist_bonuses)
     {
@@ -1941,17 +1943,17 @@ void update_continuation_histories(
             if (historyEntry > 0)
                 positiveCount++;
 
-            int multiplier = CMHCMultipliers[positiveCount];
-            historyEntry << (bonus * weight * multiplier / 131072) + 71 * (i < 2);
-        }
-    }
+            int multiplier   = CMHCMultipliers[positiveCount];
+            int currentBonus = (bonus * weight * multiplier / 131072) + 71 * (i < 2);
+            historyEntry << currentBonus;
 
-    if (!ss->priorCapture && !(ss - 1)->priorCapture && !ss->inCheck && !(ss - 1)->inCheck
-        && !(ss - 2)->inCheck && (ss - 2)->currentMove.is_ok())
-    {
-        Square to2         = (ss - 2)->currentMove.to_sq();
-        auto& historyEntry = workerThread.continuationHistory[0][0][pc][to][pos.piece_on(to2)][to2];
-        historyEntry << (bonus * 130 / 1024);
+            isQuiet &= !(ss - i)->inCheck && !(ss - i - 1)->priorCapture;
+            if (isQuiet && i % 2 == 0)
+            {
+                Square to2 = (ss - i)->currentMove.to_sq();
+                (*cmh2)[pos.piece_on(to2)][to2] << currentBonus / 8;
+            }
+        }
     }
 }
 
