@@ -1947,7 +1947,7 @@ void update_continuation_histories(
     }
 
     if (!ss->priorCapture && !(ss - 1)->priorCapture && !ss->inCheck && !(ss - 1)->inCheck
-        && !(ss - 2)->inCheck && (ss - 2)->currentMove.is_ok())
+        && !(ss - 2)->inCheck && (ss - 2)->currentMove.is_ok() && bonus > 0)
     {
         Square to2         = (ss - 2)->currentMove.to_sq();
         auto& historyEntry = workerThread.continuationHistory[0][0][pc][to][pos.piece_on(to2)][to2];
