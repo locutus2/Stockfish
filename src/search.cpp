@@ -1884,7 +1884,7 @@ void update_all_stats(const Position& pos,
     int malus = std::min(1005 * depth - 205, 2218);
 
     if (allNode)
-        bonus += bonus / 32;
+        bonus += bonus * (quietsSearched.size() + capturesSearched.size()) / 512;
 
     if (!pos.capture_stage(bestMove))
     {
