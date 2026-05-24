@@ -46,14 +46,15 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const SharedHistories*,
-               int);
+               int,
+	       bool);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
-    Move next_move();
+    ExtMove next_move();
     void skip_quiet_moves();
 
    private:
     template<typename Pred>
-    Move select(Pred);
+    ExtMove select(Pred);
     template<GenType T>
     ExtMove* score(const MoveList<T>&);
     ExtMove* begin() { return cur; }
@@ -73,6 +74,7 @@ class MovePicker {
     int                          ply;
     bool                         skipQuiets = false;
     ExtMove                      moves[MAX_MOVES];
+    bool allNode = false;
 };
 
 }  // namespace Stockfish

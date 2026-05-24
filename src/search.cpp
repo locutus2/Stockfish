@@ -1054,16 +1054,18 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
-                  &sharedHistory, ss->ply);
+                  &sharedHistory, ss->ply, allNode);
 
     value = bestValue;
 
     int moveCount = 0;
 
+    ExtMove extmove;
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move()) != Move::none())
+    while ((extmove = mp.next_move()) != Move::none())
     {
+	move = extmove;
         assert(move.is_ok());
 
         if (move == excludedMove)
@@ -1353,6 +1355,15 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+	if(!extmove.history.empty())
+	{
+		bool T = value > alpha;
+		//dbg_correl_of(T, -moveCount, 10+20*allNode);
+		dbg_correl_of(T, extmove.value, 10+20*allNode);
+		for(int i = 0; i < int(extmove.history.size()); i++)
+			dbg_correl_of(T, extmove.history[i], i + 20*allNode);
+	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1674,7 +1685,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
     MovePicker mp(pos, ttData.move, DEPTH_QS, &mainHistory, &lowPlyHistory, &captureHistory,
-                  contHist, &sharedHistory, ss->ply);
+                  contHist, &sharedHistory, ss->ply, false);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.

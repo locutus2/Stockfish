@@ -21,6 +21,7 @@
 
 #include <algorithm>  // IWYU pragma: keep
 #include <cstddef>
+#include <vector>
 
 #include "types.h"
 
@@ -37,7 +38,8 @@ enum GenType {
 };
 
 struct ExtMove: public Move {
-    int value;
+    int value = 0;
+    std::vector<int> history;
 
     void operator=(Move m) { data = m.raw(); }
 

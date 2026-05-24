@@ -158,7 +158,8 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const SharedHistories*       sh,
-                       int                          pl) :
+                       int                          pl,
+		       bool an) :
     pos(p),
     mainHistory(mh),
     lowPlyHistory(lph),
@@ -167,7 +168,8 @@ MovePicker::MovePicker(const Position&              p,
     sharedHistory(sh),
     ttMove(ttm),
     depth(d),
-    ply(pl) {
+    ply(pl),
+    allNode(an){
 
     if (pos.checkers())
         stage = EVASION_TT + !(ttm && pos.pseudo_legal(ttm));
@@ -228,7 +230,15 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()];
+            m.history = {(*mainHistory)[us][m.raw()],
+		    sharedHistory->pawn_entry(pos)[pc][to],
+		    (*continuationHistory[0])[pc][to],
+		    (*continuationHistory[1])[pc][to],
+		    (*continuationHistory[2])[pc][to],
+		    (*continuationHistory[3])[pc][to],
+		    (*continuationHistory[5])[pc][to]};
+
+            m.value = (2 - 2*allNode) * (*mainHistory)[us][m.raw()];
             m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
             m.value += (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
@@ -263,21 +273,24 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 // Returns the next move satisfying a predicate function.
 // This never returns the TT move, as it was emitted before.
 template<typename Pred>
-Move MovePicker::select(Pred filter) {
+ExtMove MovePicker::select(Pred filter) {
 
     for (; cur < endCur; ++cur)
         if (*cur != ttMove && filter())
             return *cur++;
 
-    return Move::none();
+    ExtMove e;
+    e = Move::none();
+    return e;
 }
 
 // This is the most important method of the MovePicker class. We emit one
 // new pseudo-legal move on every call until there are no more moves left,
 // picking the move with the highest score from a list of generated moves.
-Move MovePicker::next_move() {
+ExtMove MovePicker::next_move() {
 
     constexpr int goodQuietThreshold = -14000;
+    ExtMove e;
 top:
     switch (stage)
     {
@@ -287,7 +300,8 @@ top:
     case QSEARCH_TT :
     case PROBCUT_TT :
         ++stage;
-        return ttMove;
+        e = ttMove;
+        return e;
 
     case CAPTURE_INIT :
     case PROBCUT_INIT :
@@ -353,7 +367,8 @@ top:
         if (!skipQuiets)
             return select([&]() { return cur->value <= goodQuietThreshold; });
 
-        return Move::none();
+        e = Move::none();
+	return e;
 
     case EVASION_INIT : {
         MoveList<EVASIONS> ml(pos);
@@ -375,7 +390,8 @@ top:
     }
 
     assert(false);
-    return Move::none();  // Silence warning
+        e = Move::none();
+	return e;
 }
 
 void MovePicker::skip_quiet_moves() { skipQuiets = true; }
