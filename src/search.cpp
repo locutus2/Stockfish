@@ -145,7 +145,7 @@ void update_all_stats(const Position& pos,
                       SearchedList&   capturesSearched,
                       Depth           depth,
                       Move            ttMove,
-                      bool            allNode);
+                      bool            PvNode);
 
 bool is_shuffling(Move move, Stack* const ss, const Position& pos) {
     if (pos.capture_stage(move) || pos.rule50_count() < 10)
@@ -1478,7 +1478,7 @@ moves_loop:  // When in check, search starts here
     else if (bestMove)
     {
         update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth,
-                         ttData.move, allNode);
+                         ttData.move, PvNode);
         if (!PvNode)
             ttMoveHistory << (bestMove == ttData.move ? 792 : -779);
     }
@@ -1873,7 +1873,7 @@ void update_all_stats(const Position& pos,
                       SearchedList&   capturesSearched,
                       Depth           depth,
                       Move            ttMove,
-                      bool            allNode) {
+                      bool            PvNode) {
 
     CapturePieceToHistory& captureHistory = workerThread.captureHistory;
     Piece                  movedPiece     = pos.moved_piece(bestMove);
@@ -1883,7 +1883,7 @@ void update_all_stats(const Position& pos,
       std::min(134 * depth - 79, 1572) + 382 * (bestMove == ttMove) + (ss - 1)->statScore / 30;
     int malus = std::min(1005 * depth - 205, 2218);
 
-    if (allNode)
+    if (!PvNode)
         bonus += bonus * (quietsSearched.size() + capturesSearched.size()) / 256;
 
     if (!pos.capture_stage(bestMove))
