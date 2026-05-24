@@ -1885,8 +1885,8 @@ void update_all_stats(const Position& pos,
 
     if (allNode)
     {
-        malus += bonus / 256;
-        bonus += bonus * (quietsSearched.size() + capturesSearched.size()) / 256;
+        malus += bonus / 128;
+        bonus += bonus * (quietsSearched.size() + capturesSearched.size()) / 128;
     }
 
     if (!pos.capture_stage(bestMove))
