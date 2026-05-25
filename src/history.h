@@ -40,6 +40,7 @@ constexpr int UINT_16_HISTORY_SIZE     = std::numeric_limits<uint16_t>::max() + 
 constexpr int CORRHIST_BASE_SIZE       = UINT_16_HISTORY_SIZE;
 constexpr int CORRECTION_HISTORY_LIMIT = 1024;
 constexpr int LOW_PLY_HISTORY_SIZE     = 5;
+constexpr int SEQUENCE_HISTORY_SIZE    = 2048;  // has to be a power of 2
 
 static_assert((PAWN_HISTORY_BASE_SIZE & (PAWN_HISTORY_BASE_SIZE - 1)) == 0,
               "PAWN_HISTORY_BASE_SIZE has to be a power of 2");
@@ -148,6 +149,8 @@ using PieceToHistory = Stats<std::int16_t, 30000, PIECE_NB, SQUARE_NB>;
 // the current one given a previous one. The nested history table is based on
 // PieceToHistory instead of ButterflyBoards.
 using ContinuationHistory = MultiArray<PieceToHistory, PIECE_NB, SQUARE_NB>;
+
+using SequenceHistory = MultiArray<PieceToHistory, SEQUENCE_HISTORY_SIZE>;
 
 // PawnHistory is addressed by the pawn structure and a move's [piece][to]
 using PawnHistory =

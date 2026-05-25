@@ -103,8 +103,10 @@ struct PVMoves {
 // shallower and deeper in the tree during the search. Each search thread has
 // its own array of Stack objects, indexed by the current ply.
 struct Stack {
+    Key                         posKey;
     PVMoves*                    pv;
     PieceToHistory*             continuationHistory;
+    PieceToHistory*             sequenceHistory;
     CorrectionHistory<PieceTo>* continuationCorrectionHistory;
     int                         ply;
     Move                        currentMove;
@@ -335,6 +337,7 @@ class Worker {
 
     CapturePieceToHistory           captureHistory;
     ContinuationHistory             continuationHistory[2][2];
+    SequenceHistory                 sequenceHistory;
     CorrectionHistory<Continuation> continuationCorrectionHistory;
 
     TTMoveHistory    ttMoveHistory;
