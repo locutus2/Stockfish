@@ -157,6 +157,7 @@ MovePicker::MovePicker(const Position&              p,
                        const LowPlyHistory*         lph,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
+                       const PieceToHistory**       seqh,
                        const SharedHistories*       sh,
                        int                          pl,
 		       bool an) :
@@ -165,6 +166,7 @@ MovePicker::MovePicker(const Position&              p,
     lowPlyHistory(lph),
     captureHistory(cph),
     continuationHistory(ch),
+    sequenceHistory(seqh),
     sharedHistory(sh),
     ttMove(ttm),
     depth(d),
@@ -236,9 +238,17 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 		    (*continuationHistory[1])[pc][to],
 		    (*continuationHistory[2])[pc][to],
 		    (*continuationHistory[3])[pc][to],
-		    (*continuationHistory[5])[pc][to]};
+		    (*continuationHistory[4])[pc][to],
+		    (*continuationHistory[5])[pc][to],
+		    (*sequenceHistory[0])[pc][to],
+		    (*sequenceHistory[1])[pc][to],
+		    (*sequenceHistory[2])[pc][to],
+		    (*sequenceHistory[3])[pc][to],
+		    (*sequenceHistory[4])[pc][to],
+		    (*sequenceHistory[5])[pc][to],
+	    };
 
-            m.value = (2 - 2*allNode) * (*mainHistory)[us][m.raw()];
+            m.value = (2 - 0*allNode) * (*mainHistory)[us][m.raw()];
             m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
             m.value += (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];

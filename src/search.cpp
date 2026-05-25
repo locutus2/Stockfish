@@ -1061,9 +1061,12 @@ moves_loop:  // When in check, search starts here
     const PieceToHistory* contHist[] = {
       (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
       (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
+    const PieceToHistory* seqHist[] = {
+      (ss - 1)->sequenceHistory, (ss - 2)->sequenceHistory, (ss - 3)->sequenceHistory,
+      (ss - 4)->sequenceHistory, (ss - 5)->sequenceHistory, (ss - 6)->sequenceHistory};
 
 
-    MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
+    MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist, seqHist,
                   &sharedHistory, ss->ply, allNode);
 
     value = bestValue;
@@ -1369,10 +1372,10 @@ moves_loop:  // When in check, search starts here
 	if(!extmove.history.empty())
 	{
 		bool T = value > alpha;
-		//dbg_correl_of(T, -moveCount, 10+20*allNode);
-		dbg_correl_of(T, extmove.value, 10+20*allNode);
+		//dbg_correl_of(T, -moveCount, 100*allNode);
+		dbg_correl_of(T, extmove.value, 100*allNode);
 		for(int i = 0; i < int(extmove.history.size()); i++)
-			dbg_correl_of(T, extmove.history[i], i + 20*allNode);
+			dbg_correl_of(T, extmove.history[i], i + 1 + 100*allNode);
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
@@ -1688,6 +1691,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory};
+    const PieceToHistory* seqHist[1] = { nullptr };
 
     Square prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
 
@@ -1695,7 +1699,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
     MovePicker mp(pos, ttData.move, DEPTH_QS, &mainHistory, &lowPlyHistory, &captureHistory,
-                  contHist, &sharedHistory, ss->ply, false);
+                  contHist, seqHist, &sharedHistory, ss->ply, false);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.
