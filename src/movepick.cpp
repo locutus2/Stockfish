@@ -246,6 +246,8 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 		    (*sequenceHistory[3])[pc][to],
 		    (*sequenceHistory[4])[pc][to],
 		    (*sequenceHistory[5])[pc][to],
+		    (*sequenceHistory[0])[pc][to] + (*sequenceHistory[1])[pc][to]
+		    + (*sequenceHistory[2])[pc][to] + (*sequenceHistory[3])[pc][to] + (*sequenceHistory[5])[pc][to],
 	    };
 
             m.value = (2 - 0*allNode) * (*mainHistory)[us][m.raw()];

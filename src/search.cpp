@@ -82,7 +82,7 @@ using SearchedList                  = ValueList<Move, SEARCHEDLIST_CAPACITY>;
 // optimized for require verifications at longer time controls
 
 int sequence_index(Stack* ss) {
-    return (ss->posKey ^ (ss - 2)->posKey) & (SEQUENCE_HISTORY_SIZE - 1);
+    return (ss->posKey ^ (ss - 3)->posKey) & (SEQUENCE_HISTORY_SIZE - 1);
 }
 
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
@@ -1376,8 +1376,15 @@ moves_loop:  // When in check, search starts here
 		bool T = value > alpha;
 		//dbg_correl_of(T, -moveCount, 100*C);
 		dbg_correl_of(T, extmove.value, 100*C);
+		dbg_stdev_of(extmove.value, 100*C);
+		dbg_mean_of(extmove.value, 100*C);
 		for(int i = 0; i < int(extmove.history.size()); i++)
+		{
 			dbg_correl_of(T, extmove.history[i], i + 1 + 100*C);
+			dbg_stdev_of(extmove.history[i], i + 1 + 100*C);
+			dbg_mean_of(extmove.history[i], i + 1 + 100*C);
+			dbg_correl_of(extmove.value, extmove.history[i], 1000 + i + 1 + 100*C);
+		}
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
