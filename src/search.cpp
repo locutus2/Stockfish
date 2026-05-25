@@ -81,6 +81,10 @@ using SearchedList                  = ValueList<Move, SEARCHEDLIST_CAPACITY>;
 // (*Scaler) All tuned parameters at time controls shorter than
 // optimized for require verifications at longer time controls
 
+int sequence_index(Stack* ss) {
+    return (ss->posKey ^ (ss - 2)->posKey) & (SEQUENCE_HISTORY_SIZE - 1);
+}
+
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
     const Color us     = pos.side_to_move();
     const auto  m      = (ss - 1)->currentMove;
@@ -287,7 +291,8 @@ bool Search::Worker::iterative_deepening() {
     for (int i = 7; i > 0; --i)
     {
         (ss - i)->continuationHistory =
-          &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
+          &continuationHistory[0][0][NO_PIECE][0];                      // Use as a sentinel
+        (ss - i)->sequenceHistory               = &sequenceHistory[0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
     }
@@ -610,6 +615,7 @@ void Search::Worker::do_move(
         ss->currentMove = move;
         ss->continuationHistory =
           &continuationHistory[ss->inCheck][capture][dirtyPiece.pc][move.to_sq()];
+        ss->sequenceHistory = &sequenceHistory[sequence_index(ss)];
         ss->continuationCorrectionHistory =
           &continuationCorrectionHistory[dirtyPiece.pc][move.to_sq()];
     }
@@ -619,6 +625,7 @@ void Search::Worker::do_null_move(Position& pos, StateInfo& st, Stack* const ss)
     pos.do_null_move(st);
     ss->currentMove                   = Move::null();
     ss->continuationHistory           = &continuationHistory[0][0][NO_PIECE][0];
+    ss->sequenceHistory               = &sequenceHistory[0];
     ss->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
 }
 
@@ -644,6 +651,9 @@ void Search::Worker::clear() {
     for (auto& to : continuationCorrectionHistory)
         for (auto& h : to)
             h.fill(5);
+
+    for (auto& h : sequenceHistory)
+        h.fill(0);
 
     for (bool inCheck : {false, true})
         for (StatsType c : {NoCaptures, Captures})
@@ -753,8 +763,8 @@ Value Search::Worker::search(
     const auto correctionValue = correction_value(*this, pos, ss);
 
     // Step 4. Transposition table lookup
-    excludedMove                   = ss->excludedMove;
-    posKey                         = pos.key();
+    excludedMove = ss->excludedMove;
+    ss->posKey = posKey            = pos.key();
     auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
     // Need further processing of the saved data
     ss->ttHit    = ttHit;
@@ -1614,7 +1624,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     // Step 3. Transposition table lookup
-    posKey                         = pos.key();
+    ss->posKey = posKey            = pos.key();
     auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
     // Need further processing of the saved data
     ss->ttHit    = ttHit;
@@ -1950,6 +1960,8 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
             int multiplier = CMHCMultipliers[positiveCount];
             historyEntry << (bonus * weight * multiplier / 131072) + 71 * (i < 2);
+
+            (*(ss - i)->sequenceHistory)[pc][to] << (bonus * weight / 1024);
         }
     }
 }
