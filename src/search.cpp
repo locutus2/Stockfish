@@ -1066,8 +1066,10 @@ moves_loop:  // When in check, search starts here
       (ss - 4)->sequenceHistory, (ss - 5)->sequenceHistory, (ss - 6)->sequenceHistory};
 
 
+    //bool C = allNode;
+    bool C = false;
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist, seqHist,
-                  &sharedHistory, ss->ply, allNode);
+                  &sharedHistory, ss->ply, C);
 
     value = bestValue;
 
@@ -1372,10 +1374,10 @@ moves_loop:  // When in check, search starts here
 	if(!extmove.history.empty())
 	{
 		bool T = value > alpha;
-		//dbg_correl_of(T, -moveCount, 100*allNode);
-		dbg_correl_of(T, extmove.value, 100*allNode);
+		//dbg_correl_of(T, -moveCount, 100*C);
+		dbg_correl_of(T, extmove.value, 100*C);
 		for(int i = 0; i < int(extmove.history.size()); i++)
-			dbg_correl_of(T, extmove.history[i], i + 1 + 100*allNode);
+			dbg_correl_of(T, extmove.history[i], i + 1 + 100*C);
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
