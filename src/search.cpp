@@ -82,7 +82,7 @@ using SearchedList                  = ValueList<Move, SEARCHEDLIST_CAPACITY>;
 // optimized for require verifications at longer time controls
 
 int sequence_index(Stack* ss) {
-    return (ss->posKey ^ (ss - 3)->posKey) & (SEQUENCE_HISTORY_SIZE - 1);
+    return (ss->posKey ^ (ss - 2)->posKey) & (SEQUENCE_HISTORY_SIZE - 1);
 }
 
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {

@@ -250,8 +250,11 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 		    + (*sequenceHistory[2])[pc][to] + (*sequenceHistory[3])[pc][to] + (*sequenceHistory[5])[pc][to],
 	    };
 
-            m.value = (2 - 0*allNode) * (*mainHistory)[us][m.raw()];
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
+            //m.value = (2 - 0*allNode) * (*mainHistory)[us][m.raw()];
+            //m.value = 2 * (*mainHistory)[us][m.raw()];
+            m.value = 4 * (*mainHistory)[us][m.raw()];
+            //m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
+            m.value += 3 * sharedHistory->pawn_entry(pos)[pc][to];
             m.value += (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to];
@@ -301,7 +304,7 @@ ExtMove MovePicker::select(Pred filter) {
 // picking the move with the highest score from a list of generated moves.
 ExtMove MovePicker::next_move() {
 
-    constexpr int goodQuietThreshold = -14000;
+    constexpr int goodQuietThreshold = -14000 -3278 -262;
     ExtMove e;
 top:
     switch (stage)
@@ -347,7 +350,7 @@ top:
 
             endCur = endGenerated = score<QUIETS>(ml);
 
-            partial_insertion_sort(cur, endCur, -3560 * depth);
+            partial_insertion_sort(cur, endCur, -3560 * depth - 3278 - 262);
         }
 
         ++stage;
