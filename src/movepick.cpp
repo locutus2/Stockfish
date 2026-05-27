@@ -286,6 +286,18 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
                 m.history.push_back(1024);
 	    else
                 m.history.push_back(0);
+
+	    if(pt == KNIGHT)
+                m.history.push_back(1024 * (popcount(Attacks::knight_attack(to)) - popcount(Attacks::knight_attack(from))));
+	    else
+                m.history.push_back(0);
+
+	    if(pt == PAWN 
+	       && to & (us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN)) 
+		                    : pawn_attacks_bb<WHITE>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN))))
+                m.history.push_back(1024);
+	    else
+                m.history.push_back(0);
         }
 
         else  // Type == EVASIONS
