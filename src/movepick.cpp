@@ -276,6 +276,16 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
                 m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
 
             m.history.push_back((ply < LOW_PLY_HISTORY_SIZE) * 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply));
+
+	    if(pt == KNIGHT && more_than_one(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)))
+                m.history.push_back(1024);
+	    else
+                m.history.push_back(0);
+
+	    if(pt == KNIGHT && (Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)))
+                m.history.push_back(1024);
+	    else
+                m.history.push_back(0);
         }
 
         else  // Type == EVASIONS

@@ -1437,6 +1437,8 @@ Mean #15: Total 97843443 Mean -3531.6
 Mean #16: Total 97843443 Mean 1093.78
 Mean #17: Total 97843443 Mean 660.212
 Mean #18: Total 97843443 Mean -328.894
+Mean #19: Total 97843443 Mean 2.54056
+Mean #20: Total 97843443 Mean 28.2793
 Stdev #0: Total 97843443 Stdev 25916.4
 Stdev #1: Total 97843443 Stdev 4036.49
 Stdev #2: Total 97843443 Stdev 4105.95
@@ -1456,6 +1458,8 @@ Stdev #15: Total 97843443 Stdev 18634.3
 Stdev #16: Total 97843443 Stdev 4089.51
 Stdev #17: Total 97843443 Stdev 7560.75
 Stdev #18: Total 97843443 Stdev 2705.76
+Stdev #19: Total 97843443 Stdev 50.9419
+Stdev #20: Total 97843443 Stdev 167.804
 Correl. #0: Total 97843443 Coefficient 0.324279
 Correl. #1: Total 97843443 Coefficient 0.209614
 Correl. #2: Total 97843443 Coefficient 0.204253
@@ -1475,6 +1479,8 @@ Correl. #15: Total 97843443 Coefficient 0.166738
 Correl. #16: Total 97843443 Coefficient 0.119089
 Correl. #17: Total 97843443 Coefficient 0.0316509
 Correl. #18: Total 97843443 Coefficient 0.0493289
+Correl. #19: Total 97843443 Coefficient 0.0141959
+Correl. #20: Total 97843443 Coefficient 0.0204872
 Correl. #1001: Total 97843443 Coefficient 0.462702
 Correl. #1002: Total 97843443 Coefficient 0.490203
 Correl. #1003: Total 97843443 Coefficient 0.421457
@@ -1493,6 +1499,8 @@ Correl. #1015: Total 97843443 Coefficient 0.408799
 Correl. #1016: Total 97843443 Coefficient 0.147625
 Correl. #1017: Total 97843443 Coefficient 0.321301
 Correl. #1018: Total 97843443 Coefficient 0.174788
+Correl. #1019: Total 97843443 Coefficient 0.0200899
+Correl. #1020: Total 97843443 Coefficient 0.0569451
 		 * */
 	}
 
