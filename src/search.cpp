@@ -1417,6 +1417,83 @@ moves_loop:  // When in check, search starts here
 		cor1 = 0.210588
 		cor01 = 0.472426
 		*/
+		/*
+		 * Mean #0: Total 97843443 Mean -4211.24
+Mean #1: Total 97843443 Mean -1502.17
+Mean #2: Total 97843443 Mean -244.906
+Mean #3: Total 97843443 Mean 1008.16
+Mean #4: Total 97843443 Mean -543.33
+Mean #5: Total 97843443 Mean -267.539
+Mean #6: Total 97843443 Mean -1262.81
+Mean #7: Total 97843443 Mean -852.332
+Mean #8: Total 97843443 Mean -1076.66
+Mean #9: Total 97843443 Mean -557.01
+Mean #10: Total 97843443 Mean -881.393
+Mean #11: Total 97843443 Mean -503.516
+Mean #12: Total 97843443 Mean -804.626
+Mean #13: Total 97843443 Mean -531.298
+Mean #14: Total 97843443 Mean -785.053
+Mean #15: Total 97843443 Mean -3531.6
+Mean #16: Total 97843443 Mean 1093.78
+Mean #17: Total 97843443 Mean 660.212
+Mean #18: Total 97843443 Mean -328.894
+Stdev #0: Total 97843443 Stdev 25916.4
+Stdev #1: Total 97843443 Stdev 4036.49
+Stdev #2: Total 97843443 Stdev 4105.95
+Stdev #3: Total 97843443 Stdev 6816.82
+Stdev #4: Total 97843443 Stdev 6059.33
+Stdev #5: Total 97843443 Stdev 6437.4
+Stdev #6: Total 97843443 Stdev 5901.71
+Stdev #7: Total 97843443 Stdev 6007.16
+Stdev #8: Total 97843443 Stdev 5524.55
+Stdev #9: Total 97843443 Stdev 6543.3
+Stdev #10: Total 97843443 Stdev 6498.24
+Stdev #11: Total 97843443 Stdev 6585.34
+Stdev #12: Total 97843443 Stdev 6557.18
+Stdev #13: Total 97843443 Stdev 6478.65
+Stdev #14: Total 97843443 Stdev 6498.45
+Stdev #15: Total 97843443 Stdev 18634.3
+Stdev #16: Total 97843443 Stdev 4089.51
+Stdev #17: Total 97843443 Stdev 7560.75
+Stdev #18: Total 97843443 Stdev 2705.76
+Correl. #0: Total 97843443 Coefficient 0.324279
+Correl. #1: Total 97843443 Coefficient 0.209614
+Correl. #2: Total 97843443 Coefficient 0.204253
+Correl. #3: Total 97843443 Coefficient 0.139937
+Correl. #4: Total 97843443 Coefficient 0.132042
+Correl. #5: Total 97843443 Coefficient 0.122871
+Correl. #6: Total 97843443 Coefficient 0.152967
+Correl. #7: Total 97843443 Coefficient 0.0910662
+Correl. #8: Total 97843443 Coefficient 0.131608
+Correl. #9: Total 97843443 Coefficient 0.10449
+Correl. #10: Total 97843443 Coefficient 0.0917151
+Correl. #11: Total 97843443 Coefficient 0.0890554
+Correl. #12: Total 97843443 Coefficient 0.101696
+Correl. #13: Total 97843443 Coefficient 0.0658013
+Correl. #14: Total 97843443 Coefficient 0.0883368
+Correl. #15: Total 97843443 Coefficient 0.166738
+Correl. #16: Total 97843443 Coefficient 0.119089
+Correl. #17: Total 97843443 Coefficient 0.0316509
+Correl. #18: Total 97843443 Coefficient 0.0493289
+Correl. #1001: Total 97843443 Coefficient 0.462702
+Correl. #1002: Total 97843443 Coefficient 0.490203
+Correl. #1003: Total 97843443 Coefficient 0.421457
+Correl. #1004: Total 97843443 Coefficient 0.455743
+Correl. #1005: Total 97843443 Coefficient 0.482188
+Correl. #1006: Total 97843443 Coefficient 0.533174
+Correl. #1007: Total 97843443 Coefficient 0.282943
+Correl. #1008: Total 97843443 Coefficient 0.500384
+Correl. #1009: Total 97843443 Coefficient 0.195261
+Correl. #1010: Total 97843443 Coefficient 0.202707
+Correl. #1011: Total 97843443 Coefficient 0.237483
+Correl. #1012: Total 97843443 Coefficient 0.270975
+Correl. #1013: Total 97843443 Coefficient 0.204716
+Correl. #1014: Total 97843443 Coefficient 0.258841
+Correl. #1015: Total 97843443 Coefficient 0.408799
+Correl. #1016: Total 97843443 Coefficient 0.147625
+Correl. #1017: Total 97843443 Coefficient 0.321301
+Correl. #1018: Total 97843443 Coefficient 0.174788
+		 * */
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
