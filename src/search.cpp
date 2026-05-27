@@ -1385,6 +1385,38 @@ moves_loop:  // When in check, search starts here
 			dbg_mean_of(extmove.history[i], i + 1 + 100*C);
 			dbg_correl_of(extmove.value, extmove.history[i], 1000 + i + 1 + 100*C);
 		}
+		/*
+		 * We have following equations
+
+		cor0 = COV(T,H0)/sqrt(VAR(T)*VAR(H0))
+		cor1 = COV(T,H1)/sqrt(VAR(T)*VAR(H1))
+		cor2 = COV(T,H0+a*H1)/sqrt(VAR(T)*VAR(H0+A*H1))
+
+		where cor0, cor1, cor2 and A are real numbers.
+		T, H0 and H1 are random variables.
+
+		COV is the covariance funtion
+		VAR is the variance function
+		sqrt is the square root function
+
+		Derive a formula for cor2 which only depends on variables cor0, cor1, A, VAR(H0), VAR(H1), COV(H0,H1).
+
+		cor2=(cor0*sqrt( Var(H0))+A *cor1 *sqrt(Var(H1)))/sqrt(Var(H0)+A^2*Var(H1)+2*A* Cov(H0,H1))
+
+		cor2=(cor0+A*r* cor1)/sqrt(1+A^2*r^2+2*A*r*cor01) with r = sqrt(VAR(H1)/VAR(H0));
+
+		maxmize cor2:
+		A_max = 1/r * (cor1 - cor0 * cor01) / (cor0 - cor1 * cor01)
+
+		max⁡Acor2(A)=sqrt((ρ0^2+ρ1^2−2*ρ0*ρ1*ρ01)/(1−ρ01^2))
+		max⁡Acor2(A)=sqrt((cor0^2+cor1^2−2*cor0*cor1*cor01)/(1−corr01^2))
+
+		Plot the function cor2 for A from -1 bis 1 given following values:
+		r = 0.142885187472932
+		cor0 = 0.315248
+		cor1 = 0.210588
+		cor01 = 0.472426
+		*/
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
