@@ -932,7 +932,7 @@ Value Search::Worker::search(
     {
         int evalDiff = std::clamp(-int((ss - 1)->staticEval + ss->staticEval), -183, 180) + 62;
         mainHistory[~us][((ss - 1)->currentMove).raw()] << evalDiff * 10;
-        materialMainHistory[~us][((ss - 1)->currentMove).raw()].update(evalDiff * 10, pos.count<ALL_PIECES>());
+        materialMainHistory[~us][((ss - 1)->currentMove).raw()].update(evalDiff * 10, material_index(pos));
         if (!ttHit && type_of(pos.piece_on(prevSq)) != PAWN
             && ((ss - 1)->currentMove).type_of() != PROMOTION)
             sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq] << evalDiff * 13;
@@ -1653,7 +1653,7 @@ Correl. #1020: Total 97843443 Coefficient 0.0569451
                                       scaledBonus * 236 / 16384);
 
         mainHistory[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 234 / 32768;
-        materialMainHistory[~us][((ss - 1)->currentMove).raw()].update(scaledBonus * 234 / 32768, pos.count<ALL_PIECES>());
+        materialMainHistory[~us][((ss - 1)->currentMove).raw()].update(scaledBonus * 234 / 32768, material_index(pos));
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq] << scaledBonus * 322 / 8192;
@@ -2106,7 +2106,7 @@ void update_quiet_histories(
 
     Color us = pos.side_to_move();
     workerThread.mainHistory[us][move.raw()] << bonus;  // Untuned to prevent duplicate effort
-    workerThread.materialMainHistory[us][move.raw()].update(bonus, pos.count<ALL_PIECES>());  // Untuned to prevent duplicate effort
+    workerThread.materialMainHistory[us][move.raw()].update(bonus, material_index(pos));  // Untuned to prevent duplicate effort
 
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
         workerThread.lowPlyHistory[ss->ply][move.raw()] << bonus * 663 / 1024;

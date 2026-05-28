@@ -301,7 +301,7 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 	    else
                 m.history.push_back(0);
 
-            m.history.push_back((*materialMainHistory)[us][m.raw()].get(pos.count<ALL_PIECES>()));
+            m.history.push_back((*materialMainHistory)[us][m.raw()].get(material_index(pos)));
         }
 
         else  // Type == EVASIONS
