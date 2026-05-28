@@ -85,6 +85,58 @@ struct StatsEntry {
     }
 };
 
+template<typename T, int D, int W, bool Atomic = false>
+struct DoubleStatsEntry {
+    static_assert(std::is_arithmetic_v<T>, "Not an arithmetic type");
+
+   public:
+    typedef std::pair<T, T> Entry;
+    typedef std::pair<int, int> Bonus;
+
+   private:
+    std::conditional_t<Atomic, std::atomic<Entry>, Entry> entry;
+
+   public:
+    void operator=(const T& v) {
+	*this = { v, v };
+    }
+
+    void operator=(const Entry& v) {
+        if constexpr (Atomic)
+            entry.store(v, std::memory_order_relaxed);
+        else
+            entry = v;
+    }
+
+    operator Entry() const {
+        if constexpr (Atomic)
+            return entry.load(std::memory_order_relaxed);
+        else
+            return entry;
+    }
+
+    T get(int w) const {
+	Entry tmp;
+        if constexpr (Atomic)
+            tmp =  entry.load(std::memory_order_relaxed);
+        else
+            tmp =  entry;
+	return (tmp.first * w + tmp.second * (W - w)) / W;
+    }
+
+    void update(const int& bonus, const int& weight) {
+        // Make sure that bonus is in range [-D, D]
+        int clampedBonus0 = std::clamp(bonus * weight / W, -D, D);
+        int clampedBonus1 = std::clamp(bonus * (W - weight) / W, -D, D);
+	Entry   val       = *this;
+        *this             = { val.first + clampedBonus0 - val.first * std::abs(clampedBonus0) / D,
+                              val.second + clampedBonus1 - val.second * std::abs(clampedBonus1) / D };
+
+        assert(std::abs(entry.first) <= D);
+        assert(std::abs(entry.second) <= D);
+    }
+};
+
 enum StatsType {
     NoCaptures,
     Captures
@@ -92,6 +144,9 @@ enum StatsType {
 
 template<typename T, int D, std::size_t... Sizes>
 using Stats = MultiArray<StatsEntry<T, D>, Sizes...>;
+
+template<typename T, int D, int W, std::size_t... Sizes>
+using DoubleStats = MultiArray<DoubleStatsEntry<T, D, W>, Sizes...>;
 
 template<typename T, int D, std::size_t... Sizes>
 using AtomicStats = MultiArray<StatsEntry<T, D, true>, Sizes...>;
@@ -134,6 +189,7 @@ struct DynStats {
 // It uses 2 tables (one for each color) indexed by the move's from and to squares,
 // see https://www.chessprogramming.org/Butterfly_Boards
 using ButterflyHistory = Stats<std::int16_t, 7183, COLOR_NB, UINT_16_HISTORY_SIZE>;
+using MaterialButterflyHistory = DoubleStats<std::int16_t, 7183, 32, COLOR_NB, UINT_16_HISTORY_SIZE>;
 
 // LowPlyHistory is addressed by ply and move's from and to squares, used
 // to improve move ordering near the root

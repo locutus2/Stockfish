@@ -154,6 +154,7 @@ MovePicker::MovePicker(const Position&              p,
                        Move                         ttm,
                        Depth                        d,
                        const ButterflyHistory*      mh,
+                       const MaterialButterflyHistory*      mmh,
                        const LowPlyHistory*         lph,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
@@ -163,6 +164,7 @@ MovePicker::MovePicker(const Position&              p,
 		       bool an) :
     pos(p),
     mainHistory(mh),
+    materialMainHistory(mmh),
     lowPlyHistory(lph),
     captureHistory(cph),
     continuationHistory(ch),
@@ -298,6 +300,8 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
                 m.history.push_back(1024);
 	    else
                 m.history.push_back(0);
+
+            m.history.push_back((*materialMainHistory)[us][m.raw()].get(pos.count<ALL_PIECES>()));
         }
 
         else  // Type == EVASIONS

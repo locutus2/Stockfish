@@ -333,6 +333,7 @@ class Worker {
 
     // Public because they need to be updatable by the stats
     ButterflyHistory mainHistory;
+    MaterialButterflyHistory materialMainHistory;
     LowPlyHistory    lowPlyHistory;
 
     CapturePieceToHistory           captureHistory;

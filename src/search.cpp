@@ -640,6 +640,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(-5);
+    materialMainHistory.fill(-5);
     captureHistory.fill(-699);
 
     // Each thread is responsible for clearing their part of shared history
@@ -931,6 +932,7 @@ Value Search::Worker::search(
     {
         int evalDiff = std::clamp(-int((ss - 1)->staticEval + ss->staticEval), -183, 180) + 62;
         mainHistory[~us][((ss - 1)->currentMove).raw()] << evalDiff * 10;
+        materialMainHistory[~us][((ss - 1)->currentMove).raw()].update(evalDiff * 10, pos.count<ALL_PIECES>());
         if (!ttHit && type_of(pos.piece_on(prevSq)) != PAWN
             && ((ss - 1)->currentMove).type_of() != PROMOTION)
             sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq] << evalDiff * 13;
@@ -1068,7 +1070,7 @@ moves_loop:  // When in check, search starts here
 
     //bool C = allNode;
     bool C = false;
-    MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist, seqHist,
+    MovePicker mp(pos, ttData.move, depth, &mainHistory, &materialMainHistory, &lowPlyHistory, &captureHistory, contHist, seqHist,
                   &sharedHistory, ss->ply, C);
 
     value = bestValue;
@@ -1651,6 +1653,7 @@ Correl. #1020: Total 97843443 Coefficient 0.0569451
                                       scaledBonus * 236 / 16384);
 
         mainHistory[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 234 / 32768;
+        materialMainHistory[~us][((ss - 1)->currentMove).raw()].update(scaledBonus * 234 / 32768, pos.count<ALL_PIECES>());
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq] << scaledBonus * 322 / 8192;
@@ -1824,7 +1827,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // Initialize a MovePicker object for the current position, and prepare to search
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
-    MovePicker mp(pos, ttData.move, DEPTH_QS, &mainHistory, &lowPlyHistory, &captureHistory,
+    MovePicker mp(pos, ttData.move, DEPTH_QS, &mainHistory, &materialMainHistory, &lowPlyHistory, &captureHistory,
                   contHist, seqHist, &sharedHistory, ss->ply, false);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
@@ -2103,6 +2106,7 @@ void update_quiet_histories(
 
     Color us = pos.side_to_move();
     workerThread.mainHistory[us][move.raw()] << bonus;  // Untuned to prevent duplicate effort
+    workerThread.materialMainHistory[us][move.raw()].update(bonus, pos.count<ALL_PIECES>());  // Untuned to prevent duplicate effort
 
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
         workerThread.lowPlyHistory[ss->ply][move.raw()] << bonus * 663 / 1024;
