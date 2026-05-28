@@ -186,7 +186,8 @@ struct DynStats {
 
 inline int material_index(const Position& pos)
 {
-	return pos.count<ALL_PIECES>();
+	return pos.count<PAWN>();
+	//return pos.count<ALL_PIECES>();
 }
 
 // ButterflyHistory records how often quiet moves have been successful or unsuccessful
@@ -194,7 +195,8 @@ inline int material_index(const Position& pos)
 // It uses 2 tables (one for each color) indexed by the move's from and to squares,
 // see https://www.chessprogramming.org/Butterfly_Boards
 using ButterflyHistory = Stats<std::int16_t, 7183, COLOR_NB, UINT_16_HISTORY_SIZE>;
-using MaterialButterflyHistory = DoubleStats<std::int16_t, 7183, 32, COLOR_NB, UINT_16_HISTORY_SIZE>;
+using MaterialButterflyHistory = DoubleStats<std::int16_t, 7183, 16, COLOR_NB, UINT_16_HISTORY_SIZE>;
+//using MaterialButterflyHistory = DoubleStats<std::int16_t, 7183, 32, COLOR_NB, UINT_16_HISTORY_SIZE>;
 
 // LowPlyHistory is addressed by ply and move's from and to squares, used
 // to improve move ordering near the root
