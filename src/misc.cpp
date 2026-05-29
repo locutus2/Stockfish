@@ -321,6 +321,7 @@ std::array<DebugInfo<2>, MaxDebugSlots>  hit;
 std::array<DebugInfo<2>, MaxDebugSlots>  mean;
 std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
 std::array<DebugInfo<6>, MaxDebugSlots>  correl;
+std::array<DebugInfo<10>, MaxDebugSlots>  maxCorrel;
 std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
@@ -367,6 +368,23 @@ void dbg_correl_of(int64_t value1, int64_t value2, int slot) {
     correl.at(slot)[5] += value1 * value2;
 }
 
+void dbg_max_correl_of(int64_t target, int64_t value1, int64_t value2, int slot)
+{
+        ++maxCorrel.at(slot)[0];
+	// means
+        maxCorrel.at(slot)[1] += target;
+        maxCorrel.at(slot)[2] += value1;
+        maxCorrel.at(slot)[3] += value2;
+	// sigmas
+        maxCorrel.at(slot)[4] += target * target;
+        maxCorrel.at(slot)[5] += value1 * value1;
+        maxCorrel.at(slot)[6] += value2 * value2;
+	// correlations
+        maxCorrel.at(slot)[7] += target * value1;
+        maxCorrel.at(slot)[8] += target * value2;
+        maxCorrel.at(slot)[9] += value1 * value2;
+}
+
 void dbg_print() {
 
     int64_t n;
@@ -405,6 +423,53 @@ void dbg_print() {
                      / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
                         * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
             std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << std::endl;
+        }
+
+    for (int i = 0; i < MaxDebugSlots; ++i)
+        if ((n = maxCorrel[i][0]))
+        {
+	    double meanT =  E(maxCorrel[i][1]);
+	    double meanV1 =  E(maxCorrel[i][2]);
+	    double meanV2 =  E(maxCorrel[i][3]);
+	    double stdevT = sqrt(E(maxCorrel[i][4]) - sqr(meanT));
+	    double stdevV1 = sqrt(E(maxCorrel[i][5]) - sqr(meanV1));
+	    double stdevV2 = sqrt(E(maxCorrel[i][6]) - sqr(meanV2));
+	    double covTV1 = E(maxCorrel[i][7]);
+	    double covTV2 = E(maxCorrel[i][8]);
+	    double covV12 = E(maxCorrel[i][9]);
+            double corTV1 = (covTV1 - meanT * meanV1) / (stdevT * stdevV1);
+            double corTV2 = (covTV2 - meanT * meanV2) / (stdevT * stdevV2);
+            double corV12 = (covV12 - meanV1 * meanV2) / (stdevV1 * stdevV2);
+           
+            double r = stdevV1 / stdevV2; 
+            double maxA = (corTV2 - corTV1 * corV12) / (corTV1 - corTV2 * corV12) / r;
+            double maxCor = sqrt((sqr(corTV1) + sqr(corTV2) - 2*corTV1*corTV2*corV12) / (1 - sqr(corV12)));
+            double maxComp = maxA * meanV2;
+            std::cerr << "MaxCorrel. #" << i << ": Total " << n << " Max-Correlation " << maxCor << " Max-A " << maxA << " Max-Compensation " << maxComp << std::endl;
+	    /*
+                cor0 = COV(T,H0)/sqrt(VAR(T)*VAR(H0))
+                cor1 = COV(T,H1)/sqrt(VAR(T)*VAR(H1))
+                cor2 = COV(T,H0+a*H1)/sqrt(VAR(T)*VAR(H0+A*H1))
+
+                where cor0, cor1, cor2 and A are real numbers.
+                T, H0 and H1 are random variables.
+
+                COV is the covariance funtion
+                VAR is the variance function
+                sqrt is the square root function
+
+                Derive a formula for cor2 which only depends on variables cor0, cor1, A, VAR(H0), VAR(H1), COV(H0,H1).
+
+                cor2=(cor0*sqrt( Var(H0))+A *cor1 *sqrt(Var(H1)))/sqrt(Var(H0)+A^2*Var(H1)+2*A* Cov(H0,H1))
+
+                cor2=(cor0+A*r* cor1)/sqrt(1+A^2*r^2+2*A*r*cor01) with r = sqrt(VAR(H1)/VAR(H0));
+
+                maxmize cor2:
+                A_max = 1/r * (cor1 - cor0 * cor01) / (cor0 - cor1 * cor01)
+
+                max<2061>Acor2(A)=sqrt((ρ0^2+ρ1^2−2*ρ0*ρ1*ρ01)/(1−ρ01^2))
+                max<2061>Acor2(A)=sqrt((cor0^2+cor1^2−2*cor0*cor1*cor01)/(1−corr01^2))
+	     * */
         }
 }
 

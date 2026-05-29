@@ -1378,7 +1378,7 @@ moves_loop:  // When in check, search starts here
 	if(!extmove.history.empty())
 	{
 		bool T = value > alpha;
-		//dbg_correl_of(T, -moveCount, 100*C);
+		/*
 		dbg_correl_of(T, extmove.value, 100*C);
 		dbg_stdev_of(extmove.value, 100*C);
 		dbg_mean_of(extmove.value, 100*C);
@@ -1389,6 +1389,11 @@ moves_loop:  // When in check, search starts here
 			dbg_mean_of(extmove.history[i], i + 1 + 100*C);
 			dbg_correl_of(extmove.value, extmove.history[i], 1000 + i + 1 + 100*C);
 		}
+
+                */
+		for(int i = 0; i < int(extmove.history.size()); i++)
+		     dbg_max_correl_of(T, extmove.value, extmove.history[i], i);
+
 		/*
 		 * We have following equations
 
