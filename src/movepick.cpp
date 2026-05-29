@@ -196,6 +196,10 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     stage = PROBCUT_TT + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm));
 }
 
+constexpr bool MAX_THREATS = false;
+constexpr bool MAX_CHECKS = false;
+constexpr bool MAX_MAIN = false;
+
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
 // with a good history. Quiets moves are ordered using the history tables.
@@ -255,7 +259,8 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 	    };
 
             //m.value = (2 - 0*allNode) * (*mainHistory)[us][m.raw()];
-            m.value = 2 * (*mainHistory)[us][m.raw()];
+            //m.value = 2 * (*mainHistory)[us][m.raw()];
+            m.value = (*mainHistory)[us][m.raw()] * (MAX_MAIN ? 59 : 32) / 16;
             //m.value = 4 * (*mainHistory)[us][m.raw()];
             m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
             //m.value += 3 * sharedHistory->pawn_entry(pos)[pc][to];
@@ -266,12 +271,13 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
-            m.history.push_back(((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384);
+            m.value += ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * (MAX_CHECKS ? 40494 : 16384);
+            m.history.push_back(((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * (MAX_CHECKS ? 40494 : 16384));
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
-            int v = 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
+            int v = (MAX_THREATS ? 4 : 20) * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
+            //int v = 4 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to)); // comp -529
             m.value += PieceValue[pt] * v;
             m.history.push_back(PieceValue[pt] * v);
 
@@ -337,7 +343,8 @@ ExtMove MovePicker::select(Pred filter) {
 // picking the move with the highest score from a list of generated moves.
 ExtMove MovePicker::next_move() {
 
-    constexpr int goodQuietThreshold = -14000;// -3278 -262;
+    constexpr int compensation = - MAX_THREATS * 529 + MAX_CHECKS * 1610 - MAX_MAIN * 2535;
+    constexpr int goodQuietThreshold = -14000 + compensation;
     ExtMove e;
 top:
     switch (stage)
@@ -383,7 +390,7 @@ top:
 
             endCur = endGenerated = score<QUIETS>(ml);
 
-            partial_insertion_sort(cur, endCur, -3560 * depth);// - 3278 - 262);
+            partial_insertion_sort(cur, endCur, -3560 * depth + compensation);
         }
 
         ++stage;

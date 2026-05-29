@@ -1443,6 +1443,10 @@ Mean #17: Total 97843443 Mean 660.212
 Mean #18: Total 97843443 Mean -328.894
 Mean #19: Total 97843443 Mean 2.54056
 Mean #20: Total 97843443 Mean 28.2793
+Mean #21: Total 97843443 Mean -33.7616
+Mean #22: Total 97843443 Mean 20.6826
+Mean #23: Total 97843443 Mean -1562.84
+Mean #24: Total 97843443 Mean -1678.29
 Stdev #0: Total 97843443 Stdev 25916.4
 Stdev #1: Total 97843443 Stdev 4036.49
 Stdev #2: Total 97843443 Stdev 4105.95
@@ -1464,6 +1468,10 @@ Stdev #17: Total 97843443 Stdev 7560.75
 Stdev #18: Total 97843443 Stdev 2705.76
 Stdev #19: Total 97843443 Stdev 50.9419
 Stdev #20: Total 97843443 Stdev 167.804
+Stdev #21: Total 97843443 Stdev 810.738
+Stdev #22: Total 97843443 Stdev 144.053
+Stdev #23: Total 97843443 Stdev 3770.16
+Stdev #24: Total 97843443 Stdev 5481.66
 Correl. #0: Total 97843443 Coefficient 0.324279
 Correl. #1: Total 97843443 Coefficient 0.209614
 Correl. #2: Total 97843443 Coefficient 0.204253
@@ -1485,6 +1493,10 @@ Correl. #17: Total 97843443 Coefficient 0.0316509
 Correl. #18: Total 97843443 Coefficient 0.0493289
 Correl. #19: Total 97843443 Coefficient 0.0141959
 Correl. #20: Total 97843443 Coefficient 0.0204872
+Correl. #21: Total 97843443 Coefficient 0.0283248
+Correl. #22: Total 97843443 Coefficient 0.0194272
+Correl. #23: Total 97843443 Coefficient 0.210215
+Correl. #24: Total 97843443 Coefficient 0.188003
 Correl. #1001: Total 97843443 Coefficient 0.462702
 Correl. #1002: Total 97843443 Coefficient 0.490203
 Correl. #1003: Total 97843443 Coefficient 0.421457
@@ -1505,6 +1517,15 @@ Correl. #1017: Total 97843443 Coefficient 0.321301
 Correl. #1018: Total 97843443 Coefficient 0.174788
 Correl. #1019: Total 97843443 Coefficient 0.0200899
 Correl. #1020: Total 97843443 Coefficient 0.0569451
+Correl. #1021: Total 97843443 Coefficient 0.0617906
+Correl. #1022: Total 97843443 Coefficient 0.0603243
+Correl. #1023: Total 97843443 Coefficient 0.456149
+Correl. #1024: Total 97843443 Coefficient 0.373949
+
+===========================
+Total time (ms) : 999746
+Nodes searched  : 169058837
+Nodes/second    : 169101
 		 * */
 	}
 
