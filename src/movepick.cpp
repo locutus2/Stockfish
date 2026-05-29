@@ -162,7 +162,7 @@ MovePicker::MovePicker(const Position&              p,
                        const PieceToHistory**       seqh,
                        const SharedHistories*       sh,
                        int                          pl,
-		       bool an) :
+		       int c) :
     pos(p),
     mainHistory(mh),
     mainHistory2(mh2),
@@ -175,7 +175,7 @@ MovePicker::MovePicker(const Position&              p,
     ttMove(ttm),
     depth(d),
     ply(pl),
-    allNode(an){
+    C(c){
 
     if (pos.checkers())
         stage = EVASION_TT + !(ttm && pos.pseudo_legal(ttm));
@@ -258,7 +258,7 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 		    + (*sequenceHistory[2])[pc][to] + (*sequenceHistory[3])[pc][to] + (*sequenceHistory[5])[pc][to],
 	    };
 
-            //m.value = (2 - 0*allNode) * (*mainHistory)[us][m.raw()];
+            //m.value = (2 - 0*C) * (*mainHistory)[us][m.raw()];
             //m.value = 2 * (*mainHistory)[us][m.raw()];
             m.value = (*mainHistory)[us][m.raw()] * (MAX_MAIN ? 59 : 32) / 16;
             //m.value = 4 * (*mainHistory)[us][m.raw()];

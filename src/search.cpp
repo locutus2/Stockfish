@@ -1070,8 +1070,8 @@ moves_loop:  // When in check, search starts here
       (ss - 4)->sequenceHistory, (ss - 5)->sequenceHistory, (ss - 6)->sequenceHistory};
 
 
-    //bool C = allNode;
-    bool C = false;
+    //int C = allNode;
+    int C = 0;
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &mainHistory2, &materialMainHistory, &lowPlyHistory, &captureHistory, contHist, seqHist,
                   &sharedHistory, ss->ply, C);
 
@@ -1390,8 +1390,9 @@ moves_loop:  // When in check, search starts here
 			dbg_correl_of(extmove.value, extmove.history[i], 1000 + i + 1 + 100*C);
 		}
                 */
+		dbg_correl_of(T, extmove.value, C);
 		for(int i = 0; i < int(extmove.history.size()); i++)
-		     dbg_max_correl_of(T, extmove.value, extmove.history[i], i);
+		     dbg_max_correl_of(T, extmove.value, extmove.history[i], i + 100 * C);
 
 		/*
 		 * We have following equations

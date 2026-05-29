@@ -445,7 +445,9 @@ void dbg_print() {
             double maxA = (corTV2 - corTV1 * corV12) / (corTV1 - corTV2 * corV12) / r;
             double maxCor = sqrt((sqr(corTV1) + sqr(corTV2) - 2*corTV1*corTV2*corV12) / (1 - sqr(corV12)));
             double maxComp = maxA * meanV2;
-            std::cerr << "MaxCorrel. #" << i << ": Total " << n << " Max-Correlation " << maxCor << " Max-A " << maxA << " Max-Compensation " << maxComp << std::endl;
+            std::cerr << "MaxCorrel. #" << i << ": Total " << n << " Max-Correlation " << maxCor 
+		      << " Max-Corr% " << 100.*(maxCor / corTV1 - 1) << "% "
+		      << " Max-A " << maxA << " Max-Compensation " << maxComp << std::endl;
 	    /*
                 cor0 = COV(T,H0)/sqrt(VAR(T)*VAR(H0))
                 cor1 = COV(T,H1)/sqrt(VAR(T)*VAR(H1))
