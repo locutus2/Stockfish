@@ -1425,7 +1425,8 @@ moves_loop:  // When in check, search starts here
 		cor01 = 0.472426
 		*/
 		/*
-		 * Mean #0: Total 97843443 Mean -4211.24
+
+===========================n #0: Total 97843443 Mean -4211.24
 Mean #1: Total 97843443 Mean -1502.17
 Mean #2: Total 97843443 Mean -244.906
 Mean #3: Total 97843443 Mean 1008.16
@@ -1494,38 +1495,60 @@ Correl. #15: Total 97843443 Coefficient 0.166738
 Correl. #16: Total 97843443 Coefficient 0.119089
 Correl. #17: Total 97843443 Coefficient 0.0316509
 Correl. #18: Total 97843443 Coefficient 0.0493289
-Correl. #19: Total 97843443 Coefficient 0.0141959
-Correl. #20: Total 97843443 Coefficient 0.0204872
-Correl. #21: Total 97843443 Coefficient 0.0283248
-Correl. #22: Total 97843443 Coefficient 0.0194272
-Correl. #23: Total 97843443 Coefficient 0.210215
-Correl. #24: Total 97843443 Coefficient 0.188003
-Correl. #1001: Total 97843443 Coefficient 0.462702
-Correl. #1002: Total 97843443 Coefficient 0.490203
-Correl. #1003: Total 97843443 Coefficient 0.421457
-Correl. #1004: Total 97843443 Coefficient 0.455743
-Correl. #1005: Total 97843443 Coefficient 0.482188
-Correl. #1006: Total 97843443 Coefficient 0.533174
-Correl. #1007: Total 97843443 Coefficient 0.282943
-Correl. #1008: Total 97843443 Coefficient 0.500384
-Correl. #1009: Total 97843443 Coefficient 0.195261
-Correl. #1010: Total 97843443 Coefficient 0.202707
-Correl. #1011: Total 97843443 Coefficient 0.237483
-Correl. #1012: Total 97843443 Coefficient 0.270975
-Correl. #1013: Total 97843443 Coefficient 0.204716
-Correl. #1014: Total 97843443 Coefficient 0.258841
-Correl. #1015: Total 97843443 Coefficient 0.408799
-Correl. #1016: Total 97843443 Coefficient 0.147625
-Correl. #1017: Total 97843443 Coefficient 0.321301
-Correl. #1018: Total 97843443 Coefficient 0.174788
-Correl. #1019: Total 97843443 Coefficient 0.0200899
-Correl. #1020: Total 97843443 Coefficient 0.0569451
-Correl. #1021: Total 97843443 Coefficient 0.0617906
-Correl. #1022: Total 97843443 Coefficient 0.0603243
-Correl. #1023: Total 97843443 Coefficient 0.456149
-Correl. #1024: Total 97843443 Coefficient 0.373949
-
-===========================
+		Correl. #19: Total 97843443 Coefficient 0.0141959
+			Correl. #20: Total 97843443 Coefficient 0.0204872
+			Correl. #21: Total 97843443 Coefficient 0.0283248
+			Correl. #22: Total 97843443 Coefficient 0.0194272
+			Correl. #23: Total 97843443 Coefficient 0.210215
+			Correl. #24: Total 97843443 Coefficient 0.188003
+			Correl. #1001: Total 97843443 Coefficient 0.462702
+			Correl. #1002: Total 97843443 Coefficient 0.490203
+			Correl. #1003: Total 97843443 Coefficient 0.421457
+			Correl. #1004: Total 97843443 Coefficient 0.455743
+			Correl. #1005: Total 97843443 Coefficient 0.482188
+			Correl. #1006: Total 97843443 Coefficient 0.533174
+			Correl. #1007: Total 97843443 Coefficient 0.282943
+			Correl. #1008: Total 97843443 Coefficient 0.500384
+			Correl. #1009: Total 97843443 Coefficient 0.195261
+			Correl. #1010: Total 97843443 Coefficient 0.202707
+			Correl. #1011: Total 97843443 Coefficient 0.237483
+			Correl. #1012: Total 97843443 Coefficient 0.270975
+			Correl. #1013: Total 97843443 Coefficient 0.204716
+			Correl. #1014: Total 97843443 Coefficient 0.258841
+			Correl. #1015: Total 97843443 Coefficient 0.408799
+			Correl. #1016: Total 97843443 Coefficient 0.147625
+			Correl. #1017: Total 97843443 Coefficient 0.321301
+			Correl. #1018: Total 97843443 Coefficient 0.174788
+			Correl. #1019: Total 97843443 Coefficient 0.0200899
+			Correl. #1020: Total 97843443 Coefficient 0.0569451
+			Correl. #1021: Total 97843443 Coefficient 0.0617906
+			Correl. #1022: Total 97843443 Coefficient 0.0603243
+			Correl. #1023: Total 97843443 Coefficient 0.456149
+			Correl. #1024: Total 97843443 Coefficient 0.373949
+			MaxCorrel. #0: Total 97843443 Max-Correlation 0.331167 Max-A 1.68273 Max-Compensation -2527.75
+			MaxCorrel. #1: Total 97843443 Max-Correlation 0.328415 Max-A 1.27533 Max-Compensation -312.335
+			MaxCorrel. #2: Total 97843443 Max-Correlation 0.324299 Max-A 0.0468186 Max-Compensation 47.2007
+			MaxCorrel. #3: Total 97843443 Max-Correlation 0.324761 Max-A -0.254997 Max-Compensation 138.547
+			MaxCorrel. #4: Total 97843443 Max-Correlation 0.326524 Max-A -0.508761 Max-Compensation 136.113
+			MaxCorrel. #5: Total 97843443 Max-Correlation 0.325133 Max-A -0.360567 Max-Compensation 455.327
+			MaxCorrel. #6: Total 97843443 Max-Correlation 0.324279 Max-A -0.00991708 Max-Compensation 8.45265
+			MaxCorrel. #7: Total 97843443 Max-Correlation 0.326206 Max-A -0.556489 Max-Compensation 599.148
+			MaxCorrel. #8: Total 97843443 Max-Correlation 0.326984 Max-A 0.536627 Max-Compensation -298.907
+			MaxCorrel. #9: Total 97843443 Max-Correlation 0.325362 Max-A 0.338976 Max-Compensation -298.771
+			MaxCorrel. #10: Total 97843443 Max-Correlation 0.324515 Max-A 0.156375 Max-Compensation -78.7372
+			MaxCorrel. #11: Total 97843443 Max-Correlation 0.324596 Max-A 0.184143 Max-Compensation -148.166
+			MaxCorrel. #12: Total 97843443 Max-Correlation 0.324279 Max-A -0.00751452 Max-Compensation 3.99245
+			MaxCorrel. #13: Total 97843443 Max-Correlation 0.32431 Max-A 0.0582195 Max-Compensation -45.7054
+			MaxCorrel. #14: Total 97843443 Max-Correlation 0.326433 Max-A 0.18557 Max-Compensation -655.358
+			MaxCorrel. #15: Total 97843443 Max-Correlation 0.332177 Max-A 1.47155 Max-Compensation 1609.55
+			MaxCorrel. #16: Total 97843443 Max-Correlation 0.333203 Max-A -0.791602 Max-Compensation -522.625
+			MaxCorrel. #17: Total 97843443 Max-Correlation 0.324364 Max-A -0.223061 Max-Compensation 73.3635
+			MaxCorrel. #18: Total 97843443 Max-Correlation 0.324369 Max-A 12.0612 Max-Compensation 30.6423
+			MaxCorrel. #19: Total 97843443 Max-Correlation 0.324285 Max-A 0.966072 Max-Compensation 27.3198
+			MaxCorrel. #20: Total 97843443 Max-Correlation 0.324385 Max-A 0.82138 Max-Compensation -27.7311
+			MaxCorrel. #21: Total 97843443 Max-Correlation 0.324279 Max-A -0.0749609 Max-Compensation -1.55039
+			MaxCorrel. #22: Total 97843443 Max-Correlation 0.331748 Max-A 1.875 Max-Compensation -2930.32
+			MaxCorrel. #23: Total 97843443 Max-Correlation 0.332167 Max-A 1.24238 Max-Compensation -2085.08
 Total time (ms) : 999746
 Nodes searched  : 169058837
 Nodes/second    : 169101
