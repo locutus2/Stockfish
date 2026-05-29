@@ -469,6 +469,18 @@ void dbg_print() {
 
                 max<2061>Acor2(A)=sqrt((ρ0^2+ρ1^2−2*ρ0*ρ1*ρ01)/(1−ρ01^2))
                 max<2061>Acor2(A)=sqrt((cor0^2+cor1^2−2*cor0*cor1*cor01)/(1−corr01^2))
+
+                cor(T,H0+A*H1) = cov(T,H0+A*H1) / (sqrt(VAR(T)*VAR(H0+A*H1))
+		= (COV(T,H0) +  A * COV(T,H1)) / sigma(T) / sqrt(VAR(H0) + A^2 * VAR(H1) + 2*A*COV(H0,H1))
+		= (cor0 * sigma(T)*sigma(H0) + A * cor1 * sigma(T) * sigma(H1))
+		  / sigma(T) / sqrt(sigma(H0)^2 +  a^2*sigma(H1)^2 + 2*A*cor01*sigma(H0)*sigma(H1))
+		= (cor0 * sigma(H0) + A * cor1 * sigma(H1)) / sqrt(sigma(H0)^2 +  A^2*sigma(H1)^2 + 2*A*cor01*sigma(H0)*sigma(H1))
+		= (cor0 + A * cor1 * R) / sqrt(1 + A^2*R^2 +2*A*cor01*R)
+		with R = sigma(H1)/sigma(H0)
+
+
+		cov(T,H0+A*H1) = COV(T,H0) +  A * COV(T,H1)
+		VAR(H0+A*H1) = VAR(H0) + A^2 * VAR(H1) + 2*A*COV(H0,H1)
 	     * */
         }
 }
