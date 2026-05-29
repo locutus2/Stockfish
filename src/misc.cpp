@@ -441,7 +441,7 @@ void dbg_print() {
             double corTV2 = (covTV2 - meanT * meanV2) / (stdevT * stdevV2);
             double corV12 = (covV12 - meanV1 * meanV2) / (stdevV1 * stdevV2);
            
-            double r = stdevV1 / stdevV2; 
+            double r = stdevV2 / stdevV1; 
             double maxA = (corTV2 - corTV1 * corV12) / (corTV1 - corTV2 * corV12) / r;
             double maxCor = sqrt((sqr(corTV1) + sqr(corTV2) - 2*corTV1*corTV2*corV12) / (1 - sqr(corV12)));
             double maxComp = maxA * meanV2;
