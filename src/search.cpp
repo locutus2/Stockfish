@@ -1393,7 +1393,7 @@ moves_loop:  // When in check, search starts here
                 */
 		dbg_correl_of(T, extmove.value, C);
 		for(int i = 0; i < int(extmove.history.size()); i++)
-		     dbg_max_correl_of(T, extmove.value, (i < int(extmove.names.size()) ? extmove.names[i] : "???"), extmove.history[i], i + 100 * C);
+		     dbg_max_correl_of(T, extmove.value, (i < int(conditionName.size()) ? conditionName[i] : "???"), extmove.history[i], i + 100 * C);
 
 		/*
 		 * We have following equations

@@ -19,11 +19,16 @@
 #ifndef MOVEPICK_H_INCLUDED
 #define MOVEPICK_H_INCLUDED
 
+#include <string> 
+#include <vector> 
+
 #include "history.h"
 #include "movegen.h"
 #include "types.h"
 
 namespace Stockfish {
+
+extern std::vector<std::string> conditionName;
 
 class Position;
 

@@ -28,6 +28,15 @@
 
 namespace Stockfish {
 
+std::vector<std::string> conditionName;
+
+#define ADD_HISTORY(m,c)  { \
+	int hindex = (m).history.size(); \
+	(m).history.push_back((c)); \
+	if(hindex >= int(conditionName.size())) \
+	    conditionName.push_back(#c); \
+}
+
 namespace {
 
 enum Stages {
@@ -199,8 +208,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
 constexpr bool MAX_THREATS = false;
 constexpr bool MAX_CHECKS = false;
 constexpr bool MAX_MAIN = false;
-
-#define ADD_HISTORY(m,c)  (m).names.push_back(#c); (m).history.push_back((c));
 
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures

@@ -371,8 +371,8 @@ void dbg_correl_of(int64_t value1, int64_t value2, int slot) {
 
 void dbg_max_correl_of(int64_t target, int64_t value1, const std::string& name, int64_t value2, int slot)
 {
-	names.at(slot) = name;
-        ++maxCorrel.at(slot)[0];
+        if(!maxCorrel.at(slot)[0]++)
+	    names.at(slot) = name;
 	// means
         maxCorrel.at(slot)[1] += target;
         maxCorrel.at(slot)[2] += value1;
