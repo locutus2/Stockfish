@@ -87,8 +87,8 @@ class FeatureTransformer {
     using OutputType = TransformedFeatureType;
 
     // Number of input/output dimensions
-    static constexpr IndexType InputDimensions =
-      PSQFeatureSet::Dimensions + ThreatFeatureSet::Dimensions;
+    static constexpr IndexType ThreatInputDimensions = ThreatFeatureSet::Dimensions;
+    static constexpr IndexType InputDimensions  = PSQFeatureSet::Dimensions + ThreatInputDimensions;
     static constexpr IndexType OutputDimensions = HalfDimensions;
 
     // Size of forward propagation buffer
@@ -151,9 +151,11 @@ class FeatureTransformer {
         read_leb_128(stream, biases);
 
         read_little_endian<ThreatWeightType>(stream, threatWeights.data(),
-                                             ThreatFeatureSet::Dimensions * HalfDimensions);
+                                             ThreatInputDimensions * HalfDimensions);
+        read_leb_128(stream, threatPsqtWeights);
+
         read_leb_128(stream, weights);
-        read_leb_128(stream, threatPsqtWeights, psqtWeights);
+        read_leb_128(stream, psqtWeights);
 
         permute_weights();
 
@@ -168,22 +170,13 @@ class FeatureTransformer {
 
         write_leb_128<BiasType>(stream, copy->biases);
 
+
         write_little_endian<ThreatWeightType>(stream, copy->threatWeights.data(),
-                                              ThreatFeatureSet::Dimensions * HalfDimensions);
+                                              ThreatInputDimensions * HalfDimensions);
+        write_leb_128<PSQTWeightType>(stream, copy->threatPsqtWeights);
+
         write_leb_128<WeightType>(stream, copy->weights);
-
-        auto combinedPsqtWeights =
-          std::make_unique<std::array<PSQTWeightType, InputDimensions * PSQTBuckets>>();
-
-        std::copy(std::begin(copy->threatPsqtWeights),
-                  std::begin(copy->threatPsqtWeights) + ThreatFeatureSet::Dimensions * PSQTBuckets,
-                  combinedPsqtWeights->begin());
-
-        std::copy(std::begin(copy->psqtWeights),
-                  std::begin(copy->psqtWeights) + PSQFeatureSet::Dimensions * PSQTBuckets,
-                  combinedPsqtWeights->begin() + ThreatFeatureSet::Dimensions * PSQTBuckets);
-
-        write_leb_128<PSQTWeightType>(stream, *combinedPsqtWeights);
+        write_leb_128<PSQTWeightType>(stream, copy->psqtWeights);
 
         return !stream.fail();
     }
@@ -241,8 +234,11 @@ class FeatureTransformer {
             static_assert((HalfDimensions / 2) % OutputChunkSize == 0);
             constexpr IndexType NumOutputChunks = HalfDimensions / 2 / OutputChunkSize;
 
-            const vec_t Zero = vec_zero();
-            const vec_t One  = vec_set_16(255);
+    #if !defined(USE_NEON)
+            const vec_t   Zero  = vec_zero();
+            const vec_t   FtMax = vec_set_16(FtMaxVal);
+            constexpr int shift = 7;
+    #endif
 
             const vec_t* in0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[p]][0]));
             const vec_t* in1 =
@@ -296,19 +292,6 @@ class FeatureTransformer {
             // 8 bits. Shifting it by 7 bits left will no longer occupy the
             // signed bit, so we are safe.
 
-            // Note that on NEON processors, we shift left by 6 instead
-            // because the instruction "vqdmulhq_s16" also doubles the
-            // return value after the multiplication, adding an extra shift
-            // to the left by 1, so we compensate by shifting less before
-            // the multiplication.
-
-            constexpr int shift =
-    #if defined(USE_SSE2) || defined(USE_LASX) || defined(USE_LSX)
-              7;
-    #else
-              6;
-    #endif
-
             const vec_t* tin0 =
               reinterpret_cast<const vec_t*>(&(threatAccumulation[perspectives[p]][0]));
             const vec_t* tin1 = reinterpret_cast<const vec_t*>(
@@ -325,15 +308,32 @@ class FeatureTransformer {
                     vec_t acc1a = vec_add_16(in1[i + 0], tin1[i + 0]);
                     vec_t acc1b = vec_add_16(in1[i + 1], tin1[i + 1]);
 
-                    vec_t sum0a = vec_slli_16(vec_max_16(vec_min_16(acc0a, One), Zero), shift);
-                    vec_t sum0b = vec_slli_16(vec_max_16(vec_min_16(acc0b, One), Zero), shift);
-                    vec_t sum1a = vec_min_16(acc1a, One);
-                    vec_t sum1b = vec_min_16(acc1b, One);
+    #if defined(USE_NEON)
+
+                    // The NEON path relies on unsigned saturation for crelu
+                    static_assert(FtMaxVal == 255);
+
+                    uint16x8_t mul0 = vmull_u8(vqmovun_s16(acc0a), vqmovun_s16(acc1a));
+                    uint16x8_t mul1 = vmull_u8(vqmovun_s16(acc0b), vqmovun_s16(acc1b));
+
+                    uint8x16x2_t uzp =
+                      vuzpq_u8(vreinterpretq_u8_u16(mul0), vreinterpretq_u8_u16(mul1));
+                    uint8x16_t pab = vshrq_n_u8(uzp.val[1], 1);
+                    packed[k] = out[j + k] = reinterpret_cast<vec_t>(pab);
+
+    #else
+
+                    vec_t sum0a = vec_slli_16(vec_max_16(vec_min_16(acc0a, FtMax), Zero), shift);
+                    vec_t sum0b = vec_slli_16(vec_max_16(vec_min_16(acc0b, FtMax), Zero), shift);
+                    vec_t sum1a = vec_min_16(acc1a, FtMax);
+                    vec_t sum1b = vec_min_16(acc1b, FtMax);
 
                     vec_t pa = vec_mulhi_16(sum0a, sum1a);
                     vec_t pb = vec_mulhi_16(sum0b, sum1b);
 
                     packed[k] = out[j + k] = vec_packus_16(pa, pb);
+
+    #endif
                 }
 
                 cursor.record2(packed[0], packed[1]);
@@ -351,8 +351,8 @@ class FeatureTransformer {
                 sum1 +=
                   threatAccumulation[static_cast<int>(perspectives[p])][j + HalfDimensions / 2];
 
-                sum0 = std::clamp<BiasType>(sum0, 0, 255);
-                sum1 = std::clamp<BiasType>(sum1, 0, 255);
+                sum0 = std::clamp<BiasType>(sum0, 0, FtMaxVal);
+                sum1 = std::clamp<BiasType>(sum1, 0, FtMaxVal);
 
                 output[offset + j] = static_cast<OutputType>(unsigned(sum0 * sum1) / 512);
             }
