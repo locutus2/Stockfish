@@ -448,10 +448,13 @@ void dbg_print() {
             double maxCor = sqrt((sqr(corTV1) + sqr(corTV2) - 2*corTV1*corTV2*corV12) / (1 - sqr(corV12)));
             double maxComp = maxA * meanV2;
 	    double dCor_dA0 = r * (corTV2 - corTV1 * corV12) / corTV1;
+	    constexpr int scale = 256;
+	    int range = scale * std::abs(maxA) / 0.27 ;
             std::cerr << "MaxCorrel. #" << i << ": Total " << n << " Max-Correlation " << maxCor 
 		      << " Max-Corr% " << 100.*(maxCor / corTV1 - 1) << "% "
 		      << " Max-A " << maxA << " Max-Compensation " << maxComp 
 		      << " dCor/dA% "  << 100.*dCor_dA0 << "%"
+		      << " Tune-Range[S=" << scale << "] "  << range
 		      << " Expression " << names[i] << std::endl;
 	    /*
                 cor0 = COV(T,H0)/sqrt(VAR(T)*VAR(H0))
