@@ -28,6 +28,27 @@
 
 namespace Stockfish {
 
+constexpr int SCALE = 256;
+
+// ranges for parameter array A
+constexpr int R[10] = { 861, 677, 10, 317, 526, 401, 596, 1447, 738, 140 };
+
+int A[10];
+int Random[10];
+
+TUNE(SetRange(-R[0],R[0]), A[0]);
+TUNE(SetRange(-R[1],R[1]), A[1]);
+TUNE(SetRange(-R[2],R[2]), A[2]);
+TUNE(SetRange(-R[3],R[3]), A[3]);
+TUNE(SetRange(-R[4],R[4]), A[4]);
+TUNE(SetRange(-R[5],R[5]), A[5]);
+TUNE(SetRange(-R[6],R[6]), A[6]);
+TUNE(SetRange(-R[7],R[7]), A[7]);
+TUNE(SetRange(-R[8],R[8]), A[8]);
+TUNE(SetRange(-R[9],R[9]), A[9]);
+TUNE(SetRange(-SCALE,SCALE), Random);
+
+
 namespace {
 
 enum Stages {
@@ -228,25 +249,27 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()];
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
-            m.value += (*continuationHistory[0])[pc][to];
-            m.value += (*continuationHistory[1])[pc][to];
-            m.value += (*continuationHistory[2])[pc][to];
-            m.value += (*continuationHistory[3])[pc][to];
-            m.value += (*continuationHistory[5])[pc][to];
+            m.value = 2 * (*mainHistory)[us][m.raw()] * (SCALE + A[0]);
+            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to] * (SCALE + A[1]);
+            m.value += (*continuationHistory[0])[pc][to] * (SCALE + A[2]);
+            m.value += (*continuationHistory[1])[pc][to] * (SCALE + A[3]);
+            m.value += (*continuationHistory[2])[pc][to] * (SCALE + A[4]);
+            m.value += (*continuationHistory[3])[pc][to] * (SCALE + A[5]);
+            m.value += (*continuationHistory[5])[pc][to] * (SCALE + A[6]);
 
             // bonus for checks
-            m.value += ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            m.value += ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384 * (SCALE + A[7]);
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
             int v = 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
-            m.value += PieceValue[pt] * v;
+            m.value += PieceValue[pt] * v * (SCALE + A[8]);
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] * (SCALE + A[9]) / (1 + ply);
+
+	    m.value /= SCALE;
         }
 
         else  // Type == EVASIONS
