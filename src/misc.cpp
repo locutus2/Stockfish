@@ -290,7 +290,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 3200;
+constexpr int MaxDebugSlots = 10000;
 
 namespace {
 
@@ -447,9 +447,11 @@ void dbg_print() {
             double maxA = (corTV2 - corTV1 * corV12) / (corTV1 - corTV2 * corV12) / r;
             double maxCor = sqrt((sqr(corTV1) + sqr(corTV2) - 2*corTV1*corTV2*corV12) / (1 - sqr(corV12)));
             double maxComp = maxA * meanV2;
+	    double dCor_dA0 = r * (corTV2 - corTV1 * corV12) / corTV1;
             std::cerr << "MaxCorrel. #" << i << ": Total " << n << " Max-Correlation " << maxCor 
 		      << " Max-Corr% " << 100.*(maxCor / corTV1 - 1) << "% "
 		      << " Max-A " << maxA << " Max-Compensation " << maxComp 
+		      << " dCor/dA% "  << 100.*dCor_dA0 << "%"
 		      << " Expression " << names[i] << std::endl;
 	    /*
                 cor0 = COV(T,H0)/sqrt(VAR(T)*VAR(H0))
@@ -482,6 +484,10 @@ void dbg_print() {
 		= (cor0 * sigma(H0) + A * cor1 * sigma(H1)) / sqrt(sigma(H0)^2 +  A^2*sigma(H1)^2 + 2*A*cor01*sigma(H0)*sigma(H1))
 		= (cor0 + A * cor1 * R) / sqrt(1 + A^2*R^2 +2*A*cor01*R)
 		with R = sigma(H1)/sigma(H0)
+
+		D = sqrt(1 + A^2*R^2 +2*A*cor01*R)
+		dCor(T,H0+A*H1)/dA = (cor1 * R * D^2 - (cor0 + A * cor1 * R) * R * (A*R + cor01)) / D^3
+		dCor(T,H0+A*H1)/dA(A=0) = R * (cor1 - cor0 * cor01)
 
 
 		cov(T,H0+A*H1) = COV(T,H0) +  A * COV(T,H1)

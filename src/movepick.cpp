@@ -288,6 +288,7 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
 
+	    //m.value += 2 * (*mainHistory2)[us][m.raw()];
             // bonus for checks
             m.value += ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * (MAX_CHECKS ? 40494 : 16384);
 
@@ -333,6 +334,7 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 
 		    ADD_HISTORY(m, (*materialMainHistory)[us][m.raw()].get(material_index(pos)));
 		    ADD_HISTORY(m, (*mainHistory2)[us][m.raw()]);
+		    ADD_HISTORY(m, ((*mainHistory2)[us][m.raw()] + (*mainHistory)[us][m.raw()]) / 2);
 	    }
         }
 
