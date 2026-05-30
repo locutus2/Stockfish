@@ -1070,10 +1070,11 @@ moves_loop:  // When in check, search starts here
       (ss - 4)->sequenceHistory, (ss - 5)->sequenceHistory, (ss - 6)->sequenceHistory};
 
 
-    //int C = allNode;
+    bool CC = true;
+    //bool CC = allNode;
     int C = 0;
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &mainHistory2, &materialMainHistory, &lowPlyHistory, &captureHistory, contHist, seqHist,
-                  &sharedHistory, ss->ply, C);
+                  &sharedHistory, ss->ply, CC);
 
     value = bestValue;
 
@@ -1375,7 +1376,7 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-	if(!extmove.history.empty())
+	if(CC && !extmove.history.empty())
 	{
 		bool T = value > alpha;
 		/*

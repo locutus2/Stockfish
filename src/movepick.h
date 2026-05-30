@@ -50,7 +50,7 @@ class MovePicker {
                const PieceToHistory**,
                const SharedHistories*,
                int,
-	       int);
+	       bool);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
     ExtMove next_move();
     void skip_quiet_moves();
@@ -80,7 +80,7 @@ class MovePicker {
     int                          ply;
     bool                         skipQuiets = false;
     ExtMove                      moves[MAX_MOVES];
-    int C = 0;
+    bool CC = false;
 };
 
 }  // namespace Stockfish

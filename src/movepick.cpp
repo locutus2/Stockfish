@@ -162,7 +162,7 @@ MovePicker::MovePicker(const Position&              p,
                        const PieceToHistory**       seqh,
                        const SharedHistories*       sh,
                        int                          pl,
-		       int c) :
+		       bool cc) :
     pos(p),
     mainHistory(mh),
     mainHistory2(mh2),
@@ -175,7 +175,7 @@ MovePicker::MovePicker(const Position&              p,
     ttMove(ttm),
     depth(d),
     ply(pl),
-    C(c){
+    CC(cc){
 
     if (pos.checkers())
         stage = EVASION_TT + !(ttm && pos.pseudo_legal(ttm));
@@ -290,35 +290,38 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 
             m.history.clear();
             m.names.clear();
-	    ADD_HISTORY(m, (*mainHistory)[us][m.raw()]);
-	    ADD_HISTORY(m, sharedHistory->pawn_entry(pos)[pc][to]);
-	    ADD_HISTORY(m, (*continuationHistory[0])[pc][to]);
-	    ADD_HISTORY(m, (*continuationHistory[1])[pc][to]);
-	    ADD_HISTORY(m, (*continuationHistory[2])[pc][to]);
-	    ADD_HISTORY(m, (*continuationHistory[3])[pc][to]);
-	    ADD_HISTORY(m, (*continuationHistory[4])[pc][to]);
-	    ADD_HISTORY(m, (*continuationHistory[5])[pc][to]);
+	    if(CC)
+	    {
+		    ADD_HISTORY(m, (*mainHistory)[us][m.raw()]);
+		    ADD_HISTORY(m, sharedHistory->pawn_entry(pos)[pc][to]);
+		    ADD_HISTORY(m, (*continuationHistory[0])[pc][to]);
+		    ADD_HISTORY(m, (*continuationHistory[1])[pc][to]);
+		    ADD_HISTORY(m, (*continuationHistory[2])[pc][to]);
+		    ADD_HISTORY(m, (*continuationHistory[3])[pc][to]);
+		    ADD_HISTORY(m, (*continuationHistory[4])[pc][to]);
+		    ADD_HISTORY(m, (*continuationHistory[5])[pc][to]);
 
-	    ADD_HISTORY(m, ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384);
-	    ADD_HISTORY(m, PieceValue[pt] * 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to)));
-	    ADD_HISTORY(m, (ply < LOW_PLY_HISTORY_SIZE) * 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply));
+		    ADD_HISTORY(m, ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384);
+		    ADD_HISTORY(m, PieceValue[pt] * 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to)));
+		    ADD_HISTORY(m, (ply < LOW_PLY_HISTORY_SIZE) * 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply));
 
-	    ADD_HISTORY(m, (*sequenceHistory[0])[pc][to]);
-	    ADD_HISTORY(m, (*sequenceHistory[1])[pc][to]);
-	    ADD_HISTORY(m, (*sequenceHistory[2])[pc][to]);
-	    ADD_HISTORY(m, (*sequenceHistory[3])[pc][to]);
-	    ADD_HISTORY(m, (*sequenceHistory[4])[pc][to]);
-	    ADD_HISTORY(m, (*sequenceHistory[5])[pc][to]);
+		    ADD_HISTORY(m, (*sequenceHistory[0])[pc][to]);
+		    ADD_HISTORY(m, (*sequenceHistory[1])[pc][to]);
+		    ADD_HISTORY(m, (*sequenceHistory[2])[pc][to]);
+		    ADD_HISTORY(m, (*sequenceHistory[3])[pc][to]);
+		    ADD_HISTORY(m, (*sequenceHistory[4])[pc][to]);
+		    ADD_HISTORY(m, (*sequenceHistory[5])[pc][to]);
 
-	    ADD_HISTORY(m, (pt == KNIGHT) * more_than_one(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)) * 1024);
-	    ADD_HISTORY(m, (pt == KNIGHT) * bool(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)) * 1024);
-	    ADD_HISTORY(m, (pt == KNIGHT) * (popcount(Attacks::knight_attack(to)) - popcount(Attacks::knight_attack(from))) * 1024);
+		    ADD_HISTORY(m, (pt == KNIGHT) * more_than_one(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)) * 1024);
+		    ADD_HISTORY(m, (pt == KNIGHT) * bool(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)) * 1024);
+		    ADD_HISTORY(m, (pt == KNIGHT) * (popcount(Attacks::knight_attack(to)) - popcount(Attacks::knight_attack(from))) * 1024);
 
-	    ADD_HISTORY(m, (pt == PAWN) * bool(to & (us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN))
-                                    : pawn_attacks_bb<WHITE>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN)))) * 1024);
+		    ADD_HISTORY(m, (pt == PAWN) * bool(to & (us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN))
+					    : pawn_attacks_bb<WHITE>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN)))) * 1024);
 
-	    ADD_HISTORY(m, (*materialMainHistory)[us][m.raw()].get(material_index(pos)));
-	    ADD_HISTORY(m, (*mainHistory2)[us][m.raw()]);
+		    ADD_HISTORY(m, (*materialMainHistory)[us][m.raw()].get(material_index(pos)));
+		    ADD_HISTORY(m, (*mainHistory2)[us][m.raw()]);
+	    }
         }
 
         else  // Type == EVASIONS
