@@ -278,7 +278,7 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 
             //m.value = (2 - 0*C) * (*mainHistory)[us][m.raw()];
             //m.value = 2 * (*mainHistory)[us][m.raw()];
-            m.value = (*mainHistory)[us][m.raw()] * (MAX_MAIN ? 59 : 32) / 16;
+            m.value = 2 * (*mainHistory)[us][m.raw()] * (MAX_MAIN ? 59 : 32) / 16;
             //m.value = 4 * (*mainHistory)[us][m.raw()];
             m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
             //m.value += 3 * sharedHistory->pawn_entry(pos)[pc][to];
@@ -324,12 +324,12 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 		    ADD_HISTORY(m, (*sequenceHistory[4])[pc][to]);
 		    ADD_HISTORY(m, (*sequenceHistory[5])[pc][to]);
 
-		    ADD_HISTORY(m, (pt == KNIGHT) * more_than_one(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)) * 1024);
-		    ADD_HISTORY(m, (pt == KNIGHT) * bool(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)) * 1024);
+		    ADD_HISTORY(m, (pt == KNIGHT && more_than_one(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN))) * 1024);
+		    ADD_HISTORY(m, (pt == KNIGHT && bool(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN))) * 1024);
 		    ADD_HISTORY(m, (pt == KNIGHT) * (popcount(Attacks::knight_attack(to)) - popcount(Attacks::knight_attack(from))) * 1024);
 
-		    ADD_HISTORY(m, (pt == PAWN) * bool(to & (us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN))
-					    : pawn_attacks_bb<WHITE>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN)))) * 1024);
+		    ADD_HISTORY(m, (pt == PAWN && (to & (us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN))
+					    : pawn_attacks_bb<WHITE>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN))))) * 1024);
 
 		    ADD_HISTORY(m, (*materialMainHistory)[us][m.raw()].get(material_index(pos)));
 		    ADD_HISTORY(m, (*mainHistory2)[us][m.raw()]);
