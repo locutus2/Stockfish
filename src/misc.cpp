@@ -317,6 +317,7 @@ struct DebugExtremes: public DebugInfo<3> {
     }
 };
 
+std::array<std::string, MaxDebugSlots>  names;
 std::array<DebugInfo<2>, MaxDebugSlots>  hit;
 std::array<DebugInfo<2>, MaxDebugSlots>  mean;
 std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
@@ -368,8 +369,9 @@ void dbg_correl_of(int64_t value1, int64_t value2, int slot) {
     correl.at(slot)[5] += value1 * value2;
 }
 
-void dbg_max_correl_of(int64_t target, int64_t value1, int64_t value2, int slot)
+void dbg_max_correl_of(int64_t target, int64_t value1, const std::string& name, int64_t value2, int slot)
 {
+	names.at(slot) = name;
         ++maxCorrel.at(slot)[0];
 	// means
         maxCorrel.at(slot)[1] += target;
@@ -447,7 +449,8 @@ void dbg_print() {
             double maxComp = maxA * meanV2;
             std::cerr << "MaxCorrel. #" << i << ": Total " << n << " Max-Correlation " << maxCor 
 		      << " Max-Corr% " << 100.*(maxCor / corTV1 - 1) << "% "
-		      << " Max-A " << maxA << " Max-Compensation " << maxComp << std::endl;
+		      << " Max-A " << maxA << " Max-Compensation " << maxComp 
+		      << " Expression " << names[i] << std::endl;
 	    /*
                 cor0 = COV(T,H0)/sqrt(VAR(T)*VAR(H0))
                 cor1 = COV(T,H1)/sqrt(VAR(T)*VAR(H1))

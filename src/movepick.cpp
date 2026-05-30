@@ -200,6 +200,8 @@ constexpr bool MAX_THREATS = false;
 constexpr bool MAX_CHECKS = false;
 constexpr bool MAX_MAIN = false;
 
+#define ADD_HISTORY(m,c)  (m).names.push_back(#c); (m).history.push_back((c));
+
 // Assigns a numerical value to each move in a list, used for sorting.
 // Captures are ordered by Most Valuable Victim (MVV), preferring captures
 // with a good history. Quiets moves are ordered using the history tables.
@@ -240,7 +242,9 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.history = {(*mainHistory)[us][m.raw()],
+	    /*
+            m.history = {
+		    (*mainHistory)[us][m.raw()],
 		    sharedHistory->pawn_entry(pos)[pc][to],
 		    (*continuationHistory[0])[pc][to],
 		    (*continuationHistory[1])[pc][to],
@@ -257,6 +261,7 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 		    (*sequenceHistory[0])[pc][to] + (*sequenceHistory[1])[pc][to]
 		    + (*sequenceHistory[2])[pc][to] + (*sequenceHistory[3])[pc][to] + (*sequenceHistory[5])[pc][to],
 	    };
+	    */
 
             //m.value = (2 - 0*C) * (*mainHistory)[us][m.raw()];
             //m.value = 2 * (*mainHistory)[us][m.raw()];
@@ -272,45 +277,48 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 
             // bonus for checks
             m.value += ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * (MAX_CHECKS ? 40494 : 16384);
-            m.history.push_back(((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * (MAX_CHECKS ? 40494 : 16384));
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
             int v = (MAX_THREATS ? 4 : 20) * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
             //int v = 4 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to)); // comp -529
             m.value += PieceValue[pt] * v;
-            m.history.push_back(PieceValue[pt] * v);
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
 
-            m.history.push_back((ply < LOW_PLY_HISTORY_SIZE) * 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply));
+            m.history.clear();
+            m.names.clear();
+	    ADD_HISTORY(m, (*mainHistory)[us][m.raw()]);
+	    ADD_HISTORY(m, sharedHistory->pawn_entry(pos)[pc][to]);
+	    ADD_HISTORY(m, (*continuationHistory[0])[pc][to]);
+	    ADD_HISTORY(m, (*continuationHistory[1])[pc][to]);
+	    ADD_HISTORY(m, (*continuationHistory[2])[pc][to]);
+	    ADD_HISTORY(m, (*continuationHistory[3])[pc][to]);
+	    ADD_HISTORY(m, (*continuationHistory[4])[pc][to]);
+	    ADD_HISTORY(m, (*continuationHistory[5])[pc][to]);
 
-	    if(pt == KNIGHT && more_than_one(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)))
-                m.history.push_back(1024);
-	    else
-                m.history.push_back(0);
+	    ADD_HISTORY(m, ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384);
+	    ADD_HISTORY(m, PieceValue[pt] * 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to)));
+	    ADD_HISTORY(m, (ply < LOW_PLY_HISTORY_SIZE) * 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply));
 
-	    if(pt == KNIGHT && (Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)))
-                m.history.push_back(1024);
-	    else
-                m.history.push_back(0);
+	    ADD_HISTORY(m, (*sequenceHistory[0])[pc][to]);
+	    ADD_HISTORY(m, (*sequenceHistory[1])[pc][to]);
+	    ADD_HISTORY(m, (*sequenceHistory[2])[pc][to]);
+	    ADD_HISTORY(m, (*sequenceHistory[3])[pc][to]);
+	    ADD_HISTORY(m, (*sequenceHistory[4])[pc][to]);
+	    ADD_HISTORY(m, (*sequenceHistory[5])[pc][to]);
 
-	    if(pt == KNIGHT)
-                m.history.push_back(1024 * (popcount(Attacks::knight_attack(to)) - popcount(Attacks::knight_attack(from))));
-	    else
-                m.history.push_back(0);
+	    ADD_HISTORY(m, (pt == KNIGHT) * more_than_one(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)) * 1024);
+	    ADD_HISTORY(m, (pt == KNIGHT) * bool(Attacks::knight_attack(to) & pos.pieces(~us, KING, ROOK, QUEEN)) * 1024);
+	    ADD_HISTORY(m, (pt == KNIGHT) * (popcount(Attacks::knight_attack(to)) - popcount(Attacks::knight_attack(from))) * 1024);
 
-	    if(pt == PAWN 
-	       && to & (us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN)) 
-		                    : pawn_attacks_bb<WHITE>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN))))
-                m.history.push_back(1024);
-	    else
-                m.history.push_back(0);
+	    ADD_HISTORY(m, (pt == PAWN) * bool(to & (us == WHITE ? pawn_attacks_bb<BLACK>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN))
+                                    : pawn_attacks_bb<WHITE>(pos.pieces(~us) ^ pos.pieces(~us, KING, PAWN)))) * 1024);
 
-            m.history.push_back((*materialMainHistory)[us][m.raw()].get(material_index(pos)));
-            m.history.push_back((*mainHistory2)[us][m.raw()]);
+	    ADD_HISTORY(m, (*materialMainHistory)[us][m.raw()].get(material_index(pos)));
+	    ADD_HISTORY(m, (*mainHistory2)[us][m.raw()]);
         }
 
         else  // Type == EVASIONS
