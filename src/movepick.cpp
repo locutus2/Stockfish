@@ -30,6 +30,12 @@ namespace Stockfish {
 
 std::vector<std::string> conditionName;
 
+#define ADD_HISTORY_NEW(m,c)  ( \
+	((m).history.size() >= conditionName.size() ? conditionName.push_back(#c) : void(0)), \
+	(m).history.push_back((c)), \
+	(c) \
+)
+
 #define ADD_HISTORY(m,c)  { \
 	int hindex = (m).history.size(); \
 	(m).history.push_back((c)); \
@@ -296,7 +302,6 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
                 m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
 
             m.history.clear();
-            m.names.clear();
 	    if(CC)
 	    {
 		    ADD_HISTORY(m, (*mainHistory)[us][m.raw()]);
