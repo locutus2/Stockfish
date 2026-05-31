@@ -318,6 +318,12 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 		    ADD_HISTORY(m, sharedHistory->pawn_entry(pos)[pc][to] * material / 32);
 		    ADD_HISTORY(m, sharedHistory->pawn_entry(pos)[pc][to] * (32 - material) / 32);
 
+		    int piece_material = pos.count<ALL_PIECES>() - pos.count<PAWN>();
+		    ADD_HISTORY(m, (*mainHistory)[us][m.raw()] * piece_material / 16);
+		    ADD_HISTORY(m, (*mainHistory)[us][m.raw()] * (16 - piece_material) / 16);
+		    ADD_HISTORY(m, sharedHistory->pawn_entry(pos)[pc][to] * piece_material / 16);
+		    ADD_HISTORY(m, sharedHistory->pawn_entry(pos)[pc][to] * (16 - piece_material) / 16);
+
 		    int pawn_material = pos.count<PAWN>();
 		    ADD_HISTORY(m, (*mainHistory)[us][m.raw()] * pawn_material / 16);
 		    ADD_HISTORY(m, (*mainHistory)[us][m.raw()] * (16 - pawn_material) / 16);
