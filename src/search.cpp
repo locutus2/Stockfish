@@ -1072,8 +1072,6 @@ moves_loop:  // When in check, search starts here
 
     bool CC = true;
     //bool CC = allNode;
-    int C = 0;
-    //int C = depth;
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &mainHistory2, &materialMainHistory, &lowPlyHistory, &captureHistory, contHist, seqHist,
                   &sharedHistory, ss->ply, CC);
 
@@ -1379,6 +1377,7 @@ moves_loop:  // When in check, search starts here
 
 	if(CC && !extmove.history.empty())
 	{
+		int C = 0;
 		bool T = value > alpha;
 		/*
 		dbg_correl_of(T, extmove.value, 100*C);
