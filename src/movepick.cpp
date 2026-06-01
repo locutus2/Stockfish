@@ -228,25 +228,27 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()];
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
-            m.value += (*continuationHistory[0])[pc][to];
-            m.value += (*continuationHistory[1])[pc][to];
-            m.value += (*continuationHistory[2])[pc][to];
-            m.value += (*continuationHistory[3])[pc][to];
-            m.value += (*continuationHistory[5])[pc][to];
+            m.value = 467 * (*mainHistory)[us][m.raw()];
+            m.value += 535 * sharedHistory->pawn_entry(pos)[pc][to];
+            m.value += 256 * (*continuationHistory[0])[pc][to];
+            m.value += 249 * (*continuationHistory[1])[pc][to];
+            m.value += 238 * (*continuationHistory[2])[pc][to];
+            m.value += 272 * (*continuationHistory[3])[pc][to];
+            m.value += 287 * (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            m.value += ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 4338483;
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
-            int v = 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
+            int v = 5467 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
             m.value += PieceValue[pt] * v;
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+                m.value += 2032 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+
+            m.value /= 256;
         }
 
         else  // Type == EVASIONS
