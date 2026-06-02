@@ -138,7 +138,9 @@ struct TaperedStatsEntry {
     }
 };
 
-inline int material_index(const Position& pos) { return pos.count<PAWN>(); }
+inline int material_index(const Position& pos) {
+    return pos.count<ALL_PIECES>() - pos.count<PAWN>();
+}
 
 enum StatsType {
     NoCaptures,
