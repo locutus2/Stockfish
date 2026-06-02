@@ -89,8 +89,7 @@ struct TaperedStatsEntry {
     static_assert(std::is_arithmetic_v<T>, "Not an arithmetic type");
 
    public:
-    typedef std::pair<T, T>     Entry;
-    typedef std::pair<int, int> Bonus;
+    typedef std::pair<T, T> Entry;
 
    private:
     std::conditional_t<Atomic, std::atomic<Entry>, Entry> entry;

@@ -321,7 +321,6 @@ bool Search::Worker::iterative_deepening() {
 
     lowPlyHistory.fill(100);
 
-    const int material = rootPos.count<ALL_PIECES>();
     for (Color c : {WHITE, BLACK})
         for (int i = 0; i < UINT_16_HISTORY_SIZE; i++)
             mainHistory[c][i].age();
@@ -923,7 +922,7 @@ Value Search::Worker::search(
     if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
     {
         int evalDiff = std::clamp(-int((ss - 1)->staticEval + ss->staticEval), -183, 180) + 62;
-        mainHistory[~us][((ss - 1)->currentMove).raw()] << {evalDiff * 10, material};
+        mainHistory[~us][((ss - 1)->currentMove).raw()].update(evalDiff * 10, material);
         if (!ttHit && type_of(pos.piece_on(prevSq)) != PAWN
             && ((ss - 1)->currentMove).type_of() != PROMOTION)
             sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq] << evalDiff * 13;
@@ -1503,7 +1502,7 @@ moves_loop:  // When in check, search starts here
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                       scaledBonus * 236 / 16384);
 
-        mainHistory[~us][((ss - 1)->currentMove).raw()] << {scaledBonus * 234 / 32768, material};
+        mainHistory[~us][((ss - 1)->currentMove).raw()].update(scaledBonus * 234 / 32768, material);
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq] << scaledBonus * 322 / 8192;
@@ -1958,8 +1957,8 @@ void update_quiet_histories(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
-    workerThread.mainHistory[us][move.raw()]
-      << {bonus, pos.count<ALL_PIECES>()};  // Untuned to prevent duplicate effort
+    workerThread.mainHistory[us][move.raw()].update(
+      bonus, pos.count<ALL_PIECES>());  // Untuned to prevent duplicate effort
 
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
         workerThread.lowPlyHistory[ss->ply][move.raw()] << bonus * 663 / 1024;
