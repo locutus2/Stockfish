@@ -706,7 +706,7 @@ Value Search::Worker::search(
     // Step 1. Initialize node
     ss->inCheck   = pos.checkers();
     priorCapture  = pos.captured_piece();
-    material      = pos.count<ALL_PIECES>();
+    material      = material_index(pos);
     Color us      = pos.side_to_move();
     ss->moveCount = 0;
     bestValue     = -VALUE_INFINITE;
@@ -1958,7 +1958,7 @@ void update_quiet_histories(
 
     Color us = pos.side_to_move();
     workerThread.mainHistory[us][move.raw()].update(
-      bonus, pos.count<ALL_PIECES>());  // Untuned to prevent duplicate effort
+      bonus, material_index(pos));  // Untuned to prevent duplicate effort
 
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
         workerThread.lowPlyHistory[ss->ply][move.raw()] << bonus * 663 / 1024;

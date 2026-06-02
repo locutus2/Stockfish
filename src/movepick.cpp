@@ -197,7 +197,7 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
     Color     us       = pos.side_to_move();
-    const int material = pos.count<ALL_PIECES>();
+    const int material = material_index(pos);
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
     if constexpr (Type == QUIETS)
