@@ -113,9 +113,16 @@ struct DoubleStatsEntry {
 
     operator T() const {
         if constexpr (Atomic)
-            return entry.load(std::memory_order_relaxed).second;
+            return entry.load(std::memory_order_relaxed).first;
         else
-            return entry.second;
+            return entry.first;
+    }
+
+    Entry get() const {
+        if constexpr (Atomic)
+            return entry.load(std::memory_order_relaxed);
+        else
+            return entry;
     }
 
     void operator<<(const int& bonus) {
