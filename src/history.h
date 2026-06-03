@@ -84,6 +84,53 @@ struct StatsEntry {
     }
 };
 
+template<typename T, int D, bool Atomic = false>
+struct DoubleStatsEntry {
+    static_assert(std::is_arithmetic_v<T>, "Not an arithmetic type");
+
+   public:
+    typedef std::pair<T, T> Entry;
+
+   private:
+    std::conditional_t<Atomic, std::atomic<Entry>, Entry> entry;
+
+   public:
+    void operator=(const T& v) { *this = {v, v}; }
+
+    void operator=(const Entry& v) {
+        if constexpr (Atomic)
+            entry.store(v, std::memory_order_relaxed);
+        else
+            entry = v;
+    }
+
+    explicit operator Entry() const {
+        if constexpr (Atomic)
+            return entry.load(std::memory_order_relaxed);
+        else
+            return entry;
+    }
+
+    operator T() const {
+        if constexpr (Atomic)
+            return entry.load(std::memory_order_relaxed).second;
+        else
+            return entry.second;
+    }
+
+    void operator<<(const int& bonus) {
+        // Make sure that bonus is in range [-D, D]
+        int   clampedBonus = std::clamp(bonus, -D, D);
+        Entry val          = Entry(*this);
+        val.first          = val.first + clampedBonus - val.first * std::abs(clampedBonus) / D;
+        val.second         = val.second + val.first - val.second * std::abs(val.first) / D;
+        *this              = val;
+
+        assert(std::abs(entry.first) <= D);
+        assert(std::abs(entry.second) <= D);
+    }
+};
+
 enum StatsType {
     NoCaptures,
     Captures
@@ -91,6 +138,9 @@ enum StatsType {
 
 template<typename T, int D, usize... Sizes>
 using Stats = MultiArray<StatsEntry<T, D>, Sizes...>;
+
+template<typename T, int D, usize... Sizes>
+using DoubleStats = MultiArray<DoubleStatsEntry<T, D>, Sizes...>;
 
 template<typename T, int D, usize... Sizes>
 using AtomicStats = MultiArray<StatsEntry<T, D, true>, Sizes...>;
@@ -132,7 +182,7 @@ struct DynStats {
 // during the current search, and is used for reduction and move ordering decisions.
 // It uses 2 tables (one for each color) indexed by the move's from and to squares,
 // see https://www.chessprogramming.org/Butterfly_Boards
-using ButterflyHistory = Stats<i16, 7183, COLOR_NB, UINT_16_HISTORY_SIZE>;
+using ButterflyHistory = DoubleStats<i16, 7183, COLOR_NB, UINT_16_HISTORY_SIZE>;
 
 // LowPlyHistory is addressed by ply and move's from and to squares, used
 // to improve move ordering near the root
