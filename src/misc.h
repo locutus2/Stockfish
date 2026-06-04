@@ -133,6 +133,9 @@ struct PipeDeleter {
 // Returns std::nullopt if the file does not exist.
 std::optional<std::string> read_file_to_string(const std::string& path);
 
+extern std::array<double, 10> PARAMS;
+
+void dbg_optimize_of(const std::vector<int>& v1, const std::vector<int>& v2, int slot = 0);
 void dbg_hit_on(bool cond, int slot = 0);
 void dbg_mean_of(int64_t value, int slot = 0);
 void dbg_stdev_of(int64_t value, int slot = 0);
