@@ -138,9 +138,9 @@ struct SmoothedStatsEntry {
         // Make sure that bonus is in range [-D, D]
         int   clampedBonus = std::clamp(bonus, -D, D);
         Entry val          = Entry(*this);
-        val.first          = val.first + clampedBonus - val.first * std::abs(clampedBonus) / D;
-        val.second         = (val.second * (P - 1) + val.first) / P;
-        *this              = val;
+        val.first += clampedBonus - val.first * std::abs(clampedBonus) / D;
+        val.second += (val.first - val.second) / P;
+        *this = val;
 
         assert(std::abs(entry.first) <= D);
     }
@@ -197,7 +197,7 @@ struct DynStats {
 // during the current search, and is used for reduction and move ordering decisions.
 // It uses 2 tables (one for each color) indexed by the move's from and to squares,
 // see https://www.chessprogramming.org/Butterfly_Boards
-using ButterflyHistory = SmoothedStats<std::int16_t, 7183, 2, COLOR_NB, UINT_16_HISTORY_SIZE>;
+using ButterflyHistory = SmoothedStats<std::int16_t, 7183, 4, COLOR_NB, UINT_16_HISTORY_SIZE>;
 
 // LowPlyHistory is addressed by ply and move's from and to squares, used
 // to improve move ordering near the root
