@@ -330,7 +330,11 @@ std::array<DebugExtremes, MaxDebugSlots> extremes;
 //Optimize. #0: error 2606.3 0.97615, 0.992495, 0.971005, 1.0144, 1, 1, 1, 1, 1, 0.974746,
 //Nodes searched  : 169287547
 
-std::array<double, 10> PARAMS = { 0.97615, 0.992495, 0.971005, 1.0144, 1, 1, 1, 1, 1, 0.974746 };
+//std::array<double, 10> PARAMS = { 0.97615, 0.992495, 0.971005, 1.0144, 1, 1, 1, 1, 1, 0.974746 };
+//Optimize. #0: error 2223.7 0.9482, 0.968527, 0.991847, 1.03319, 1, 1, 1, 1, 1, 0.967693,
+//Nodes searched  : 165126023
+
+std::array<double, 10> PARAMS = { 0.9482, 0.968527, 0.991847, 1.03319, 1, 1, 1, 1, 1, 0.967693 };
 
 void dbg_optimize_of(const std::vector<int>& v1, const std::vector<int>& v2, int slot) {
 	optimize.at(slot).resize(v1.size() + 1);
