@@ -334,11 +334,20 @@ constexpr double LR    = 0.001;
 
 std::array<double, 10> PARAMS = {0.997615, 0.99925, 0.9971, 1.00144, 1, 1, 1, 1, 1, 0.997475};
 
+std::vector<double> momentum;
+std::vector<double> variance;
+
 void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out) {
     int64_t n;
+    constexpr bool ADAM = true;
+    constexpr double BETA1 = 0.9;
+    constexpr double BETA2 = 0.999;
+    constexpr double EPS = 1e-8;
 
     if (!optimize[i].empty() && (n = optimize[i][0]))
     {
+	momentum.resize(PARAMS.size(), 0);
+	variance.resize(PARAMS.size(), 0);
         /*
             double r = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
                      / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
@@ -348,12 +357,29 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
         int64_t sum = 0;
         for (int j = 1; j < int(optimize[i].size()); j++)
             sum += std::abs(optimize[i][j]);
-        double scale = LR * (optimize[i].size() - 1) / sum;
+        double scale = (optimize[i].size() - 1) / sum;
         double error = sum / double(optimize[i].size() - 1);
+
         for (int j = 1; j < int(optimize[i].size()); j++)
-            PARAMS[j - 1] *= (1 + scale * optimize[i][j]);
+	{
+	    double gradient = -scale * optimize[i][j];
+	    if(ADAM)
+	    {
+		    momentum[j-1] = BETA1 * momentum[j-1] + (1-BETA1)*gradient;
+		    variance[j-1] = BETA2 * variance[j-1] + (1-BETA2)*gradient*gradient;
+		    double m = momentum[j-1] / (1 - std::pow(BETA1, iter));
+		    double v = variance[j-1] / (1 - std::pow(BETA2, iter));
+                PARAMS[j - 1] -= LR * m / (std::sqrt(v) + EPS) * gradient;
+	    }
+	    else
+	    {
+                PARAMS[j - 1] -= LR * gradient;
+	    }
+            //PARAMS[j - 1] *= (1 - LR * gradient);
+	}
+
         // output
-        out << "Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" << LR << " error=" << error
+        out << (ADAM ? "ADAM " : "") << "Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" << LR << " error=" << error
             << " params:";
         for (int j = 0; j < int(PARAMS.size()); j++)
             out << " " << PARAMS[j];
