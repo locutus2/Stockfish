@@ -327,7 +327,7 @@ std::array<DebugExtremes, MaxDebugSlots>        extremes;
 }  // namespace
 
 bool             LEARN = false;
-constexpr double LR    = 0.001;
+constexpr double LR    = 0.01;
 std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
 std::vector<double> momentum;
