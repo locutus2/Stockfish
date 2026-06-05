@@ -317,27 +317,55 @@ struct DebugExtremes: public DebugInfo<3> {
     }
 };
 
-std::array<std::vector<int64_t>, MaxDebugSlots>  optimize;
-std::array<DebugInfo<2>, MaxDebugSlots>  hit;
-std::array<DebugInfo<2>, MaxDebugSlots>  mean;
-std::array<DebugInfo<3>, MaxDebugSlots>  stdev;
-std::array<DebugInfo<6>, MaxDebugSlots>  correl;
-std::array<DebugExtremes, MaxDebugSlots> extremes;
+std::array<std::vector<int64_t>, MaxDebugSlots> optimize;
+std::array<DebugInfo<2>, MaxDebugSlots>         hit;
+std::array<DebugInfo<2>, MaxDebugSlots>         mean;
+std::array<DebugInfo<3>, MaxDebugSlots>         stdev;
+std::array<DebugInfo<6>, MaxDebugSlots>         correl;
+std::array<DebugExtremes, MaxDebugSlots>        extremes;
 
 }  // namespace
 
-constexpr double LR = 0.001;
+bool             LEARN = false;
+constexpr double LR    = 0.001;
 //std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 //Optimize. #0: error 2606.3 0.997615, 0.99925, 0.9971, 1.00144, 1, 1, 1, 1, 1, 0.997475,
 //Nodes searched  : 169287547
 
-std::array<double, 10> PARAMS = { 0.997615, 0.99925, 0.9971, 1.00144, 1, 1, 1, 1, 1, 0.997475 };
+std::array<double, 10> PARAMS = {0.997615, 0.99925, 0.9971, 1.00144, 1, 1, 1, 1, 1, 0.997475};
+
+void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out) {
+    int64_t n;
+
+    if (!optimize[i].empty() && (n = optimize[i][0]))
+    {
+        /*
+            double r = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
+                     / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
+                        * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
+            std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << std::endl;
+	    */
+        int64_t sum = 0;
+        for (int j = 1; j < int(optimize[i].size()); j++)
+            sum += std::abs(optimize[i][j]);
+        double scale = LR * (optimize[i].size() - 1) / sum;
+        double error = sum / double(optimize[i].size() - 1);
+        for (int j = 1; j < int(optimize[i].size()); j++)
+            PARAMS[j - 1] *= (1 + scale * optimize[i][j]);
+        // output
+        out << "Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" << LR << " error=" << error
+            << " params:";
+        for (int j = 0; j < int(PARAMS.size()); j++)
+            out << " " << PARAMS[j];
+        out << std::endl << std::flush;
+    }
+}
 
 void dbg_optimize_of(const std::vector<int>& v1, const std::vector<int>& v2, int slot) {
-	optimize.at(slot).resize(v1.size() + 1);
-        ++optimize.at(slot)[0];
-	for(int i = 0; i < int(v1.size()); i++)
-	        ++optimize.at(slot)[i + 1] = v1[i] - v2[i];
+    optimize.at(slot).resize(v1.size() + 1);
+    ++optimize.at(slot)[0];
+    for (int i = 0; i < int(v1.size()); i++)
+        ++optimize.at(slot)[i + 1] = v1[i] - v2[i];
 }
 
 void dbg_hit_on(bool cond, int slot) {
@@ -425,22 +453,23 @@ void dbg_print() {
     for (int i = 0; i < MaxDebugSlots; ++i)
         if (!optimize[i].empty() && (n = optimize[i][0]))
         {
-		/*
+            /*
             double r = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
                      / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
                         * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
             std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << std::endl;
 	    */
-	    int64_t sum = 0;
-	    for(int j = 1; j < int(optimize[i].size()); j++)
-		    sum += std::abs(optimize[i][j]);
-	    double scale = LR * (optimize[i].size()-1) / sum; 
-            std::cerr << "Optimize. #" << i << ": error " << sum / double(optimize[i].size()-1) << ' ';
-	    //for(int j = 1; j < int(optimize[i].size()); j++)
-	//	    std::cerr << ' ' << scale * optimize[i][j];
-	    for(int j = 1; j < int(optimize[i].size()); j++)
-		    std::cerr << PARAMS[j-1] * (1 + scale * optimize[i][j]) << ", ";
-	    std::cerr << std::endl;
+            int64_t sum = 0;
+            for (int j = 1; j < int(optimize[i].size()); j++)
+                sum += std::abs(optimize[i][j]);
+            double scale = LR * (optimize[i].size() - 1) / sum;
+            std::cerr << "Optimize. #" << i << ": error " << sum / double(optimize[i].size() - 1)
+                      << ' ';
+            //for(int j = 1; j < int(optimize[i].size()); j++)
+            //	    std::cerr << ' ' << scale * optimize[i][j];
+            for (int j = 1; j < int(optimize[i].size()); j++)
+                PARAMS[j - 1] *= (1 + scale * optimize[i][j]);
+            std::cerr << std::endl;
         }
 }
 
@@ -450,6 +479,7 @@ void dbg_clear() {
     stdev.fill({});
     correl.fill({});
     extremes.fill({});
+    optimize.fill({});
 }
 
 // Used to serialize access to std::cout

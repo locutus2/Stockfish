@@ -1068,7 +1068,7 @@ moves_loop:  // When in check, search starts here
     // or a beta cutoff occurs.
     while ((extmove = mp.next_move()) != Move::none())
     {
-	move = extmove;
+        move = extmove;
         assert(move.is_ok());
 
         if (move == excludedMove)
@@ -1359,22 +1359,22 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-	bool CC = true;
-	if(CC && !extmove.values.empty())
-	{
-		bool T = value > alpha;
+        bool CC = true;
+        if (CC && !extmove.values.empty())
+        {
+            bool T = value > alpha;
 
-		if (T)
-		{
-			for(int i = 0; i < int(moves.size()); i++)
-			{
-				if(moves[i].second.value > extmove.value)
-				    dbg_optimize_of(extmove.values, moves[i].second.values, 0);
-			}
-		}
+            if (T)
+            {
+                for (int i = 0; i < int(moves.size()); i++)
+                {
+                    if (moves[i].second.value > extmove.value)
+                        dbg_optimize_of(extmove.values, moves[i].second.values, 0);
+                }
+            }
 
-		moves.push_back({T, extmove});
-	}
+            moves.push_back({T, extmove});
+        }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -2037,7 +2037,8 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        dbg_print();
+        if (!LEARN)
+            dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI

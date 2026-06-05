@@ -214,7 +214,7 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
     {
         ExtMove& m = *it++;
         m          = move;
-	m.values.clear();
+        m.values.clear();
 
         const Square    from          = m.from_sq();
         const Square    to            = m.to_sq();
@@ -249,18 +249,20 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[9] / (1 + ply);
 
-	    m.values = {
-		    int(2 * (*mainHistory)[us][m.raw()] * PARAMS[0]),
-		    int(2 * sharedHistory->pawn_entry(pos)[pc][to] * PARAMS[1]),
-		    int((*continuationHistory[0])[pc][to] * PARAMS[2]),
-		    int((*continuationHistory[1])[pc][to] * PARAMS[3]),
-		    int((*continuationHistory[2])[pc][to] * PARAMS[4]),
-		    int((*continuationHistory[3])[pc][to] * PARAMS[5]),
-		    int((*continuationHistory[5])[pc][to] * PARAMS[6]),
-		    int(((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384 * PARAMS[7]),
-		    int(PieceValue[pt] * v * PARAMS[8]),
-		    int((ply < LOW_PLY_HISTORY_SIZE ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[9] / (1 + ply) : 0)),
-	    };
+            m.values = {
+              int(2 * (*mainHistory)[us][m.raw()] * PARAMS[0]),
+              int(2 * sharedHistory->pawn_entry(pos)[pc][to] * PARAMS[1]),
+              int((*continuationHistory[0])[pc][to] * PARAMS[2]),
+              int((*continuationHistory[1])[pc][to] * PARAMS[3]),
+              int((*continuationHistory[2])[pc][to] * PARAMS[4]),
+              int((*continuationHistory[3])[pc][to] * PARAMS[5]),
+              int((*continuationHistory[5])[pc][to] * PARAMS[6]),
+              int(((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384 * PARAMS[7]),
+              int(PieceValue[pt] * v * PARAMS[8]),
+              int((ply < LOW_PLY_HISTORY_SIZE
+                     ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[9] / (1 + ply)
+                     : 0)),
+            };
         }
 
         else  // Type == EVASIONS
