@@ -369,7 +369,7 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
 		    variance[j-1] = BETA2 * variance[j-1] + (1-BETA2)*gradient*gradient;
 		    double m = momentum[j-1] / (1 - std::pow(BETA1, iter));
 		    double v = variance[j-1] / (1 - std::pow(BETA2, iter));
-                PARAMS[j - 1] -= LR * m / (std::sqrt(v) + EPS) * gradient;
+                PARAMS[j - 1] -= LR * m / (std::sqrt(v) + EPS);
 	    }
 	    else
 	    {
