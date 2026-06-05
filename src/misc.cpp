@@ -327,7 +327,7 @@ std::array<DebugExtremes, MaxDebugSlots>        extremes;
 }  // namespace
 
 bool             LEARN = false;
-constexpr double LR    = 0.01;
+constexpr double LR    = 0.001;
 std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
 std::vector<double> momentum;
@@ -353,9 +353,17 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
         int64_t sum = 0;
         for (int j = 1; j < int(optimize[i].size()); j++)
             sum += std::abs(optimize[i][j]);
-        double scale = (optimize[i].size() - 1) / sum;
+        double scale = double(optimize[i].size() - 1) / sum;
         double error = sum / double(optimize[i].size() - 1);
 
+	//out << "=> raw gradient:";
+        //for (int j = 1; j < int(optimize[i].size()); j++)
+	//{
+	 //   double gradient = -scale * optimize[i][j];
+          //  out << " (" << -scale << ", " << optimize[i][j] << " = " << gradient << ")";
+	//}
+	//out << std::endl;
+	//out << "=> gradient:";
         for (int j = 1; j < int(optimize[i].size()); j++)
 	{
 	    double gradient = -scale * optimize[i][j];
@@ -366,13 +374,16 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
 		    double m = momentum[j-1] / (1 - std::pow(BETA1, iter));
 		    double v = variance[j-1] / (1 - std::pow(BETA2, iter));
                 PARAMS[j - 1] -= LR * m / (std::sqrt(v) + EPS);
+         //       out << " " << -LR * m / (std::sqrt(v) + EPS);
 	    }
 	    else
 	    {
                 PARAMS[j - 1] -= LR * gradient;
+          //      out << " " << -LR * gradient;
 	    }
             //PARAMS[j - 1] *= (1 - LR * gradient);
 	}
+	//out << std::endl;
 
         // output
         out << (ADAM ? "ADAM " : "") << "Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" << LR << " error=" << error
