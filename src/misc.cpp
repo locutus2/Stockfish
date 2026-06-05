@@ -328,11 +328,7 @@ std::array<DebugExtremes, MaxDebugSlots>        extremes;
 
 bool             LEARN = false;
 constexpr double LR    = 0.001;
-//std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-//Optimize. #0: error 2606.3 0.997615, 0.99925, 0.9971, 1.00144, 1, 1, 1, 1, 1, 0.997475,
-//Nodes searched  : 169287547
-
-std::array<double, 10> PARAMS = {0.997615, 0.99925, 0.9971, 1.00144, 1, 1, 1, 1, 1, 0.997475};
+std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
 std::vector<double> momentum;
 std::vector<double> variance;
