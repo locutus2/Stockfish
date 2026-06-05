@@ -326,15 +326,12 @@ std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
 
+constexpr double LR = 0.001;
 //std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-//Optimize. #0: error 2606.3 0.97615, 0.992495, 0.971005, 1.0144, 1, 1, 1, 1, 1, 0.974746,
+//Optimize. #0: error 2606.3 0.997615, 0.99925, 0.9971, 1.00144, 1, 1, 1, 1, 1, 0.997475,
 //Nodes searched  : 169287547
 
-//std::array<double, 10> PARAMS = { 0.97615, 0.992495, 0.971005, 1.0144, 1, 1, 1, 1, 1, 0.974746 };
-//Optimize. #0: error 2223.7 0.9482, 0.968527, 0.991847, 1.03319, 1, 1, 1, 1, 1, 0.967693,
-//Nodes searched  : 165126023
-
-std::array<double, 10> PARAMS = { 0.9482, 0.968527, 0.991847, 1.03319, 1, 1, 1, 1, 1, 0.967693 };
+std::array<double, 10> PARAMS = { 0.997615, 0.99925, 0.9971, 1.00144, 1, 1, 1, 1, 1, 0.997475 };
 
 void dbg_optimize_of(const std::vector<int>& v1, const std::vector<int>& v2, int slot) {
 	optimize.at(slot).resize(v1.size() + 1);
@@ -437,7 +434,7 @@ void dbg_print() {
 	    int64_t sum = 0;
 	    for(int j = 1; j < int(optimize[i].size()); j++)
 		    sum += std::abs(optimize[i][j]);
-	    double scale = 0.01 * (optimize[i].size()-1) / sum; 
+	    double scale = LR * (optimize[i].size()-1) / sum; 
             std::cerr << "Optimize. #" << i << ": error " << sum / double(optimize[i].size()-1) << ' ';
 	    //for(int j = 1; j < int(optimize[i].size()); j++)
 	//	    std::cerr << ' ' << scale * optimize[i][j];
