@@ -1368,7 +1368,11 @@ moves_loop:  // When in check, search starts here
                 for (int i = 0; i < int(moves.size()); i++)
                 {
                     if (moves[i].second.value > extmove.value)
-                        dbg_optimize_of(extmove.values, moves[i].second.values, 0);
+		    {
+			int target = (extmove.value + moves[i].second.value) / 2;
+                        dbg_optimize_of(target, extmove.value, extmove.values, 0);
+                        dbg_optimize_of(target, moves[i].second.value, moves[i].second.values, 0);
+		    }
                 }
             }
 

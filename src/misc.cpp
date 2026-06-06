@@ -327,7 +327,16 @@ std::array<DebugExtremes, MaxDebugSlots>        extremes;
 }  // namespace
 
 bool             LEARN = false;
+
 constexpr double LR    = 0.001;
+constexpr bool ADAM = true;
+constexpr bool SGD = false;
+constexpr double BETA1 = 0.9;
+constexpr double BETA2 = 0.999;
+constexpr double EPS = 1e-8;
+
+static_assert(ADAM + SGD == 1);
+
 std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
 std::vector<double> momentum;
@@ -335,26 +344,31 @@ std::vector<double> variance;
 
 void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out) {
     int64_t n;
-    constexpr bool ADAM = true;
-    constexpr double BETA1 = 0.9;
-    constexpr double BETA2 = 0.999;
-    constexpr double EPS = 1e-8;
-
     if (!optimize[i].empty() && (n = optimize[i][0]))
     {
-	momentum.resize(PARAMS.size(), 0);
-	variance.resize(PARAMS.size(), 0);
-        /*
-            double r = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
-                     / (sqrt(E(correl[i][2]) - sqr(E(correl[i][1])))
-                        * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
-            std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << std::endl;
-	    */
-        int64_t sum = 0;
-        for (int j = 1; j < int(optimize[i].size()); j++)
-            sum += std::abs(optimize[i][j]);
-        double scale = double(optimize[i].size() - 1) / sum;
-        double error = sum / double(optimize[i].size() - 1);
+	std::string method = (ADAM ? "ADAM" : SGD ? "SGD" : "?");
+
+	if(ADAM)
+	{
+		momentum.resize(PARAMS.size(), 0);
+		variance.resize(PARAMS.size(), 0);
+	}
+
+	//Xi = sum(pj*vij) - ti
+	// loss =sum(sum pj*vij - ti)^2
+	// dloss/dpk = 2 * sum_i((sum_j pj*vij - ti)*vik)
+	// dloss/dpk = sum_i(Xi*vik)
+	//
+	// dloss/dpk = sum_i(sum_j(pj*vij*vik) - ti*vik)
+	// dloss/dpk = sum_i(vik*sum_j(pj*vij) - ti*vik)
+	// dloss/dpk = sum_i(vik*sum_j(pj*vij)) - sum_i(ti*vik)
+	// dloss/dpk = sum_i(sum_j(pj*vij*vik)) - sum_i(ti*vik)
+	// dloss/dpk = sum_j(pj*sum_i(vij*vik)) - sum_i(ti*vik)
+        //int64_t sum = 0;
+        //for (int j = 1; j < int(optimize[i].size()); j++)
+         //   sum += std::abs(optimize[i][j]);
+        //double scale = double(optimize[i].size() - 1) / sum;
+        //double error = sum / double(optimize[i].size() - 1);
 
 	//out << "=> raw gradient:";
         //for (int j = 1; j < int(optimize[i].size()); j++)
@@ -364,21 +378,22 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
 	//}
 	//out << std::endl;
 	//out << "=> gradient:";
-        for (int j = 1; j < int(optimize[i].size()); j++)
+	double error = optimize[i][1] / double(n);
+        for (int j = 2; j < int(optimize[i].size()); j++)
 	{
-	    double gradient = -scale * optimize[i][j];
+	    double gradient = optimize[i][j] / double(n);
 	    if(ADAM)
 	    {
-		    momentum[j-1] = BETA1 * momentum[j-1] + (1-BETA1)*gradient;
-		    variance[j-1] = BETA2 * variance[j-1] + (1-BETA2)*gradient*gradient;
-		    double m = momentum[j-1] / (1 - std::pow(BETA1, iter));
-		    double v = variance[j-1] / (1 - std::pow(BETA2, iter));
-                PARAMS[j - 1] -= LR * m / (std::sqrt(v) + EPS);
+		    momentum[j-2] = BETA1 * momentum[j-2] + (1-BETA1) * gradient;
+		    variance[j-2] = BETA2 * variance[j-2] + (1-BETA2) * gradient * gradient;
+		    double m = momentum[j-2] / (1 - std::pow(BETA1, iter));
+		    double v = variance[j-2] / (1 - std::pow(BETA2, iter));
+                    PARAMS[j - 2] -= LR * m / (std::sqrt(v) + EPS);
          //       out << " " << -LR * m / (std::sqrt(v) + EPS);
 	    }
-	    else
+	    else if(SGD)
 	    {
-                PARAMS[j - 1] -= LR * gradient;
+                    PARAMS[j - 2] -= LR * gradient;
           //      out << " " << -LR * gradient;
 	    }
             //PARAMS[j - 1] *= (1 - LR * gradient);
@@ -386,19 +401,19 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
 	//out << std::endl;
 
         // output
-        out << (ADAM ? "ADAM " : "") << "Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" << LR << " error=" << error
-            << " params:";
+        out << method << " Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" << LR << " error=" << error << " params:";
         for (int j = 0; j < int(PARAMS.size()); j++)
             out << " " << PARAMS[j];
         out << std::endl << std::flush;
     }
 }
 
-void dbg_optimize_of(const std::vector<int>& v1, const std::vector<int>& v2, int slot) {
-    optimize.at(slot).resize(v1.size() + 1);
+void dbg_optimize_of(int t, int v, const std::vector<int>& h, int slot) {
+    optimize.at(slot).resize(h.size() + 2);
     ++optimize.at(slot)[0];
-    for (int i = 0; i < int(v1.size()); i++)
-        ++optimize.at(slot)[i + 1] = v1[i] - v2[i];
+    optimize.at(slot)[1] = (v - t) * (v - t);
+    for (int k = 0; k < int(h.size()); k++)
+        optimize.at(slot)[k + 2] = (v - t) * h[k];
 }
 
 void dbg_hit_on(bool cond, int slot) {

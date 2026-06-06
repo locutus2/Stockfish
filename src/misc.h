@@ -139,7 +139,7 @@ extern std::array<double, 10> PARAMS;
 
 void learn_params(int iter, int elapsed, int64_t nodes, int i = 0, std::ostream& out = std::cerr);
 
-void dbg_optimize_of(const std::vector<int>& v1, const std::vector<int>& v2, int slot = 0);
+void dbg_optimize_of(int t, int v, const std::vector<int>& h, int slot = 0);
 void dbg_hit_on(bool cond, int slot = 0);
 void dbg_mean_of(int64_t value, int slot = 0);
 void dbg_stdev_of(int64_t value, int slot = 0);
