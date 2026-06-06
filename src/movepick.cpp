@@ -197,7 +197,7 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
     Color     us         = pos.side_to_move();
-    const int pawnWeight = 4298 - 28 * pos.count<PAWN>();
+    const int cmh0Weight = 1872 + 30 * pos.count<PAWN>();
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
     if constexpr (Type == QUIETS)
@@ -230,8 +230,8 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
         {
             // histories
             m.value = 2 * (*mainHistory)[us][m.raw()];
-            m.value += sharedHistory->pawn_entry(pos)[pc][to] * pawnWeight / 2048;
-            m.value += (*continuationHistory[0])[pc][to];
+            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
+            m.value += (*continuationHistory[0])[pc][to] * cmh0Weight / 2048;
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to];
             m.value += (*continuationHistory[3])[pc][to];
