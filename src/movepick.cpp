@@ -196,7 +196,8 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-    Color us = pos.side_to_move();
+    Color     us    = pos.side_to_move();
+    const int pawns = pos.count<PAWN>();
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
     if constexpr (Type == QUIETS)
@@ -228,25 +229,28 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()];
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];
-            m.value += (*continuationHistory[0])[pc][to];
-            m.value += (*continuationHistory[1])[pc][to];
-            m.value += (*continuationHistory[2])[pc][to];
-            m.value += (*continuationHistory[3])[pc][to];
-            m.value += (*continuationHistory[5])[pc][to];
+            m.value = (*mainHistory)[us][m.raw()] * (4483 - 16 * pawns);
+            m.value += sharedHistory->pawn_entry(pos)[pc][to] * (4298 - 28 * pawns);
+            m.value += (*continuationHistory[0])[pc][to] * (1960 + 15 * pawns);
+            m.value += (*continuationHistory[1])[pc][to] * (2198 - 7 * pawns);
+            m.value += (*continuationHistory[2])[pc][to] * (2155 - 4 * pawns);
+            m.value += (*continuationHistory[3])[pc][to] * (1969 + pawns);
+            m.value += (*continuationHistory[5])[pc][to] * (2094 - 6 * pawns);
 
             // bonus for checks
-            m.value += ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            m.value +=
+              ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * (31640781 + 12288 * pawns);
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
-            int v = 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
-            m.value += PieceValue[pt] * v;
+            int v = (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
+            m.value += PieceValue[pt] * v * (38848 + 143 * pawns);
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+                m.value += (*lowPlyHistory)[ply][m.raw()] * (15860 + 14 * pawns) / (1 + ply);
+
+            m.value /= 2048;
         }
 
         else  // Type == EVASIONS
