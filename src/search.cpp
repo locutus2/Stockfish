@@ -822,8 +822,7 @@ Value Search::Worker::search(
         {
             // Bonus for a quiet ttMove that fails high
             if (!ttCapture)
-                update_quiet_histories(pos, ss, *this, ttData.move,
-                                       std::min(114 * depth - 73, 797));
+                update_quiet_histories(pos, ss, *this, ttData.move, std::min(114 * depth, 724));
 
             // Extra penalty for early quiet moves of the previous ply
             if (prevSq != SQ_NONE && (ss - 1)->moveCount < 4 && !priorCapture)
@@ -1135,7 +1134,7 @@ moves_loop:  // When in check, search starts here
 
                 // SEE based pruning for captures and checks
                 // Avoid pruning sacrifices of our last piece for stalemate
-                int margin = std::max(175 * depth + captHist * 34 / 1024, 0);
+                int margin = 175 * depth + captHist * 34 / 1024;
                 if ((alpha >= VALUE_DRAW || pos.non_pawn_material(us) != PieceValue[movedPiece])
                     && !pos.see_ge(move, -margin))
                     continue;
