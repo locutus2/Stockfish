@@ -634,6 +634,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(-5);
+    badMainHistory.fill(-5);
     captureHistory.fill(-699);
 
     // Each thread is responsible for clearing their part of shared history
@@ -1247,6 +1248,9 @@ moves_loop:  // When in check, search starts here
 
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
 
+	int ph = sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
+	int cmh0 = (*contHist[0])[movedPiece][move.to_sq()];
+
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck, ss);
 
@@ -1292,6 +1296,26 @@ moves_loop:  // When in check, search starts here
         // Scale up reductions for expected ALL nodes
         if (allNode)
             r += r * 272 / (256 * depth + 285);
+
+	bool CC = true;
+	int mh0;
+	int mh;
+	int bmh;
+	int ch;
+	int wch;
+	int ph0;
+	int cmh00;
+        if (CC && !extmove.values.empty())
+	{
+		mh0 = extmove.values[0];
+		mh = mainHistory[us][move.raw()];
+		bmh = badMainHistory[us][move.raw()];
+		ch = mh + bmh;
+		wch = (mh * (7183 + mh) + bmh * (7183 - mh)) / (2 * 7183);
+
+		ph0 = extmove.values[1];
+		cmh00 = extmove.values[2];
+        }
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1358,7 +1382,77 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        bool CC = true;
+        if (CC && !extmove.values.empty())
+	{
+		bool T = value > alpha;
+
+		int base = 0;
+		dbg_correl_of(T, extmove.value, base+0);
+		dbg_correl_of(T, mh0, base+1);
+
+		base += 10;
+		dbg_correl_of(T, mh, base+0);
+		dbg_correl_of(T, bmh, base+1);
+		dbg_correl_of(T, ch, base+2);
+		dbg_correl_of(T, wch, base+3);
+
+		base += 10;
+		dbg_correl_of(T, (8 * mh + 0 * bmh) / 8, base+0);
+		dbg_correl_of(T, (7 * mh + 1 * bmh) / 8, base+1);
+		dbg_correl_of(T, (6 * mh + 2 * bmh) / 8, base+2);
+		dbg_correl_of(T, (5 * mh + 3 * bmh) / 8, base+3);
+		dbg_correl_of(T, (4 * mh + 4 * bmh) / 8, base+4);
+		dbg_correl_of(T, (3 * mh + 5 * bmh) / 8, base+5);
+		dbg_correl_of(T, (2 * mh + 6 * bmh) / 8, base+6);
+		dbg_correl_of(T, (1 * mh + 7 * bmh) / 8, base+7);
+		dbg_correl_of(T, (0 * mh + 8 * bmh) / 8, base+8);
+
+		base += 10;
+		dbg_correl_of(T, ((0*(7183+mh) + 8*2*7183)*mh + (0*(7183-mh) + 8*2*7183) * bmh) / (7183*32), base+0);
+		dbg_correl_of(T, ((1*(7183+mh) + 7*2*7183)*mh + (1*(7183-mh) + 7*2*7183) * bmh) / (7183*32), base+1);
+		dbg_correl_of(T, ((2*(7183+mh) + 6*2*7183)*mh + (2*(7183-mh) + 6*2*7183) * bmh) / (7183*32), base+2);
+		dbg_correl_of(T, ((3*(7183+mh) + 5*2*7183)*mh + (3*(7183-mh) + 5*2*7183) * bmh) / (7183*32), base+3);
+		dbg_correl_of(T, ((4*(7183+mh) + 4*2*7183)*mh + (4*(7183-mh) + 4*2*7183) * bmh) / (7183*32), base+4);
+		dbg_correl_of(T, ((5*(7183+mh) + 3*2*7183)*mh + (5*(7183-mh) + 3*2*7183) * bmh) / (7183*32), base+5);
+		dbg_correl_of(T, ((6*(7183+mh) + 2*2*7183)*mh + (6*(7183-mh) + 2*2*7183) * bmh) / (7183*32), base+6);
+		dbg_correl_of(T, ((7*(7183+mh) + 1*2*7183)*mh + (7*(7183-mh) + 1*2*7183) * bmh) / (7183*32), base+7);
+		dbg_correl_of(T, ((8*(7183+mh) + 0*2*7183)*mh + (8*(7183-mh) + 0*2*7183) * bmh) / (7183*32), base+8);
+
+		base += 10;
+		dbg_correl_of(T, (8 * mh + 0 * bmh) / 8, base+0);
+		dbg_correl_of(T, (8 * mh0 + 0 * ph0) / 8, base+0);
+		dbg_correl_of(T, (7 * mh0 + 1 * ph0) / 8, base+1);
+		dbg_correl_of(T, (6 * mh0 + 2 * ph0) / 8, base+2);
+		dbg_correl_of(T, (5 * mh0 + 3 * ph0) / 8, base+3);
+		dbg_correl_of(T, (4 * mh0 + 4 * ph0) / 8, base+4);
+		dbg_correl_of(T, (3 * mh0 + 5 * ph0) / 8, base+5);
+		dbg_correl_of(T, (2 * mh0 + 6 * ph0) / 8, base+6);
+		dbg_correl_of(T, (1 * mh0 + 7 * ph0) / 8, base+7);
+		dbg_correl_of(T, (0 * mh0 + 8 * ph0) / 8, base+8);
+
+		base += 10;
+		dbg_correl_of(T, (8 * mh0 + 0 * cmh00) / 8, base+0);
+		dbg_correl_of(T, (7 * mh0 + 1 * cmh00) / 8, base+1);
+		dbg_correl_of(T, (6 * mh0 + 2 * cmh00) / 8, base+2);
+		dbg_correl_of(T, (5 * mh0 + 3 * cmh00) / 8, base+3);
+		dbg_correl_of(T, (4 * mh0 + 4 * cmh00) / 8, base+4);
+		dbg_correl_of(T, (3 * mh0 + 5 * cmh00) / 8, base+5);
+		dbg_correl_of(T, (2 * mh0 + 6 * cmh00) / 8, base+6);
+		dbg_correl_of(T, (1 * mh0 + 7 * cmh00) / 8, base+7);
+		dbg_correl_of(T, (0 * mh0 + 8 * cmh00) / 8, base+8);
+
+		base += 10;
+		dbg_correl_of(T, (8 * ph0 + 0 * cmh00) / 8, base+0);
+		dbg_correl_of(T, (7 * ph0 + 1 * cmh00) / 8, base+1);
+		dbg_correl_of(T, (6 * ph0 + 2 * cmh00) / 8, base+2);
+		dbg_correl_of(T, (5 * ph0 + 3 * cmh00) / 8, base+3);
+		dbg_correl_of(T, (4 * ph0 + 4 * cmh00) / 8, base+4);
+		dbg_correl_of(T, (3 * ph0 + 5 * cmh00) / 8, base+5);
+		dbg_correl_of(T, (2 * ph0 + 6 * cmh00) / 8, base+6);
+		dbg_correl_of(T, (1 * ph0 + 7 * cmh00) / 8, base+7);
+		dbg_correl_of(T, (0 * ph0 + 8 * cmh00) / 8, base+8);
+	}
+	/*
         if (CC && !extmove.values.empty())
         {
             bool T = value > alpha;
@@ -1378,6 +1472,7 @@ moves_loop:  // When in check, search starts here
 
             moves.push_back({T, extmove});
         }
+	*/
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1525,6 +1620,8 @@ moves_loop:  // When in check, search starts here
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                       scaledBonus * 236 / 16384);
 
+        int history = mainHistory[~us][((ss - 1)->currentMove).raw()];
+        badMainHistory[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 234 * (7183 - history) / (32768 * 2 * 7183);
         mainHistory[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 234 / 32768;
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
@@ -1980,6 +2077,8 @@ void update_quiet_histories(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
+    int history = workerThread.mainHistory[us][move.raw()];
+    workerThread.badMainHistory[us][move.raw()] << bonus * (7183 - history) / (2 * 7183);  // Untuned to prevent duplicate effort
     workerThread.mainHistory[us][move.raw()] << bonus;  // Untuned to prevent duplicate effort
 
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
