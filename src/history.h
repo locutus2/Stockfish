@@ -85,7 +85,7 @@ struct StatsEntry {
 };
 
 template<typename T, int D, int P, bool Atomic = false>
-struct SmoothedBonusStatsEntry {
+struct SmoothedStatsEntry {
     static_assert(std::is_arithmetic_v<T>, "Not an arithmetic type");
 
    public:
@@ -138,11 +138,12 @@ struct SmoothedBonusStatsEntry {
         // Make sure that bonus is in range [-D, D]
         int   clampedBonus = std::clamp(bonus, -D, D);
         Entry val          = Entry(*this);
-        val.first += (clampedBonus - val.first) / P;
-        val.second += val.first - val.second * std::abs(val.first) / D;
+        int   delta        = clampedBonus - val.second * std::abs(clampedBonus) / D;
+        val.first += (delta - val.first) / P;
+        val.second += val.first;
         *this = val;
 
-        assert(std::abs(entry.second) <= D);
+        //assert(std::abs(entry.second) <= D);
     }
 };
 
@@ -155,7 +156,7 @@ template<typename T, int D, usize... Sizes>
 using Stats = MultiArray<StatsEntry<T, D>, Sizes...>;
 
 template<typename T, int D, int P, usize... Sizes>
-using SmoothedBonusStats = MultiArray<SmoothedBonusStatsEntry<T, D, P>, Sizes...>;
+using SmoothedStats = MultiArray<SmoothedStatsEntry<T, D, P>, Sizes...>;
 
 template<typename T, int D, usize... Sizes>
 using AtomicStats = MultiArray<StatsEntry<T, D, true>, Sizes...>;
@@ -197,7 +198,7 @@ struct DynStats {
 // during the current search, and is used for reduction and move ordering decisions.
 // It uses 2 tables (one for each color) indexed by the move's from and to squares,
 // see https://www.chessprogramming.org/Butterfly_Boards
-using ButterflyHistory = SmoothedBonusStats<i16, 7183, 2, COLOR_NB, UINT_16_HISTORY_SIZE>;
+using ButterflyHistory = SmoothedStats<i16, 7183, 2, COLOR_NB, UINT_16_HISTORY_SIZE>;
 
 // LowPlyHistory is addressed by ply and move's from and to squares, used
 // to improve move ordering near the root
