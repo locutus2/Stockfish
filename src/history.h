@@ -84,7 +84,7 @@ struct StatsEntry {
     }
 };
 
-template<typename T, int D, int P, bool Atomic = false>
+template<typename T, int D, int S, bool Atomic = false>
 struct MomentumStatsEntry {
     static_assert(std::is_arithmetic_v<T>, "Not an arithmetic type");
 
@@ -138,7 +138,7 @@ struct MomentumStatsEntry {
         // Make sure that bonus is in range [-D, D]
         int   clampedBonus = std::clamp(bonus, -D, D);
         Entry val          = Entry(*this);
-        val.first          = std::clamp(val.first - val.first / P + clampedBonus, -D, D);
+        val.first          = std::clamp(val.first / S + clampedBonus, -D, D);
         val.second += val.first - val.second * std::abs(val.first) / D;
         *this = val;
 
@@ -154,8 +154,8 @@ enum StatsType {
 template<typename T, int D, std::size_t... Sizes>
 using Stats = MultiArray<StatsEntry<T, D>, Sizes...>;
 
-template<typename T, int D, int P, std::size_t... Sizes>
-using MomentumStats = MultiArray<MomentumStatsEntry<T, D, P>, Sizes...>;
+template<typename T, int D, int S, std::size_t... Sizes>
+using MomentumStats = MultiArray<MomentumStatsEntry<T, D, S>, Sizes...>;
 
 template<typename T, int D, std::size_t... Sizes>
 using AtomicStats = MultiArray<StatsEntry<T, D, true>, Sizes...>;
