@@ -329,30 +329,31 @@ std::array<DebugExtremes, MaxDebugSlots>        extremes;
 bool             LEARN = false;
 
 constexpr double LR    = 0.001;
-constexpr bool ADAM = true;
+constexpr bool ADA_DELTA_MOM = true;
+constexpr bool ADAM = false;
 constexpr bool SGD = false;
 constexpr double BETA1 = 0.9;
-constexpr double BETA2 = 0.999;
-constexpr double EPS = 1e-8;
+constexpr double BETA2 = ADAM ? 0.999 : 0.9;
+constexpr double BETA3 = 0.9;
+constexpr double EPS = (ADA_DELTA_MOM ? 1e-4 : 1e-8);
 
-static_assert(ADAM + SGD == 1);
+static_assert(ADA_DELTA_MOM + ADAM + SGD == 1);
 
 std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
 std::vector<double> momentum;
 std::vector<double> variance;
+std::vector<double> gradients;
 
 void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out) {
     int64_t n;
     if (!optimize[i].empty() && (n = optimize[i][0]))
     {
-	std::string method = (ADAM ? "ADAM" : SGD ? "SGD" : "?");
+	std::string method = (ADA_DELTA_MOM ? "ADA_DELTA_MOM" : ADAM ? "ADAM" : SGD ? "SGD" : "?");
 
-	if(ADAM)
-	{
-		momentum.resize(PARAMS.size(), 0);
-		variance.resize(PARAMS.size(), 0);
-	}
+	momentum.resize(PARAMS.size(), 0);
+	variance.resize(PARAMS.size(), 0);
+	gradients.resize(PARAMS.size(), 0);
 
 	//Xi = sum(pj*vij) - ti
 	// loss =sum(sum pj*vij - ti)^2
@@ -379,21 +380,34 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
 	//out << std::endl;
 	//out << "=> gradient:";
 	double error = optimize[i][1] / double(n);
-        for (int j = 2; j < int(optimize[i].size()); j++)
+        for (int j = 0; j < int(PARAMS.size()); j++)
 	{
-	    double gradient = optimize[i][j] / double(n);
-	    if(ADAM)
+	    double gradient = optimize[i][j+2] / double(n);
+	    if(ADA_DELTA_MOM)
 	    {
-		    momentum[j-2] = BETA1 * momentum[j-2] + (1-BETA1) * gradient;
-		    variance[j-2] = BETA2 * variance[j-2] + (1-BETA2) * gradient * gradient;
-		    double m = momentum[j-2] / (1 - std::pow(BETA1, iter));
-		    double v = variance[j-2] / (1 - std::pow(BETA2, iter));
-                    PARAMS[j - 2] -= LR * m / (std::sqrt(v) + EPS);
+		    momentum[j] = BETA1 * momentum[j] + (1-BETA1) * gradient;
+		    variance[j] = BETA2 * variance[j] + (1-BETA2) * gradient * gradient;
+		    double m = momentum[j] / (1 - std::pow(BETA1, iter));
+		    double v = variance[j] / (1 - std::pow(BETA2, iter));
+		    double g = gradients[j] / (1 - std::pow(BETA3, std::max(1, iter-1)));
+                    double delta = m * (std::sqrt(g) + EPS) / (std::sqrt(v) + EPS);
+                    //double delta = gradient * (std::sqrt(g) + EPS) / (std::sqrt(v) + EPS);
+                    PARAMS[j] -= delta;
+		    //std::cerr << "j=" << j << " delta=" << delta << " m=" << m << " E[deltax]=" << (std::sqrt(g) + EPS)  << " E[gradient]=" << (std::sqrt(v) + EPS) << std::endl;
+		    gradients[j] = BETA3 * gradients[j] + (1-BETA3) * delta * delta;
+	    }
+	    else if(ADAM)
+	    {
+		    momentum[j] = BETA1 * momentum[j] + (1-BETA1) * gradient;
+		    variance[j] = BETA2 * variance[j] + (1-BETA2) * gradient * gradient;
+		    double m = momentum[j] / (1 - std::pow(BETA1, iter));
+		    double v = variance[j] / (1 - std::pow(BETA2, iter));
+                    PARAMS[j] -= LR * m / (std::sqrt(v) + EPS);
          //       out << " " << -LR * m / (std::sqrt(v) + EPS);
 	    }
 	    else if(SGD)
 	    {
-                    PARAMS[j - 2] -= LR * gradient;
+                    PARAMS[j] -= LR * gradient;
           //      out << " " << -LR * gradient;
 	    }
             //PARAMS[j - 1] *= (1 - LR * gradient);
@@ -401,7 +415,7 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
 	//out << std::endl;
 
         // output
-        out << method << " Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" << LR << " error=" << error << " params:";
+        out << method << " Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << (ADA_DELTA_MOM ? "" : " LR=" + std::to_string(LR)) << " error=" << error << " params:";
         for (int j = 0; j < int(PARAMS.size()); j++)
             out << " " << PARAMS[j];
         out << std::endl << std::flush;
