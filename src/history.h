@@ -60,6 +60,8 @@ struct StatsEntry {
     std::conditional_t<Atomic, std::atomic<T>, T> entry;
 
    public:
+    int limit() const { return D; }
+
     void operator=(const T& v) {
         if constexpr (Atomic)
             entry.store(v, std::memory_order_relaxed);

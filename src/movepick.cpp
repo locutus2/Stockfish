@@ -154,6 +154,7 @@ MovePicker::MovePicker(const Position&              p,
                        Move                         ttm,
                        Depth                        d,
                        const ButterflyHistory*      mh,
+                       const ButterflyHistory**     bmh,
                        const LowPlyHistory*         lph,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
@@ -161,6 +162,7 @@ MovePicker::MovePicker(const Position&              p,
                        int                          pl) :
     pos(p),
     mainHistory(mh),
+    badMainHistory(bmh),
     lowPlyHistory(lph),
     captureHistory(cph),
     continuationHistory(ch),
@@ -262,6 +264,10 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
               int((ply < LOW_PLY_HISTORY_SIZE
                      ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[9] / (1 + ply)
                      : 0)),
+              int(2 * (*badMainHistory[0])[us][m.raw()]),
+              int(2 * (*badMainHistory[1])[us][m.raw()]),
+              int(2 * (*badMainHistory[2])[us][m.raw()]),
+              int(2 * (*badMainHistory[3])[us][m.raw()]),
             };
         }
 

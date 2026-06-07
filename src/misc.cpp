@@ -379,24 +379,23 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
 	//out << std::endl;
 	//out << "=> gradient:";
 	double error = optimize[i][1] / double(n);
-        for (int j = 2; j < int(optimize[i].size()); j++)
+        for (int j = 0; j < int(PARAMS.size()); j++)
 	{
-	    double gradient = optimize[i][j] / double(n);
+	    double gradient = optimize[i][j+2] / double(n);
 	    if(ADAM)
 	    {
-		    momentum[j-2] = BETA1 * momentum[j-2] + (1-BETA1) * gradient;
-		    variance[j-2] = BETA2 * variance[j-2] + (1-BETA2) * gradient * gradient;
-		    double m = momentum[j-2] / (1 - std::pow(BETA1, iter));
-		    double v = variance[j-2] / (1 - std::pow(BETA2, iter));
-                    PARAMS[j - 2] -= LR * m / (std::sqrt(v) + EPS);
+		    momentum[j] = BETA1 * momentum[j] + (1-BETA1) * gradient;
+		    variance[j] = BETA2 * variance[j] + (1-BETA2) * gradient * gradient;
+		    double m = momentum[j] / (1 - std::pow(BETA1, iter));
+		    double v = variance[j] / (1 - std::pow(BETA2, iter));
+                    PARAMS[j] -= LR * m / (std::sqrt(v) + EPS);
          //       out << " " << -LR * m / (std::sqrt(v) + EPS);
 	    }
 	    else if(SGD)
 	    {
-                    PARAMS[j - 2] -= LR * gradient;
+                    PARAMS[j] -= LR * gradient;
           //      out << " " << -LR * gradient;
 	    }
-            //PARAMS[j - 1] *= (1 - LR * gradient);
 	}
 	//out << std::endl;
 

@@ -323,7 +323,13 @@ bool Search::Worker::iterative_deepening() {
 
     for (Color c : {WHITE, BLACK})
         for (int i = 0; i < UINT_16_HISTORY_SIZE; i++)
+	{
             mainHistory[c][i] = (mainHistory[c][i] + 5) * 789 / 1024;
+            badMainHistory[c][i] = (badMainHistory[c][i] + 5) * 789 / 1024;
+            badMainHistory2[c][i] = (badMainHistory2[c][i] + 5) * 789 / 1024;
+            badMainHistory3[c][i] = (badMainHistory3[c][i] + 5) * 789 / 1024;
+            badMainHistory4[c][i] = (badMainHistory4[c][i] + 5) * 789 / 1024;
+	}
 
     // Iterative deepening loop until requested to stop or the target depth is reached
     while (rootDepth + 1 < MAX_PLY && !threads.stop
@@ -635,6 +641,9 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 void Search::Worker::clear() {
     mainHistory.fill(-5);
     badMainHistory.fill(-5);
+    badMainHistory2.fill(-5);
+    badMainHistory3.fill(-5);
+    badMainHistory4.fill(-5);
     captureHistory.fill(-699);
 
     // Each thread is responsible for clearing their part of shared history
@@ -921,7 +930,12 @@ Value Search::Worker::search(
     if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
     {
         int evalDiff = std::clamp(-int((ss - 1)->staticEval + ss->staticEval), -183, 180) + 62;
-        mainHistory[~us][((ss - 1)->currentMove).raw()] << evalDiff * 10;
+        auto& mainHist = mainHistory[~us][((ss - 1)->currentMove).raw()];
+        badMainHistory[~us][((ss - 1)->currentMove).raw()] << evalDiff * 10 * (mainHist.limit() - mainHist) / (2 * mainHist.limit());
+        badMainHistory2[~us][((ss - 1)->currentMove).raw()] << evalDiff * 10 * (mainHist.limit() - mainHist) / (mainHist.limit());
+        badMainHistory3[~us][((ss - 1)->currentMove).raw()] << evalDiff * 10 * (mainHist.limit() + (evalDiff > 0 ? -1 : 1) * mainHist) / (2 * mainHist.limit());
+        badMainHistory4[~us][((ss - 1)->currentMove).raw()] << evalDiff * 10 * (mainHist.limit() + (evalDiff > 0 ? -1 : 1) * mainHist) / (mainHist.limit());
+        mainHist << evalDiff * 10;
         if (!ttHit && type_of(pos.piece_on(prevSq)) != PAWN
             && ((ss - 1)->currentMove).type_of() != PROMOTION)
             sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq] << evalDiff * 13;
@@ -1053,8 +1067,13 @@ moves_loop:  // When in check, search starts here
       (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
       (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
 
-
-    MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
+    const ButterflyHistory* badMainHist[] = {
+	    &badMainHistory,
+	    &badMainHistory2,
+	    &badMainHistory3,
+	    &badMainHistory4,
+    };
+    MovePicker mp(pos, ttData.move, depth, &mainHistory, badMainHist, &lowPlyHistory, &captureHistory, contHist,
                   &sharedHistory, ss->ply);
 
     value = bestValue;
@@ -1300,6 +1319,7 @@ moves_loop:  // When in check, search starts here
 	bool CC = true;
 	int mh0;
 	int mh;
+	int bmh0[4];
 	int bmh;
 	int ch;
 	int wch;
@@ -1315,6 +1335,10 @@ moves_loop:  // When in check, search starts here
 
 		ph0 = extmove.values[1];
 		cmh00 = extmove.values[2];
+		bmh0[0] = extmove.values[10];
+		bmh0[1] = extmove.values[11];
+		bmh0[2] = extmove.values[12];
+		bmh0[3] = extmove.values[13];
         }
 
         // Step 17. Late moves reduction / extension (LMR)
@@ -1382,7 +1406,7 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        if (CC && !extmove.values.empty())
+        if (!LEARN && CC && !extmove.values.empty())
 	{
 		bool T = value > alpha;
 
@@ -1418,6 +1442,7 @@ moves_loop:  // When in check, search starts here
 		dbg_correl_of(T, ((7*(7183+mh) + 1*2*7183)*mh + (7*(7183-mh) + 1*2*7183) * bmh) / (7183*32), base+7);
 		dbg_correl_of(T, ((8*(7183+mh) + 0*2*7183)*mh + (8*(7183-mh) + 0*2*7183) * bmh) / (7183*32), base+8);
 
+		/*
 		base += 10;
 		dbg_correl_of(T, (8 * mh + 0 * bmh) / 8, base+0);
 		dbg_correl_of(T, (8 * mh0 + 0 * ph0) / 8, base+0);
@@ -1429,6 +1454,7 @@ moves_loop:  // When in check, search starts here
 		dbg_correl_of(T, (2 * mh0 + 6 * ph0) / 8, base+6);
 		dbg_correl_of(T, (1 * mh0 + 7 * ph0) / 8, base+7);
 		dbg_correl_of(T, (0 * mh0 + 8 * ph0) / 8, base+8);
+		*/
 
 		base += 10;
 		dbg_correl_of(T, (8 * mh0 + 0 * cmh00) / 8, base+0);
@@ -1451,9 +1477,23 @@ moves_loop:  // When in check, search starts here
 		dbg_correl_of(T, (2 * ph0 + 6 * cmh00) / 8, base+6);
 		dbg_correl_of(T, (1 * ph0 + 7 * cmh00) / 8, base+7);
 		dbg_correl_of(T, (0 * ph0 + 8 * cmh00) / 8, base+8);
+
+		for(int k = 0; k < 4; k++)
+		{
+			base += 10;
+			dbg_correl_of(T, (8 * mh0 + 0 * bmh0[k]) / 8, base+0);
+			dbg_correl_of(T, (7 * mh0 + 1 * bmh0[k]) / 8, base+1);
+			dbg_correl_of(T, (6 * mh0 + 2 * bmh0[k]) / 8, base+2);
+			dbg_correl_of(T, (5 * mh0 + 3 * bmh0[k]) / 8, base+3);
+			dbg_correl_of(T, (4 * mh0 + 4 * bmh0[k]) / 8, base+4);
+			dbg_correl_of(T, (3 * mh0 + 5 * bmh0[k]) / 8, base+5);
+			dbg_correl_of(T, (2 * mh0 + 6 * bmh0[k]) / 8, base+6);
+			dbg_correl_of(T, (1 * mh0 + 7 * bmh0[k]) / 8, base+7);
+			dbg_correl_of(T, (0 * mh0 + 8 * bmh0[k]) / 8, base+8);
+		}
 	}
-	/*
-        if (CC && !extmove.values.empty())
+
+        if (LEARN && CC && !extmove.values.empty())
         {
             bool T = value > alpha;
 
@@ -1472,7 +1512,6 @@ moves_loop:  // When in check, search starts here
 
             moves.push_back({T, extmove});
         }
-	*/
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1620,9 +1659,12 @@ moves_loop:  // When in check, search starts here
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                       scaledBonus * 236 / 16384);
 
-        int history = mainHistory[~us][((ss - 1)->currentMove).raw()];
-        badMainHistory[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 234 * (7183 - history) / (32768 * 2 * 7183);
-        mainHistory[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 234 / 32768;
+        auto& mainHist = mainHistory[~us][((ss - 1)->currentMove).raw()];
+        badMainHistory[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 234 * (mainHist.limit() - mainHist) / (32768 * 2 * mainHist.limit());
+        badMainHistory2[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 234 * (mainHist.limit() - mainHist) / (32768 * mainHist.limit());
+        badMainHistory3[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 234 * (mainHist.limit() + (scaledBonus > 0 ? -1 : 1) * mainHist) / (32768 * 2 * mainHist.limit());
+        badMainHistory4[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 234 * (mainHist.limit() + (scaledBonus > 0 ? -1 : 1) * mainHist) / (32768 * mainHist.limit());
+        mainHist << scaledBonus * 234 / 32768;
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq] << scaledBonus * 322 / 8192;
@@ -1792,10 +1834,16 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     Square prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
 
+    const ButterflyHistory* badMainHist[] = {
+	    &badMainHistory,
+	    &badMainHistory2,
+	    &badMainHistory3,
+	    &badMainHistory4,
+    };
     // Initialize a MovePicker object for the current position, and prepare to search
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
-    MovePicker mp(pos, ttData.move, DEPTH_QS, &mainHistory, &lowPlyHistory, &captureHistory,
+    MovePicker mp(pos, ttData.move, DEPTH_QS, &mainHistory, badMainHist, &lowPlyHistory, &captureHistory,
                   contHist, &sharedHistory, ss->ply);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
@@ -2077,9 +2125,12 @@ void update_quiet_histories(
   const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus) {
 
     Color us = pos.side_to_move();
-    int history = workerThread.mainHistory[us][move.raw()];
-    workerThread.badMainHistory[us][move.raw()] << bonus * (7183 - history) / (2 * 7183);  // Untuned to prevent duplicate effort
-    workerThread.mainHistory[us][move.raw()] << bonus;  // Untuned to prevent duplicate effort
+    auto& mainHist = workerThread.mainHistory[us][move.raw()];
+    workerThread.badMainHistory[us][move.raw()] << bonus * (mainHist.limit() - mainHist) / (2 * mainHist.limit());  // Untuned to prevent duplicate effort
+    workerThread.badMainHistory2[us][move.raw()] << bonus * (mainHist.limit() - mainHist) / (mainHist.limit());  // Untuned to prevent duplicate effort
+    workerThread.badMainHistory3[us][move.raw()] << bonus * (mainHist.limit() + (bonus > 0 ? -1 : 1) * mainHist) / (2 * mainHist.limit());  // Untuned to prevent duplicate effort
+    workerThread.badMainHistory4[us][move.raw()] << bonus * (mainHist.limit() + (bonus > 0 ? -1 : 1) * mainHist) / (mainHist.limit());  // Untuned to prevent duplicate effort
+    mainHist << bonus;  // Untuned to prevent duplicate effort
 
     if (ss->ply < LOW_PLY_HISTORY_SIZE)
         workerThread.lowPlyHistory[ss->ply][move.raw()] << bonus * 663 / 1024;
