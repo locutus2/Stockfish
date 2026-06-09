@@ -1063,6 +1063,7 @@ moves_loop:  // When in check, search starts here
     std::vector<std::pair<bool, ExtMove>> moves;
 
     ExtMove extmove;
+    int count = 0;
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((extmove = mp.next_move()) != Move::none())
@@ -1361,6 +1362,8 @@ moves_loop:  // When in check, search starts here
         bool CC = true;
         if (CC && !extmove.values.empty())
         {
+	    constexpr int K = 32;
+	    extmove.rank = std::max(K-1 - count, 0);
             bool T = value > alpha;
 
             if (T)
@@ -1369,14 +1372,17 @@ moves_loop:  // When in check, search starts here
                 {
                     if (moves[i].second.value > extmove.value)
 		    {
-			int target = (extmove.value + moves[i].second.value) / 2;
-                        dbg_optimize_of(target, extmove.value, extmove.values, 0);
-                        dbg_optimize_of(target, moves[i].second.value, moves[i].second.values, 0);
+			//int target = (extmove.value + moves[i].second.value) / 2;
+                        //dbg_optimize_of(target, extmove.value, extmove.values, 0);
+                        //dbg_optimize_of(target, moves[i].second.value, moves[i].second.values, 0);
+                        dbg_optimize_of(K-1, extmove.values, 0);
+                        dbg_optimize_of(extmove.rank, moves[i].second.values, 0);
 		    }
                 }
             }
 
             moves.push_back({T, extmove});
+	    count++;
         }
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);

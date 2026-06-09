@@ -40,6 +40,7 @@ enum GenType {
 struct ExtMove: public Move {
     int              value;
     std::vector<int> values;
+    int              rank = 0;
 
     ExtMove() {}
     ExtMove(Move m) :

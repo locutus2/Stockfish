@@ -34,6 +34,7 @@
 #include <string_view>
 
 #include "types.h"
+#include "ordinal_logistic_regression.h"
 
 namespace Stockfish {
 
@@ -345,10 +346,15 @@ std::vector<double> momentum;
 std::vector<double> variance;
 std::vector<double> gradients;
 
+OnlineOrdinalAdam *ord = nullptr;
+constexpr int K = 32;
+int P = 0;
+
 void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out) {
     int64_t n;
     if (!optimize[i].empty() && (n = optimize[i][0]))
     {
+	    /*
 	std::string method = (ADA_DELTA_MOM ? "ADA_DELTA_MOM" : ADAM ? "ADAM" : SGD ? "SGD" : "?");
 
 	momentum.resize(PARAMS.size(), 0);
@@ -419,15 +425,43 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
         for (int j = 0; j < int(PARAMS.size()); j++)
             out << " " << PARAMS[j];
         out << std::endl << std::flush;
+	*/
+	std::string method = "ADAM";
+        ord->update();
+
+        out << method << " Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" + std::to_string(LR) << " params:";
+	std::vector<double> params = ord->getParams();
+        for (int j = 0; j < int(params.size()); j++)
+            out << " " << params[j];
+        out << std::endl << std::flush;
+
+        for (int j = 0; j < int(PARAMS.size()); j++)
+		PARAMS[j] = 1 + params[j];
+
     }
 }
 
-void dbg_optimize_of(int t, int v, const std::vector<int>& h, int slot) {
+void dbg_optimize_of(int target_rank, const std::vector<int>& h, int slot) {
+	if(ord == nullptr)
+	{
+		//P = PARAMS.size();
+		P = h.size();
+		ord = new OnlineOrdinalAdam(K, P);
+	}
+
+        std::vector<double> x(P);
+	for(int i = 0; i < P; i++)
+		x[i] = h[i];
+
+	ord->addData({x, target_rank});
+
+	/*
     optimize.at(slot).resize(h.size() + 2);
     ++optimize.at(slot)[0];
     optimize.at(slot)[1] = (v - t) * (v - t);
     for (int k = 0; k < int(h.size()); k++)
         optimize.at(slot)[k + 2] = (v - t) * h[k];
+	*/
 }
 
 void dbg_hit_on(bool cond, int slot) {
