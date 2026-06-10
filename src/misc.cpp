@@ -352,7 +352,7 @@ int P = 0;
 
 void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out) {
     int64_t n;
-    if (!optimize[i].empty() && (n = optimize[i][0]))
+    //if (!optimize[i].empty() && (n = optimize[i][0]))
     {
 	    /*
 	std::string method = (ADA_DELTA_MOM ? "ADA_DELTA_MOM" : ADAM ? "ADAM" : SGD ? "SGD" : "?");
@@ -431,8 +431,15 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
 
         out << method << " Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" + std::to_string(LR) << " params:";
 	std::vector<double> params = ord->getParams();
-        for (int j = 0; j < int(params.size()); j++)
+        for (int j = 0; j < int(PARAMS.size()); j++)
             out << " " << params[j];
+	out << " |";
+	double alpha = 0;
+        for (int j = int(PARAMS.size()); j < int(params.size()); j++)
+	{
+		alpha += params[j];
+            out << " " << alpha;
+	}
         out << std::endl << std::flush;
 
         for (int j = 0; j < int(PARAMS.size()); j++)
@@ -448,12 +455,14 @@ void dbg_optimize_of(int target_rank, const std::vector<int>& h, int slot) {
 		P = h.size();
 		ord = new OnlineOrdinalAdam(K, P);
 	}
-
+	//std::cerr << "optimize " << ord << std::endl;
         std::vector<double> x(P);
 	for(int i = 0; i < P; i++)
 		x[i] = h[i];
 
+	//std::cerr << "start add data" << std::endl;
 	ord->addData({x, target_rank});
+	//std::cerr << "end add data" << std::endl;
 
 	/*
     optimize.at(slot).resize(h.size() + 2);
