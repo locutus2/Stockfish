@@ -1362,10 +1362,12 @@ moves_loop:  // When in check, search starts here
         bool CC = true;
         if (CC && !extmove.values.empty())
         {
-	    constexpr int K = 32;
-	    extmove.rank = std::max(K-1 - count, 0);
             bool T = value > alpha;
+	    //constexpr int K = 32;
+	    //extmove.rank = std::max(K-1 - count, 0);
+	    extmove.rank = T;
 
+	    /*
             if (T)
             {
                 for (int i = 0; i < int(moves.size()); i++)
@@ -1380,8 +1382,10 @@ moves_loop:  // When in check, search starts here
 		    }
                 }
             }
-
             moves.push_back({T, extmove});
+	    */
+            dbg_optimize_of(extmove.rank, extmove.values, 0);
+
 	    count++;
         }
 

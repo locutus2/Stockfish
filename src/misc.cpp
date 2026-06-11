@@ -329,7 +329,7 @@ std::array<DebugExtremes, MaxDebugSlots>        extremes;
 
 bool             LEARN = false;
 
-constexpr double LR    = 0.001;
+constexpr double LR    = 0.01;
 constexpr bool ADA_DELTA_MOM = true;
 constexpr bool ADAM = false;
 constexpr bool SGD = false;
@@ -347,7 +347,8 @@ std::vector<double> variance;
 std::vector<double> gradients;
 
 OnlineOrdinalAdam *ord = nullptr;
-constexpr int K = 32;
+//constexpr int K = 32;
+constexpr int K = 2;
 int P = 0;
 
 void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out) {
@@ -453,7 +454,7 @@ void dbg_optimize_of(int target_rank, const std::vector<int>& h, int slot) {
 	{
 		//P = PARAMS.size();
 		P = h.size();
-		ord = new OnlineOrdinalAdam(K, P);
+		ord = new OnlineOrdinalAdam(K, P, LR);
 	}
 	//std::cerr << "optimize " << ord << std::endl;
         std::vector<double> x(P);

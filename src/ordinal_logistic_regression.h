@@ -14,7 +14,7 @@ public:
     };
 
     OnlineOrdinalAdam(int K0, int p0,
-                      double lr = 0.001,
+                      double lr = 0.01,
                       double b1 = 0.9,
                       double b2 = 0.999,
                       double eps = 1e-8)
