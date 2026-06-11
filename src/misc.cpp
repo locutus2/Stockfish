@@ -330,18 +330,18 @@ std::array<DebugExtremes, MaxDebugSlots>        extremes;
 bool             LEARN = false;
 
 constexpr double LR    = 0.01;
-constexpr bool ADA_DELTA_MOM = true;
-constexpr bool ADAM = false;
+constexpr bool ADA_DELTA_MOM = false;
+constexpr bool ADAM = true;
 constexpr bool SGD = false;
 constexpr double BETA1 = 0.9;
-constexpr double BETA2 = ADAM ? 0.999 : 0.9;
+constexpr double BETA2 = 0.999;
 constexpr double BETA3 = 0.9;
-constexpr double EPS = (ADA_DELTA_MOM ? 1e-4 : 1e-8);
+constexpr double EPS = 1e-8;
 
 static_assert(ADA_DELTA_MOM + ADAM + SGD == 1);
 
-//std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-std::array<double, 10> PARAMS = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+//std::array<double, 10> PARAMS = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 std::vector<double> momentum;
 std::vector<double> variance;
@@ -431,7 +431,7 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
 	std::string method = "ADAM";
         ord->update();
 
-        out << method << " Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" + std::to_string(LR) << " params:";
+        out << method << " Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" + std::to_string(LR) << " loss=" << ord->getLoss() << " params:";
 	std::vector<double> params = ord->getParams();
         for (int j = 0; j < int(PARAMS.size()); j++)
             out << " " << params[j];
@@ -447,7 +447,7 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
         for (int j = 0; j < int(PARAMS.size()); j++)
 		PARAMS[j] = params[j];
 		//PARAMS[j] = 1 + params[j];
-
+        ord->endIteration();
     }
 }
 
@@ -456,7 +456,7 @@ void dbg_optimize_of(int target_rank, const std::vector<int>& h, int slot) {
 	{
 		//P = PARAMS.size();
 		P = h.size();
-		ord = new OnlineOrdinalAdam(K, P, LR);
+		ord = new OnlineOrdinalAdam(K, P, LR, BETA1, BETA2, EPS, std::vector<double>(PARAMS.begin(), PARAMS.end()));
 	}
 	//std::cerr << "optimize " << ord << std::endl;
         std::vector<double> x(P);

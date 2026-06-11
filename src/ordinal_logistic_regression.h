@@ -17,10 +17,12 @@ public:
                       double lr = 0.01,
                       double b1 = 0.9,
                       double b2 = 0.999,
-                      double eps = 1e-8)
+                      double eps = 1e-8,
+		      const std::vector<double>& betaInit = std::vector<double>())
         : K(K0), p(p0),
-          delta(K0 - 1, 0.1),
-          beta(p0, 0.0),
+          delta(K0 - 1, 1.0 / K0),
+          //beta(p0, 0.0),
+          beta(betaInit),
           m_delta(K0 - 1, 0.0),
           v_delta(K0 - 1, 0.0),
           m_beta(p0, 0.0),
@@ -31,7 +33,9 @@ public:
           epsilon(eps),
           t(0),
           G_delta(K - 1, 0.0),
-          G_beta(p, 0.0)	{}
+          G_beta(p, 0.0)	{
+		  beta.resize(p0, 0.0);
+	  }
 
     // ---------- thresholds ----------
     std::vector<double> get_alpha() const {
@@ -111,9 +115,6 @@ public:
     void update() {
         adam_update(delta, m_delta, v_delta, G_delta);
         adam_update(beta,  m_beta,  v_beta,  G_beta);
-
-        G_delta = std::vector<double>(K - 1, 0.0);
-        G_beta = std::vector<double>(p, 0.0);
     }
 
     std::vector<double> getParams() const
@@ -126,8 +127,18 @@ public:
     // ---------- accessors ----------
     std::vector<double> get_beta() const { return beta; }
 
+    double getLoss() const { return loss; }
+
+    void endIteration() {
+        G_delta = std::vector<double>(K - 1, 0.0);
+        G_beta = std::vector<double>(p, 0.0);
+	loss = 0;
+    }
+
 private:
     int K, p;
+
+    double loss = 0;
 
     std::vector<double> delta; // threshold increments
     std::vector<double> beta;  // slopes
@@ -163,6 +174,9 @@ private:
         double pk = prob(s);
         if (pk < 1e-12) pk = 1e-12;
 
+	// ADD LOSS ACCUMULATION
+	loss += -std::log(pk);
+	
         std::vector<double> dP_deta(K - 1, 0.0);
         if (s.y == 0) {
             dP_deta[0] = dcdeta[0];
