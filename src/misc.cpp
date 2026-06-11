@@ -340,7 +340,8 @@ constexpr double EPS = (ADA_DELTA_MOM ? 1e-4 : 1e-8);
 
 static_assert(ADA_DELTA_MOM + ADAM + SGD == 1);
 
-std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+//std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+std::array<double, 10> PARAMS = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 std::vector<double> momentum;
 std::vector<double> variance;
@@ -444,7 +445,8 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
         out << std::endl << std::flush;
 
         for (int j = 0; j < int(PARAMS.size()); j++)
-		PARAMS[j] = 1 + params[j];
+		PARAMS[j] = params[j];
+		//PARAMS[j] = 1 + params[j];
 
     }
 }
