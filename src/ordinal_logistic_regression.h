@@ -127,12 +127,13 @@ public:
     // ---------- accessors ----------
     std::vector<double> get_beta() const { return beta; }
 
-    double getLoss() const { return loss; }
+    double getLoss() const { return loss/n; }
 
     void endIteration() {
         G_delta = std::vector<double>(K - 1, 0.0);
         G_beta = std::vector<double>(p, 0.0);
 	loss = 0;
+	n = 0;
     }
 
 private:
@@ -150,6 +151,7 @@ private:
     double learning_rate;
     double beta1, beta2, epsilon;
     long long t;
+    int64_t n = 0;
 
     std::vector<double> G_delta;
     std::vector<double> G_beta;
@@ -159,6 +161,8 @@ private:
     void accumulate_gradient(const Sample& s,
                              std::vector<double>& g_delta,
                              std::vector<double>& g_beta) {
+	n++;
+
         auto alpha = get_alpha();
 
         std::vector<double> c(K - 1), dcdeta(K - 1);
@@ -190,7 +194,8 @@ private:
         // thresholds
         for (int j = 0; j < K - 1; ++j) {
             double d_alpha_d_delta = std::exp(delta[j]);
-            g_delta[j] += (dP_deta[j] * d_alpha_d_delta) / pk;
+            //g_delta[j] += (dP_deta[j] * d_alpha_d_delta) / pk;
+            g_delta[j] -= (dP_deta[j] * d_alpha_d_delta) / pk;
         }
 
         // slopes
@@ -198,7 +203,8 @@ private:
             double grad = 0.0;
             for (int j = 0; j < K - 1; ++j)
                 grad += dP_deta[j] * (-s.x[i]);
-            g_beta[i] += grad / pk;
+            //g_beta[i] += grad / pk;
+            g_beta[i] -= grad / pk;
         }
     }
 
