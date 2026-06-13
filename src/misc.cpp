@@ -337,7 +337,7 @@ constexpr double BETA1 = 0.9;
 constexpr double BETA2 = 0.999;
 constexpr double BETA3 = 0.9;
 constexpr double EPS = 1e-8;
-constexpr double L2 = 1;
+constexpr double L2 = 0.1;
 
 static_assert(ADA_DELTA_MOM + ADAM + SGD == 1);
 
