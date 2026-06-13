@@ -8,6 +8,8 @@
 
 class OnlineOrdinalAdam {
 public:
+    static constexpr double L2 = 1;
+
     struct Sample {
         std::vector<double> x; // predictors
         int y;                 // category 0..K-1
@@ -32,6 +34,7 @@ public:
           beta2(b2),
           epsilon(eps),
           t(0),
+	  G_L2(0),
           G_delta(K - 1, 0.0),
           G_beta(p, 0.0)	{
 		  beta.resize(p0, 0.0);
@@ -80,10 +83,11 @@ public:
     void update_batch(const std::vector<Sample>& batch) {
         std::vector<double> g_delta(K - 1, 0.0);
         std::vector<double> g_beta(p, 0.0);
+        double g_L2 = 0;
 
         // accumulate gradients over batch
         for (const auto& s : batch) {
-            accumulate_gradient(s, g_delta, g_beta);
+            accumulate_gradient(s, g_delta, g_beta, g_L2);
         }
 
         // average gradient
@@ -101,20 +105,21 @@ public:
     void update(const Sample& s) {
         std::vector<double> g_delta(K - 1, 0.0);
         std::vector<double> g_beta(p, 0.0);
+        double g_L2 = 0;
 
-        accumulate_gradient(s, g_delta, g_beta);
+        accumulate_gradient(s, g_delta, g_beta, g_L2);
 
-        adam_update(delta, m_delta, v_delta, g_delta);
-        adam_update(beta,  m_beta,  v_beta,  g_beta);
+        adam_update(delta, m_delta, v_delta, g_delta, 0);
+        adam_update(beta,  m_beta,  v_beta,  g_beta, g_L2);
     }
 
     void addData(const Sample& s) {
-        accumulate_gradient(s, G_delta, G_beta);
+        accumulate_gradient(s, G_delta, G_beta, G_L2);
     }
 
     void update() {
-        adam_update(delta, m_delta, v_delta, G_delta);
-        adam_update(beta,  m_beta,  v_beta,  G_beta);
+        adam_update(delta, m_delta, v_delta, G_delta, 0);
+        adam_update(beta,  m_beta,  v_beta,  G_beta, G_L2);
     }
 
     std::vector<double> getParams() const
@@ -132,6 +137,7 @@ public:
     void endIteration() {
         G_delta = std::vector<double>(K - 1, 0.0);
         G_beta = std::vector<double>(p, 0.0);
+	G_L2 = 0;
 	loss = 0;
 	n = 0;
     }
@@ -153,6 +159,7 @@ private:
     long long t;
     int64_t n = 0;
 
+    double G_L2;
     std::vector<double> G_delta;
     std::vector<double> G_beta;
 
@@ -160,7 +167,8 @@ private:
     // ---------- accumulate gradient for one sample ----------
     void accumulate_gradient(const Sample& s,
                              std::vector<double>& g_delta,
-                             std::vector<double>& g_beta) {
+                             std::vector<double>& g_beta,
+			     double& g_L2) {
 	n++;
 
         auto alpha = get_alpha();
@@ -206,23 +214,32 @@ private:
             //g_beta[i] += grad / pk;
             g_beta[i] -= grad / pk;
         }
+
+	// regularization
+        for (int i = 0; i < p; ++i) {
+		loss += L2*beta[i]*beta[i];
+		g_L2 += beta[i];
+	}
     }
 
     // ---------- ADAM update ----------
     void adam_update(std::vector<double>& param,
                      std::vector<double>& m,
                      std::vector<double>& v,
-                     const std::vector<double>& g) {
+                     const std::vector<double>& g,
+		     double g_l2 = 0) {
         t++;
 
         for (size_t i = 0; i < param.size(); ++i) {
-            m[i] = beta1 * m[i] + (1 - beta1) * g[i];
-            v[i] = beta2 * v[i] + (1 - beta2) * (g[i] * g[i]);
+	    double gi = g[i] + L2 * g_l2;
+            m[i] = beta1 * m[i] + (1 - beta1) * gi;
+            v[i] = beta2 * v[i] + (1 - beta2) * gi * gi;
 
             double m_hat = m[i] / (1 - std::pow(beta1, t));
             double v_hat = v[i] / (1 - std::pow(beta2, t));
 
             param[i] -= learning_rate * m_hat / (std::sqrt(v_hat) + epsilon);
+            //param[i] -= learning_rate * m_hat / (std::sqrt(v_hat) + epsilon) + L2 * g_l2;
         }
     }
 
