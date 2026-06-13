@@ -337,6 +337,7 @@ constexpr double BETA1 = 0.9;
 constexpr double BETA2 = 0.999;
 constexpr double BETA3 = 0.9;
 constexpr double EPS = 1e-8;
+constexpr double L2 = 1;
 
 static_assert(ADA_DELTA_MOM + ADAM + SGD == 1);
 
@@ -456,7 +457,7 @@ void dbg_optimize_of(int target_rank, const std::vector<int>& h, int slot) {
 	{
 		//P = PARAMS.size();
 		P = h.size();
-		ord = new OnlineOrdinalAdam(K, P, LR, BETA1, BETA2, EPS, std::vector<double>(PARAMS.begin(), PARAMS.end()));
+		ord = new OnlineOrdinalAdam(K, P, LR, BETA1, BETA2, EPS, std::vector<double>(PARAMS.begin(), PARAMS.end()), L2);
 	}
 	//std::cerr << "optimize " << ord << std::endl;
         std::vector<double> x(P);

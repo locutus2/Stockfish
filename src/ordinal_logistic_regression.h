@@ -8,8 +8,6 @@
 
 class OnlineOrdinalAdam {
 public:
-    static constexpr double L2 = 1;
-
     struct Sample {
         std::vector<double> x; // predictors
         int y;                 // category 0..K-1
@@ -20,8 +18,9 @@ public:
                       double b1 = 0.9,
                       double b2 = 0.999,
                       double eps = 1e-8,
-		      const std::vector<double>& betaInit = std::vector<double>())
-        : K(K0), p(p0),
+		      const std::vector<double>& betaInit = std::vector<double>(),
+		      double l2 = 0)
+        : K(K0), p(p0), L2(l2),
           delta(K0 - 1, 1.0 / K0),
           //beta(p0, 0.0),
           beta(betaInit),
@@ -146,6 +145,7 @@ private:
     int K, p;
 
     double loss = 0;
+    double L2;
 
     std::vector<double> delta; // threshold increments
     std::vector<double> beta;  // slopes
