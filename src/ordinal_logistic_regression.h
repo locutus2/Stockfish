@@ -216,10 +216,20 @@ private:
         }
 
 	// regularization
+	double P0 = 1.0; // param start value
+	double beta_sum = -p * P0; 
+        for (int i = 0; i < p; ++i)
+	    beta_sum += beta[i];
+
+	loss += L2*beta_sum*beta_sum;
+	g_L2 += beta_sum;
+
+	/*
         for (int i = 0; i < p; ++i) {
 		loss += L2*beta[i]*beta[i];
 		g_L2 += beta[i];
 	}
+	*/
     }
 
     // ---------- ADAM update ----------
