@@ -342,7 +342,7 @@ constexpr double P0 = 1; // for L2 regularaization: use (weight - P0)^2 . for P0
 
 static_assert(ADA_DELTA_MOM + ADAM + SGD == 1);
 
-std::array<double, N_PARAMS> PARAMS = { 1, 1, 1, 1, 1 };
+std::array<double, N_PARAMS> PARAMS = { 1, 1, 1, 1, 1, 1 };
 //std::array<double, N_PARAMS> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 //std::array<double, N_PARAMS> PARAMS = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 

@@ -245,10 +245,12 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
             int v = 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
             m.value += PieceValue[pt] * v;// * PARAMS[8];
 
+	    int value = m.value * PARAMS[0];
+	    m.value = value;
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 //m.value += 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[9] / (1 + ply);
-                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[ply] / (1 + ply);
+                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[1+ply] / (1 + ply);
 
             m.values = {
               //int(2 * (*mainHistory)[us][m.raw()] * PARAMS[0]),
@@ -261,6 +263,8 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
               //int(((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384 * PARAMS[7]),
               //int(PieceValue[pt] * v * PARAMS[8]),
               //int((ply < LOW_PLY_HISTORY_SIZE ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[9] / (1 + ply) : 0)),
+
+	      value,
               int((ply == 0 ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[ply] / (1 + ply) : 0)),
               int((ply == 1 ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[ply] / (1 + ply) : 0)),
               int((ply == 2 ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[ply] / (1 + ply) : 0)),
