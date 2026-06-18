@@ -19,8 +19,9 @@ public:
                       double b2 = 0.999,
                       double eps = 1e-8,
 		      const std::vector<double>& betaInit = std::vector<double>(),
-		      double l2 = 0)
-        : K(K0), p(p0), L2(l2),
+		      double l2 = 0,
+		      double p0 = 1)
+        : K(K0), p(p0), L2(l2), P0(p0)
           delta(K0 - 1, 1.0 / K0),
           //beta(p0, 0.0),
           beta(betaInit),
@@ -216,7 +217,7 @@ private:
         }
 
 	// regularization
-	double P0 = 1.0; // param start value
+	//double P0 = 1.0; // param start value
 	double beta_sum = -p * P0; 
         for (int i = 0; i < p; ++i)
 	    beta_sum += beta[i];
