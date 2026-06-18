@@ -244,9 +244,9 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
             int v = 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
             m.value += PieceValue[pt] * v;
 
-
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 4 * (*lowPlyHistory)[ply][m.raw()] * (6 - ply) / (1 + ply);
+                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] * (48 - 8 * ply + depth)
+                         / ((depth + 16) * (1 + ply));
         }
 
         else  // Type == EVASIONS
