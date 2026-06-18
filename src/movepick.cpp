@@ -229,39 +229,43 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
         else if constexpr (Type == QUIETS)
         {
             // histories
-            m.value = 2 * (*mainHistory)[us][m.raw()] * PARAMS[0];
-            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to] * PARAMS[1];
-            m.value += (*continuationHistory[0])[pc][to] * PARAMS[2];
-            m.value += (*continuationHistory[1])[pc][to] * PARAMS[3];
-            m.value += (*continuationHistory[2])[pc][to] * PARAMS[4];
-            m.value += (*continuationHistory[3])[pc][to] * PARAMS[5];
-            m.value += (*continuationHistory[5])[pc][to] * PARAMS[6];
+            m.value = 2 * (*mainHistory)[us][m.raw()];// * PARAMS[0];
+            m.value += 2 * sharedHistory->pawn_entry(pos)[pc][to];// * PARAMS[1];
+            m.value += (*continuationHistory[0])[pc][to];// * PARAMS[2];
+            m.value += (*continuationHistory[1])[pc][to];// * PARAMS[3];
+            m.value += (*continuationHistory[2])[pc][to];// * PARAMS[4];
+            m.value += (*continuationHistory[3])[pc][to];// * PARAMS[5];
+            m.value += (*continuationHistory[5])[pc][to];// * PARAMS[6];
 
             // bonus for checks
-            m.value += ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384 * PARAMS[7];
+            m.value += ((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;// * PARAMS[7];
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
             int v = 20 * (bool(threatByLesser[pt] & from) - bool(threatByLesser[pt] & to));
-            m.value += PieceValue[pt] * v * PARAMS[8];
+            m.value += PieceValue[pt] * v;// * PARAMS[8];
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[9] / (1 + ply);
+                //m.value += 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[9] / (1 + ply);
+                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[ply] / (1 + ply);
 
             m.values = {
-              int(2 * (*mainHistory)[us][m.raw()] * PARAMS[0]),
-              int(2 * sharedHistory->pawn_entry(pos)[pc][to] * PARAMS[1]),
-              int((*continuationHistory[0])[pc][to] * PARAMS[2]),
-              int((*continuationHistory[1])[pc][to] * PARAMS[3]),
-              int((*continuationHistory[2])[pc][to] * PARAMS[4]),
-              int((*continuationHistory[3])[pc][to] * PARAMS[5]),
-              int((*continuationHistory[5])[pc][to] * PARAMS[6]),
-              int(((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384 * PARAMS[7]),
-              int(PieceValue[pt] * v * PARAMS[8]),
-              int((ply < LOW_PLY_HISTORY_SIZE
-                     ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[9] / (1 + ply)
-                     : 0)),
+              //int(2 * (*mainHistory)[us][m.raw()] * PARAMS[0]),
+              //int(2 * sharedHistory->pawn_entry(pos)[pc][to] * PARAMS[1]),
+              //int((*continuationHistory[0])[pc][to] * PARAMS[2]),
+              //int((*continuationHistory[1])[pc][to] * PARAMS[3]),
+              //int((*continuationHistory[2])[pc][to] * PARAMS[4]),
+              //int((*continuationHistory[3])[pc][to] * PARAMS[5]),
+              //int((*continuationHistory[5])[pc][to] * PARAMS[6]),
+              //int(((pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384 * PARAMS[7]),
+              //int(PieceValue[pt] * v * PARAMS[8]),
+              //int((ply < LOW_PLY_HISTORY_SIZE ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[9] / (1 + ply) : 0)),
+              int((ply == 0 ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[ply] / (1 + ply) : 0)),
+              int((ply == 1 ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[ply] / (1 + ply) : 0)),
+              int((ply == 2 ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[ply] / (1 + ply) : 0)),
+              int((ply == 3 ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[ply] / (1 + ply) : 0)),
+              int((ply == 4 ? 8 * (*lowPlyHistory)[ply][m.raw()] * PARAMS[ply] / (1 + ply) : 0)),
             };
         }
 

@@ -221,8 +221,8 @@ private:
         for (int i = 0; i < p; ++i)
 	    beta_sum += beta[i];
 
-	loss += L2*beta_sum*beta_sum;
-	g_L2 += beta_sum;
+	loss += L2 * beta_sum*beta_sum;
+	g_L2 += L2 * beta_sum;
 
 	/*
         for (int i = 0; i < p; ++i) {
@@ -241,7 +241,7 @@ private:
         t++;
 
         for (size_t i = 0; i < param.size(); ++i) {
-	    double gi = g[i] + L2 * g_l2;
+	    double gi = g[i] + g_l2;
             m[i] = beta1 * m[i] + (1 - beta1) * gi;
             v[i] = beta2 * v[i] + (1 - beta2) * gi * gi;
 

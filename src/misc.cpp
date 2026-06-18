@@ -341,8 +341,9 @@ constexpr double L2 = 0.1;
 
 static_assert(ADA_DELTA_MOM + ADAM + SGD == 1);
 
-std::array<double, 10> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-//std::array<double, 10> PARAMS = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+std::array<double, N_PARAMS> PARAMS = { 1, 1, 1, 1, 1 };
+//std::array<double, N_PARAMS> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+//std::array<double, N_PARAMS> PARAMS = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 std::vector<double> momentum;
 std::vector<double> variance;

@@ -134,8 +134,9 @@ struct PipeDeleter {
 // Returns std::nullopt if the file does not exist.
 std::optional<std::string> read_file_to_string(const std::string& path);
 
+constexpr int N_PARAMS = 5;
 extern bool                   LEARN;
-extern std::array<double, 10> PARAMS;
+extern std::array<double, N_PARAMS> PARAMS;
 
 void learn_params(int iter, int elapsed, int64_t nodes, int i = 0, std::ostream& out = std::cerr);
 
