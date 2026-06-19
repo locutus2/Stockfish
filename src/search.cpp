@@ -1280,6 +1280,23 @@ moves_loop:  // When in check, search starts here
 		 * Hit #16: Total 251414 Hits 30578 Hit Rate (%) 12.1624
 		 * Hit #17: Total 18747 Hits 1909 Hit Rate (%) 10.183
 		 * Hit #18: Total 240022 Hits 29264 Hit Rate (%) 12.1922
+		 *
+		 * CC=singular && ss->inCheck
+		 * Hit #0: Total 23132 Hits 1275 Hit Rate (%) 5.51185
+		 * Hit #1: Total 4204 Hits 97 Hit Rate (%) 2.30733
+		 * Hit #2: Total 18928 Hits 1178 Hit Rate (%) 6.22358
+		 * Hit #3: Total 155 Hits 4 Hit Rate (%) 2.58065
+		 * Hit #4: Total 22977 Hits 1271 Hit Rate (%) 5.53162
+		 * Hit #5: Total 23132 Hits 1275 Hit Rate (%) 5.51185
+		 * Hit #7: Total 5221 Hits 111 Hit Rate (%) 2.12603
+		 * Hit #8: Total 17911 Hits 1164 Hit Rate (%) 6.4988
+		 * Hit #10: Total 23132 Hits 1275 Hit Rate (%) 5.51185
+		 * Hit #12: Total 23132 Hits 1275 Hit Rate (%) 5.51185
+		 * Hit #14: Total 23132 Hits 1275 Hit Rate (%) 5.51185
+		 * Hit #15: Total 803 Hits 35 Hit Rate (%) 4.35866
+		 * Hit #16: Total 22329 Hits 1240 Hit Rate (%) 5.55332
+		 * Hit #17: Total 150 Hits 3 Hit Rate (%) 2
+		 * Hit #18: Total 22982 Hits 1272 Hit Rate (%) 5.53477
 		 * */
             }
 
@@ -1423,7 +1440,7 @@ moves_loop:  // When in check, search starts here
         }
 
 	//bool CC = singular && !capture && priorCapture;
-	bool CC = singular;
+	bool CC = singular && ss->inCheck;
 
 	bool T = value > alpha;
 
