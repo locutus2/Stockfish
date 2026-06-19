@@ -1093,6 +1093,8 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    bool singularFail = false;
+    std::vector<bool> C;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1222,7 +1224,6 @@ moves_loop:  // When in check, search starts here
         // (*Scaler) Generally, higher singularBeta (i.e closer to ttValue)
         // and lower extension margins scale well.
 	bool singular = false;
-	std::vector<bool> C;
         if (!rootNode && move == ttData.move && !excludedMove && depth >= 6 + ss->ttPv
             && is_valid(ttData.value) && !is_decisive(ttData.value) && (ttData.bound & BOUND_LOWER)
             && ttData.depth >= depth - 3 && !is_shuffling(move, ss, pos))
@@ -1279,6 +1280,8 @@ moves_loop:  // When in check, search starts here
 		 * Hit #16: Total 1472589 Hits 1221175 Hit Rate (%) 82.9271
 		 * Hit #17: Total 99680 Hits 80933 Hit Rate (%) 81.1928
 		 * Hit #18: Total 1401731 Hits 1161709 Hit Rate (%) 82.8767
+		 *
+		 * CC=singular&&capture
 		 *
 		 * CC=singular&&!capture
 		 * Hit #0: Total 900433 Hits 701489 Hit Rate (%) 77.9057
@@ -1458,13 +1461,14 @@ moves_loop:  // When in check, search starts here
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
 
-	bool CC = singular && !capture && priorCapture;
+	//bool CC = singular && !capture && priorCapture;
+	bool CC = singular;
+
+	bool T = value > alpha;
 
 	if(CC)
 	{
-		bool T = value > alpha;
-		for(int i = 0; i < int(C.size()); i++)
-			if(C[i]) dbg_hit_on(T, i);
+		singularFail = !T;
 	}
 
         // Step 19. Undo move
@@ -1573,6 +1577,13 @@ moves_loop:  // When in check, search starts here
                 quietsSearched.push_back(move);
         }
     }
+
+	if(singularFail)
+	{
+		bool T = bool(bestMove);
+		for(int i = 0; i < int(C.size()); i++)
+			if(C[i]) dbg_hit_on(T, i);
+	}
 
     // Step 21. Check for mate and stalemate
     // All legal moves have been searched and if there are no legal moves, it
