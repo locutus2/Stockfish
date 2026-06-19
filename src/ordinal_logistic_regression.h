@@ -130,7 +130,8 @@ public:
     std::vector<double> getParams() const
     {
 	    std::vector<double> pa = beta;
-	    pa.insert(pa.end(), delta.begin(), delta.end());
+	    auto alpha = get_alpha();
+	    pa.insert(pa.end(), alpha.begin(), alpha.end());
 	    return pa;
     }
 
