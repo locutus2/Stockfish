@@ -20,7 +20,8 @@ public:
                       double eps = 1e-8,
 		      const std::vector<double>& betaInit = std::vector<double>(),
 		      double l2 = 0,
-		      double p0_ = 1)
+		      double p0_ = 1,
+		      const std::vector<double> alpha0 = std::vector<double>())
         : K(K0), p(p0), L2(l2), P0(p0_),
           delta(K0 - 1, 1.0 / K0),
           //beta(p0, 0.0),
@@ -38,6 +39,10 @@ public:
           G_delta(K - 1, 0.0),
           G_beta(p, 0.0)	{
 		  beta.resize(p0, 0.0);
+
+		  for(int i = 0; i < int(alpha0.size()) && i < K0-1; i++) {
+			  delta[i] = std::log(alpha0[i]);
+		  }
 	  }
 
     // ---------- thresholds ----------

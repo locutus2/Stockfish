@@ -291,7 +291,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+constexpr int MaxDebugSlots = 3200;
 
 namespace {
 
@@ -458,9 +458,31 @@ void dbg_optimize_of(int target_rank, const std::vector<int>& h, int slot) {
 	if(ord == nullptr)
 	{
 		//P = PARAMS.size();
+	        //Hit #0: Total 96394548 Hits 87760636 Hit Rate (%) 91.0432
+	        //Hit #1064: Total 96394548 Hits 88064367 Hit Rate (%) 91.3582 => quantile(0.910432) ~ 28000
+		std::vector<double> alpha0 = { 28000 };
 		P = h.size();
-		ord = new OnlineOrdinalAdam(K, P, LR, BETA1, BETA2, EPS, std::vector<double>(PARAMS.begin(), PARAMS.end()), L2, P0);
+		ord = new OnlineOrdinalAdam(K, P, LR, BETA1, BETA2, EPS, std::vector<double>(PARAMS.begin(), PARAMS.end()), L2, P0, alpha0);
 	}
+	// category freq
+	for(int i = 0; i < K; i++)
+	    dbg_hit_on(i == target_rank, i);
+	//Hit #0: Total 96394548 Hits 87760636 Hit Rate (%) 91.0432
+	//Hit #1: Total 96394548 Hits 8633912 Hit Rate (%) 8.95685
+	
+	// qunatiles of 91.0432 of base linear estimat
+	constexpr int BUCKETS = 100;
+	constexpr int MAXV = 100000;
+	constexpr int MINV = -MAXV;
+	constexpr int BUCKET_SIZE = (MAXV - MINV) / BUCKETS;
+	double v = 0;
+	for(int i = 0; i < P; i++)
+		v += h[i] * PARAMS[i];
+        int index = std::clamp(int((v - MINV)/BUCKET_SIZE), 0, BUCKETS-1);
+
+	for(int b = 0; b < BUCKETS; b++)
+	      dbg_hit_on(b >= index, 1000+b);
+
 	//std::cerr << "optimize " << ord << std::endl;
         std::vector<double> x(P);
 	for(int i = 0; i < P; i++)
@@ -477,6 +499,11 @@ void dbg_optimize_of(int target_rank, const std::vector<int>& h, int slot) {
     for (int k = 0; k < int(h.size()); k++)
         optimize.at(slot)[k + 2] = (v - t) * h[k];
 	*/
+}
+
+double dbg_get_hit_on(int slot) {
+
+     return hit.at(slot)[1] / double(hit.at(slot)[0]);
 }
 
 void dbg_hit_on(bool cond, int slot) {

@@ -141,6 +141,7 @@ extern std::array<double, N_PARAMS> PARAMS;
 void learn_params(int iter, int elapsed, int64_t nodes, int i = 0, std::ostream& out = std::cerr);
 
 void dbg_optimize_of(int target_rank, const std::vector<int>& h, int slot = 0);
+double dbg_get_hit_on(int slot = 0);
 void dbg_hit_on(bool cond, int slot = 0);
 void dbg_mean_of(int64_t value, int slot = 0);
 void dbg_stdev_of(int64_t value, int slot = 0);
