@@ -1359,7 +1359,7 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-        bool CC = true;
+        bool CC = ss->ply < LOW_PLY_HISTORY_SIZE;
         if (CC && !extmove.values.empty())
         {
             bool T = value > alpha;
