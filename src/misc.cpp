@@ -470,7 +470,13 @@ void dbg_optimize_of(int target_rank, const std::vector<int>& h, int slot) {
 		//P = PARAMS.size();
 	        //Hit #0: Total 96394548 Hits 87760636 Hit Rate (%) 91.0432
 	        //Hit #1064: Total 96394548 Hits 88064367 Hit Rate (%) 91.3582 => quantile(0.910432) ~ 28000
-		std::vector<double> alpha0 = { 28000 };
+		//std::vector<double> alpha0 = { 28000 }; // CC = true
+		
+		//Hit #0: Total 10079090 Hits 9271883 Hit Rate (%) 91.9913
+		//Hit #1: Total 10079090 Hits 807207 Hit Rate (%) 8.00873
+		//Hit #1062: Total 10079090 Hits 9275297 Hit Rate (%) 92.0251 => qunatile(91.9913) ~ 24000
+		std::vector<double> alpha0 = { 24000 }; // CC = ss->ply < LOW_PLY_HISTORY_SIZE
+							
 		P = h.size();
 		ord = new OnlineOrdinalAdam(K, P, LR, BETA1, BETA2, EPS, std::vector<double>(PARAMS.begin(), PARAMS.end()), L2, P0, alpha0);
 	}
