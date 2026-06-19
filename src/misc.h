@@ -137,6 +137,7 @@ std::optional<std::string> read_file_to_string(const std::string& path);
 constexpr int N_PARAMS = 6;
 extern bool                   LEARN;
 extern std::array<double, N_PARAMS> PARAMS;
+extern std::array<bool, N_PARAMS> PARAMS_FIXED;
 
 void learn_params(int iter, int elapsed, int64_t nodes, int i = 0, std::ostream& out = std::cerr);
 

@@ -135,6 +135,12 @@ public:
 	    return pa;
     }
 
+    void setParams(const std::vector<double>& params) 
+    {
+	    for(int i = 0; i < p; i++)
+		    beta[i] = params[i];
+    }
+
     // ---------- accessors ----------
     std::vector<double> get_beta() const { return beta; }
 

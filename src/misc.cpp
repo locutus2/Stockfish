@@ -343,6 +343,7 @@ constexpr double P0 = 1; // for L2 regularaization: use (weight - P0)^2 . for P0
 static_assert(ADA_DELTA_MOM + ADAM + SGD == 1);
 
 std::array<double, N_PARAMS> PARAMS = { 1, 1, 1, 1, 1, 1 };
+std::array<bool, N_PARAMS> PARAMS_FIXED = { true, false, false, false, false, false };
 //std::array<double, N_PARAMS> PARAMS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 //std::array<double, N_PARAMS> PARAMS = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -435,10 +436,16 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
         ord->update();
 
         out << method << " Iteration " << iter << " timeInSec=" << elapsed/1000. << " nodes=" << nodes << " LR=" + std::to_string(LR) << " loss=" << ord->getLoss() << " params:";
+
 	std::vector<double> params = ord->getParams();
         for (int j = 0; j < int(PARAMS.size()); j++)
-            out << " " << params[j];
+	    if(PARAMS_FIXED[j])
+		    params[j] = PARAMS[j];
+
+        for (int j = 0; j < int(PARAMS.size()); j++)
+            out << " " << (PARAMS_FIXED[j] ? "*" : "") << params[j];
 	out << " |";
+
 	double alpha = 0;
         for (int j = int(PARAMS.size()); j < int(params.size()); j++)
 	{
@@ -446,9 +453,11 @@ void learn_params(int iter, int elapsed, int64_t nodes, int i, std::ostream& out
             out << " " << alpha;
 	}
         out << std::endl << std::flush;
+	ord->setParams(params);
 
         for (int j = 0; j < int(PARAMS.size()); j++)
-		PARAMS[j] = params[j];
+		if(!PARAMS_FIXED[j])
+			PARAMS[j] = params[j];
 		//PARAMS[j] = 1 + params[j];
         ord->endIteration();
     }
