@@ -1262,63 +1262,24 @@ moves_loop:  // When in check, search starts here
 		};
 		/*
 		 * CC=singular
-		 * Hit #0: Total 1501411 Hits 1242642 Hit Rate (%) 82.7649
-		 * Hit #1: Total 600978 Hits 541153 Hit Rate (%) 90.0454
-		 * Hit #2: Total 900433 Hits 701489 Hit Rate (%) 77.9057
-		 * Hit #3: Total 160761 Hits 135178 Hit Rate (%) 84.0863
-		 * Hit #4: Total 1340650 Hits 1107464 Hit Rate (%) 82.6065
-		 * Hit #5: Total 226124 Hits 202992 Hit Rate (%) 89.7702
-		 * Hit #6: Total 1275287 Hits 1039650 Hit Rate (%) 81.5228
-		 * Hit #7: Total 396457 Hits 333415 Hit Rate (%) 84.0987
-		 * Hit #8: Total 1104954 Hits 909227 Hit Rate (%) 82.2864
-		 * Hit #9: Total 698325 Hits 572793 Hit Rate (%) 82.0238
-		 * Hit #10: Total 803086 Hits 669849 Hit Rate (%) 83.4094
-		 * Hit #11: Total 1290 Hits 1059 Hit Rate (%) 82.093
-		 * Hit #12: Total 1500121 Hits 1241583 Hit Rate (%) 82.7655
-		 * Hit #14: Total 1501411 Hits 1242642 Hit Rate (%) 82.7649
-		 * Hit #15: Total 28822 Hits 21467 Hit Rate (%) 74.4813
-		 * Hit #16: Total 1472589 Hits 1221175 Hit Rate (%) 82.9271
-		 * Hit #17: Total 99680 Hits 80933 Hit Rate (%) 81.1928
-		 * Hit #18: Total 1401731 Hits 1161709 Hit Rate (%) 82.8767
-		 *
-		 * CC=singular&&capture
-		 *
-		 * CC=singular&&!capture
-		 * Hit #0: Total 900433 Hits 701489 Hit Rate (%) 77.9057
-		 * Hit #2: Total 900433 Hits 701489 Hit Rate (%) 77.9057
-		 * Hit #3: Total 117657 Hits 96299 Hit Rate (%) 81.8472
-		 * Hit #4: Total 782776 Hits 605190 Hit Rate (%) 77.3133
-		 * Hit #5: Total 109617 Hits 90689 Hit Rate (%) 82.7326
-		 * Hit #6: Total 790816 Hits 610800 Hit Rate (%) 77.2367
-		 * Hit #7: Total 112634 Hits 81669 Hit Rate (%) 72.5083
-		 * Hit #8: Total 787799 Hits 619820 Hit Rate (%) 78.6774
-		 * Hit #9: Total 553128 Hits 442241 Hit Rate (%) 79.9527
-		 * Hit #10: Total 347305 Hits 259248 Hit Rate (%) 74.6456
-		 * Hit #11: Total 966 Hits 782 Hit Rate (%) 80.9524
-		 * Hit #12: Total 899467 Hits 700707 Hit Rate (%) 77.9025
-		 * Hit #14: Total 900433 Hits 701489 Hit Rate (%) 77.9057
-		 * Hit #15: Total 19026 Hits 13175 Hit Rate (%) 69.2473
-		 * Hit #16: Total 881407 Hits 688314 Hit Rate (%) 78.0926
-		 * Hit #17: Total 66832 Hits 51743 Hit Rate (%) 77.4225
-		 * Hit #18: Total 833601 Hits 649746 Hit Rate (%) 77.9445
-		 *
-		 * CC=singular&&!capture&&priorCapture
-		 * Hit #0: Total 112634 Hits 81669 Hit Rate (%) 72.5083
-		 * Hit #2: Total 112634 Hits 81669 Hit Rate (%) 72.5083
-		 * Hit #3: Total 21033 Hits 16734 Hit Rate (%) 79.5607
-		 * Hit #4: Total 91601 Hits 64935 Hit Rate (%) 70.889
-		 * Hit #5: Total 9405 Hits 7113 Hit Rate (%) 75.63
-		 * Hit #6: Total 103229 Hits 74556 Hit Rate (%) 72.2239
-		 * Hit #7: Total 112634 Hits 81669 Hit Rate (%) 72.5083
-		 * Hit #9: Total 58321 Hits 44449 Hit Rate (%) 76.2144
-		 * Hit #10: Total 54313 Hits 37220 Hit Rate (%) 68.5287
-		 * Hit #11: Total 128 Hits 113 Hit Rate (%) 88.2812
-		 * Hit #12: Total 112506 Hits 81556 Hit Rate (%) 72.4904
-		 * Hit #14: Total 112634 Hits 81669 Hit Rate (%) 72.5083
-		 * Hit #15: Total 1828 Hits 1447 Hit Rate (%) 79.1575
-		 * Hit #16: Total 110806 Hits 80222 Hit Rate (%) 72.3986
-		 * Hit #17: Total 7470 Hits 5646 Hit Rate (%) 75.5823
-		 * Hit #18: Total 105164 Hits 76023 Hit Rate (%) 72.2899
+		 * Hit #0: Total 258769 Hits 31173 Hit Rate (%) 12.0467
+		 * Hit #1: Total 59825 Hits 3877 Hit Rate (%) 6.48057
+		 * Hit #2: Total 198944 Hits 27296 Hit Rate (%) 13.7204
+		 * Hit #3: Total 25583 Hits 2977 Hit Rate (%) 11.6366
+		 * Hit #4: Total 233186 Hits 28196 Hit Rate (%) 12.0916
+		 * Hit #5: Total 23132 Hits 1275 Hit Rate (%) 5.51185
+		 * Hit #6: Total 235637 Hits 29898 Hit Rate (%) 12.6882
+		 * Hit #7: Total 63042 Hits 3561 Hit Rate (%) 5.64862
+		 * Hit #8: Total 195727 Hits 27612 Hit Rate (%) 14.1074
+		 * Hit #9: Total 125532 Hits 21880 Hit Rate (%) 17.4298
+		 * Hit #10: Total 133237 Hits 9293 Hit Rate (%) 6.97479
+		 * Hit #11: Total 231 Hits 20 Hit Rate (%) 8.65801
+		 * Hit #12: Total 258538 Hits 31153 Hit Rate (%) 12.0497
+		 * Hit #14: Total 258769 Hits 31173 Hit Rate (%) 12.0467
+		 * Hit #15: Total 7355 Hits 595 Hit Rate (%) 8.08973
+		 * Hit #16: Total 251414 Hits 30578 Hit Rate (%) 12.1624
+		 * Hit #17: Total 18747 Hits 1909 Hit Rate (%) 10.183
+		 * Hit #18: Total 240022 Hits 29264 Hit Rate (%) 12.1922
 		 * */
             }
 
