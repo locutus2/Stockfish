@@ -196,6 +196,8 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
+    constexpr std::array<int, LOW_PLY_HISTORY_SIZE> lowPlyWeight = {17, 12, 12, 10, 8};
+
     Color us = pos.side_to_move();
 
     [[maybe_unused]] Bitboard threatByLesser[KING + 1];
@@ -246,7 +248,7 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 
 
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += 8 * (*lowPlyHistory)[ply][m.raw()] / (1 + ply);
+                m.value += lowPlyWeight[ply] * (*lowPlyHistory)[ply][m.raw()];
         }
 
         else  // Type == EVASIONS
