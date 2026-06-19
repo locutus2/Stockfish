@@ -1279,6 +1279,43 @@ moves_loop:  // When in check, search starts here
 		 * Hit #16: Total 1472589 Hits 1221175 Hit Rate (%) 82.9271
 		 * Hit #17: Total 99680 Hits 80933 Hit Rate (%) 81.1928
 		 * Hit #18: Total 1401731 Hits 1161709 Hit Rate (%) 82.8767
+		 *
+		 * CC=singular&&!capture
+		 * Hit #0: Total 900433 Hits 701489 Hit Rate (%) 77.9057
+		 * Hit #2: Total 900433 Hits 701489 Hit Rate (%) 77.9057
+		 * Hit #3: Total 117657 Hits 96299 Hit Rate (%) 81.8472
+		 * Hit #4: Total 782776 Hits 605190 Hit Rate (%) 77.3133
+		 * Hit #5: Total 109617 Hits 90689 Hit Rate (%) 82.7326
+		 * Hit #6: Total 790816 Hits 610800 Hit Rate (%) 77.2367
+		 * Hit #7: Total 112634 Hits 81669 Hit Rate (%) 72.5083
+		 * Hit #8: Total 787799 Hits 619820 Hit Rate (%) 78.6774
+		 * Hit #9: Total 553128 Hits 442241 Hit Rate (%) 79.9527
+		 * Hit #10: Total 347305 Hits 259248 Hit Rate (%) 74.6456
+		 * Hit #11: Total 966 Hits 782 Hit Rate (%) 80.9524
+		 * Hit #12: Total 899467 Hits 700707 Hit Rate (%) 77.9025
+		 * Hit #14: Total 900433 Hits 701489 Hit Rate (%) 77.9057
+		 * Hit #15: Total 19026 Hits 13175 Hit Rate (%) 69.2473
+		 * Hit #16: Total 881407 Hits 688314 Hit Rate (%) 78.0926
+		 * Hit #17: Total 66832 Hits 51743 Hit Rate (%) 77.4225
+		 * Hit #18: Total 833601 Hits 649746 Hit Rate (%) 77.9445
+		 *
+		 * CC=singular&&!capture&&priorCapture
+		 * Hit #0: Total 112634 Hits 81669 Hit Rate (%) 72.5083
+		 * Hit #2: Total 112634 Hits 81669 Hit Rate (%) 72.5083
+		 * Hit #3: Total 21033 Hits 16734 Hit Rate (%) 79.5607
+		 * Hit #4: Total 91601 Hits 64935 Hit Rate (%) 70.889
+		 * Hit #5: Total 9405 Hits 7113 Hit Rate (%) 75.63
+		 * Hit #6: Total 103229 Hits 74556 Hit Rate (%) 72.2239
+		 * Hit #7: Total 112634 Hits 81669 Hit Rate (%) 72.5083
+		 * Hit #9: Total 58321 Hits 44449 Hit Rate (%) 76.2144
+		 * Hit #10: Total 54313 Hits 37220 Hit Rate (%) 68.5287
+		 * Hit #11: Total 128 Hits 113 Hit Rate (%) 88.2812
+		 * Hit #12: Total 112506 Hits 81556 Hit Rate (%) 72.4904
+		 * Hit #14: Total 112634 Hits 81669 Hit Rate (%) 72.5083
+		 * Hit #15: Total 1828 Hits 1447 Hit Rate (%) 79.1575
+		 * Hit #16: Total 110806 Hits 80222 Hit Rate (%) 72.3986
+		 * Hit #17: Total 7470 Hits 5646 Hit Rate (%) 75.5823
+		 * Hit #18: Total 105164 Hits 76023 Hit Rate (%) 72.2899
 		 * */
             }
 
@@ -1421,7 +1458,7 @@ moves_loop:  // When in check, search starts here
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
 
-	bool CC = singular && !capture;
+	bool CC = singular && !capture && priorCapture;
 
 	if(CC)
 	{
