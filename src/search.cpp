@@ -1221,6 +1221,8 @@ moves_loop:  // When in check, search starts here
 
         // (*Scaler) Generally, higher singularBeta (i.e closer to ttValue)
         // and lower extension margins scale well.
+	bool singular = false;
+	std::vector<bool> C;
         if (!rootNode && move == ttData.move && !excludedMove && depth >= 6 + ss->ttPv
             && is_valid(ttData.value) && !is_decisive(ttData.value) && (ttData.bound & BOUND_LOWER)
             && ttData.depth >= depth - 3 && !is_shuffling(move, ss, pos))
@@ -1244,6 +1246,40 @@ moves_loop:  // When in check, search starts here
                   1 + (value < singularBeta - doubleMargin) + (value < singularBeta - tripleMargin);
 
                 depth++;
+		singular = true;
+		C = {
+			true,
+			capture, !capture,
+			givesCheck, !givesCheck,
+			ss->inCheck, !ss->inCheck,
+			priorCapture, !priorCapture,
+			improving, !improving,
+			bool((ss-1)->currentMove == Move::null()), !((ss-1)->currentMove == Move::null()),
+			bool((ss-1)->currentMove == Move::none()), !((ss-1)->currentMove == Move::none()),
+			bool((ss-1)->excludedMove), !((ss-1)->excludedMove),
+			(ss-1)->inCheck, !(ss-1)->inCheck,
+		};
+		/*
+		 * CC=singular
+		 * Hit #0: Total 1501411 Hits 1242642 Hit Rate (%) 82.7649
+		 * Hit #1: Total 600978 Hits 541153 Hit Rate (%) 90.0454
+		 * Hit #2: Total 900433 Hits 701489 Hit Rate (%) 77.9057
+		 * Hit #3: Total 160761 Hits 135178 Hit Rate (%) 84.0863
+		 * Hit #4: Total 1340650 Hits 1107464 Hit Rate (%) 82.6065
+		 * Hit #5: Total 226124 Hits 202992 Hit Rate (%) 89.7702
+		 * Hit #6: Total 1275287 Hits 1039650 Hit Rate (%) 81.5228
+		 * Hit #7: Total 396457 Hits 333415 Hit Rate (%) 84.0987
+		 * Hit #8: Total 1104954 Hits 909227 Hit Rate (%) 82.2864
+		 * Hit #9: Total 698325 Hits 572793 Hit Rate (%) 82.0238
+		 * Hit #10: Total 803086 Hits 669849 Hit Rate (%) 83.4094
+		 * Hit #11: Total 1290 Hits 1059 Hit Rate (%) 82.093
+		 * Hit #12: Total 1500121 Hits 1241583 Hit Rate (%) 82.7655
+		 * Hit #14: Total 1501411 Hits 1242642 Hit Rate (%) 82.7649
+		 * Hit #15: Total 28822 Hits 21467 Hit Rate (%) 74.4813
+		 * Hit #16: Total 1472589 Hits 1221175 Hit Rate (%) 82.9271
+		 * Hit #17: Total 99680 Hits 80933 Hit Rate (%) 81.1928
+		 * Hit #18: Total 1401731 Hits 1161709 Hit Rate (%) 82.8767
+		 * */
             }
 
             // Multi-cut pruning
@@ -1384,6 +1420,15 @@ moves_loop:  // When in check, search starts here
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
+
+	bool CC = singular && !capture;
+
+	if(CC)
+	{
+		bool T = value > alpha;
+		for(int i = 0; i < int(C.size()); i++)
+			if(C[i]) dbg_hit_on(T, i);
+	}
 
         // Step 19. Undo move
         undo_move(pos, move);
