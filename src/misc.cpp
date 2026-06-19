@@ -337,7 +337,8 @@ constexpr double BETA1 = 0.9;
 constexpr double BETA2 = 0.999;
 constexpr double BETA3 = 0.9;
 constexpr double EPS = 1e-8;
-constexpr double L2 = 0.1;
+//constexpr double L2 = 0.1;
+constexpr double L2 = 0;
 constexpr double P0 = 1; // for L2 regularaization: use (weight - P0)^2 . for P0=0 its default L2
 
 static_assert(ADA_DELTA_MOM + ADAM + SGD == 1);
