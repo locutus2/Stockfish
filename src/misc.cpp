@@ -290,7 +290,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+constexpr int MaxDebugSlots = 3200;
 
 namespace {
 
@@ -325,11 +325,11 @@ std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
 
-void dbg_hit_on(bool cond, int slot) {
+void dbg_hit_on(bool cond, int slot, int weight) {
 
-    ++hit.at(slot)[0];
+    hit.at(slot)[0] += weight;
     if (cond)
-        ++hit.at(slot)[1];
+        hit.at(slot)[1] += weight;
 }
 
 void dbg_mean_of(i64 value, int slot) {
@@ -357,14 +357,14 @@ void dbg_extremes_of(i64 value, int slot) {
     {}
 }
 
-void dbg_correl_of(i64 value1, i64 value2, int slot) {
+void dbg_correl_of(i64 value1, i64 value2, int slot, int weight) {
 
-    ++correl.at(slot)[0];
-    correl.at(slot)[1] += value1;
-    correl.at(slot)[2] += value1 * value1;
-    correl.at(slot)[3] += value2;
-    correl.at(slot)[4] += value2 * value2;
-    correl.at(slot)[5] += value1 * value2;
+    correl.at(slot)[0] += weight;
+    correl.at(slot)[1] += value1 * weight;
+    correl.at(slot)[2] += value1 * value1 * weight;
+    correl.at(slot)[3] += value2 * weight;
+    correl.at(slot)[4] += value2 * value2 * weight;
+    correl.at(slot)[5] += value1 * value2 * weight;
 }
 
 void dbg_print() {

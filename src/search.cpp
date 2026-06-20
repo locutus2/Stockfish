@@ -1096,6 +1096,10 @@ moves_loop:  // When in check, search starts here
     bool singularFail = false;
     std::vector<bool> C;
 
+    //int V = 0;
+    int V = depth;
+    int W = depth;
+
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move()) != Move::none())
@@ -1303,6 +1307,112 @@ moves_loop:  // When in check, search starts here
 		Nodes searched  : 168005090
 		Nodes/second    : 679022
 		 *
+		 * CC=singular (non-wegihted/weighted)
+		 * Hit #0: Total 258769 Hits 31173 Hit Rate (%) 12.0467
+		Hit #1: Total 2336040 Hits 273514 Hit Rate (%) 11.7084
+		Hit #10: Total 59825 Hits 3877 Hit Rate (%) 6.48057
+		Hit #11: Total 550703 Hits 35405 Hit Rate (%) 6.42906
+		Hit #20: Total 198944 Hits 27296 Hit Rate (%) 13.7204
+		Hit #21: Total 1785337 Hits 238109 Hit Rate (%) 13.3369
+		Hit #30: Total 25583 Hits 2977 Hit Rate (%) 11.6366
+		Hit #31: Total 223168 Hits 25092 Hit Rate (%) 11.2435
+		Hit #40: Total 233186 Hits 28196 Hit Rate (%) 12.0916
+		Hit #41: Total 2112872 Hits 248422 Hit Rate (%) 11.7576
+		Hit #50: Total 23132 Hits 1275 Hit Rate (%) 5.51185
+		Hit #51: Total 209300 Hits 11055 Hit Rate (%) 5.28189
+		Hit #60: Total 235637 Hits 29898 Hit Rate (%) 12.6882
+		Hit #61: Total 2126740 Hits 262459 Hit Rate (%) 12.3409
+		Hit #70: Total 63042 Hits 3561 Hit Rate (%) 5.64862
+		Hit #71: Total 570603 Hits 32535 Hit Rate (%) 5.70186
+		Hit #80: Total 195727 Hits 27612 Hit Rate (%) 14.1074
+		Hit #81: Total 1765437 Hits 240979 Hit Rate (%) 13.6498
+		Hit #90: Total 125532 Hits 21880 Hit Rate (%) 17.4298
+		Hit #91: Total 1133772 Hits 191994 Hit Rate (%) 16.9341
+		Hit #100: Total 133237 Hits 9293 Hit Rate (%) 6.97479
+		Hit #101: Total 1202268 Hits 81520 Hit Rate (%) 6.78052
+		Hit #110: Total 231 Hits 20 Hit Rate (%) 8.65801
+		Hit #111: Total 1551 Hits 138 Hit Rate (%) 8.89749
+		Hit #120: Total 258538 Hits 31153 Hit Rate (%) 12.0497
+		Hit #121: Total 2334489 Hits 273376 Hit Rate (%) 11.7103
+		Hit #140: Total 258769 Hits 31173 Hit Rate (%) 12.0467
+		Hit #141: Total 2336040 Hits 273514 Hit Rate (%) 11.7084
+		Hit #150: Total 7355 Hits 595 Hit Rate (%) 8.08973
+		Hit #151: Total 49451 Hits 3924 Hit Rate (%) 7.93513
+		Hit #160: Total 251414 Hits 30578 Hit Rate (%) 12.1624
+		Hit #161: Total 2286589 Hits 269590 Hit Rate (%) 11.7901
+		Hit #170: Total 18747 Hits 1909 Hit Rate (%) 10.183
+		Hit #171: Total 172584 Hits 17073 Hit Rate (%) 9.89257
+		Hit #180: Total 240022 Hits 29264 Hit Rate (%) 12.1922
+		Hit #181: Total 2163456 Hits 256441 Hit Rate (%) 11.8533
+		Hit #190: Total 38175 Hits 2651 Hit Rate (%) 6.94434
+		Hit #191: Total 319218 Hits 22837 Hit Rate (%) 7.15405
+		Hit #200: Total 220594 Hits 28522 Hit Rate (%) 12.9296
+		Hit #201: Total 2016822 Hits 250677 Hit Rate (%) 12.4293
+		Hit #210: Total 51029 Hits 6727 Hit Rate (%) 13.1827
+		Hit #211: Total 479789 Hits 59449 Hit Rate (%) 12.3907
+		Hit #220: Total 207740 Hits 24446 Hit Rate (%) 11.7676
+		Hit #221: Total 1856251 Hits 214065 Hit Rate (%) 11.5321
+		Hit #230: Total 169565 Hits 21795 Hit Rate (%) 12.8535
+		Hit #231: Total 1537033 Hits 191228 Hit Rate (%) 12.4414
+		Hit #240: Total 89204 Hits 9378 Hit Rate (%) 10.513
+		Hit #241: Total 799007 Hits 82286 Hit Rate (%) 10.2985
+		Hit #250: Total 207306 Hits 27152 Hit Rate (%) 13.0975
+		Hit #251: Total 1923242 Hits 241794 Hit Rate (%) 12.5722
+		Hit #260: Total 51463 Hits 4021 Hit Rate (%) 7.81338
+		Hit #261: Total 412798 Hits 31720 Hit Rate (%) 7.68415
+		Correl. #0: Total 258769 Coefficient -0.0379112
+		Correl. #1: Total 2336040 Coefficient -0.041253
+		Correl. #10: Total 59825 Coefficient -0.00755004
+		Correl. #11: Total 550703 Coefficient -0.00879912
+		Correl. #20: Total 198944 Coefficient -0.0408639
+		Correl. #21: Total 1785337 Coefficient -0.0445952
+		Correl. #30: Total 25583 Coefficient -0.0431072
+		Correl. #31: Total 223168 Coefficient -0.045801
+		Correl. #40: Total 233186 Coefficient -0.0375728
+		Correl. #41: Total 2112872 Coefficient -0.040973
+		Correl. #50: Total 23132 Coefficient -0.0357774
+		Correl. #51: Total 209300 Coefficient -0.0330479
+		Correl. #60: Total 235637 Coefficient -0.0381736
+		Correl. #61: Total 2126740 Coefficient -0.0416851
+		Correl. #70: Total 63042 Coefficient 0.00849593
+		Correl. #71: Total 570603 Coefficient 0.00552449
+		Correl. #80: Total 195727 Coefficient -0.0478198
+		Correl. #81: Total 1765437 Coefficient -0.051722
+		Correl. #90: Total 125532 Coefficient -0.0479104
+		Correl. #91: Total 1133772 Coefficient -0.0505012
+		Correl. #100: Total 133237 Coefficient -0.027703
+		Correl. #101: Total 1202268 Coefficient -0.0313219
+		Correl. #110: Total 231 Coefficient 0.072634
+		Correl. #111: Total 1551 Coefficient 0.0719748
+		Correl. #120: Total 258538 Coefficient -0.0380454
+		Correl. #121: Total 2334489 Coefficient -0.0413569
+		Correl. #140: Total 258769 Coefficient -0.0379112
+		Correl. #141: Total 2336040 Coefficient -0.041253
+		Correl. #150: Total 7355 Coefficient -0.0444268
+		Correl. #151: Total 49451 Coefficient -0.0413945
+		Correl. #160: Total 251414 Coefficient -0.0418862
+		Correl. #161: Total 2286589 Coefficient -0.0446556
+		Correl. #170: Total 18747 Coefficient -0.0343123
+		Correl. #171: Total 172584 Coefficient -0.0292977
+		Correl. #180: Total 240022 Coefficient -0.0378691
+		Correl. #181: Total 2163456 Coefficient -0.041819
+		Correl. #190: Total 38175 Coefficient 0.0293868
+		Correl. #191: Total 319218 Coefficient 0.0321916
+		Correl. #200: Total 220594 Coefficient -0.0550325
+		Correl. #201: Total 2016822 Coefficient -0.0570892
+		Correl. #210: Total 51029 Coefficient -0.103265
+		Correl. #211: Total 479789 Coefficient -0.111429
+		Correl. #220: Total 207740 Coefficient -0.0256804
+		Correl. #221: Total 1856251 Coefficient -0.0266303
+		Correl. #230: Total 169565 Coefficient -0.0434784
+		Correl. #231: Total 1537033 Coefficient -0.0435276
+		Correl. #240: Total 89204 Coefficient -0.0274034
+		Correl. #241: Total 799007 Coefficient -0.0408267
+		Correl. #250: Total 207306 Coefficient -0.0577025
+		Correl. #251: Total 1923242 Coefficient -0.0595396
+		Correl. #260: Total 51463 Coefficient -0.0186975
+		Correl. #261: Total 412798 Coefficient -0.0160555
+
 		 * CC=singular
 		 * Hit #0: Total 258769 Hits 31173 Hit Rate (%) 12.0467
 		Hit #1: Total 59825 Hits 3877 Hit Rate (%) 6.48057
@@ -1629,7 +1739,15 @@ moves_loop:  // When in check, search starts here
 	{
 		bool T = bool(bestMove);
 		for(int i = 0; i < int(C.size()); i++)
-			if(C[i]) dbg_hit_on(T, i);
+		{
+			if(C[i]) 
+			{
+				dbg_hit_on(T, i*10);
+			        dbg_hit_on(T, i*10 + 1, W);
+				dbg_correl_of(V, T, 10*i);
+				dbg_correl_of(V, T, 10*i+1, W);
+			}
+		}
 	}
 
     // Step 21. Check for mate and stalemate
