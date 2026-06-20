@@ -1297,8 +1297,27 @@ moves_loop:  // When in check, search starts here
 		 * Hit #16: Total 22329 Hits 1240 Hit Rate (%) 5.55332
 		 * Hit #17: Total 150 Hits 3 Hit Rate (%) 2
 		 * Hit #18: Total 22982 Hits 1272 Hit Rate (%) 5.53477
-		 * */
-            }
+		 *
+		 * CC=singular && !ss->inCheck
+		 * Hit #0: Total 235637 Hits 29898 Hit Rate (%) 12.6882
+		Hit #1: Total 55621 Hits 3780 Hit Rate (%) 6.79599
+		Hit #2: Total 180016 Hits 26118 Hit Rate (%) 14.5087
+		Hit #3: Total 25428 Hits 2973 Hit Rate (%) 11.6918
+		Hit #4: Total 210209 Hits 26925 Hit Rate (%) 12.8087
+		Hit #6: Total 235637 Hits 29898 Hit Rate (%) 12.6882
+		Hit #7: Total 57821 Hits 3450 Hit Rate (%) 5.96669
+		Hit #8: Total 177816 Hits 26448 Hit Rate (%) 14.8738
+		Hit #9: Total 125532 Hits 21880 Hit Rate (%) 17.4298
+		Hit #10: Total 110105 Hits 8018 Hit Rate (%) 7.28214
+		Hit #11: Total 231 Hits 20 Hit Rate (%) 8.65801
+		Hit #12: Total 235406 Hits 29878 Hit Rate (%) 12.6921
+		Hit #14: Total 235637 Hits 29898 Hit Rate (%) 12.6882
+		Hit #15: Total 6552 Hits 560 Hit Rate (%) 8.54701
+		Hit #16: Total 229085 Hits 29338 Hit Rate (%) 12.8066
+		Hit #17: Total 18597 Hits 1906 Hit Rate (%) 10.249
+		Hit #18: Total 217040 Hits 27992 Hit Rate (%) 12.8972
+				 * */
+			    }
 
             // Multi-cut pruning
             // Our ttMove is assumed to fail high based on the bound of the TT entry,
@@ -1440,7 +1459,7 @@ moves_loop:  // When in check, search starts here
         }
 
 	//bool CC = singular && !capture && priorCapture;
-	bool CC = singular && ss->inCheck;
+	bool CC = singular && !ss->inCheck;
 
 	bool T = value > alpha;
 
