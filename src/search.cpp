@@ -1274,34 +1274,112 @@ moves_loop:  // When in check, search starts here
 		Nodes searched  : 1578395962
 		Nodes/second    : 538673
 		 *
-		 * CC=singular
-		 * Hit #0: Total 2132566 Hits 239698 Hit Rate (%) 11.2399
-		Hit #1: Total 485829 Hits 28621 Hit Rate (%) 5.89117
-		Hit #2: Total 1646737 Hits 211077 Hit Rate (%) 12.8179
-		Hit #3: Total 235184 Hits 27193 Hit Rate (%) 11.5624
-		Hit #4: Total 1897382 Hits 212505 Hit Rate (%) 11.1999
-		Hit #5: Total 226973 Hits 13210 Hit Rate (%) 5.82008
-		Hit #6: Total 1905593 Hits 226488 Hit Rate (%) 11.8854
-		Hit #7: Total 537780 Hits 28423 Hit Rate (%) 5.28525
-		Hit #8: Total 1594786 Hits 211275 Hit Rate (%) 13.2479
-		Hit #9: Total 1002618 Hits 162442 Hit Rate (%) 16.2018
-		Hit #10: Total 1129948 Hits 77256 Hit Rate (%) 6.83713
-		Hit #11: Total 17715 Hits 2058 Hit Rate (%) 11.6173
-		Hit #12: Total 2114851 Hits 237640 Hit Rate (%) 11.2367
-		Hit #14: Total 2132566 Hits 239698 Hit Rate (%) 11.2399
-		Hit #15: Total 175601 Hits 10975 Hit Rate (%) 6.24996
-		Hit #16: Total 1956965 Hits 228723 Hit Rate (%) 11.6876
-		Hit #17: Total 182593 Hits 19030 Hit Rate (%) 10.4221
-		Hit #18: Total 1949973 Hits 220668 Hit Rate (%) 11.3165
-		Hit #19: Total 575648 Hits 39695 Hit Rate (%) 6.89571
-		Hit #20: Total 1556918 Hits 200003 Hit Rate (%) 12.8461
-		Hit #21: Total 278513 Hits 39461 Hit Rate (%) 14.1685
-		Hit #22: Total 1854053 Hits 200237 Hit Rate (%) 10.8
-		Hit #23: Total 1278405 Hits 160542 Hit Rate (%) 12.558
-		Hit #24: Total 854161 Hits 79156 Hit Rate (%) 9.26711
-		Hit #25: Total 1434533 Hits 182920 Hit Rate (%) 12.7512
-		Hit #26: Total 698033 Hits 56778 Hit Rate (%) 8.134
-		* ========================================
+		 * CC=singular (non-wegihted/weighted)
+		Hit #0: Total 2132566 Hits 239698 Hit Rate (%) 11.2399
+		Hit #1: Total 19723917 Hits 2197601 Hit Rate (%) 11.1418
+		Hit #10: Total 485829 Hits 28621 Hit Rate (%) 5.89117
+		Hit #11: Total 4578991 Hits 271702 Hit Rate (%) 5.93367
+		Hit #20: Total 1646737 Hits 211077 Hit Rate (%) 12.8179
+		Hit #21: Total 15144926 Hits 1925899 Hit Rate (%) 12.7165
+		Hit #30: Total 235184 Hits 27193 Hit Rate (%) 11.5624
+		Hit #31: Total 2091376 Hits 241656 Hit Rate (%) 11.5549
+		Hit #40: Total 1897382 Hits 212505 Hit Rate (%) 11.1999
+		Hit #41: Total 17632541 Hits 1955945 Hit Rate (%) 11.0928
+		Hit #50: Total 226973 Hits 13210 Hit Rate (%) 5.82008
+		Hit #51: Total 2082953 Hits 116989 Hit Rate (%) 5.6165
+		Hit #60: Total 1905593 Hits 226488 Hit Rate (%) 11.8854
+		Hit #61: Total 17640964 Hits 2080612 Hit Rate (%) 11.7942
+		Hit #70: Total 537780 Hits 28423 Hit Rate (%) 5.28525
+		Hit #71: Total 5010304 Hits 270985 Hit Rate (%) 5.40855
+		Hit #80: Total 1594786 Hits 211275 Hit Rate (%) 13.2479
+		Hit #81: Total 14713613 Hits 1926616 Hit Rate (%) 13.0941
+		Hit #90: Total 1002618 Hits 162442 Hit Rate (%) 16.2018
+		Hit #91: Total 9320163 Hits 1490609 Hit Rate (%) 15.9934
+		Hit #100: Total 1129948 Hits 77256 Hit Rate (%) 6.83713
+		Hit #101: Total 10403754 Hits 706992 Hit Rate (%) 6.79555
+		Hit #110: Total 17715 Hits 2058 Hit Rate (%) 11.6173
+		Hit #111: Total 125699 Hits 14727 Hit Rate (%) 11.7161
+		Hit #120: Total 2114851 Hits 237640 Hit Rate (%) 11.2367
+		Hit #121: Total 19598218 Hits 2182874 Hit Rate (%) 11.1381
+		Hit #140: Total 2132566 Hits 239698 Hit Rate (%) 11.2399
+		Hit #141: Total 19723917 Hits 2197601 Hit Rate (%) 11.1418
+		Hit #150: Total 175601 Hits 10975 Hit Rate (%) 6.24996
+		Hit #151: Total 1262793 Hits 77272 Hit Rate (%) 6.11913
+		Hit #160: Total 1956965 Hits 228723 Hit Rate (%) 11.6876
+		Hit #161: Total 18461124 Hits 2120329 Hit Rate (%) 11.4854
+		Hit #170: Total 182593 Hits 19030 Hit Rate (%) 10.4221
+		Hit #171: Total 1702776 Hits 176754 Hit Rate (%) 10.3803
+		Hit #180: Total 1949973 Hits 220668 Hit Rate (%) 11.3165
+		Hit #181: Total 18021141 Hits 2020847 Hit Rate (%) 11.2138
+		Hit #190: Total 575648 Hits 39695 Hit Rate (%) 6.89571
+		Hit #191: Total 4903931 Hits 349376 Hit Rate (%) 7.12441
+		Hit #200: Total 1556918 Hits 200003 Hit Rate (%) 12.8461
+		Hit #201: Total 14819986 Hits 1848225 Hit Rate (%) 12.4712
+		Hit #210: Total 278513 Hits 39461 Hit Rate (%) 14.1685
+		Hit #211: Total 2931542 Hits 378115 Hit Rate (%) 12.8982
+		Hit #220: Total 1854053 Hits 200237 Hit Rate (%) 10.8
+		Hit #221: Total 16792375 Hits 1819486 Hit Rate (%) 10.8352
+		Hit #230: Total 1278405 Hits 160542 Hit Rate (%) 12.558
+		Hit #231: Total 11888444 Hits 1470110 Hit Rate (%) 12.3659
+		Hit #240: Total 854161 Hits 79156 Hit Rate (%) 9.26711
+		Hit #241: Total 7835473 Hits 727491 Hit Rate (%) 9.28458
+		Hit #250: Total 1434533 Hits 182920 Hit Rate (%) 12.7512
+		Hit #251: Total 13920763 Hits 1726981 Hit Rate (%) 12.4058
+		Hit #260: Total 698033 Hits 56778 Hit Rate (%) 8.134
+		Hit #261: Total 5803154 Hits 470620 Hit Rate (%) 8.10973
+		Correl. #0: Total 2132566 Coefficient -0.0096021
+		Correl. #1: Total 19723917 Coefficient -0.0155639
+		Correl. #10: Total 485829 Coefficient 0.00547581
+		Correl. #11: Total 4578991 Coefficient 0.00101283
+		Correl. #20: Total 1646737 Coefficient -0.00944684
+		Correl. #21: Total 15144926 Coefficient -0.0153573
+		Correl. #30: Total 235184 Coefficient -0.000726147
+		Correl. #31: Total 2091376 Coefficient -0.00239383
+		Correl. #40: Total 1897382 Coefficient -0.0105197
+		Correl. #41: Total 17632541 Coefficient -0.0169628
+		Correl. #50: Total 226973 Coefficient -0.0266562
+		Correl. #51: Total 2082953 Coefficient -0.0295745
+		Correl. #60: Total 1905593 Coefficient -0.00872638
+		Correl. #61: Total 17640964 Coefficient -0.0148881
+		Correl. #70: Total 537780 Coefficient 0.017243
+		Correl. #71: Total 5010304 Coefficient 0.0128523
+		Correl. #80: Total 1594786 Coefficient -0.0139711
+		Correl. #81: Total 14713613 Coefficient -0.0210454
+		Correl. #90: Total 1002618 Coefficient -0.0175599
+		Correl. #91: Total 9320163 Coefficient -0.0233376
+		Correl. #100: Total 1129948 Coefficient -0.00507775
+		Correl. #101: Total 10403754 Coefficient -0.0106525
+		Correl. #110: Total 17715 Coefficient 0.0185935
+		Correl. #111: Total 125699 Coefficient 0.0226875
+		Correl. #120: Total 2114851 Coefficient -0.00966018
+		Correl. #121: Total 19598218 Coefficient -0.0156158
+		Correl. #140: Total 2132566 Coefficient -0.0096021
+		Correl. #141: Total 19723917 Coefficient -0.0155639
+		Correl. #150: Total 175601 Coefficient -0.0333758
+		Correl. #151: Total 1262793 Coefficient -0.0292579
+		Correl. #160: Total 1956965 Coefficient -0.0195672
+		Correl. #161: Total 18461124 Coefficient -0.0252132
+		Correl. #170: Total 182593 Coefficient -0.00423244
+		Correl. #171: Total 1702776 Coefficient -0.00444409
+		Correl. #180: Total 1949973 Coefficient -0.0100241
+		Correl. #181: Total 18021141 Coefficient -0.0165348
+		Correl. #190: Total 575648 Coefficient 0.0306836
+		Correl. #191: Total 4903931 Coefficient 0.0336357
+		Correl. #200: Total 1556918 Coefficient -0.0343136
+		Correl. #201: Total 14819986 Coefficient -0.0408989
+		Correl. #210: Total 278513 Coefficient -0.119966
+		Correl. #211: Total 2931542 Coefficient -0.137469
+		Correl. #220: Total 1854053 Coefficient 0.00353172
+		Correl. #221: Total 16792375 Coefficient 0.00389425
+		Correl. #230: Total 1278405 Coefficient -0.0177058
+		Correl. #231: Total 11888444 Coefficient -0.0179077
+		Correl. #240: Total 854161 Coefficient 0.00190233
+		Correl. #241: Total 7835473 Coefficient -0.0153193
+		Correl. #250: Total 1434533 Coefficient -0.0319354
+		Correl. #251: Total 13920763 Coefficient -0.0401613
+		Correl. #260: Total 698033 Coefficient -0.00309676
+		Correl. #261: Total 5803154 Coefficient 0.00535846
+                ===============================================================================
 		 * bench 16 1 16 pos1000.fen
 		Total time (ms) : 247422
 		Nodes searched  : 168005090
