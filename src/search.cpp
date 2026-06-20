@@ -1259,28 +1259,75 @@ moves_loop:  // When in check, search starts here
 			bool((ss-1)->currentMove == Move::none()), !((ss-1)->currentMove == Move::none()),
 			bool((ss-1)->excludedMove), !((ss-1)->excludedMove),
 			(ss-1)->inCheck, !(ss-1)->inCheck,
+			allNode, !allNode,
+			PvNode, !PvNode,
+			cutNode, !cutNode,
+			ss->ttPv, !ss->ttPv,
 		};
 		/*
+		 * bench 64 1 22 pos1000.fen
+		 *
+		 * CC=singular
+		 * Hit #0: Total 2132566 Hits 239698 Hit Rate (%) 11.2399
+		Hit #1: Total 485829 Hits 28621 Hit Rate (%) 5.89117
+		Hit #2: Total 1646737 Hits 211077 Hit Rate (%) 12.8179
+		Hit #3: Total 235184 Hits 27193 Hit Rate (%) 11.5624
+		Hit #4: Total 1897382 Hits 212505 Hit Rate (%) 11.1999
+		Hit #5: Total 226973 Hits 13210 Hit Rate (%) 5.82008
+		Hit #6: Total 1905593 Hits 226488 Hit Rate (%) 11.8854
+		Hit #7: Total 537780 Hits 28423 Hit Rate (%) 5.28525
+		Hit #8: Total 1594786 Hits 211275 Hit Rate (%) 13.2479
+		Hit #9: Total 1002618 Hits 162442 Hit Rate (%) 16.2018
+		Hit #10: Total 1129948 Hits 77256 Hit Rate (%) 6.83713
+		Hit #11: Total 17715 Hits 2058 Hit Rate (%) 11.6173
+		Hit #12: Total 2114851 Hits 237640 Hit Rate (%) 11.2367
+		Hit #14: Total 2132566 Hits 239698 Hit Rate (%) 11.2399
+		Hit #15: Total 175601 Hits 10975 Hit Rate (%) 6.24996
+		Hit #16: Total 1956965 Hits 228723 Hit Rate (%) 11.6876
+		Hit #17: Total 182593 Hits 19030 Hit Rate (%) 10.4221
+		Hit #18: Total 1949973 Hits 220668 Hit Rate (%) 11.3165
+
+		===========================
+		Total time (ms) : 2930154
+		Nodes searched  : 1578395962
+		Nodes/second    : 538673
+				
+                 * ========================================
+		 * bench 16 1 16 pos1000.fen
+		 *
 		 * CC=singular
 		 * Hit #0: Total 258769 Hits 31173 Hit Rate (%) 12.0467
-		 * Hit #1: Total 59825 Hits 3877 Hit Rate (%) 6.48057
-		 * Hit #2: Total 198944 Hits 27296 Hit Rate (%) 13.7204
-		 * Hit #3: Total 25583 Hits 2977 Hit Rate (%) 11.6366
-		 * Hit #4: Total 233186 Hits 28196 Hit Rate (%) 12.0916
-		 * Hit #5: Total 23132 Hits 1275 Hit Rate (%) 5.51185
-		 * Hit #6: Total 235637 Hits 29898 Hit Rate (%) 12.6882
-		 * Hit #7: Total 63042 Hits 3561 Hit Rate (%) 5.64862
-		 * Hit #8: Total 195727 Hits 27612 Hit Rate (%) 14.1074
-		 * Hit #9: Total 125532 Hits 21880 Hit Rate (%) 17.4298
-		 * Hit #10: Total 133237 Hits 9293 Hit Rate (%) 6.97479
-		 * Hit #11: Total 231 Hits 20 Hit Rate (%) 8.65801
-		 * Hit #12: Total 258538 Hits 31153 Hit Rate (%) 12.0497
-		 * Hit #14: Total 258769 Hits 31173 Hit Rate (%) 12.0467
-		 * Hit #15: Total 7355 Hits 595 Hit Rate (%) 8.08973
-		 * Hit #16: Total 251414 Hits 30578 Hit Rate (%) 12.1624
-		 * Hit #17: Total 18747 Hits 1909 Hit Rate (%) 10.183
-		 * Hit #18: Total 240022 Hits 29264 Hit Rate (%) 12.1922
-		 *
+		Hit #1: Total 59825 Hits 3877 Hit Rate (%) 6.48057
+		Hit #2: Total 198944 Hits 27296 Hit Rate (%) 13.7204
+		Hit #3: Total 25583 Hits 2977 Hit Rate (%) 11.6366
+		Hit #4: Total 233186 Hits 28196 Hit Rate (%) 12.0916
+		Hit #5: Total 23132 Hits 1275 Hit Rate (%) 5.51185
+		Hit #6: Total 235637 Hits 29898 Hit Rate (%) 12.6882
+		Hit #7: Total 63042 Hits 3561 Hit Rate (%) 5.64862
+		Hit #8: Total 195727 Hits 27612 Hit Rate (%) 14.1074
+		Hit #9: Total 125532 Hits 21880 Hit Rate (%) 17.4298
+		Hit #10: Total 133237 Hits 9293 Hit Rate (%) 6.97479
+		Hit #11: Total 231 Hits 20 Hit Rate (%) 8.65801
+		Hit #12: Total 258538 Hits 31153 Hit Rate (%) 12.0497
+		Hit #14: Total 258769 Hits 31173 Hit Rate (%) 12.0467
+		Hit #15: Total 7355 Hits 595 Hit Rate (%) 8.08973
+		Hit #16: Total 251414 Hits 30578 Hit Rate (%) 12.1624
+		Hit #17: Total 18747 Hits 1909 Hit Rate (%) 10.183
+		Hit #18: Total 240022 Hits 29264 Hit Rate (%) 12.1922
+		Hit #19: Total 38175 Hits 2651 Hit Rate (%) 6.94434
+		Hit #20: Total 220594 Hits 28522 Hit Rate (%) 12.9296
+		Hit #21: Total 51029 Hits 6727 Hit Rate (%) 13.1827
+		Hit #22: Total 207740 Hits 24446 Hit Rate (%) 11.7676
+		Hit #23: Total 169565 Hits 21795 Hit Rate (%) 12.8535
+		Hit #24: Total 89204 Hits 9378 Hit Rate (%) 10.513
+		Hit #25: Total 207306 Hits 27152 Hit Rate (%) 13.0975
+		Hit #26: Total 51463 Hits 4021 Hit Rate (%) 7.81338
+
+		===========================
+		Total time (ms) : 247422
+		Nodes searched  : 168005090
+		Nodes/second    : 679022
+
 		 * CC=singular && ss->inCheck
 		 * Hit #0: Total 23132 Hits 1275 Hit Rate (%) 5.51185
 		 * Hit #1: Total 4204 Hits 97 Hit Rate (%) 2.30733
@@ -1459,7 +1506,7 @@ moves_loop:  // When in check, search starts here
         }
 
 	//bool CC = singular && !capture && priorCapture;
-	bool CC = singular && !ss->inCheck;
+	bool CC = singular;
 
 	bool T = value > alpha;
 
