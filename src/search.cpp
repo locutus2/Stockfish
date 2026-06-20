@@ -1266,6 +1266,9 @@ moves_loop:  // When in check, search starts here
 		};
 		/*
 		 * bench 64 1 22 pos1000.fen
+		Total time (ms) : 2930154
+		Nodes searched  : 1578395962
+		Nodes/second    : 538673
 		 *
 		 * CC=singular
 		 * Hit #0: Total 2132566 Hits 239698 Hit Rate (%) 11.2399
@@ -1287,13 +1290,11 @@ moves_loop:  // When in check, search starts here
 		Hit #17: Total 182593 Hits 19030 Hit Rate (%) 10.4221
 		Hit #18: Total 1949973 Hits 220668 Hit Rate (%) 11.3165
 
-		===========================
-		Total time (ms) : 2930154
-		Nodes searched  : 1578395962
-		Nodes/second    : 538673
-				
                  * ========================================
 		 * bench 16 1 16 pos1000.fen
+		Total time (ms) : 247422
+		Nodes searched  : 168005090
+		Nodes/second    : 679022
 		 *
 		 * CC=singular
 		 * Hit #0: Total 258769 Hits 31173 Hit Rate (%) 12.0467
@@ -1322,11 +1323,6 @@ moves_loop:  // When in check, search starts here
 		Hit #24: Total 89204 Hits 9378 Hit Rate (%) 10.513
 		Hit #25: Total 207306 Hits 27152 Hit Rate (%) 13.0975
 		Hit #26: Total 51463 Hits 4021 Hit Rate (%) 7.81338
-
-		===========================
-		Total time (ms) : 247422
-		Nodes searched  : 168005090
-		Nodes/second    : 679022
 
 		 * CC=singular && ss->inCheck
 		 * Hit #0: Total 23132 Hits 1275 Hit Rate (%) 5.51185
