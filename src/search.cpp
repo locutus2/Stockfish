@@ -1289,8 +1289,15 @@ moves_loop:  // When in check, search starts here
 		Hit #16: Total 1956965 Hits 228723 Hit Rate (%) 11.6876
 		Hit #17: Total 182593 Hits 19030 Hit Rate (%) 10.4221
 		Hit #18: Total 1949973 Hits 220668 Hit Rate (%) 11.3165
-
-                 * ========================================
+		Hit #19: Total 575648 Hits 39695 Hit Rate (%) 6.89571
+		Hit #20: Total 1556918 Hits 200003 Hit Rate (%) 12.8461
+		Hit #21: Total 278513 Hits 39461 Hit Rate (%) 14.1685
+		Hit #22: Total 1854053 Hits 200237 Hit Rate (%) 10.8
+		Hit #23: Total 1278405 Hits 160542 Hit Rate (%) 12.558
+		Hit #24: Total 854161 Hits 79156 Hit Rate (%) 9.26711
+		Hit #25: Total 1434533 Hits 182920 Hit Rate (%) 12.7512
+		Hit #26: Total 698033 Hits 56778 Hit Rate (%) 8.134
+		* ========================================
 		 * bench 16 1 16 pos1000.fen
 		Total time (ms) : 247422
 		Nodes searched  : 168005090
