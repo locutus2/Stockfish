@@ -1267,6 +1267,7 @@ moves_loop:  // When in check, search starts here
 			PvNode, !PvNode,
 			cutNode, !cutNode,
 			ss->ttPv, !ss->ttPv,
+			extension > 1, extension <= 1,
 		};
 		/*
 		 * bench 64 1 22 pos1000.fen
@@ -1704,6 +1705,16 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		singularFail = !T;
+		for(int i = 0; i < int(C.size()); i++)
+		{
+			if(C[i]) 
+			{
+				dbg_hit_on(singularFail, 1000+i*10);
+				dbg_hit_on(singularFail, 1000+i*10+1, W);
+			}
+			dbg_correl_of(singularFail, C[i], 1000+10*i);
+			dbg_correl_of(singularFail, C[i], 1000+10*i+1, W);
+		}
 	}
 
         // Step 19. Undo move
