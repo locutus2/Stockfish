@@ -196,7 +196,7 @@ ExtMove* MovePicker::score(const MoveList<Type>& ml) {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-    constexpr std::array<int, LOW_PLY_HISTORY_SIZE> lowPlyWeight = {17, 12, 12, 10, 8};
+    constexpr std::array<int, LOW_PLY_HISTORY_SIZE> lowPlyWeight = {4, 14, 2, 4, 1};
 
     Color us = pos.side_to_move();
 
