@@ -1243,7 +1243,7 @@ moves_loop:  // When in check, search starts here
                 extension =
                   1 + (value < singularBeta - doubleMargin) + (value < singularBeta - tripleMargin);
 
-                depth += std::min(extension, 2 - allNode);
+                depth += std::min(extension, 1 + cutNode);
             }
 
             // Multi-cut pruning
