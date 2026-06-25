@@ -741,6 +741,7 @@ Value Search::Worker::search(
     ss->inCheck   = pos.checkers();
     priorCapture  = pos.captured_piece();
     Color us      = pos.side_to_move();
+    ss->allNode   = allNode;
     ss->moveCount = 0;
     bestValue     = -VALUE_INFINITE;
     maxValue      = VALUE_INFINITE;
@@ -1009,7 +1010,8 @@ Value Search::Worker::search(
             // until ply exceeds nmpMinPly.
             nmpMinPly = ss->ply + 3 * (depth - R) / 4;
 
-            Value v = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false);
+            Value v     = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false);
+            ss->allNode = allNode;
 
             nmpMinPly = 0;
 
@@ -1081,6 +1083,9 @@ moves_loop:  // When in check, search starts here
     if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - 4 && ttData.value >= probCutBeta
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value))
         return probCutBeta;
+
+    if (allNode && (ss - 1)->allNode && depth > 1)
+        --depth;
 
     const PieceToHistory* contHist[] = {
       (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
@@ -1231,6 +1236,7 @@ moves_loop:  // When in check, search starts here
             ss->excludedMove = move;
             value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
             ss->excludedMove = Move::none();
+            ss->allNode      = allNode;
 
             if (value < singularBeta)
             {
