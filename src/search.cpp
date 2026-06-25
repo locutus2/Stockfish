@@ -835,6 +835,8 @@ Value Search::Worker::search(
                        unadjustedStaticEval, tt.generation());
     }
 
+    ss->absEvalDiff = (ss-1)->absEvalDiff + (ss->staticEval != VALUE_NONE && (ss-1)->absEvalDiff != VALUE_NONE ? std::abs(ss->staticEval + (ss-1)->staticEval) : 0);
+
     // Set up the improving flag, which is true if current static evaluation is
     // bigger than the previous static evaluation at our turn (if we were in
     // check at our previous move we go back until we weren't in check) and is
@@ -1494,6 +1496,20 @@ moves_loop:  // When in check, search starts here
             else
                 quietsSearched.push_back(move);
         }
+    }
+
+    //bool CC = ss->staticEval != VALUE_NONE && (ss-ss->ply)->staticEval != VALUE_NONE && ss->absEvalDiff > 0;
+    //int d = ss->ply;
+    int d = 9;
+    bool CC = d <= ss->ply && ss->staticEval != VALUE_NONE && (ss-d)->staticEval != VALUE_NONE;
+    if(CC)
+    {
+	    int diff = ss->staticEval - (d & 1 ? -(ss-d)->staticEval : (ss-d)->staticEval);
+	    constexpr int B = 100;
+	    //int index = B + std::clamp(B * diff / ss->absEvalDiff, -B, B);
+	    int index = B + std::clamp(diff / 25, -B, B);
+	    bool T = bool(bestMove);
+	    dbg_hit_on(T, index);
     }
 
     // Step 21. Check for mate and stalemate
