@@ -299,8 +299,6 @@ class SearchManager: public ISearchManager {
     Value                bestPreviousAverageScore;
     bool                 stopOnPonderhit;
 
-    usize id;
-
     const UpdateContext& updates;
 };
 
@@ -371,7 +369,6 @@ class Worker {
     }
 
     TimePoint elapsed() const;
-    TimePoint elapsed_time() const;
 
     Value evaluate(const Position&);
 
