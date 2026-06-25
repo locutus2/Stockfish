@@ -1014,8 +1014,7 @@ Value Search::Worker::search(
             // until ply exceeds nmpMinPly.
             nmpMinPly = ss->ply + 3 * (depth - R) / 4;
 
-            Value v     = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false);
-            ss->allNode = allNode;
+            Value v = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false);
 
             nmpMinPly = 0;
 
@@ -1088,8 +1087,8 @@ moves_loop:  // When in check, search starts here
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value))
         return probCutBeta;
 
-    if (allNode && (ss - 1)->allNode)
-        ++depth;
+    if (depth >= 4 && allNode && (ss - 1)->allNode)
+        --depth;
 
     const PieceToHistory* contHist[] = {
       (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
