@@ -118,6 +118,7 @@ struct Stack {
     int                         cutoffCnt;
     int                         reduction;
     int				absEvalDiff;
+    int				totalMoveCount;
 };
 
 

@@ -743,6 +743,7 @@ Value Search::Worker::search(
 
     // Step 1. Initialize node
     ss->inCheck   = pos.checkers();
+    ss->totalMoveCount   = (ss-1)->totalMoveCount + (ss-1)->moveCount;
     priorCapture  = pos.captured_piece();
     Color us      = pos.side_to_move();
     ss->moveCount = 0;
@@ -1498,10 +1499,73 @@ moves_loop:  // When in check, search starts here
         }
     }
 
+    bool CC = !PvNode && depth > 1;
+    if(CC)
+    {
+	    std::vector<bool> C = {
+		    true,
+		    cutNode,
+		    ss->inCheck,
+		    priorCapture,
+		    improving,
+		    opponentWorsening,
+	    };
+	    bool T = bool(bestMove);
+	    int V = 5*cutNode + 4*ss->inCheck + 2*!opponentWorsening + !priorCapture;
+	    for(int i = 0; i < int(C.size()); i++)
+	    {
+		    dbg_hit_on(T, V+1000*i+100*C[i]);
+	    }
+    }
+
+    /*
+    bool CC = depth > 1 && ss->ply > 0;
+    if(CC)
+    {
+	    int diff = ss->totalMoveCount / ss->ply;
+	    constexpr int M = 100;
+	    constexpr int B = 100;
+	    //int index = B + std::clamp(B * diff / ss->absEvalDiff, -B, B);
+	    int index = B + std::clamp(diff / (M/B), -B, B);
+	    bool T = bool(bestMove);
+	    dbg_hit_on(T, index);
+    }
+    */
+
     //bool CC = ss->staticEval != VALUE_NONE && (ss-ss->ply)->staticEval != VALUE_NONE && ss->absEvalDiff > 0;
     //int d = ss->ply;
-    int d = 9;
-    bool CC = d <= ss->ply && ss->staticEval != VALUE_NONE && (ss-d)->staticEval != VALUE_NONE;
+    // Adrian
+    /*
+    bool CC = depth > 1 && ss->ply >= 2;// && ss->staticEval != VALUE_NONE && (ss-2)->staticEval != VALUE_NONE && (ss-4)->staticEval != VALUE_NONE;
+    if(CC)
+    {
+	    //int diff = std::min(ss->staticEval - (ss-2)->staticEval,  (ss-2)->staticEval - (ss-4)->staticEval);
+	    //int diff = -(ss-1)->statScore;
+	    //int diff = (ss-2)->statScore;
+	    int diff = ((ss-2)->statScore + (ss-1)->statScore)/2;
+	    constexpr int M = 60000;
+	    constexpr int B = 100;
+	    //int index = B + std::clamp(B * diff / ss->absEvalDiff, -B, B);
+	    int index = B + std::clamp(diff / (M/B), -B, B);
+	    bool T = bool(bestMove);
+	    dbg_hit_on(T, index);
+    }
+    */
+    /*
+    bool CC = depth >= 14 && depth > 1 && ss->ply >= 4 && ss->staticEval != VALUE_NONE && (ss-2)->staticEval != VALUE_NONE && (ss-4)->staticEval != VALUE_NONE;
+    if(CC)
+    {
+	    int diff = std::min(ss->staticEval - (ss-2)->staticEval,  (ss-2)->staticEval - (ss-4)->staticEval);
+	    constexpr int B = 100;
+	    //int index = B + std::clamp(B * diff / ss->absEvalDiff, -B, B);
+	    int index = B + std::clamp(diff / 25, -B, B);
+	    bool T = bool(bestMove);
+	    dbg_hit_on(T, index);
+    }
+    */
+    /*
+    int d = 7;
+    bool CC = !PvNode && depth > 1 && d <= ss->ply && ss->staticEval != VALUE_NONE && (ss-d)->staticEval != VALUE_NONE;
     if(CC)
     {
 	    int diff = ss->staticEval - (d & 1 ? -(ss-d)->staticEval : (ss-d)->staticEval);
@@ -1511,6 +1575,7 @@ moves_loop:  // When in check, search starts here
 	    bool T = bool(bestMove);
 	    dbg_hit_on(T, index);
     }
+	    */
 
     // Step 21. Check for mate and stalemate
     // All legal moves have been searched and if there are no legal moves, it
