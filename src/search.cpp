@@ -1292,6 +1292,9 @@ moves_loop:  // When in check, search starts here
             r -= 2766 + PvNode * 1017 + (ttData.value > alpha) * 838
                + (ttData.depth >= depth) * (923 + cutNode * 955);
 
+	bool CC = false;
+	bool C = true;
+
         r += 714;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 62;
         r -= std::abs(correctionValue) / 26131;
@@ -1330,6 +1333,8 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
+	    CC = true;
+
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
@@ -1388,6 +1393,72 @@ moves_loop:  // When in check, search starts here
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
+
+	if(CC)
+	{
+		bool T = value > alpha;
+		int mc = std::min(moveCount, 99);
+		//dbg_hit_on(T, 100*C+mc);
+		//dbg_correl_of(moveCount, T, C);
+		//dbg_mean_of(moveCount, 10*C+T);
+                C = givesCheck; 
+		/*
+                C = givesCheck; 
+		Mean #0: Total 78060443 Mean 492.86
+Mean #1: Total 3133123 Mean 234.357
+Mean #10: Total 7264551 Mean 440.214
+Mean #11: Total 507471 Mean 227.729
+Mean #50: Total 81193566 Mean 482.885
+Mean #51: Total 7772022 Mean 426.34
+Mean #100: Total 78060443 Mean 492.86
+Mean #101: Total 3133123 Mean 234.357
+Mean #110: Total 7264551 Mean 440.214
+Mean #111: Total 507471 Mean 227.729
+Mean #150: Total 81193566 Mean 482.885
+Mean #151: Total 7772022 Mean 426.34
+Stdev #0: Total 78060443 Stdev 434.987
+Stdev #1: Total 3133123 Stdev 208.194
+Stdev #10: Total 7264551 Stdev 373.607
+Stdev #11: Total 507471 Stdev 180.893
+Stdev #50: Total 81193566 Stdev 431.352
+Stdev #51: Total 7772022 Stdev 367.914
+Stdev #100: Total 78060443 Stdev 434.987
+Stdev #101: Total 3133123 Stdev 208.194
+Stdev #110: Total 7264551 Stdev 373.607
+Stdev #111: Total 507471 Stdev 180.893
+Stdev #150: Total 81193566 Stdev 431.352
+Stdev #151: Total 7772022 Stdev 367.914
+		 * */
+		double p = double(7772022) / (7772022 + 81193566);
+		double m1 = 426.34;
+		double m0 = 482.885;
+		// f = m1*p*w1+m0*(1-p)*w0
+		// df/dw1 = m1*p
+		// df/dw0 = m0*(1-p)
+		// m1*p*w1 = -m0*(1-p)*w0
+		// m1*p*w1 + m0*(1-p)*w0 = 0
+		// w0 = 1 - m1*p/m0/(1-p) * (w1-1)
+		// m1*p+m0*(1-p) = m1*p*w1+m0*(1-p)*w0
+		// w1 = (m1*p + m0*(1-p)*(1-w0)) / m1 / p
+		//    = 1 + m0/m1 * (1-p)/p * (1-w0)
+		double w0 = 0.98387096774193548387096774193548;
+		double w1 = 1 + m0/m1 * (1-p)/p * (1-w0);
+		//double w1 = 1.1;
+		//double w0 = 1 + m1/m0 * p/(1-p) * (1-w1);
+		dbg_mean_of(62*w0,200);
+		dbg_mean_of(62*w1,201);
+		dbg_mean_of(moveCount*62,300);
+		dbg_mean_of(moveCount*62*(w1*C+w0*!C),301);
+		double w[2] = { w0, w1};
+		dbg_mean_of(moveCount*62, 10*C+T);
+		dbg_stdev_of(moveCount*62, 10*C+T);
+		dbg_mean_of(moveCount*62, 50+C);
+		dbg_stdev_of(moveCount*62, 50+C);
+		dbg_mean_of(moveCount*62*w[C], 100+10*C+T);
+		dbg_stdev_of(moveCount*62*w[C], 100+10*C+T);
+		dbg_mean_of(moveCount*62*w[C], 150+C);
+		dbg_stdev_of(moveCount*62*w[C], 150+C);
+	}
 
         // Step 19. Undo move
         undo_move(pos, move);
