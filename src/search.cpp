@@ -1100,6 +1100,7 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    bool CC = !PvNode;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1330,6 +1331,26 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 272 / (256 * depth + 285);
 
+		    std::vector<bool> C = {
+			    true,
+			    capture,
+			    givesCheck,
+			    move == ttData.move,
+			    cutNode,
+			    ss->inCheck,
+			    priorCapture,
+			    improving,
+			    opponentWorsening,
+			    ttCapture,
+			    ss->ttPv,
+			    ss->ttHit,
+			    (ss+1)->cutoffCnt>1,
+			    (ss-1)->currentMove==Move::null(),
+			    (ss-1)->moveCount==0,
+			    bool(excludedMove),
+		    };
+		    int V = 2*(move == ttData.move) + bool(excludedMove) + capture + cutNode + !ss->ttPv + opponentWorsening;
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1391,6 +1412,16 @@ moves_loop:  // When in check, search starts here
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
+
+	    if(CC)
+	    {
+		    bool T = value > alpha;
+		    //int V = 5*cutNode + 4*ss->inCheck + 2*!opponentWorsening + !priorCapture;
+		    for(int i = 0; i < int(C.size()); i++)
+		    {
+			    dbg_hit_on(T, V+1000*i+100*C[i]);
+		    }
+	    }
 
         // Step 19. Undo move
         undo_move(pos, move);
@@ -1499,6 +1530,7 @@ moves_loop:  // When in check, search starts here
         }
     }
 
+    /*
     bool CC = !PvNode && depth > 1;
     if(CC)
     {
@@ -1517,6 +1549,7 @@ moves_loop:  // When in check, search starts here
 		    dbg_hit_on(T, V+1000*i+100*C[i]);
 	    }
     }
+    */
 
     /*
     bool CC = depth > 1 && ss->ply > 0;
