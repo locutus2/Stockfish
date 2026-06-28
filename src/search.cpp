@@ -1100,7 +1100,7 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
-    bool CC = !PvNode;
+    bool CC = !ss->ttPv;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1331,7 +1331,7 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 272 / (256 * depth + 285);
 
-		    std::vector<bool> C = {
+        std::vector<bool> C = {
 			    true,
 			    capture,
 			    givesCheck,
@@ -1342,14 +1342,14 @@ moves_loop:  // When in check, search starts here
 			    improving,
 			    opponentWorsening,
 			    ttCapture,
-			    ss->ttPv,
 			    ss->ttHit,
 			    (ss+1)->cutoffCnt>1,
 			    (ss-1)->currentMove==Move::null(),
 			    (ss-1)->moveCount==0,
 			    bool(excludedMove),
-		    };
-		    int V = 2*(move == ttData.move) + bool(excludedMove) + capture + cutNode + !ss->ttPv + opponentWorsening;
+        };
+        //int V = 2*(move == ttData.move) + bool(excludedMove) + capture + cutNode + !ss->ttPv + opponentWorsening;
+	int V = 0;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
