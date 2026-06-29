@@ -60,6 +60,7 @@ std::vector <std::string> names;
 
 #define CONDITION(c,x) if((c).size() >= names.size()) names.push_back(#x); (c).push_back((x));
 
+constexpr bool MAX_FH = true;
 int Vmax = 0;
 bool LEARN = false;
 std::vector<std::array<int, 2>> W;
@@ -67,7 +68,9 @@ constexpr bool DEBUG = true;
 
 void endIteration(int iter, int elapsed, std::ostream& out)
 {
-   std::vector<double> best(W.size(), 2);
+   constexpr double INF = (MAX_FH ? -1 : 2);
+   std::vector<double> best(W.size(), INF);
+   std::vector<double> bestr(W.size(), INF);
    bool CC = false;
    int besti = -1;
    for(int i = 0; i < int(W.size()); i++)
@@ -75,18 +78,23 @@ void endIteration(int iter, int elapsed, std::ostream& out)
 	   for(int c = 0; c < 2; c++)
 	   {
 		   std::vector<double> Vi;
+		   std::vector<double> Vir;
 		   for(int v = 0; v <= iter; v++)
 		   {
 		       double xi = dbg_get_hit_on(v + 1000*i + 100*c);
-		       if(xi < 0) xi = 2;
+		       if(xi < 0) xi = INF;
 		       Vi.push_back(xi);
+		       Vir.insert(Vir.begin(), xi);
 		   }
 
-		   if(Vi < best)
+
+		   if(   ( MAX_FH && Vir > bestr)
+		      || (!MAX_FH && Vi  < best))
 		   {
 			   besti = i;
 			   best = Vi;
-			   CC = !c;
+			   bestr = Vir;
+			   CC = (MAX_FH ? c : !c);
 		   }
 
 		   if(DEBUG || (i == 0 && c == 1))
