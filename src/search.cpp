@@ -56,6 +56,8 @@ static constexpr std::array<int, 16> lmrDivisor = {3307, 2930, 2874, 2818, 3215,
 
 namespace TB = Tablebases;
 
+bool LEARN = false;
+
 void syzygy_extend_pv(const OptionsMap&            options,
                       const Search::LimitsType&    limits,
                       Stockfish::Position&         pos,

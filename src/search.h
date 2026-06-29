@@ -44,6 +44,8 @@
 
 namespace Stockfish {
 
+extern bool LEARN;
+
 // Different node types, used as a template parameter
 enum NodeType {
     NonPV,

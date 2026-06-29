@@ -141,6 +141,8 @@ void UCIEngine::loop() {
             engine.flip();
         else if (token == "bench")
             bench(is);
+        else if (token == "learn")
+            learn(is);
         else if (token == BenchmarkCommand)
             benchmark(is);
         else if (token == "d")
@@ -281,6 +283,77 @@ void UCIEngine::bench(std::istream& args) {
 
     elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
 
+    dbg_print();
+
+    std::cerr << "\n==========================="    //
+              << "\nTotal time (ms) : " << elapsed  //
+              << "\nNodes searched  : " << nodes    //
+              << "\nNodes/second    : " << 1000 * nodes / elapsed << std::endl;
+
+    // reset callback, to not capture a dangling reference to nodesSearched
+    engine.set_on_update_full([&](const auto& i) { on_update_full(i, options["UCI_ShowWDL"]); });
+}
+
+void UCIEngine::learn(std::istream& args) {
+    std::string token;
+    u64         num, nodes = 0, cnt = 1;
+    u64         nodesSearched = 0;
+    const auto& options       = engine.get_options();
+
+    engine.set_on_update_full([&](const auto& i) {
+        nodesSearched = i.nodes;
+        on_update_full(i, options["UCI_ShowWDL"]);
+    });
+
+    std::vector<std::string> list = Benchmark::setup_bench(engine.fen(), args);
+
+    num = count_if(list.begin(), list.end(),
+                   [](const std::string& s) { return s.find("go ") == 0 || s.find("eval") == 0; });
+
+    LEARN = true;
+    TimePoint elapsed = now();
+
+    for (const auto& cmd : list)
+    {
+        std::istringstream is(cmd);
+        is >> token;
+
+        if (token == "go" || token == "eval")
+        {
+            std::cerr << "\nPosition: " << cnt++ << '/' << num << " (" << engine.fen() << ")"
+                      << std::endl;
+            if (token == "go")
+            {
+                Search::LimitsType limits = parse_limits(is);
+
+                if (limits.perft)
+                    nodesSearched = perft(limits);
+                else
+                {
+                    engine.go(limits);
+                    engine.wait_for_search_finished();
+                }
+
+                nodes += nodesSearched;
+                nodesSearched = 0;
+            }
+            else
+                engine.trace_eval();
+        }
+        else if (token == "setoption")
+            setoption(is);
+        else if (token == "position")
+            position(is);
+        else if (token == "ucinewgame")
+        {
+            engine.search_clear();  // search_clear may take a while
+            elapsed = now();
+        }
+    }
+
+    elapsed = now() - elapsed + 1;  // Ensure positivity to avoid a 'divide by zero'
+
+    LEARN = false;
     dbg_print();
 
     std::cerr << "\n==========================="    //
