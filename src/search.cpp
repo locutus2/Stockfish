@@ -146,6 +146,7 @@ void endIteration(int iter, int elapsed, std::ostream& out)
 	   }
 	   out << std::endl;
    }
+   out << std::flush;
 
    dbg_clear();
    Vmax = 0;
