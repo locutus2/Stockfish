@@ -324,6 +324,11 @@ std::array<DebugInfo<6>, MaxDebugSlots>  correl;
 std::array<DebugExtremes, MaxDebugSlots> extremes;
 
 }  // namespace
+   
+double dbg_get_hit_on(int slot)
+{
+	return (hit.at(slot)[0] > 0 ? hit.at(slot)[1]/double(hit.at(slot)[0]) : -1.0);
+}
 
 void dbg_hit_on(bool cond, int slot) {
 

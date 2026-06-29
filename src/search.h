@@ -45,6 +45,7 @@
 namespace Stockfish {
 
 extern bool LEARN;
+void endIteration(int iter, int elapsed, std::ostream& out = std::cerr);
 
 // Different node types, used as a template parameter
 enum NodeType {

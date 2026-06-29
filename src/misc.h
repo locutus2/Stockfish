@@ -154,6 +154,7 @@ struct PipeDeleter {
 std::optional<std::string> read_file_to_string(const std::string& path);
 
 void dbg_hit_on(bool cond, int slot = 0);
+double dbg_get_hit_on(int slot = 0);
 void dbg_mean_of(i64 value, int slot = 0);
 void dbg_stdev_of(i64 value, int slot = 0);
 void dbg_extremes_of(i64 value, int slot = 0);

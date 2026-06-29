@@ -56,7 +56,100 @@ static constexpr std::array<int, 16> lmrDivisor = {3307, 2930, 2874, 2818, 3215,
 
 namespace TB = Tablebases;
 
+std::vector <std::string> names;
+
+#define CONDITION(c,x) if((c).size() >= names.size()) names.push_back(#x); (c).push_back((x));
+
+int Vmax = 0;
 bool LEARN = false;
+std::vector<std::array<int, 2>> W;
+constexpr bool DEBUG = true;
+
+void endIteration(int iter, int elapsed, std::ostream& out)
+{
+   std::vector<double> best(W.size(), 2);
+   bool CC = false;
+   int besti = -1;
+   for(int i = 0; i < int(W.size()); i++)
+   {
+	   for(int c = 0; c < 2; c++)
+	   {
+		   std::vector<double> Vi;
+		   for(int v = 0; v <= iter; v++)
+		   {
+		       double xi = dbg_get_hit_on(v + 1000*i + 100*c);
+		       if(xi < 0) xi = 2;
+		       Vi.push_back(xi);
+		   }
+
+		   if(Vi < best)
+		   {
+			   besti = i;
+			   best = Vi;
+			   CC = !c;
+		   }
+
+		   if(DEBUG || (i == 0 && c == 1))
+		   {
+			   out << "[" << i << "," << c << "] " <<  (c ? names[i] : std::string("!(")+names[i]+")" ) << " V=[";
+			   for(int j = 0; j < int(Vi.size()); j++)
+				   out << (j?",":"") << 100.*Vi[j] << "%";
+			   out << "]" << std::endl;
+		   }
+	   }
+   }
+
+   if(besti <= 0)
+   {
+	   out << "Abort: no changes found" << std::endl;
+	   std::exit(0);
+   }
+   else
+   {
+	   if(W[besti][!CC] > 0)
+	   {
+	       W[besti][!CC]--;
+	   }
+	   else
+	   {
+	       W[besti][CC]++;
+	   }
+
+           out << "Iteration " << iter+1 << " time=" << elapsed/1000. << " sec bestCondition=" << (CC ? names[besti] : std::string("!(")+names[besti]+")" ) << std::endl;
+
+	   out << "W = {";
+	   for(int k = 0; k <int(W.size()); k++)
+		   out << (k ? ", ": "") << "{" << W[k][0] << ", " << W[k][1] << "}";
+	   out << " }" << std::endl; 
+	   out << "=> Vmax=" << Vmax << std::endl;
+//	   for(int v = 0; v < int(best.size()); v++)
+//		   out << "=> V[" << v << "]=" << best[v] *100 << "%" << std::endl;
+
+	   out << "=> newV=";
+	   bool first = true;
+	   for(int i = 0; i < int(W.size()); i++)
+	   {
+		   if(W[i][1] > 0)
+		   {
+			   if(!first) out << " + ";
+			   if(W[i][1] > 1) out << W[i][1] << " * ";
+			   out << "(" << names[i] << ")";
+			   first = false;
+		   }
+		   else if(W[i][0] > 0)
+		   {
+			   if(!first) out << " + ";
+			   if(W[i][0] > 1) out << W[i][0] << " * ";
+			   out << "!(" << names[i] << ")";
+			   first = false;
+		   }
+	   }
+	   out << std::endl;
+   }
+
+   dbg_clear();
+   Vmax = 0;
+}
 
 void syzygy_extend_pv(const OptionsMap&            options,
                       const Search::LimitsType&    limits,
@@ -1333,25 +1426,40 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 272 / (256 * depth + 285);
 
-        std::vector<bool> C = {
-			    true,
-			    capture,
-			    givesCheck,
-			    move == ttData.move,
-			    cutNode,
-			    ss->inCheck,
-			    priorCapture,
-			    improving,
-			    opponentWorsening,
-			    ttCapture,
-			    ss->ttHit,
-			    (ss+1)->cutoffCnt>1,
-			    (ss-1)->currentMove==Move::null(),
-			    (ss-1)->moveCount==0,
-			    bool(excludedMove),
-        };
+        std::vector<bool> C;
+	CONDITION(C,true);
+        CONDITION(C,capture);
+        CONDITION(C,givesCheck);
+        CONDITION(C,move == ttData.move);
+        CONDITION(C,cutNode);
+        CONDITION(C,ss->inCheck);
+        CONDITION(C,priorCapture);
+        CONDITION(C,improving);
+        CONDITION(C,opponentWorsening);
+        CONDITION(C,ttCapture);
+        CONDITION(C,ss->ttHit);
+        CONDITION(C,(ss+1)->cutoffCnt>1);
+        CONDITION(C,(ss-1)->currentMove==Move::null());
+        CONDITION(C,(ss-1)->moveCount==0);
+        CONDITION(C,bool(excludedMove));
+
         //int V = 2*(move == ttData.move) + bool(excludedMove) + capture + cutNode + !ss->ttPv + opponentWorsening;
 	int V = 0;
+	if(LEARN && CC)
+	{
+		//W.resize(C.size(), {0, 0});
+		while(W.size() < C.size())
+		{
+			W.push_back({0,0});
+		}
+		V = 0;
+		for(int i = 0; i < int(C.size()); i++)
+		{
+			//if(W[i][0] != 0 || W[i][1] != 0) std::cerr << "Loop W " << W[i][0] << " " << W[i][1] << std::endl;
+			V += W[i][C[i]];
+		}
+		Vmax = std::max(Vmax, V);
+	}
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1415,7 +1523,7 @@ moves_loop:  // When in check, search starts here
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
 
-	    if(CC)
+	    if(LEARN && CC)
 	    {
 		    bool T = value > alpha;
 		    //int V = 5*cutNode + 4*ss->inCheck + 2*!opponentWorsening + !priorCapture;
@@ -2163,7 +2271,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        dbg_print();
+        //dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI
