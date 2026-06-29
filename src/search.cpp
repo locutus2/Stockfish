@@ -1298,10 +1298,10 @@ moves_loop:  // When in check, search starts here
 
         if (!ss->ttPv)
         {
-            int index = 4 * (!ss->inCheck + ((ss - 1)->moveCount > 0)) + 3 * priorCapture
-                      + 2 * (capture + (move == ttData.move) + !excludedMove)
-                      + ((ss + 1)->cutoffCnt > 1) + givesCheck + cutNode + improving;
-            r -= 64 * index - 960;
+            int index = 8 * (move == ttData.move) + 4 * (cutNode + bool(excludedMove))
+                      + 3 * ((ss - 1)->moveCount > 0) + 2 * (capture + ttCapture) + givesCheck
+                      + !priorCapture + !improving + opponentWorsening;
+            r -= 64 * index - 640;
         }
 
         // Increase reduction for cut nodes
