@@ -1418,6 +1418,8 @@ moves_loop:  // When in check, search starts here
 			dbg_hit_on(v<=V, v);
 		dbg_mean_of(T*100, V);
 		*/
+		dbg_mean_of(V);
+		dbg_stdev_of(V);
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
