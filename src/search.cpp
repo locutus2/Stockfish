@@ -1325,7 +1325,8 @@ moves_loop:  // When in check, search starts here
 
 	bool CC = !ss->ttPv;
 	//int V = 2 * (capture) + (givesCheck) + 2 * (move == ttData.move) + (cutNode) + 4 * !(ss->inCheck) + 3 * (priorCapture) + (improving) + ((ss+1)->cutoffCnt>1) + 4 * !((ss-1)->moveCount==0) + 2 * !(bool(excludedMove));
-        int V = 2 * (capture) + (givesCheck) + 8 * (move == ttData.move) + 4 * (cutNode) + !(priorCapture) + !(improving) + (opponentWorsening) + 2 * (ttCapture) + 3 * !((ss-1)->moveCount==0) + 4 * (bool(excludedMove));
+        //int V = 2 * (capture) + (givesCheck) + 8 * (move == ttData.move) + 4 * (cutNode) + !(priorCapture) + !(improving) + (opponentWorsening) + 2 * (ttCapture) + 3 * !((ss-1)->moveCount==0) + 4 * (bool(excludedMove));
+	int V = 3 * (capture) + (givesCheck) + 15 * (move == ttData.move) + 5 * (cutNode) + !(priorCapture) + !(improving) + (opponentWorsening) + 3 * (ttCapture) + 31 * !((ss-1)->moveCount==0) + 4 * (bool(excludedMove));
         // Scale up reductions for expected ALL nodes
         if (allNode)
             r += r * 272 / (256 * depth + 285);
@@ -1398,8 +1399,8 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		bool T = value > alpha;
-		/*
-		bool T2 = V >= 14;
+		
+		bool T2 = V >= 40;
 		dbg_hit_on(T,0);
 		dbg_hit_on(T2,1);
 
@@ -1408,13 +1409,15 @@ moves_loop:  // When in check, search starts here
 		dbg_hit_on(T&&!T2,12);
 		dbg_hit_on(T&&T2,13);
 
+		dbg_hit_on(T,20+T2);
+
 		dbg_correl_of(T, T2, 0);
-		*/
-		dbg_hit_on(T,30);
-		for(int v = 0; v <= 26; v++)
+		/*
+		dbg_hit_on(T,1000);
+		for(int v = 0; v <= 65; v++)
 			dbg_hit_on(v<=V, v);
 		dbg_mean_of(T*100, V);
-		
+		*/
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
