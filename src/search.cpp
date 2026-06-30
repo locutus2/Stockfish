@@ -1301,7 +1301,7 @@ moves_loop:  // When in check, search starts here
             int index = 31 * ((ss - 1)->moveCount > 0) + 15 * (move == ttData.move) + 5 * cutNode
                       + 4 * bool(excludedMove) + 3 * (capture + ttCapture) + givesCheck
                       + !priorCapture + !improving + opponentWorsening;
-            r -= 26 * index - 1024;
+            r -= 50 * index - 1791;
         }
 
         // Increase reduction for cut nodes
