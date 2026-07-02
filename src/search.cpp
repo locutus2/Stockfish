@@ -1324,8 +1324,8 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 445 / 4096;
 
         if (!ss->ttPv && ss->ply >= 7 && ss->staticEval != VALUE_NONE && (ss - 7)->staticEval < 0
-            && ss->staticEval >= -(ss - 7)->staticEval + 150)
-            r -= (ss - 7)->staticEval / 2;
+            && ss->staticEval >= -(ss - 7)->staticEval + 75)
+            r -= 2 * (ss - 7)->staticEval;
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
