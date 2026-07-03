@@ -1334,10 +1334,12 @@ moves_loop:  // When in check, search starts here
 	    CC = true;
 	    C1 = ss->staticEval >= -(ss - 7)->staticEval + 150;
 	    C2 = (ss - 7)->staticEval < 0 && ss->staticEval >= -(ss - 7)->staticEval + 150;
-	    C3 = (ss - 7)->staticEval < -alpha && ss->staticEval >= -(ss - 7)->staticEval + 150;
+	    //C3 = (ss - 7)->staticEval < -alpha && ss->staticEval >= -(ss - 7)->staticEval + 150;
+	    C3 = (ss - 7)->staticEval < std::min(-alpha, 0) && ss->staticEval >= -(ss - 7)->staticEval + 150;
             //r -= (ss - 7)->staticEval;
 	    C = (ss - 7)->staticEval < -alpha && ss->staticEval >= -(ss - 7)->staticEval + 150;
-	    V = -(ss - 7)->staticEval - alpha;
+	    //V = -(ss - 7)->staticEval - alpha;
+	    V = -(ss - 7)->staticEval + std::min(-alpha, 0);
 	}
 
         // Scale up reductions for expected ALL nodes
