@@ -1327,6 +1327,8 @@ moves_loop:  // When in check, search starts here
 	bool C1 = false;
 	bool C2 = false;
 	bool C3 = false;
+	bool C = false;
+	int V = 0;
         if (!ss->ttPv && ss->ply >= 7 && ss->staticEval != VALUE_NONE && (ss-7)->staticEval != VALUE_NONE)
 	{
 	    CC = true;
@@ -1334,6 +1336,8 @@ moves_loop:  // When in check, search starts here
 	    C2 = (ss - 7)->staticEval < 0 && ss->staticEval >= -(ss - 7)->staticEval + 150;
 	    C3 = (ss - 7)->staticEval < -alpha && ss->staticEval >= -(ss - 7)->staticEval + 150;
             //r -= (ss - 7)->staticEval;
+	    C = (ss - 7)->staticEval < -alpha && ss->staticEval >= -(ss - 7)->staticEval + 150;
+	    V = -(ss - 7)->staticEval - alpha;
 	}
 
         // Scale up reductions for expected ALL nodes
@@ -1409,6 +1413,11 @@ moves_loop:  // When in check, search starts here
 	    dbg_hit_on(T, 10+C1);
 	    dbg_hit_on(T, 20+C2);
 	    dbg_hit_on(T, 30+C3);
+
+	    constexpr int B = 100;
+	    constexpr int M = 2500;
+	    int index = std::clamp(V * B / M, -B, B) + B;
+	    dbg_hit_on(T, 1000+index);
 	}
 
 
