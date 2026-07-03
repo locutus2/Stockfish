@@ -1323,23 +1323,36 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 445 / 4096;
 
+	//bool C1 = false;
+	//bool C2 = false;
+	//bool C3 = false;
 	bool CC = false;
-	bool C1 = false;
-	bool C2 = false;
-	bool C3 = false;
 	bool C = false;
 	int V = 0;
-        if (!ss->ttPv && ss->ply >= 7 && ss->staticEval != VALUE_NONE && (ss-7)->staticEval != VALUE_NONE)
+        if (!ss->ttPv && ss->ply >= 7+1 
+			&& ss->staticEval != VALUE_NONE && (ss-7)->staticEval != VALUE_NONE 
+			&& (ss-1)->staticEval != VALUE_NONE && (ss-8)->staticEval != VALUE_NONE 
+	    //&& ss->staticEval >= -(ss - 7)->staticEval + 150
+	    )
 	{
 	    CC = true;
-	    C1 = ss->staticEval >= -(ss - 7)->staticEval + 150;
-	    C2 = (ss - 7)->staticEval < 0 && ss->staticEval >= -(ss - 7)->staticEval + 150;
+	    //C1 = ss->staticEval >= -(ss - 7)->staticEval + 150;
+	    //C2 = (ss - 7)->staticEval < 0 && ss->staticEval >= -(ss - 7)->staticEval + 150;
 	    //C3 = (ss - 7)->staticEval < -alpha && ss->staticEval >= -(ss - 7)->staticEval + 150;
-	    C3 = (ss - 7)->staticEval < std::min(-alpha, 0) && ss->staticEval >= -(ss - 7)->staticEval + 150;
+	    //C3 = (ss - 7)->staticEval < std::min(-alpha, 0) && ss->staticEval >= -(ss - 7)->staticEval + 150;
+	    //C3 = ss->staticEval > alpha && ss->staticEval >= -(ss - 7)->staticEval + 150;
             //r -= (ss - 7)->staticEval;
-	    C = (ss - 7)->staticEval < -alpha && ss->staticEval >= -(ss - 7)->staticEval + 150;
+	    //V = -(ss - 7)->staticEval;
 	    //V = -(ss - 7)->staticEval - alpha;
-	    V = -(ss - 7)->staticEval + std::min(-alpha, 0);
+	    //V = ss->staticEval - alpha;
+	    V = (ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval) / 2;
+	    //V = ss->staticEval;
+	    //V = ss->staticEval + (ss - 7)->staticEval;
+	    C = V > 0;
+	    // && ss->staticEval >= -(ss - 7)->staticEval + 150;
+	    //V = -(ss - 7)->staticEval - alpha;
+	    //V = -(ss - 7)->staticEval + std::min(-alpha, 0);
+	    //V = ss->staticEval - alpha;
 	}
 
         // Scale up reductions for expected ALL nodes
@@ -1412,9 +1425,7 @@ moves_loop:  // When in check, search starts here
 	{
 	    bool T = value > alpha;
 	    dbg_hit_on(T, 0);
-	    dbg_hit_on(T, 10+C1);
-	    dbg_hit_on(T, 20+C2);
-	    dbg_hit_on(T, 30+C3);
+	    dbg_hit_on(T, 10+C);
 
 	    constexpr int B = 100;
 	    constexpr int M = 2500;
