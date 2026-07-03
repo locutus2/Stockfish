@@ -1345,7 +1345,20 @@ moves_loop:  // When in check, search starts here
 	    //V = -(ss - 7)->staticEval;
 	    //V = -(ss - 7)->staticEval - alpha;
 	    //V = ss->staticEval - alpha;
-	    V = (ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval) / 2;
+	    //if(ss->staticEval > alpha)
+	    //    V = ss->staticEval - alpha;
+	    //else
+	    //    V = (ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval) / 2;
+	    //if(ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval < 0)
+	    //    V = (ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval) / 2;
+	    //else
+	    //    V = ss->staticEval - alpha;
+	    if(ss->staticEval > alpha)
+	        V = ss->staticEval - alpha;
+	    else if(ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval < 0)
+	        V = (ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval) / 2;
+	    else
+	        V = ((ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval) / 2 + ss->staticEval - alpha) / 2;
 	    //V = ss->staticEval;
 	    //V = ss->staticEval + (ss - 7)->staticEval;
 	    C = V > 0;
