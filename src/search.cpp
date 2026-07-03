@@ -1323,9 +1323,18 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 445 / 4096;
 
-        if (!ss->ttPv && ss->ply >= 7 && ss->staticEval != VALUE_NONE && (ss - 7)->staticEval < 0
-            && ss->staticEval >= -(ss - 7)->staticEval + 150)
-            r -= (ss - 7)->staticEval;
+	bool CC = false;
+	bool C1 = false;
+	bool C2 = false;
+	bool C3 = false;
+        if (!ss->ttPv && ss->ply >= 7 && ss->staticEval != VALUE_NONE && (ss-7)->staticEval != VALUE_NONE)
+	{
+	    CC = true;
+	    C1 = ss->staticEval >= -(ss - 7)->staticEval + 150;
+	    C2 = (ss - 7)->staticEval < 0 && ss->staticEval >= -(ss - 7)->staticEval + 150;
+	    C3 = (ss - 7)->staticEval < -alpha && ss->staticEval >= -(ss - 7)->staticEval + 150;
+            //r -= (ss - 7)->staticEval;
+	}
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
@@ -1392,6 +1401,16 @@ moves_loop:  // When in check, search starts here
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
+
+	if(CC)
+	{
+	    bool T = value > alpha;
+	    dbg_hit_on(T, 0);
+	    dbg_hit_on(T, 10+C1);
+	    dbg_hit_on(T, 20+C2);
+	    dbg_hit_on(T, 30+C3);
+	}
+
 
         // Step 19. Undo move
         undo_move(pos, move);
