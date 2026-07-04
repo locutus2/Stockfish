@@ -1329,9 +1329,11 @@ moves_loop:  // When in check, search starts here
 	bool CC = false;
 	bool C = false;
 	int V = 0;
-        if (!ss->ttPv && ss->ply >= 7+1 
-			&& ss->staticEval != VALUE_NONE && (ss-7)->staticEval != VALUE_NONE 
-			&& (ss-1)->staticEval != VALUE_NONE && (ss-8)->staticEval != VALUE_NONE 
+        if (!ss->ttPv 
+			&& ss->staticEval != VALUE_NONE && !is_decisive(eval) 
+		//	&& ss->ply >= 7+1 
+		//	&& ss->staticEval != VALUE_NONE && (ss-7)->staticEval != VALUE_NONE 
+		//	&& (ss-1)->staticEval != VALUE_NONE && (ss-8)->staticEval != VALUE_NONE 
 	    //&& ss->staticEval >= -(ss - 7)->staticEval + 150
 	    )
 	{
@@ -1353,14 +1355,15 @@ moves_loop:  // When in check, search starts here
 	    //    V = (ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval) / 2;
 	    //else
 	    //    V = ss->staticEval - alpha;
-	    if(ss->staticEval > alpha)
-	        V = ss->staticEval - alpha;
-	    else if(ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval < 0)
-	        V = (ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval) / 2;
-	    else
-	        V = ((ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval) / 2 + ss->staticEval - alpha) / 2;
+	    //if(ss->staticEval > alpha)
+	    //    V = ss->staticEval - alpha;
+	    //else if(ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval < 0)
+	    //    V = (ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval) / 2;
+	    //else
+	    //    V = ((ss->staticEval + (ss - 7)->staticEval - (ss-1)->staticEval - (ss-8)->staticEval) / 2 + ss->staticEval - alpha) / 2;
 	    //V = ss->staticEval;
 	    //V = ss->staticEval + (ss - 7)->staticEval;
+	    V = eval - ss->staticEval;
 	    C = V > 0;
 	    // && ss->staticEval >= -(ss - 7)->staticEval + 150;
 	    //V = -(ss - 7)->staticEval - alpha;
