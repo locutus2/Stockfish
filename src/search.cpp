@@ -1320,8 +1320,8 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[0])[movedPiece][move.to_sq()]
                           + (*contHist[1])[movedPiece][move.to_sq()];
 
-        if (!ss->ttPv && ss->staticEval != VALUE_NONE)
-            r -= 2 * (ss->staticEval - alpha) / depth;
+        if (!ss->ttPv && ss->staticEval != VALUE_NONE && !is_decisive(eval))
+            r -= (eval - ss->staticEval) / depth;
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 445 / 4096;
