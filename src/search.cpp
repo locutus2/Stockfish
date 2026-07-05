@@ -1330,7 +1330,7 @@ moves_loop:  // When in check, search starts here
 		//RN = (nodes + pos.key() + std::rand()) % NR;
 		//RN = std::rand() % NR;
 		RN = rnd() % NR;
-		RN = 7;
+		RN = 8;
 		//RN = (RN + 1) % NR;
 		//RN = (RN + 4) % NR;
 		r += RN * R;
