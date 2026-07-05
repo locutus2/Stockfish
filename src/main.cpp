@@ -39,6 +39,7 @@ __attribute__((used)) // keep main alive
 int main(int argc, char* argv[]) {
     std::cout << engine_info() << std::endl;
 
+    std::srand(1234567);
     Bitboards::init();
     Attacks::init();
     Position::init();
