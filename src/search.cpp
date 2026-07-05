@@ -1287,6 +1287,44 @@ moves_loop:  // When in check, search starts here
         // Add extension to new depth
         newDepth += extension;
 
+	//constexpr int NR = 5;
+	//constexpr int R = 256;
+	static int RNindex = 0;
+	//constexpr int NR = 1;
+	constexpr int NR = 9;
+	constexpr int R = 128;
+	//const int RN = nodes % NR;
+	static int RN = 0;
+	bool CC = true;
+        std::vector<bool> C = {
+		true,
+		capture,
+		givesCheck,
+		move == ttData.move,
+		allNode,
+		PvNode,
+		cutNode,
+		ss->ttPv,
+		ss->inCheck,
+		ss->ttHit,
+		improving,
+		priorCapture,
+		ttCapture,
+		opponentWorsening,
+		bool(ttData.move),
+	};
+
+	if(CC)
+	{
+		//RN = (nodes + pos.key()) % NR;
+		//RN = (nodes + pos.key() + RNindex++) % NR;
+		//RN = (nodes + pos.key() + std::rand()) % NR;
+		RN = std::rand() % NR;
+		//RN = (RN + 1) % NR;
+		//RN = (RN + 4) % NR;
+		r += RN * R;
+	}
+
         // Decrease reduction for PvNodes (*Scaler)
         if (ss->ttPv)
             r -= 2766 + PvNode * 1017 + (ttData.value > alpha) * 838
@@ -1388,6 +1426,13 @@ moves_loop:  // When in check, search starts here
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
+
+	if(CC)
+	{
+		bool T = value > alpha;
+		for(int i = 0; i < int(C.size()); i++)
+		    dbg_hit_on(T, 100*i + 10*C[i] + RN);
+	}
 
         // Step 19. Undo move
         undo_move(pos, move);
