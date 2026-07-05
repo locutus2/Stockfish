@@ -28,6 +28,7 @@
 #include <initializer_list>
 #include <iostream>
 #include <list>
+#include <random>
 #include <ratio>
 #include <string>
 #include <utility>
@@ -50,6 +51,13 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+
+std::mt19937_64 RNG(1234567);
+
+inline uint64_t rnd()
+{
+	return RNG();
+}
 
 static constexpr std::array<int, 16> lmrDivisor = {3307, 2930, 2874, 2818, 3215, 3225, 3224, 2782,
                                                    2858, 2919, 3088, 3275, 3180, 2868, 3006, 3599};
@@ -1292,10 +1300,11 @@ moves_loop:  // When in check, search starts here
 	static int RNindex = 0;
 	//constexpr int NR = 1;
 	constexpr int NR = 9;
-	constexpr int R = 128;
+	constexpr int R = -128;
 	//const int RN = nodes % NR;
 	static int RN = 0;
 	bool CC = true;
+	//bool CC = allNode;
         std::vector<bool> C = {
 		true,
 		capture,
@@ -1319,7 +1328,9 @@ moves_loop:  // When in check, search starts here
 		//RN = (nodes + pos.key()) % NR;
 		//RN = (nodes + pos.key() + RNindex++) % NR;
 		//RN = (nodes + pos.key() + std::rand()) % NR;
-		RN = std::rand() % NR;
+		//RN = std::rand() % NR;
+		RN = rnd() % NR;
+		RN = 7;
 		//RN = (RN + 1) % NR;
 		//RN = (RN + 4) % NR;
 		r += RN * R;
