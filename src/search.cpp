@@ -1312,6 +1312,12 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r = std::max(0, r - 2016);
 
+        if (cutNode && !ss->ttPv && moveCount > 1
+            && 2 * capture + 10 * givesCheck + 11 * improving + 8 * opponentWorsening
+                   - 15 * priorCapture + 9 * ss->inCheck - 16 * ss->ttHit + 5 * bool(ttData.move)
+                 > 23)
+            r -= 1024;
+
         if (capture)
             ss->statScore = 809 * int(PieceValue[pos.captured_piece()]) / 128
                           + captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())];
