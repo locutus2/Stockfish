@@ -1320,7 +1320,7 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[0])[movedPiece][move.to_sq()]
                           + (*contHist[1])[movedPiece][move.to_sq()];
 
-        if (!ss->ttPv && ss->staticEval != VALUE_NONE)
+        if (ss->staticEval != VALUE_NONE)
             r -= (ss->staticEval - alpha) / depth;
 
         // Decrease/increase reduction for moves with a good/bad history
