@@ -1296,11 +1296,10 @@ moves_loop:  // When in check, search starts here
         r -= moveCount * 62;
         r -= std::abs(correctionValue) / 26131;
 
-	bool CC = !ss->ttPv;
+	bool CC = !ss->ttPv && moveCount > 1;
         std::vector<bool> C = {
 		capture,
 		givesCheck,
-		move == ttData.move,
 		cutNode,
 		improving,
 		opponentWorsening,
@@ -1431,6 +1430,7 @@ moves_loop:  // When in check, search starts here
 		 Hit #209: Total 27070596 Hits 16371809 Hit Rate (%) 60.4782
 		 Hit #210: Total 27070596 Hits 11653309 Hit Rate (%) 43.0478
 		 */
+		/*
 		constexpr double P1 = 0.230808;
 		constexpr double P0 = 1-P1;
 		constexpr double PC[2][11] = {
@@ -1461,6 +1461,60 @@ moves_loop:  // When in check, search starts here
 				0.430478,
 			},
 		};
+		*/
+
+		/*
+		 * Hit #0: Total 69804903 Hits 4095843 Hit Rate (%) 5.86756
+		 * Hit #100: Total 65709060 Hits 6649787 Hit Rate (%) 10.12
+		 * Hit #101: Total 65709060 Hits 5949269 Hit Rate (%) 9.05396
+		 * Hit #102: Total 65709060 Hits 24608437 Hit Rate (%) 37.4506
+		 * Hit #103: Total 65709060 Hits 30147453 Hit Rate (%) 45.8802
+		 * Hit #104: Total 65709060 Hits 24720868 Hit Rate (%) 37.6217
+		 * Hit #105: Total 65709060 Hits 2999467 Hit Rate (%) 4.56477
+		 * Hit #106: Total 65709060 Hits 17851305 Hit Rate (%) 27.1672
+		 * Hit #107: Total 65709060 Hits 4665196 Hit Rate (%) 7.09978
+		 * Hit #108: Total 65709060 Hits 53390247 Hit Rate (%) 81.2525
+		 * Hit #109: Total 65709060 Hits 10542879 Hit Rate (%) 16.0448
+		 * Hit #200: Total 4095843 Hits 466751 Hit Rate (%) 11.3957
+		 * Hit #201: Total 4095843 Hits 656182 Hit Rate (%) 16.0207
+		 * Hit #202: Total 4095843 Hits 3099190 Hit Rate (%) 75.6667
+		 * Hit #203: Total 4095843 Hits 2607698 Hit Rate (%) 63.6669
+		 * Hit #204: Total 4095843 Hits 2072196 Hit Rate (%) 50.5927
+		 * Hit #205: Total 4095843 Hits 178811 Hit Rate (%) 4.36567
+		 * Hit #206: Total 4095843 Hits 507189 Hit Rate (%) 12.383
+		 * Hit #207: Total 4095843 Hits 496511 Hit Rate (%) 12.1223
+		 * Hit #208: Total 4095843 Hits 2502719 Hit Rate (%) 61.1039
+		 * Hit #209: Total 4095843 Hits 889780 Hit Rate (%) 21.724
+		 */
+
+		constexpr double P1 = 0.0586756;
+		constexpr double P0 = 1-P1;
+		constexpr double PC[2][10] = {
+			{
+				0.1012,
+				0.0905396,
+				0.374506,
+				0.458802,
+				0.376217,
+				0.0456477,
+				0.271672,
+				0.0709978,
+				0.812525,
+				0.160448,
+			},
+			{
+				0.113957,
+				0.160207,
+				0.756667,
+				0.636669,
+				0.505927,
+				0.0436567,
+				0.12383,
+				0.121223,
+				0.611039,
+				0.21724,
+			},
+		};
 
 		constexpr int N = sizeof(PC) / (2 * sizeof(double));
 		constexpr bool PREDICT = true;
@@ -1470,8 +1524,8 @@ moves_loop:  // When in check, search starts here
 		if(PREDICT)
 		{
 			double PT[2] = {P0, P1};
-			constexpr bool LWused[N] = {true, false, true, true, false, false, true, false, true, false, true };
-			//constexpr bool LWused[N] = {true, true, true, true, true, true, true, true, true, true, true };
+			//constexpr bool LWused[N] = {true, false, true, true, false, false, true, false, true, false, true };
+			constexpr bool LWused[N] = {true, true, true, true, true, true, true, true, true, true };
 			for(int i = 0; i < N; i++)
 			{
 				if(!LWused[i]) continue;
@@ -1488,8 +1542,10 @@ moves_loop:  // When in check, search starts here
 			//constexpr int LW[N] = {31, 2, 42, 60, 6, 6, 15, -10, 21, -21, 35 };
 			//constexpr int LW0 = 59; // N=11
 			//constexpr int LW0 = 31; // N=3 first three
-			constexpr int LW0 = 66; // 0,2,3,6,8,10
-			constexpr int LW[N] = {20, 3, 50, 36, 3, 3, 23, -7, 21, -12, 22 };
+			//constexpr int LW0 = 66; // 0,2,3,6,8,10
+			constexpr int LW0 = 59; // all
+			constexpr int LW[N] = {2, 10, 36, 11, 8, 0, -15, 9, -16, 5 };
+			//2 * C0 10 * C1 26 * C2 11 * C3 8 * C4 0 * C5 -15 * C6 9 * C7 -16 * C8 5 * C9 > 58
 			//20 * C0 3 * C1 50 * C2 36 * C3 3 * C4 3 * C5 23 * C6 -7 * C7 21 * C8 -12 * C9 22 * C10 > 59
 			int L = 0;
 			for(int i = 0; i < N; i++)
