@@ -1296,6 +1296,21 @@ moves_loop:  // When in check, search starts here
         r -= moveCount * 62;
         r -= std::abs(correctionValue) / 26131;
 
+	bool CC = !ss->ttPv;
+        std::vector<bool> C = {
+		capture,
+		givesCheck,
+		move == ttData.move,
+		cutNode,
+		improving,
+		opponentWorsening,
+		ttCapture,
+		priorCapture,
+		ss->inCheck,
+		ss->ttHit,
+		bool(ttData.move),
+	};
+
         // Increase reduction for cut nodes
         if (cutNode)
             r += 3995 + 1059 * !ttData.move;
@@ -1388,6 +1403,135 @@ moves_loop:  // When in check, search starts here
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
         }
+
+	if(CC)
+	{
+		/*
+		 Hit #0: Total 117286183 Hits 27070596 Hit Rate (%) 23.0808
+		 Hit #100: Total 90215587 Hits 14628851 Hit Rate (%) 16.2154
+		 Hit #101: Total 90215587 Hits 8398998 Hit Rate (%) 9.30992
+		 Hit #102: Total 90215587 Hits 2052415 Hit Rate (%) 2.27501
+		 Hit #103: Total 90215587 Hits 34795161 Hit Rate (%) 38.5689
+		 Hit #104: Total 90215587 Hits 38381666 Hit Rate (%) 42.5444
+		 Hit #105: Total 90215587 Hits 33104518 Hit Rate (%) 36.6949
+		 Hit #106: Total 90215587 Hits 3987106 Hit Rate (%) 4.41953
+		 Hit #107: Total 90215587 Hits 25281346 Hit Rate (%) 28.0233
+		 Hit #108: Total 90215587 Hits 7578202 Hit Rate (%) 8.4001
+		 Hit #109: Total 90215587 Hits 69791104 Hit Rate (%) 77.3604
+		 Hit #110: Total 90215587 Hits 13783750 Hit Rate (%) 15.2787
+		 Hit #200: Total 27070596 Hits 11025591 Hit Rate (%) 40.729
+		 Hit #201: Total 27070596 Hits 3009307 Hit Rate (%) 11.1165
+		 Hit #202: Total 27070596 Hits 9613938 Hit Rate (%) 35.5143
+		 Hit #203: Total 27070596 Hits 23244058 Hit Rate (%) 85.8646
+		 Hit #204: Total 27070596 Hits 12815537 Hit Rate (%) 47.3412
+		 Hit #205: Total 27070596 Hits 11403794 Hit Rate (%) 42.1261
+		 Hit #206: Total 27070596 Hits 4452092 Hit Rate (%) 16.4462
+		 Hit #207: Total 27070596 Hits 5261150 Hit Rate (%) 19.4349
+		 Hit #208: Total 27070596 Hits 6913490 Hit Rate (%) 25.5387
+		 Hit #209: Total 27070596 Hits 16371809 Hit Rate (%) 60.4782
+		 Hit #210: Total 27070596 Hits 11653309 Hit Rate (%) 43.0478
+		 */
+		constexpr double P1 = 0.230808;
+		constexpr double P0 = 1-P1;
+		constexpr double PC[2][11] = {
+			{
+				0.162154,
+				0.0930992,
+				0.0227501,
+				0.385689,
+				0.425444,
+				0.366949,
+				0.0441953,
+				0.280233,
+				0.084001,
+				0.773604,
+				0.152787,
+			},
+			{
+				0.40729,
+				0.111165,
+				0.355143,
+				0.858646,
+				0.473412,
+				0.421261,
+				0.164462,
+				0.194349,
+				0.255387,
+				0.604782,
+				0.430478,
+			},
+		};
+
+		constexpr int N = sizeof(PC) / (2 * sizeof(double));
+		constexpr bool PREDICT = true;
+		bool T = value > alpha;
+		dbg_hit_on(T, 0);
+
+		if(PREDICT)
+		{
+			double PT[2] = {P0, P1};
+			constexpr bool LWused[N] = {true, false, true, true, false, false, true, false, true, false, true };
+			//constexpr bool LWused[N] = {true, true, true, true, true, true, true, true, true, true, true };
+			for(int i = 0; i < N; i++)
+			{
+				if(!LWused[i]) continue;
+				PT[0] *= (C[i] ? PC[0][i] : 1- PC[0][i]);
+				PT[1] *= (C[i] ? PC[1][i] : 1- PC[1][i]);
+			}
+
+			bool T1 = PT[1] > PT[0];
+			dbg_hit_on(T1==T, 1);
+			if(T1) dbg_hit_on(T, 11);
+			if(!T1) dbg_hit_on(!T, 10);
+
+			//constexpr int LW0 = 95; // N=11
+			//constexpr int LW[N] = {31, 2, 42, 60, 6, 6, 15, -10, 21, -21, 35 };
+			//constexpr int LW0 = 59; // N=11
+			//constexpr int LW0 = 31; // N=3 first three
+			constexpr int LW0 = 66; // 0,2,3,6,8,10
+			constexpr int LW[N] = {20, 3, 50, 36, 3, 3, 23, -7, 21, -12, 22 };
+			//20 * C0 3 * C1 50 * C2 36 * C3 3 * C4 3 * C5 23 * C6 -7 * C7 21 * C8 -12 * C9 22 * C10 > 59
+			int L = 0;
+			for(int i = 0; i < N; i++)
+			     if(LWused[i])
+				 L += LW[i]*C[i];
+
+			bool T2 = L > LW0;
+			dbg_hit_on(T2==T, 2);
+			if(T2) dbg_hit_on(T, 21);
+			if(!T2) dbg_hit_on(!T, 20);
+
+			if(false)
+			{
+				// calculate linear discriminator
+				constexpr int S = 16;
+				double W0 = std::log(P1) - std::log(P0);
+				std::vector<double> W (N, 0);
+				for(int i = 0; i < N; i++)
+				{
+					if(!LWused[i]) continue;
+					W0 += std::log(1 - PC[1][i]);
+					W[i] += std::log(PC[1][i]) - std::log(1 - PC[1][i]);
+					W0 -= std::log(1 - PC[0][i]);
+					W[i] -= std::log(PC[0][i]) - std::log(1 - PC[0][i]);
+					//W0 += 1 - PC[1][i];
+					//W[i] += 2 * PC[1][i] - 1;
+					//W0 -= 1 - PC[0][i];
+					//W[i] -= 2 * PC[0][i] - 1;
+
+					std::cerr << " " << int(S*W[i]) << " * C" << i; 
+				}
+				std::cerr << " > " << int(S*-W0) << std::endl;
+			}
+		}
+		else
+		{
+			for(int i = 0; i < int(C.size()); i++)
+			{
+				dbg_hit_on(C[i], 100+100*T+i);
+			}
+		}
+	}
 
         // Step 19. Undo move
         undo_move(pos, move);
