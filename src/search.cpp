@@ -1303,8 +1303,8 @@ moves_loop:  // When in check, search starts here
 	constexpr int R = -128;
 	//const int RN = nodes % NR;
 	static int RN = 0;
-	bool CC = true;
-	//bool CC = allNode;
+	//bool CC = true;
+	bool CC = allNode;
         std::vector<bool> C = {
 		true,
 		capture,
@@ -1330,7 +1330,7 @@ moves_loop:  // When in check, search starts here
 		//RN = (nodes + pos.key() + std::rand()) % NR;
 		//RN = std::rand() % NR;
 		RN = rnd() % NR;
-		RN = 8;
+		RN = 4;
 		//RN = (RN + 1) % NR;
 		//RN = (RN + 4) % NR;
 		r += RN * R;
