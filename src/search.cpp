@@ -1308,6 +1308,7 @@ moves_loop:  // When in check, search starts here
 		ss->inCheck,
 		ss->ttHit,
 		bool(ttData.move),
+		(ss+1)->cutoffCnt>1,
 	};
 
         // Increase reduction for cut nodes
@@ -1406,6 +1407,7 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		/*
+		 * CC=!ss->ttPv;
 		 Hit #0: Total 117286183 Hits 27070596 Hit Rate (%) 23.0808
 		 Hit #100: Total 90215587 Hits 14628851 Hit Rate (%) 16.2154
 		 Hit #101: Total 90215587 Hits 8398998 Hit Rate (%) 9.30992
@@ -1431,6 +1433,18 @@ moves_loop:  // When in check, search starts here
 		 Hit #210: Total 27070596 Hits 11653309 Hit Rate (%) 43.0478
 		 */
 		/*
+		const std::vector<std::vector<int>> Pstruct = {
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+		};
 		constexpr double P1 = 0.230808;
 		constexpr double P0 = 1-P1;
 		constexpr double PC[2][11] = {
@@ -1464,29 +1478,216 @@ moves_loop:  // When in check, search starts here
 		*/
 
 		/*
-		 * Hit #0: Total 69804903 Hits 4095843 Hit Rate (%) 5.86756
-		 * Hit #100: Total 65709060 Hits 6649787 Hit Rate (%) 10.12
-		 * Hit #101: Total 65709060 Hits 5949269 Hit Rate (%) 9.05396
-		 * Hit #102: Total 65709060 Hits 24608437 Hit Rate (%) 37.4506
-		 * Hit #103: Total 65709060 Hits 30147453 Hit Rate (%) 45.8802
-		 * Hit #104: Total 65709060 Hits 24720868 Hit Rate (%) 37.6217
-		 * Hit #105: Total 65709060 Hits 2999467 Hit Rate (%) 4.56477
-		 * Hit #106: Total 65709060 Hits 17851305 Hit Rate (%) 27.1672
-		 * Hit #107: Total 65709060 Hits 4665196 Hit Rate (%) 7.09978
-		 * Hit #108: Total 65709060 Hits 53390247 Hit Rate (%) 81.2525
-		 * Hit #109: Total 65709060 Hits 10542879 Hit Rate (%) 16.0448
-		 * Hit #200: Total 4095843 Hits 466751 Hit Rate (%) 11.3957
-		 * Hit #201: Total 4095843 Hits 656182 Hit Rate (%) 16.0207
-		 * Hit #202: Total 4095843 Hits 3099190 Hit Rate (%) 75.6667
-		 * Hit #203: Total 4095843 Hits 2607698 Hit Rate (%) 63.6669
-		 * Hit #204: Total 4095843 Hits 2072196 Hit Rate (%) 50.5927
-		 * Hit #205: Total 4095843 Hits 178811 Hit Rate (%) 4.36567
-		 * Hit #206: Total 4095843 Hits 507189 Hit Rate (%) 12.383
-		 * Hit #207: Total 4095843 Hits 496511 Hit Rate (%) 12.1223
-		 * Hit #208: Total 4095843 Hits 2502719 Hit Rate (%) 61.1039
-		 * Hit #209: Total 4095843 Hits 889780 Hit Rate (%) 21.724
+		 * CC=!ss->ttPv && moveCOunt > 1
+		 * Hit #0: Total 69775529 Hits 4094099 Hit Rate (%) 5.86753
+		 * Hit #100: Total 65681430 Hits 6646177 Hit Rate (%) 10.1188
+		 * Hit #101: Total 65681430 Hits 5948135 Hit Rate (%) 9.05604
+		 * Hit #102: Total 65681430 Hits 24596866 Hit Rate (%) 37.4487
+		 * Hit #103: Total 65681430 Hits 30134251 Hit Rate (%) 45.8794
+		 * Hit #104: Total 65681430 Hits 24711233 Hit Rate (%) 37.6229
+		 * Hit #105: Total 65681430 Hits 2997994 Hit Rate (%) 4.56445
+		 * Hit #106: Total 65681430 Hits 17843623 Hit Rate (%) 27.1669
+		 * Hit #107: Total 65681430 Hits 4664219 Hit Rate (%) 7.10128
+		 * Hit #108: Total 65681430 Hits 53367564 Hit Rate (%) 81.2521
+		 * Hit #109: Total 65681430 Hits 10538114 Hit Rate (%) 16.0443
+		 * Hit #110: Total 65681430 Hits 23108649 Hit Rate (%) 35.1829
+		 * Hit #200: Total 4094099 Hits 466490 Hit Rate (%) 11.3942
+		 * Hit #201: Total 4094099 Hits 656043 Hit Rate (%) 16.0241
+		 * Hit #202: Total 4094099 Hits 3097893 Hit Rate (%) 75.6673
+		 * Hit #203: Total 4094099 Hits 2606496 Hit Rate (%) 63.6647
+		 * Hit #204: Total 4094099 Hits 2071379 Hit Rate (%) 50.5943
+		 * Hit #205: Total 4094099 Hits 178745 Hit Rate (%) 4.36592
+		 * Hit #206: Total 4094099 Hits 506937 Hit Rate (%) 12.3821
+		 * Hit #207: Total 4094099 Hits 496407 Hit Rate (%) 12.1249
+		 * Hit #208: Total 4094099 Hits 2501643 Hit Rate (%) 61.1036
+		 * Hit #209: Total 4094099 Hits 889423 Hit Rate (%) 21.7245
+		 * Hit #210: Total 4094099 Hits 1009090 Hit Rate (%) 24.6474
+		 * Correl. #1: Total 69775529 Coefficient 0.0099066
+		 * Correl. #2: Total 69775529 Coefficient 0.0559427
+		 * Correl. #3: Total 69775529 Coefficient 0.183584
+		 * Correl. #4: Total 69775529 Coefficient 0.0837553
+		 * Correl. #5: Total 69775529 Coefficient 0.0626848
+		 * Correl. #6: Total 69775529 Coefficient -0.00223821
+		 * Correl. #7: Total 69775529 Coefficient -0.078923
+		 * Correl. #8: Total 69775529 Coefficient 0.0451132
+		 * Correl. #9: Total 69775529 Coefficient -0.118536
+		 * Correl. #10: Total 69775529 Coefficient 0.0360726
+		 * Correl. #11: Total 69775529 Coefficient -0.0520631
+		 * Correl. #102: Total 69775529 Coefficient 0.0493293
+		 * Correl. #103: Total 69775529 Coefficient -0.0403668
+		 * Correl. #104: Total 69775529 Coefficient -0.0966975
+		 * Correl. #105: Total 69775529 Coefficient -0.0929625
+		 * Correl. #106: Total 69775529 Coefficient 0.043982
+		 * Correl. #107: Total 69775529 Coefficient 0.118204
+		 * Correl. #108: Total 69775529 Coefficient -0.0707384
+		 * Correl. #109: Total 69775529 Coefficient -0.0137825
+		 * Correl. #110: Total 69775529 Coefficient -0.0115477
+		 * Correl. #111: Total 69775529 Coefficient -0.0494857
+		 * Correl. #203: Total 69775529 Coefficient -0.0214553
+		 * Correl. #204: Total 69775529 Coefficient -0.0214778
+		 * Correl. #205: Total 69775529 Coefficient -0.0248556
+		 * Correl. #206: Total 69775529 Coefficient -0.0121315
+		 * Correl. #207: Total 69775529 Coefficient 0.0113268
+		 * Correl. #208: Total 69775529 Coefficient -0.0875745
+		 * Correl. #209: Total 69775529 Coefficient -0.0200444
+		 * Correl. #210: Total 69775529 Coefficient -0.0259951
+		 * Correl. #211: Total 69775529 Coefficient -0.0315075
+		 * Correl. #304: Total 69775529 Coefficient 0.303548
+		 * Correl. #305: Total 69775529 Coefficient 0.107615
+		 * Correl. #306: Total 69775529 Coefficient 0.148552
+		 * Correl. #307: Total 69775529 Coefficient -0.188064
+		 * Correl. #308: Total 69775529 Coefficient 0.0125311
+		 * Correl. #309: Total 69775529 Coefficient -0.16108
+		 * Correl. #310: Total 69775529 Coefficient 0.30629
+		 * Correl. #311: Total 69775529 Coefficient 0.105746
+		 * Correl. #405: Total 69775529 Coefficient 0.334725
+		 * Correl. #406: Total 69775529 Coefficient -0.0338909
+		 * Correl. #407: Total 69775529 Coefficient -0.218914
+		 * Correl. #408: Total 69775529 Coefficient -0.26572
+		 * Correl. #409: Total 69775529 Coefficient 0.0341516
+		 * Correl. #410: Total 69775529 Coefficient 0.103523
+		 * Correl. #411: Total 69775529 Coefficient 0.217421
+		 * Correl. #506: Total 69775529 Coefficient -0.067858
+		 * Correl. #507: Total 69775529 Coefficient -0.306455
+		* Correl. #508: Total 69775529 Coefficient 0.0671118
+			* Correl. #509: Total 69775529 Coefficient -0.0447473
+			* Correl. #510: Total 69775529 Coefficient 0.0299331
+			* Correl. #511: Total 69775529 Coefficient 0.133532
+			* Correl. #607: Total 69775529 Coefficient 0.0902221
+			* Correl. #608: Total 69775529 Coefficient 0.00359457
+			* Correl. #609: Total 69775529 Coefficient 0.108963
+			* Correl. #610: Total 69775529 Coefficient 0.493508
+			* Correl. #611: Total 69775529 Coefficient 0.0455034
+			* Correl. #708: Total 69775529 Coefficient -0.000982126
+			* Correl. #709: Total 69775529 Coefficient 0.144382
+			* Correl. #710: Total 69775529 Coefficient -0.0458723
+			* Correl. #711: Total 69775529 Coefficient -0.159478
+			* Correl. #809: Total 69775529 Coefficient -0.101795
+			* Correl. #810: Total 69775529 Coefficient 0.00522447
+			* Correl. #811: Total 69775529 Coefficient -0.127852
+			* Correl. #910: Total 69775529 Coefficient 0.220792
+			* Correl. #911: Total 69775529 Coefficient 0.174316
+			* Correl. #1011: Total 69775529 Coefficient 0.155796
+			* Hit #0: Total 69804903 Hits 4095843 Hit Rate (%) 5.86756
+			* Hit #100: Total 65709060 Hits 6649787 Hit Rate (%) 10.12
+			* Hit #101: Total 65709060 Hits 5949269 Hit Rate (%) 9.05396
+			* Hit #102: Total 65709060 Hits 24608437 Hit Rate (%) 37.4506
+			* Hit #103: Total 65709060 Hits 30147453 Hit Rate (%) 45.8802
+			* Hit #104: Total 65709060 Hits 24720868 Hit Rate (%) 37.6217
+			* Hit #105: Total 65709060 Hits 2999467 Hit Rate (%) 4.56477
+			* Hit #106: Total 65709060 Hits 17851305 Hit Rate (%) 27.1672
+			* Hit #107: Total 65709060 Hits 4665196 Hit Rate (%) 7.09978
+			* Hit #108: Total 65709060 Hits 53390247 Hit Rate (%) 81.2525
+			* Hit #109: Total 65709060 Hits 10542879 Hit Rate (%) 16.0448
+			* Hit #110: Total 65709060 Hits 23119132 Hit Rate (%) 35.1841
+			* Hit #200: Total 4095843 Hits 466751 Hit Rate (%) 11.3957
+			* Hit #201: Total 4095843 Hits 656182 Hit Rate (%) 16.0207
+			* Hit #202: Total 4095843 Hits 3099190 Hit Rate (%) 75.6667
+			* Hit #203: Total 4095843 Hits 2607698 Hit Rate (%) 63.6669
+			* Hit #204: Total 4095843 Hits 2072196 Hit Rate (%) 50.5927
+			* Hit #205: Total 4095843 Hits 178811 Hit Rate (%) 4.36567
+			* Hit #206: Total 4095843 Hits 507189 Hit Rate (%) 12.383
+			* Hit #207: Total 4095843 Hits 496511 Hit Rate (%) 12.1223
+			* Hit #208: Total 4095843 Hits 2502719 Hit Rate (%) 61.1039
+			* Hit #209: Total 4095843 Hits 889780 Hit Rate (%) 21.724
+			* Hit #210: Total 4095843 Hits 1009550 Hit Rate (%) 24.6482
+			* Correl. #1: Total 69804903 Coefficient 0.00990827
+			* Correl. #2: Total 69804903 Coefficient 0.0559378
+			* Correl. #3: Total 69804903 Coefficient 0.183571
+			* Correl. #4: Total 69804903 Coefficient 0.0837622
+			* Correl. #5: Total 69804903 Coefficient 0.0626832
+			* Correl. #6: Total 69804903 Coefficient -0.00224457
+			* Correl. #7: Total 69804903 Coefficient -0.0789197
+			* Correl. #8: Total 69804903 Coefficient 0.0451076
+			* Correl. #9: Total 69804903 Coefficient -0.118538
+			* Correl. #10: Total 69804903 Coefficient 0.0360657
+			* Correl. #11: Total 69804903 Coefficient -0.0520649
+			* Correl. #102: Total 69804903 Coefficient 0.0493205
+			* Correl. #103: Total 69804903 Coefficient -0.0403744
+			* Correl. #104: Total 69804903 Coefficient -0.0966995
+			* Correl. #105: Total 69804903 Coefficient -0.0929579
+			* Correl. #106: Total 69804903 Coefficient 0.0439827
+			* Correl. #107: Total 69804903 Coefficient 0.118208
+			* Correl. #108: Total 69804903 Coefficient -0.0707323
+			* Correl. #109: Total 69804903 Coefficient -0.0137692
+			* Correl. #110: Total 69804903 Coefficient -0.0115456
+			* Correl. #111: Total 69804903 Coefficient -0.0494825
+			* Correl. #203: Total 69804903 Coefficient -0.021467
+			* Correl. #204: Total 69804903 Coefficient -0.0214855
+			* Correl. #205: Total 69804903 Coefficient -0.0248591
+			* Correl. #206: Total 69804903 Coefficient -0.0121317
+			* Correl. #207: Total 69804903 Coefficient 0.0113469
+			* Correl. #208: Total 69804903 Coefficient -0.0875532
+			* Correl. #209: Total 69804903 Coefficient -0.0200389
+			* Correl. #210: Total 69804903 Coefficient -0.026
+			* Correl. #211: Total 69804903 Coefficient -0.031514
+			* Correl. #304: Total 69804903 Coefficient 0.30357
+			* Correl. #305: Total 69804903 Coefficient 0.107603
+			* Correl. #306: Total 69804903 Coefficient 0.148557
+			* Correl. #307: Total 69804903 Coefficient -0.188036
+			* Correl. #308: Total 69804903 Coefficient 0.0125144
+			* Correl. #309: Total 69804903 Coefficient -0.16108
+			* Correl. #310: Total 69804903 Coefficient 0.306296
+			* Correl. #311: Total 69804903 Coefficient 0.105764
+			* Correl. #405: Total 69804903 Coefficient 0.334729
+			* Correl. #406: Total 69804903 Coefficient -0.0338989
+			* Correl. #407: Total 69804903 Coefficient -0.218901
+			* Correl. #408: Total 69804903 Coefficient -0.265694
+			* Correl. #409: Total 69804903 Coefficient 0.0341455
+			* Correl. #410: Total 69804903 Coefficient 0.103535
+			* Correl. #411: Total 69804903 Coefficient 0.217428
+			* Correl. #506: Total 69804903 Coefficient -0.0678724
+			* Correl. #507: Total 69804903 Coefficient -0.30647
+			* Correl. #508: Total 69804903 Coefficient 0.0670905
+			* Correl. #509: Total 69804903 Coefficient -0.0447447
+			* Correl. #510: Total 69804903 Coefficient 0.0299422
+			* Correl. #511: Total 69804903 Coefficient 0.133549
+			* Correl. #607: Total 69804903 Coefficient 0.0902506
+			* Correl. #608: Total 69804903 Coefficient 0.003593
+			* Correl. #609: Total 69804903 Coefficient 0.108965
+			* Correl. #610: Total 69804903 Coefficient 0.493516
+			* Correl. #611: Total 69804903 Coefficient 0.0454947
+			* Correl. #708: Total 69804903 Coefficient -0.000939743
+			* Correl. #709: Total 69804903 Coefficient 0.144389
+			* Correl. #710: Total 69804903 Coefficient -0.0458532
+			* Correl. #711: Total 69804903 Coefficient -0.159488
+			* Correl. #809: Total 69804903 Coefficient -0.101777
+			* Correl. #810: Total 69804903 Coefficient 0.00521488
+			* Correl. #811: Total 69804903 Coefficient -0.127852
+			* Correl. #910: Total 69804903 Coefficient 0.220793
+			* Correl. #911: Total 69804903 Coefficient 0.174317
+			* Correl. #1011: Total 69804903 Coefficient 0.155803
 		 */
 
+			/*
+		 // C2 = 0.183571
+		 // C5 vs C9 = 0.493516
+		 // C3 vs C4 = 0.334729
+		 // C8 vd C10 = 0.174317
+		 // C0 vs C6 = 0.118208
+		 // C1 vs C7 = 0.0875532
+		constexpr int PStart = 2;
+		*/
+		const std::vector<std::vector<int>> Pstruct = {
+			//{ 2 },
+			//{ 0, 6 },
+			//{ 1, 7 },
+			//{ 3, 4 },
+			//{ 5, 9 },
+			//{ 8, 10 },
+			{ 2, 0 },
+			{ 2, 1 },
+			{ 2 },
+			{ 2, 3 },
+			{ 2, 4 },
+			{ 2, 5 },
+			{ 2, 6 },
+			{ 2, 7 },
+			{ 2, 8 },
+			{ 2, 9 },
+			{ 2, 10 },
+		};
+		 /*
 		constexpr double P1 = 0.0586756;
 		constexpr double P0 = 1-P1;
 		constexpr double PC[2][10] = {
@@ -1515,6 +1716,112 @@ moves_loop:  // When in check, search starts here
 				0.21724,
 			},
 		};
+		*/
+		/*
+		 * constexpr int Pstart = 2;
+		 * Hit #0: Total 69804903 Hits 4095843 Hit Rate (%) 5.86756
+		 * Hit #1000: Total 41100623 hits 4579945 Hit Rate (%) 11.1432
+		 * Hit #1001: Total 24608437 Hits 2069842 Hit Rate (%) 8.41111
+		 * Hit #1010: Total 41100623 Hits 4019403 Hit Rate (%) 9.77942
+		 * Hit #1011: Total 24608437 Hits 1929866 Hit Rate (%) 7.84229
+		 * Hit #1020: Total 65709060 Hits 24608437 Hit Rate (%) 37.4506
+		 * Hit #1030: Total 41100623 Hits 14112780 Hit Rate (%) 34.3371
+		 * Hit #1031: Total 24608437 Hits 16034673 Hit Rate (%) 65.1593
+		 * Hit #1040: Total 41100623 Hits 13897741 Hit Rate (%) 33.8139
+		 * Hit #1041: Total 24608437 Hits 10823127 Hit Rate (%) 43.9814
+		 * Hit #1050: Total 41100623 Hits 843894 Hit Rate (%) 2.05324
+		 * Hit #1051: Total 24608437 Hits 2155573 Hit Rate (%) 8.75949
+		 * Hit #1060: Total 41100623 Hits 13702781 Hit Rate (%) 33.3396
+		 * Hit #1061: Total 24608437 Hits 4148524 Hit Rate (%) 16.8581
+		 * Hit #1070: Total 41100623 Hits 2888482 Hit Rate (%) 7.02783
+		 * Hit #1071: Total 24608437 Hits 1776714 Hit Rate (%) 7.21994
+		 * Hit #1080: Total 41100623 Hits 35164614 Hit Rate (%) 85.5574
+		 * Hit #1081: Total 24608437 Hits 18225633 Hit Rate (%) 74.0625
+		 * Hit #1090: Total 41100623 Hits 2946340 Hit Rate (%) 7.1686
+		 * Hit #1091: Total 24608437 Hits 7596539 Hit Rate (%) 30.8697
+		 * Hit #1100: Total 41100623 Hits 12656187 Hit Rate (%) 30.7932
+		 * Hit #1101: Total 24608437 Hits 10462945 Hit Rate (%) 42.5177
+		 * Hit #2000: Total 996653 Hits 129058 Hit Rate (%) 12.9491
+		 * Hit #2001: Total 3099190 Hits 337693 Hit Rate (%) 10.8962
+		 * Hit #2010: Total 996653 Hits 178745 Hit Rate (%) 17.9345
+		 * Hit #2011: Total 3099190 Hits 477437 Hit Rate (%) 15.4052
+		 * Hit #2020: Total 4095843 Hits 3099190 Hit Rate (%) 75.6667
+		 * Hit #2030: Total 996653 Hits 466811 Hit Rate (%) 46.8379
+		 * Hit #2031: Total 3099190 Hits 2140887 Hit Rate (%) 69.0789
+		 * Hit #2040: Total 996653 Hits 473173 Hit Rate (%) 47.4762
+		 * Hit #2041: Total 3099190 Hits 1599023 Hit Rate (%) 51.5949
+		 * Hit #2050: Total 996653 Hits 15154 Hit Rate (%) 1.52049
+		 * Hit #2051: Total 3099190 Hits 163657 Hit Rate (%) 5.28064
+		 * Hit #2060: Total 996653 Hits 196024 Hit Rate (%) 19.6682
+		 * Hit #2061: Total 3099190 Hits 311165 Hit Rate (%) 10.0402
+		 * Hit #2070: Total 996653 Hits 112548 Hit Rate (%) 11.2926
+		 * Hit #2071: Total 3099190 Hits 383963 Hit Rate (%) 12.3891
+		 * Hit #2080: Total 996653 Hits 740413 Hit Rate (%) 74.2899
+		 * Hit #2081: Total 3099190 Hits 1762306 Hit Rate (%) 56.8634
+		 * Hit #2090: Total 996653 Hits 77043 Hit Rate (%) 7.73017
+		 * Hit #2091: Total 3099190 Hits 812737 Hit Rate (%) 26.2242
+		 * Hit #2100: Total 996653 Hits 177242 Hit Rate (%) 17.7837
+		 * Hit #2101: Total 3099190 Hits 832308 Hit Rate (%) 26.8557
+		 */
+
+		constexpr int Pstart = 2;
+		constexpr double P1 = 0.0586756;
+		constexpr double P0 = 1-P1;
+		// C2=0: 2 * C0 11 * C1 26 * C2 8 * C3 9 * C4 -4 * C5 -11 * C6 8 * C7 -11 * C8 1 * C9 > 56
+		// C2=1: 4 * C0 12 * C1 26 * C2 2 * C3 4 * C4 -8 * C5 -9 * C6 9 * C7 -12 * C8 -3 * C9 > 55
+		constexpr double PC[2][2][11] = {
+			{ 
+				{ 11.1432/100,
+				  9.77942/100,
+				  37.4506/100,
+				  34.3371/100,
+				  33.8139/100,
+				  2.05324/100,
+				  33.3396/100,
+				  7.02783/100,
+				  85.5574/100,
+				  7.1686/100,
+				  30.7932/100,},
+
+				{ 8.41111/100,  
+				 7.84229/100, 
+				 37.4506/100,
+				 65.1593/100,
+				 43.9814/100,
+				 8.75949/100,
+				 16.8581/100,
+				 7.21994/100,
+				 74.0625/100,
+				 30.8697/100,
+				 42.5177/100, },
+			},
+			{ 
+				{ 12.9491/100,
+				  17.9345/100,
+				  75.6667/100,
+				  46.8379/100,
+				  47.4762/100,
+				  1.52049/100,
+				  19.6682/100,
+				  11.2926/100,
+				  74.2899/100,
+				  7.73017/100,
+				  17.7837/100, },
+
+				{  10.8962/100, 
+				 15.4052/100,
+				 75.6667/100,
+				 69.0789/100,
+				 51.5949/100,
+				 5.28064/100,
+				 10.0402/100,
+				 12.3891/100,
+				 56.8634/100,
+				 26.2242/100,
+				 26.8557/100, }
+			},
+		};
+
 
 		constexpr int N = sizeof(PC) / (2 * sizeof(double));
 		constexpr bool PREDICT = true;
@@ -1526,11 +1833,27 @@ moves_loop:  // When in check, search starts here
 			double PT[2] = {P0, P1};
 			//constexpr bool LWused[N] = {true, false, true, true, false, false, true, false, true, false, true };
 			constexpr bool LWused[N] = {true, true, true, true, true, true, true, true, true, true };
+			/*
 			for(int i = 0; i < N; i++)
 			{
 				if(!LWused[i]) continue;
 				PT[0] *= (C[i] ? PC[0][i] : 1- PC[0][i]);
 				PT[1] *= (C[i] ? PC[1][i] : 1- PC[1][i]);
+			}
+			*/
+			for(int i = 0; i < N; i++)
+			{
+				if(!LWused[i] || (Pstart >= 0 && !LWused[Pstart])) continue;
+				if constexpr(Pstart < 0)
+				{
+				    //PT[0] *= (C[i] ? PC[0][i] : 1- PC[0][i]);
+				    //PT[1] *= (C[i] ? PC[1][i] : 1- PC[1][i]);
+				}
+				else
+				{
+				    PT[0] *= (C[i] ? PC[0][C[Pstart]][i] : 1- PC[0][C[Pstart]][i]);
+				    PT[1] *= (C[i] ? PC[1][C[Pstart]][i] : 1- PC[1][C[Pstart]][i]);
+				}
 			}
 
 			bool T1 = PT[1] > PT[0];
@@ -1543,23 +1866,94 @@ moves_loop:  // When in check, search starts here
 			//constexpr int LW0 = 59; // N=11
 			//constexpr int LW0 = 31; // N=3 first three
 			//constexpr int LW0 = 66; // 0,2,3,6,8,10
-			constexpr int LW0 = 59; // all
-			constexpr int LW[N] = {2, 10, 36, 11, 8, 0, -15, 9, -16, 5 };
+			//constexpr int LW0 = 59; // all
+			//constexpr int LW[N] = {2, 10, 36, 11, 8, 0, -15, 9, -16, 5 };
+			constexpr int LW3[N] = {2, 10, 36, 11, 8, 0, -15, 9, -16, 5 };
 			//2 * C0 10 * C1 26 * C2 11 * C3 8 * C4 0 * C5 -15 * C6 9 * C7 -16 * C8 5 * C9 > 58
 			//20 * C0 3 * C1 50 * C2 36 * C3 3 * C4 3 * C5 23 * C6 -7 * C7 21 * C8 -12 * C9 22 * C10 > 59
+			
+			
+		        // C2=0: 2 * C0 11 * C1 26 * C2 8 * C3 9 * C4 -4 * C5 -11 * C6 8 * C7 -11 * C8 1 * C9 > 56
+	        	// C2=1: 4 * C0 12 * C1 26 * C2 2 * C3 4 * C4 -8 * C5 -9 * C6 9 * C7 -12 * C8 -3 * C9 > 55
+			constexpr int LW0[2] = { 56, 55 }; // all
+			constexpr int LW[2][N] = {
+				{2, 11, 26, 8, 9, -4, -11, 8, -11, 1 },
+				{4, 12, 26, 2, 4, -8, -9, 9, -12, -3 },
+			};
 			int L = 0;
 			for(int i = 0; i < N; i++)
-			     if(LWused[i])
-				 L += LW[i]*C[i];
+			     if(LWused[i] && (Pstart < 0 || LWused[Pstart]))
+				 L += LW[C[Pstart]][i]*C[i];
+				 //L += LW[i]*C[i];
 
-			bool T2 = L > LW0;
+			int L3 = 0;
+			for(int i = 0; i < N; i++)
+			     if(LWused[i])
+				 L3 += LW3[i]*C[i];
+
+
+			//bool T2 = L > LW0;
+			bool T2 = L > LW0[C[Pstart]];
 			dbg_hit_on(T2==T, 2);
 			if(T2) dbg_hit_on(T, 21);
 			if(!T2) dbg_hit_on(!T, 20);
 
+			bool T3 = L3 > 59;
+			dbg_hit_on(T3==T, 3);
+			if(T3) dbg_hit_on(T, 31);
+			if(!T3) dbg_hit_on(!T, 30);
+
 			if(false)
 			{
 				// calculate linear discriminator
+				constexpr int S = 16;
+				if(Pstart < 0)
+				{
+				        double W0 = std::log(P1) - std::log(P0);
+				        std::vector<double> W (N, 0);
+					for(int i = 0; i < N; i++)
+					{
+						if(!LWused[i] || (Pstart >= 0 && !LWused[Pstart])) continue;
+						W0 += std::log(1 - PC[1][C[Pstart]][i]);
+						W[i] += std::log(PC[1][C[Pstart]][i]) - std::log(1 - PC[1][C[Pstart]][i]);
+						W0 -= std::log(1 - PC[0][C[Pstart]][i]);
+						W[i] -= std::log(PC[0][C[Pstart]][i]) - std::log(1 - PC[0][C[Pstart]][i]);
+						//W0 += 1 - PC[1][i];
+						//W[i] += 2 * PC[1][i] - 1;
+						//W0 -= 1 - PC[0][i];
+						//W[i] -= 2 * PC[0][i] - 1;
+
+						std::cerr << " " << int(S*W[i]) << " * C" << i; 
+					}
+					std::cerr << " > " << int(S*-W0) << std::endl;
+				}
+				else
+				{
+					for(int c = 0; c < 2; c++)
+					{
+				                double W0 = std::log(P1) - std::log(P0);
+				                std::vector<double> W (N, 0);
+						std::cerr << "C" << Pstart << "=" << c << ":";
+						for(int i = 0; i < N; i++)
+						{
+							if(!LWused[i] || (Pstart >= 0 && !LWused[Pstart])) continue;
+							W0 += std::log(1 - PC[1][c][i]);
+							W[i] += std::log(PC[1][c][i]) - std::log(1 - PC[1][c][i]);
+							W0 -= std::log(1 - PC[0][c][i]);
+							W[i] -= std::log(PC[0][c][i]) - std::log(1 - PC[0][c][i]);
+							//W0 += 1 - PC[1][i];
+							//W[i] += 2 * PC[1][i] - 1;
+							//W0 -= 1 - PC[0][i];
+							//W[i] -= 2 * PC[0][i] - 1;
+
+							std::cerr << " " << int(S*W[i]) << " * C" << i; 
+						}
+						std::cerr << " > " << int(S*-W0) << std::endl;
+					}
+				}
+				
+				/*
+				// calculate linear discriminator 
 				constexpr int S = 16;
 				double W0 = std::log(P1) - std::log(P0);
 				std::vector<double> W (N, 0);
@@ -1578,13 +1972,36 @@ moves_loop:  // When in check, search starts here
 					std::cerr << " " << int(S*W[i]) << " * C" << i; 
 				}
 				std::cerr << " > " << int(S*-W0) << std::endl;
+				*/
 			}
 		}
 		else
 		{
+			/*
 			for(int i = 0; i < int(C.size()); i++)
 			{
 				dbg_hit_on(C[i], 100+100*T+i);
+			}
+			*/
+
+			for(int i = 0; i < int(C.size()); i++)
+			{
+				//dbg_correl_of(T, C[i], i+1);
+			        for(int j = i+1; j < int(C.size()); j++)
+			        {
+				    //dbg_correl_of(C[i], C[j], 100*(i+1)+j+1);
+				}
+			}
+
+			for(int k = 0; k < int(Pstruct.size()); k++)
+			{
+				if(int(Pstruct[k].size()) > 2 || Pstruct[k].empty()) std::exit(1);
+				int i = Pstruct[k][0];
+				int j = (int(Pstruct[k].size()) >= 2 ? Pstruct[k][1] : i);
+				if(i == j)
+				     dbg_hit_on(C[j], 1000+1000*T+10*k);
+				else
+				     dbg_hit_on(C[j], 1000+1000*T+10*k+C[i]);
 			}
 		}
 	}
