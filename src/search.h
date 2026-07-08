@@ -308,21 +308,27 @@ class NullSearchManager: public ISearchManager {
 
 template<int DIM>
 struct NaiveBayes {
+    static constexpr u64 SCALE = u64(1) << 32;  // Integer scaled in the range [0, SCALE-1]
+
+    static_assert(
+      SCALE <= u64(1) << 32,
+      "Scale have to be lower or equal than 2^32 so that the product of two numbers fit in an unsigned 64 bit integer");
+
     struct BinaryFeature {
         u64 count = 0;
         u64 total = 0;
 
-        void  update(bool input);
-        float prior(bool input) const;
-        void  clear();
-        void  age();
+        void update(bool input);
+        u64  prior(bool input) const;
+        void clear();
+        void age();
     };
 
     typedef std::array<bool, DIM> ModelInput;
 
     struct Result {
-        float successValue;
-        float failureValue;
+        u64 successValue;
+        u64 failureValue;
     };
 
     void   learn(const ModelInput& data, bool target);

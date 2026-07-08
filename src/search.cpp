@@ -2302,13 +2302,21 @@ bool RootMove::extract_ponder_from_tt(const TranspositionTable& tt, Position& po
 
 template<int DIM>
 void NaiveBayes<DIM>::BinaryFeature::update(bool input) {
+    if (total >= SCALE - 1)
+    {
+        total /= 2;
+        count /= 2;
+    }
     count += input;
     total++;
 }
 
 template<int DIM>
-float NaiveBayes<DIM>::BinaryFeature::prior(bool input) const {
-    return input ? float(count) / total : float(total - count) / total;
+u64 NaiveBayes<DIM>::BinaryFeature::prior(bool input) const {
+    if (total == 0)
+        return SCALE / 2;
+    u64 numerator = input ? count : total - count;
+    return (numerator * SCALE) / total;
 }
 
 template<int DIM>
@@ -2327,6 +2335,12 @@ void NaiveBayes<DIM>::learn(const ModelInput& data, bool target) {
     for (int i = 0; i < DIM; i++)
         features[target][i].update(data[i]);
 
+    if (samplesCount >= SCALE - 1)
+    {
+        samplesCount /= 2;
+        classPrior[0] /= 2;
+        classPrior[1] /= 2;
+    }
     classPrior[target]++;
     samplesCount++;
 }
@@ -2336,12 +2350,12 @@ typename NaiveBayes<DIM>::Result NaiveBayes<DIM>::predict(const ModelInput& data
     if (samplesCount == 0)
         return {0, 0};
 
-    Result result{float(classPrior[0]) / samplesCount, float(classPrior[1]) / samplesCount};
+    Result result{(classPrior[0] * SCALE) / samplesCount, (classPrior[1] * SCALE) / samplesCount};
 
     for (int i = 0; i < DIM; i++)
     {
-        result.failureValue *= features[0][i].prior(data[i]);
-        result.successValue *= features[1][i].prior(data[i]);
+        result.failureValue = (result.failureValue * features[0][i].prior(data[i])) / SCALE;
+        result.successValue = (result.successValue * features[1][i].prior(data[i])) / SCALE;
     }
 
     return result;
