@@ -1328,6 +1328,9 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 272 / (256 * depth + 285);
 
+	bool CC = false;
+	bool T1 = false;
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1336,12 +1339,20 @@ moves_loop:  // When in check, search starts here
             // beyond the first move depth.
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
-            const auto prediction =
-              lmrModel.predict({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck,
-                                PvNode, depth < 8, ttCapture, ss->ttPv});
+	    //std::array<bool, 9> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode, depth < 8, ttCapture, ss->ttPv};
+	    std::array<bool, 9> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, improving, priorCapture, ttCapture, opponentWorsening};
+	    //std::array<bool, 1> C = {cutNode};
 
-            if (prediction.failureValue > prediction.successValue)
-                r += 512;
+            const auto prediction =
+              //lmrModel.predict({cutNode});
+              //lmrModel.predict({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck,
+              //                  PvNode, depth < 8, ttCapture, ss->ttPv});
+              lmrModel.predict(C);
+	    CC = false;
+	    T1 = prediction.failureValue <= prediction.successValue;
+	    //std::cerr << "predict C=" << C[0] << " => " << prediction.failureValue << " / " << prediction.successValue << std::endl;
+            //if (prediction.failureValue > prediction.successValue)
+            //    r += 512;
 
             Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
 
@@ -1361,15 +1372,48 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+		{
+                    CC = !ss->ttPv;
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+		}
 
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1415);
             }
+            if(CC) lmrModel.learn(C, value > alpha);
 
-            lmrModel.learn({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode,
-                            depth < 8, ttCapture, ss->ttPv},
-                           value > alpha);
+	    bool T = value > alpha;
+	    if(CC)
+	    {
+		    dbg_hit_on(T, 0);
+		    dbg_hit_on(T1, 1);
+		    dbg_hit_on(T1 == T, 2);
+		    if(!T1) dbg_hit_on(!T, 10);
+		    if(T1) dbg_hit_on(T, 11);
+		    for(int i = 0; i < int(C.size()); i++)
+			    dbg_correl_of(T, C[i], i);
+
+		    for(int i = 0; i < int(C.size()); i++)
+			    dbg_hit_on(T, 100+10*i+C[i]);
+		    //dbg_hit_on(C[0],20+T);
+		    //dbg_mean_of(lmrModel.classPrior[0]*100.0/double(lmrModel.samplesCount),30);
+		    //dbg_mean_of(lmrModel.classPrior[1]*100.0/double(lmrModel.samplesCount),31);
+	    }
+
+	    //if(nodes % 100000 == 0)
+	    //std::cerr << nodes << " before learn: T=" << int(value > alpha) << " C=" << int(cutNode) << " " << lmrModel.classPrior[0] << " " << lmrModel.classPrior[1] << " " << lmrModel.samplesCount 
+	//	    << " => " << lmrModel.classPrior[0] * 100.0 / double(lmrModel.samplesCount) 
+	//	    << " / " << lmrModel.classPrior[1] * 100.0 / double(lmrModel.samplesCount) 
+	//	    << std::endl;
+            //lmrModel.learn({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode,
+            //                depth < 8, ttCapture, ss->ttPv},
+            //lmrModel.learn(C,
+            //               value > alpha);
+	 //   if(nodes % 100000 == 0)
+	  //  std::cerr << nodes << " after learn: T=" << int(value > alpha) << " C=" << int(cutNode) << " " << lmrModel.classPrior[0] << " " << lmrModel.classPrior[1] << " " << lmrModel.samplesCount
+	//	    << " => " << lmrModel.classPrior[0] * 100.0 / double(lmrModel.samplesCount) 
+	//	    << " / " << lmrModel.classPrior[1] * 100.0 / double(lmrModel.samplesCount) 
+	//	    << std::endl;
         }
 
         // Step 18. Full-depth search when LMR is skipped
@@ -2364,7 +2408,8 @@ typename NaiveBayes<DIM>::Result NaiveBayes<DIM>::predict(const ModelInput& data
 template<int DIM>
 void NaiveBayes<DIM>::clear() {
     samplesCount = 0;
-    classPrior.fill(0);
+    classPrior[0] = 0;
+    classPrior[1] = 0;
 
     for (int i = 0; i < DIM; i++)
     {
