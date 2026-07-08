@@ -314,6 +314,8 @@ struct NaiveBayes {
 
         void  update(bool input);
         float prior(bool input) const;
+        void  clear();
+        void  age();
     };
 
     typedef std::array<bool, DIM> ModelInput;
@@ -325,6 +327,8 @@ struct NaiveBayes {
 
     void   learn(const ModelInput& data, bool target);
     Result predict(const ModelInput& data) const;
+    void   clear();
+    void   age();
 
     std::array<std::array<BinaryFeature, DIM>, 2> features;
     std::array<u64, 2>                            classPrior;

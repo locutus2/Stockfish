@@ -673,6 +673,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 void Search::Worker::clear() {
     mainHistory.fill(-5);
     captureHistory.fill(-699);
+    lmrModel.clear();
 
     // Each thread is responsible for clearing their part of shared history
     sharedHistory.correctionHistory.clear_range(-6, numaThreadIdx, numaTotal);
@@ -2311,8 +2312,19 @@ float NaiveBayes<DIM>::BinaryFeature::prior(bool input) const {
 }
 
 template<int DIM>
+void NaiveBayes<DIM>::BinaryFeature::clear() {
+    count = total = 0;
+}
+
+template<int DIM>
+void NaiveBayes<DIM>::BinaryFeature::age() {
+    count /= 2;
+    total /= 2;
+}
+
+template<int DIM>
 void NaiveBayes<DIM>::learn(const ModelInput& data, bool target) {
-    for (int i = 0; i < int(data.size()); i++)
+    for (int i = 0; i < DIM; i++)
         features[target][i].update(data[i]);
 
     classPrior[target]++;
@@ -2326,7 +2338,7 @@ typename NaiveBayes<DIM>::Result NaiveBayes<DIM>::predict(const ModelInput& data
 
     Result result{float(classPrior[0]) / samplesCount, float(classPrior[1]) / samplesCount};
 
-    for (int i = 0; i < int(data.size()); i++)
+    for (int i = 0; i < DIM; i++)
     {
         result.failureValue *= features[0][i].prior(data[i]);
         result.successValue *= features[1][i].prior(data[i]);
@@ -2335,5 +2347,29 @@ typename NaiveBayes<DIM>::Result NaiveBayes<DIM>::predict(const ModelInput& data
     return result;
 }
 
+template<int DIM>
+void NaiveBayes<DIM>::clear() {
+    samplesCount = 0;
+    classPrior.fill(0);
+
+    for (int i = 0; i < DIM; i++)
+    {
+        features[0][i].clear();
+        features[1][i].clear();
+    }
+}
+
+template<int DIM>
+void NaiveBayes<DIM>::age() {
+    samplesCount /= 2;
+    classPrior[0] /= 2;
+    classPrior[1] /= 2;
+
+    for (int i = 0; i < DIM; i++)
+    {
+        features[0][i].age();
+        features[1][i].age();
+    }
+}
 
 }  // namespace Stockfish
