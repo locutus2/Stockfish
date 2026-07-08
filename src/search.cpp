@@ -1353,17 +1353,17 @@ moves_loop:  // When in check, search starts here
               //lmrModel.predict({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck,
               //                  PvNode, depth < 8, ttCapture, ss->ttPv});
               lmrModel.predict(C);
-	    u64 v = prediction.failureValue;
-	    u64 v0 = v + prediction.successValue;
-            dbg_hit_on(1025*v > v0*1024, 1000);
-            dbg_hit_on(1026*v > v0*1024, 1001);
-            dbg_hit_on(1027*v > v0*1024, 1002);
-            dbg_hit_on(1028*v > v0*1024, 1003);
-            dbg_hit_on(1029*v > v0*1024, 1004);
-            dbg_hit_on(1030*v > v0*1024, 1005);
-            dbg_hit_on(1031*v > v0*1024, 1006);
-            dbg_hit_on(1032*v > v0*1024, 1007);
-            dbg_hit_on(1033*v > v0*1024, 1008);
+	    u64 v0 = prediction.failureValue;
+	    u64 v1 = prediction.successValue;
+            dbg_hit_on(v0 > v1*(128+16*0), 1000);
+            dbg_hit_on(v0 > v1*(128+16*1), 1001);
+            dbg_hit_on(v0 > v1*(128+16*2), 1002);
+            dbg_hit_on(v0 > v1*(128+16*3), 1003);
+            dbg_hit_on(v0 > v1*(128+16*4), 1004);
+            dbg_hit_on(v0 > v1*(128+16*5), 1005);
+            dbg_hit_on(v0 > v1*(128+16*6), 1006);
+            dbg_hit_on(v0 > v1*(128+16*7), 1007);
+            dbg_hit_on(v0 > v1*(128+16*8), 1008);
 	    //T1 = prediction.failureValue <= prediction.successValue;
 	    //T1 = !(prediction.failureValue * 6 > prediction.successValue * 1024);
 	    T1 = !(prediction.failureValue > prediction.successValue * 171);
