@@ -306,38 +306,29 @@ class NullSearchManager: public ISearchManager {
     void check_time(Search::Worker&) override {}
 };
 
+template<int DIM>
 struct NaiveBayes {
     struct BinaryFeature {
-        std::uint64_t count;
-        std::uint64_t total;
+        u64 count = 0;
+        u64 total = 0;
 
         void  update(bool input);
-        float prior(bool input);
+        float prior(bool input) const;
     };
 
-    struct ModelInput {
-        bool cutNode;
-        bool capture;
-        bool givesCheck;
-        bool highCutoffCnt;
-        bool inCheck;
-        bool isPv;
-        bool lowDepth;
-        bool ttCapture;
-        bool ttPv;
-    };
+    typedef std::array<bool, DIM> ModelInput;
 
     struct Result {
         float successValue;
         float failureValue;
     };
 
-    void   learn(ModelInput data, bool target);
-    Result predict(ModelInput data);
+    void   learn(const ModelInput& data, bool target);
+    Result predict(const ModelInput& data) const;
 
-    std::array<std::array<BinaryFeature, 9>, 2> features;
-    std::array<std::uint64_t, 2>                classPrior;
-    std::uint64_t                               samplesCount;
+    std::array<std::array<BinaryFeature, DIM>, 2> features;
+    std::array<u64, 2>                            classPrior;
+    u64                                           samplesCount;
 };
 
 // Search::Worker is the class that does the actual search.
@@ -375,7 +366,7 @@ class Worker {
     SharedHistories& sharedHistory;
     ContinuationHistory (&continuationHistory)[2][2];
 
-    NaiveBayes lmrModel;
+    NaiveBayes<9> lmrModel;
 
    private:
     bool iterative_deepening();

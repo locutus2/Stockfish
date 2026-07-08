@@ -2299,55 +2299,38 @@ bool RootMove::extract_ponder_from_tt(const TranspositionTable& tt, Position& po
     return pv.size() > 1;
 }
 
-void NaiveBayes::BinaryFeature::update(bool input) {
+template<int DIM>
+void NaiveBayes<DIM>::BinaryFeature::update(bool input) {
     count += input;
     total++;
 }
 
-float NaiveBayes::BinaryFeature::prior(bool input) {
+template<int DIM>
+float NaiveBayes<DIM>::BinaryFeature::prior(bool input) const {
     return input ? float(count) / total : float(total - count) / total;
 }
 
-void NaiveBayes::learn(ModelInput data, bool target) {
-    features[target][0].update(data.cutNode);
-    features[target][1].update(data.capture);
-    features[target][2].update(data.givesCheck);
-    features[target][3].update(data.highCutoffCnt);
-    features[target][4].update(data.inCheck);
-    features[target][5].update(data.isPv);
-    features[target][6].update(data.lowDepth);
-    features[target][7].update(data.ttCapture);
-    features[target][8].update(data.ttPv);
+template<int DIM>
+void NaiveBayes<DIM>::learn(const ModelInput& data, bool target) {
+    for (int i = 0; i < int(data.size()); i++)
+        features[target][i].update(data[i]);
 
     classPrior[target]++;
     samplesCount++;
 }
 
-NaiveBayes::Result NaiveBayes::predict(ModelInput data) {
+template<int DIM>
+typename NaiveBayes<DIM>::Result NaiveBayes<DIM>::predict(const ModelInput& data) const {
     if (samplesCount == 0)
         return {0, 0};
 
     Result result{float(classPrior[0]) / samplesCount, float(classPrior[1]) / samplesCount};
 
-    result.failureValue *= features[0][0].prior(data.cutNode);
-    result.failureValue *= features[0][1].prior(data.capture);
-    result.failureValue *= features[0][2].prior(data.givesCheck);
-    result.failureValue *= features[0][3].prior(data.highCutoffCnt);
-    result.failureValue *= features[0][4].prior(data.inCheck);
-    result.failureValue *= features[0][5].prior(data.isPv);
-    result.failureValue *= features[0][6].prior(data.lowDepth);
-    result.failureValue *= features[0][7].prior(data.ttCapture);
-    result.failureValue *= features[0][8].prior(data.ttPv);
-
-    result.successValue *= features[1][0].prior(data.cutNode);
-    result.successValue *= features[1][1].prior(data.capture);
-    result.successValue *= features[1][2].prior(data.givesCheck);
-    result.successValue *= features[1][3].prior(data.highCutoffCnt);
-    result.successValue *= features[1][4].prior(data.inCheck);
-    result.successValue *= features[1][5].prior(data.isPv);
-    result.successValue *= features[1][6].prior(data.lowDepth);
-    result.successValue *= features[1][7].prior(data.ttCapture);
-    result.successValue *= features[1][8].prior(data.ttPv);
+    for (int i = 0; i < int(data.size()); i++)
+    {
+        result.failureValue *= features[0][i].prior(data[i]);
+        result.successValue *= features[1][i].prior(data[i]);
+    }
 
     return result;
 }
