@@ -1364,6 +1364,54 @@ moves_loop:  // When in check, search starts here
             dbg_hit_on(v0 > v1*(128+16*6), 1006);
             dbg_hit_on(v0 > v1*(128+16*7), 1007);
             dbg_hit_on(v0 > v1*(128+16*8), 1008);
+	    /*
+	     * Hit #0: Total 90430716 Hits 3779085 Hit Rate (%) 4.17898
+	     * Hit #1: Total 90430716 Hits 83290008 Hit Rate (%) 92.1037
+	     * Hit #2: Total 90430716 Hits 10792599 Hit Rate (%) 11.9347
+	     * Hit #10: Total 7140708 Hits 7077111 Hit Rate (%) 99.1094
+	     * Hit #11: Total 83290008 Hits 3715488 Hit Rate (%) 4.4609
+	     * Hit #100: Total 59458293 Hits 1337093 Hit Rate (%) 2.24879
+	     * Hit #101: Total 30972423 Hits 2441992 Hit Rate (%) 7.88441
+	     * Hit #110: Total 81582862 Hits 3415863 Hit Rate (%) 4.18699
+	     * Hit #111: Total 8847854 Hits 363222 Hit Rate (%) 4.1052
+	     * Hit #120: Total 82548517 Hits 3272429 Hit Rate (%) 3.96425
+	     * Hit #121: Total 7882199 Hits 506656 Hit Rate (%) 6.42785
+	     * Hit #130: Total 69962110 Hits 2707690 Hit Rate (%) 3.87022
+	     * Hit #131: Total 20468606 Hits 1071395 Hit Rate (%) 5.23433
+	     * Hit #140: Total 85474905 Hits 3456581 Hit Rate (%) 4.04397
+	     * Hit #141: Total 4955811 Hits 322504 Hit Rate (%) 6.50759
+	     * Hit #150: Total 83603163 Hits 3436685 Hit Rate (%) 4.11071
+	     * Hit #151: Total 6827553 Hits 342400 Hit Rate (%) 5.01497
+	     * Hit #160: Total 37402403 Hits 639234 Hit Rate (%) 1.70907
+	     * Hit #161: Total 53028313 Hits 3139851 Hit Rate (%) 5.92108
+	     * Hit #170: Total 83392249 Hits 3541816 Hit Rate (%) 4.24718
+	     * Hit #171: Total 7038467 Hits 237269 Hit Rate (%) 3.37103
+	     * Hit #180: Total 62816513 Hits 2962899 Hit Rate (%) 4.71675
+	     * Hit #181: Total 27614203 Hits 816186 Hit Rate (%) 2.95567
+	     *Hit #1000: Total 90430716 Hits 12486327 Hit Rate (%) 13.8076
+	     Hit #1001: Total 90430716 Hits 9809556 Hit Rate (%) 10.8476
+	     Hit #1002: Total 90430716 Hits 7587424 Hit Rate (%) 8.39032
+	     Hit #1003: Total 90430716 Hits 7008554 Hit Rate (%) 7.75019
+	     Hit #1004: Total 90430716 Hits 2689593 Hit Rate (%) 2.9742
+	     Hit #1005: Total 90430716 Hits 1756606 Hit Rate (%) 1.94249
+	     Hit #1006: Total 90430716 Hits 975792 Hit Rate (%) 1.07905
+	     Hit #1007: Total 90430716 Hits 454075 Hit Rate (%) 0.502125
+	     Hit #1008: Total 90430716 Hits 267275 Hit Rate (%) 0.295558
+	     Correl. #0: Total 90430716 Coefficient 0.133645
+	     Correl. #1: Total 90430716 Coefficient -0.00121429
+	     Correl. #2: Total 90430716 Coefficient 0.034727
+	     Correl. #3: Total 90430716 Coefficient 0.0285261
+	     Correl. #4: Total 90430716 Coefficient 0.02802
+	     Correl. #5: Total 90430716 Coefficient 0.0119387
+	     Correl. #6: Total 90430716 Coefficient 0.10366
+	     Correl. #7: Total 90430716 Coefficient -0.0117299
+	     Correl. #8: Total 90430716 Coefficient -0.0405322
+
+	     ===========================
+	     Total time (ms) : 385730
+	     Nodes searched  : 175466977
+	     Nodes/second    : 454895
+	     * */
 	    //T1 = prediction.failureValue <= prediction.successValue;
 	    //T1 = !(prediction.failureValue * 6 > prediction.successValue * 1024);
 	    T1 = !(prediction.failureValue > prediction.successValue * 171);
