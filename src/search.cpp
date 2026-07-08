@@ -2337,9 +2337,9 @@ void NaiveBayes<DIM>::learn(const ModelInput& data, bool target) {
 
     if (samplesCount >= SCALE - 1)
     {
-        samplesCount /= 2;
         classPrior[0] /= 2;
         classPrior[1] /= 2;
+        samplesCount = classPrior[0] + classPrior[1];
     }
     classPrior[target]++;
     samplesCount++;
