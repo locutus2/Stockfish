@@ -321,8 +321,8 @@ struct NaiveBayes {
     typedef std::array<bool, DIM> ModelInput;
 
     struct Result {
-        float successValue;
         float failureValue;
+        float successValue;
     };
 
     void   learn(const ModelInput& data, bool target);
