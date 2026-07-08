@@ -1340,7 +1340,7 @@ moves_loop:  // When in check, search starts here
               lmrModel.predict({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck,
                                 PvNode, depth < 8, ttCapture, ss->ttPv});
 
-            if (prediction.failureValue > prediction.successValue)
+            if (prediction.failureValue > prediction.successValue * 171)
                 r += 512;
 
             Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
