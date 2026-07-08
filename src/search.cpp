@@ -1331,6 +1331,11 @@ moves_loop:  // When in check, search starts here
 	bool CC = false;
 	bool T1 = false;
 
+	CC = false;
+	std::array<bool, 9> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode, depth < 8, ttCapture, ss->ttPv};
+	//std::array<bool, 9> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, improving, priorCapture, ttCapture, opponentWorsening};
+	//std::array<bool, 13> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, improving, priorCapture, ttCapture, opponentWorsening, allNode, PvNode, ss->ttPv, bool(ttData.move)};
+	//std::array<bool, 1> C = {cutNode};
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1340,16 +1345,28 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
 	    //std::array<bool, 9> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode, depth < 8, ttCapture, ss->ttPv};
-	    std::array<bool, 9> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, improving, priorCapture, ttCapture, opponentWorsening};
 	    //std::array<bool, 1> C = {cutNode};
 
+	    CC = true;//!ss->ttPv && allNode && ttData.move;
             const auto prediction =
               //lmrModel.predict({cutNode});
               //lmrModel.predict({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck,
               //                  PvNode, depth < 8, ttCapture, ss->ttPv});
               lmrModel.predict(C);
-	    CC = false;
-	    T1 = prediction.failureValue <= prediction.successValue;
+	    u64 v = prediction.failureValue;
+	    u64 v0 = v + prediction.successValue;
+            dbg_hit_on(1025*v > v0*1024, 1000);
+            dbg_hit_on(1026*v > v0*1024, 1001);
+            dbg_hit_on(1027*v > v0*1024, 1002);
+            dbg_hit_on(1028*v > v0*1024, 1003);
+            dbg_hit_on(1029*v > v0*1024, 1004);
+            dbg_hit_on(1030*v > v0*1024, 1005);
+            dbg_hit_on(1031*v > v0*1024, 1006);
+            dbg_hit_on(1032*v > v0*1024, 1007);
+            dbg_hit_on(1033*v > v0*1024, 1008);
+	    //T1 = prediction.failureValue <= prediction.successValue;
+	    //T1 = !(prediction.failureValue * 6 > prediction.successValue * 1024);
+	    T1 = !(prediction.failureValue > prediction.successValue * 171);
 	    //std::cerr << "predict C=" << C[0] << " => " << prediction.failureValue << " / " << prediction.successValue << std::endl;
             //if (prediction.failureValue > prediction.successValue)
             //    r += 512;
@@ -1373,32 +1390,13 @@ moves_loop:  // When in check, search starts here
 
                 if (newDepth > d)
 		{
-                    CC = !ss->ttPv;
+                    //CC = !ss->ttPv;
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 		}
 
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1415);
             }
-            if(CC) lmrModel.learn(C, value > alpha);
-
-	    bool T = value > alpha;
-	    if(CC)
-	    {
-		    dbg_hit_on(T, 0);
-		    dbg_hit_on(T1, 1);
-		    dbg_hit_on(T1 == T, 2);
-		    if(!T1) dbg_hit_on(!T, 10);
-		    if(T1) dbg_hit_on(T, 11);
-		    for(int i = 0; i < int(C.size()); i++)
-			    dbg_correl_of(T, C[i], i);
-
-		    for(int i = 0; i < int(C.size()); i++)
-			    dbg_hit_on(T, 100+10*i+C[i]);
-		    //dbg_hit_on(C[0],20+T);
-		    //dbg_mean_of(lmrModel.classPrior[0]*100.0/double(lmrModel.samplesCount),30);
-		    //dbg_mean_of(lmrModel.classPrior[1]*100.0/double(lmrModel.samplesCount),31);
-	    }
 
 	    //if(nodes % 100000 == 0)
 	    //std::cerr << nodes << " before learn: T=" << int(value > alpha) << " C=" << int(cutNode) << " " << lmrModel.classPrior[0] << " " << lmrModel.classPrior[1] << " " << lmrModel.samplesCount 
@@ -1419,6 +1417,7 @@ moves_loop:  // When in check, search starts here
         // Step 18. Full-depth search when LMR is skipped
         else if (!PvNode || moveCount > 1)
         {
+
             // Increase reduction if ttMove is not present
             if (!ttData.move)
                 r += 1085;
@@ -1427,6 +1426,27 @@ moves_loop:  // When in check, search starts here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 5039) - (r > 5223 && newDepth > 2), !cutNode);
         }
+
+
+	    bool T = value > alpha;
+	    if(CC)
+	    {
+                    lmrModel.learn(C, value > alpha);
+
+		    dbg_hit_on(T, 0);
+		    dbg_hit_on(T1, 1);
+		    dbg_hit_on(T1 == T, 2);
+		    if(!T1) dbg_hit_on(!T, 10);
+		    if(T1) dbg_hit_on(T, 11);
+		    for(int i = 0; i < int(C.size()); i++)
+			    dbg_correl_of(T, C[i], i);
+
+		    for(int i = 0; i < int(C.size()); i++)
+			    dbg_hit_on(T, 100+10*i+C[i]);
+		    //dbg_hit_on(C[0],20+T);
+		    //dbg_mean_of(lmrModel.classPrior[0]*100.0/double(lmrModel.samplesCount),30);
+		    //dbg_mean_of(lmrModel.classPrior[1]*100.0/double(lmrModel.samplesCount),31);
+	    }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
         // otherwise let the parent node fail low with value <= alpha and try another move.
@@ -2395,6 +2415,7 @@ typename NaiveBayes<DIM>::Result NaiveBayes<DIM>::predict(const ModelInput& data
         return {0, 0};
 
     Result result{(classPrior[0] * SCALE) / samplesCount, (classPrior[1] * SCALE) / samplesCount};
+    //Result result{SCALE/2,SCALE/2};
 
     for (int i = 0; i < DIM; i++)
     {
