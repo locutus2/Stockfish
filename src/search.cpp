@@ -1415,7 +1415,8 @@ moves_loop:  // When in check, search starts here
 	    //T1 = prediction.failureValue <= prediction.successValue;
 	    //T1 = !(prediction.failureValue * 6 > prediction.successValue * 1024);
 	    //T1 = !(prediction.failureValue > prediction.successValue * 171);
-	    T1 = !(prediction.failureValue > prediction.successValue * 128);
+	    //T1 = !(prediction.failureValue > prediction.successValue * 128);
+	    T1 = !(prediction.failureValue > prediction.successValue * 192);
 	    //std::cerr << "predict C=" << C[0] << " => " << prediction.failureValue << " / " << prediction.successValue << std::endl;
             //if (prediction.failureValue > prediction.successValue)
             //    r += 512;
