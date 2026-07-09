@@ -1332,10 +1332,17 @@ moves_loop:  // When in check, search starts here
 	bool T1 = false;
 
 	CC = false;
-	std::array<bool, 9> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode, depth < 8, ttCapture, ss->ttPv};
+	//std::array<bool, 9> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode, depth < 8, ttCapture, ss->ttPv};
 	//std::array<bool, 9> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, improving, priorCapture, ttCapture, opponentWorsening};
 	//std::array<bool, 13> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, improving, priorCapture, ttCapture, opponentWorsening, allNode, PvNode, ss->ttPv, bool(ttData.move)};
 	//std::array<bool, 1> C = {cutNode};
+	std::array<bool, 13> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode, depth < 8, ttCapture, ss->ttPv, 
+		allNode, improving, opponentWorsening, priorCapture};
+        const auto prediction =
+              //lmrModel.predict({cutNode});
+              //lmrModel.predict({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck,
+              //                  PvNode, depth < 8, ttCapture, ss->ttPv});
+              lmrModel.predict(C);
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1348,11 +1355,6 @@ moves_loop:  // When in check, search starts here
 	    //std::array<bool, 1> C = {cutNode};
 
 	    CC = true;//!ss->ttPv && allNode && ttData.move;
-            const auto prediction =
-              //lmrModel.predict({cutNode});
-              //lmrModel.predict({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck,
-              //                  PvNode, depth < 8, ttCapture, ss->ttPv});
-              lmrModel.predict(C);
 	    u64 v0 = prediction.failureValue;
 	    u64 v1 = prediction.successValue;
             dbg_hit_on(v0 > v1*(128+16*0), 1000);
@@ -1496,6 +1498,17 @@ moves_loop:  // When in check, search starts here
 		    //dbg_hit_on(C[0],20+T);
 		    //dbg_mean_of(lmrModel.classPrior[0]*100.0/double(lmrModel.samplesCount),30);
 		    //dbg_mean_of(lmrModel.classPrior[1]*100.0/double(lmrModel.samplesCount),31);
+
+                    if(false && prediction.failureValue + prediction.successValue > 0)
+		    { 
+		            constexpr int B = 100;
+			    constexpr int MAXB = 100;
+			    constexpr int MINB = 0;
+			    int index = std::clamp(int(B * prediction.successValue / (prediction.failureValue + prediction.successValue)), MINB, MAXB); 
+			    dbg_hit_on(T, 3000+index);
+			    for(int b = MINB; b <= MAXB; ++b)
+			        dbg_hit_on(index <= b, 2000+b);
+		    }
 	    }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
