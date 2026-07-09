@@ -1336,8 +1336,34 @@ moves_loop:  // When in check, search starts here
 	//std::array<bool, 9> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, improving, priorCapture, ttCapture, opponentWorsening};
 	//std::array<bool, 13> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, improving, priorCapture, ttCapture, opponentWorsening, allNode, PvNode, ss->ttPv, bool(ttData.move)};
 	//std::array<bool, 1> C = {cutNode};
-	std::array<bool, 13> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode, depth < 8, ttCapture, ss->ttPv, 
-		allNode, improving, opponentWorsening, priorCapture};
+	//std::array<bool, 13> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode, depth < 8, ttCapture, ss->ttPv, 
+	//	allNode, improving, opponentWorsening, priorCapture};
+		/*
+	std::array<bool, 31> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode, depth < 8, ttCapture, ss->ttPv, 
+		allNode, improving, opponentWorsening, priorCapture,
+	        (ss-1)->moveCount==0, (ss-1)->currentMove == Move::null(), bool(excludedMove), ss->ttHit, (ss-1)->ttHit, (ss-1)->inCheck, (ss-1)->ttPv, bool((ss-1)->excludedMove),
+	        ss->staticEval > alpha, eval > alpha, ss->staticEval > eval, ss->statScore > 0,
+	        type_of(movedPiece) == PAWN,
+	        type_of(movedPiece) == KNIGHT,
+	        type_of(movedPiece) == BISHOP,
+	        type_of(movedPiece) == ROOK,
+	        type_of(movedPiece) == QUEEN,
+	        type_of(movedPiece) == KING,
+	};
+	*/
+	//std::array<bool, 9> C = { allNode, improving, opponentWorsening, priorCapture,
+	 //       (ss-1)->moveCount==0, (ss-1)->currentMove == Move::null(), bool(excludedMove), ss->ttHit, (ss-1)->ttHit};
+	//std::array<bool, 6> C = {allNode, depth < 8, improving, priorCapture, ss->ttPv, givesCheck};
+	//std::array<bool, 9> C = {
+//		(ss-1)->inCheck, (ss-1)->ttPv, bool((ss-1)->excludedMove),
+//	        ss->staticEval > alpha, eval > alpha, ss->staticEval > eval, ss->statScore > 0,
+//	        type_of(movedPiece) == PAWN, type_of(movedPiece) == KNIGHT
+	        //type_of(movedPiece) == BISHOP,
+	        //type_of(movedPiece) == ROOK,
+	        //type_of(movedPiece) == QUEEN,
+	        //type_of(movedPiece) == KING,
+	//};
+	std::array<bool, 7> C = {allNode, depth < 8, ss->ttPv, improving, bool(excludedMove), eval>alpha, ss->statScore > 0};
         const auto prediction =
               //lmrModel.predict({cutNode});
               //lmrModel.predict({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck,
@@ -1357,15 +1383,15 @@ moves_loop:  // When in check, search starts here
 	    CC = true;//!ss->ttPv && allNode && ttData.move;
 	    u64 v0 = prediction.failureValue;
 	    u64 v1 = prediction.successValue;
-            dbg_hit_on(v0 > v1*(128+16*0), 1000);
-            dbg_hit_on(v0 > v1*(128+16*1), 1001);
-            dbg_hit_on(v0 > v1*(128+16*2), 1002);
-            dbg_hit_on(v0 > v1*(128+16*3), 1003);
-            dbg_hit_on(v0 > v1*(128+16*4), 1004);
-            dbg_hit_on(v0 > v1*(128+16*5), 1005);
-            dbg_hit_on(v0 > v1*(128+16*6), 1006);
-            dbg_hit_on(v0 > v1*(128+16*7), 1007);
-            dbg_hit_on(v0 > v1*(128+16*8), 1008);
+            dbg_hit_on(v0 > v1*(640+16*0), 1000);
+            dbg_hit_on(v0 > v1*(640+16*1), 1001);
+            dbg_hit_on(v0 > v1*(640+16*2), 1002);
+            dbg_hit_on(v0 > v1*(640+16*3), 1003);
+            dbg_hit_on(v0 > v1*(640+16*4), 1004);
+            dbg_hit_on(v0 > v1*(640+16*5), 1005);
+            dbg_hit_on(v0 > v1*(640+16*6), 1006);
+            dbg_hit_on(v0 > v1*(640+16*7), 1007);
+            dbg_hit_on(v0 > v1*(640+16*8), 1008);
 	    /*
 	     * Hit #0: Total 90430716 Hits 3779085 Hit Rate (%) 4.17898
 	     * Hit #1: Total 90430716 Hits 83290008 Hit Rate (%) 92.1037
@@ -1417,8 +1443,9 @@ moves_loop:  // When in check, search starts here
 	    //T1 = prediction.failureValue <= prediction.successValue;
 	    //T1 = !(prediction.failureValue * 6 > prediction.successValue * 1024);
 	    //T1 = !(prediction.failureValue > prediction.successValue * 171);
+	    T1 = !(prediction.failureValue > prediction.successValue * 640);
 	    //T1 = !(prediction.failureValue > prediction.successValue * 128);
-	    T1 = !(prediction.failureValue > prediction.successValue * 192);
+	    //T1 = !(prediction.failureValue > prediction.successValue * 192);
 	    //std::cerr << "predict C=" << C[0] << " => " << prediction.failureValue << " / " << prediction.successValue << std::endl;
             //if (prediction.failureValue > prediction.successValue)
             //    r += 512;
@@ -1492,13 +1519,105 @@ moves_loop:  // When in check, search starts here
 		    if(T1) dbg_hit_on(T, 11);
 		    for(int i = 0; i < int(C.size()); i++)
 			    dbg_correl_of(T, C[i], i);
+		    
+		    for(int i = 0; i < int(C.size()); i++)
+		        for(int j = i+1; j < int(C.size()); j++)
+			{
+				dbg_correl_of(T, C[i]&&C[j], 1000 + 1000*i + 10*j+10);
+				dbg_correl_of(T, C[i]&&!C[j], 1000 + 1000*i + 10*j+10 + 1);
+				dbg_correl_of(T, !C[i]&&C[j], 1000 + 1000*i + 10*j+10 + 2);
+				dbg_correl_of(T, C[i]||C[j], 1000 + 1000*i + 10*j+10 + 3);
+				dbg_correl_of(T, C[i]==C[j], 1000 + 1000*i + 10*j+10 + 4);
+			}
 
 		    for(int i = 0; i < int(C.size()); i++)
 			    dbg_hit_on(T, 100+10*i+C[i]);
+
 		    //dbg_hit_on(C[0],20+T);
 		    //dbg_mean_of(lmrModel.classPrior[0]*100.0/double(lmrModel.samplesCount),30);
 		    //dbg_mean_of(lmrModel.classPrior[1]*100.0/double(lmrModel.samplesCount),31);
+		    //
+	            //std::array<bool, 9> C = {cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode, depth < 8, ttCapture, ss->ttPv};
+		    // cutNode&&depth<8  Correl. #1070: Total 90430716 Coefficient 0.153784
+		    // cutNode&&!ss->ttPv Correl. #1091: Total 90430716 Coefficient 0.150006
+		    // allNode <=> cutNode==PvNode Correl. #1064: Total 90430716 Coefficient 0.134977
+		    // cutNode Correl. #0: Total 90430716 Coefficient 0.133645
+		    // cutNode||ss->inCheck Correl. #1053: Total 90430716 Coefficient 0.128324
+		    // cutNode&&!capture Correl. #1021: Total 90430716 Coefficient 0.122669
+		    // cutNode||ttCapture Correl. #1083: Total 90430716 Coefficient 0.120389
+		    // cutNode==ttCapture Correl. #1084: Total 90430716 Coefficient 0.119551
+		    // cutNode&&!capture Correl. #1051: Total 90430716 Coefficient 0.119388
+		    // cutNode||capture Correl. #1023: Total 90430716 Coefficient 0.114886
+		    // cutNode==ss->inCheck Correl. #1054: Total 90430716 Coefficient 0.113936
+		    // cutNode&&!givesCheck Correl. #1031: Total 90430716 Coefficient 0.110352
+		    // depth<8 Correl. #6: Total 90430716 Coefficient 0.10366
+		    // cutNode||depth<8 Correl. #1073: Total 90430716 Coefficient 0.103309
+		    // cutNode==capture Correl. #1024: Total 90430716 Coefficient 0.102909
+		    // ss->inCheck||depth<8 Correl. #5073: Total 90430716 Coefficient 0.102679
+		    // cutNode||(ss->cutoffCnt>2) Correl. #1043: Total 90430716 Coefficient 0.102082
+		    // cutNode==givesCheck Correl. #1034: Total 90430716 Coefficient 0.100971
+		    // givesCheck||depth<8 Correl. #3073: Total 90430716 Coefficient 0.10027
+		    
+		    // std::array<bool, 9> C = { allNode, improving, opponentWorsening, priorCapture,
+	            //       (ss-1)->moveCount==0, (ss-1)->currentMove == Move::null(), bool(excludedMove), ss->ttHit, (ss-1)->ttHit};
+		    // allNode||(ss-1)->moveCount==0 Correl. #1053: Total 90430716 Coefficient 0.138654
+		    // allNode||priorCapture Correl. #1043: Total 90430716 Coefficient 0.136353
+		    // allNode&&!excludedMove Correl. #1071: Total 90430716 Coefficient 0.135462
+		    // allNode Correl. #0: Total 90430716 Coefficient 0.134977
+		    // allNode||(ss-1)->currentMove==Move::null() Correl. #1063: Total 90430716 Coefficient 0.134977
+		    // allNode&&(ss-1)->currentMove!=Move::null() Correl. #1061: Total 90430716 Coefficient 0.13389
+		    // allNode==(ss-1)->currentMove==Move::null() Correl. #1064: Total 90430716 Coefficient 0.13389
+		    // allNode&&(ss-1)->ttHit Correl. #1090: Total 90430716 Coefficient 0.128243
+		    // !allNode&&improving Correl. #1022: Total 90430716 Coefficient 0.127882
+		    // allNode&&ss->ttHit Correl. #1080: Total 90430716 Coefficient 0.127193
+		    // !allNode&&(ss-1)->ttHit Correl. #1092: Total 90430716 Coefficient 0.127175
+		    // allNode==(ss-1)->moveCount==0 Correl. #1054: Total 90430716 Coefficient 0.125206
+		    // allNode&&!(ss-1)->moveCount==0 Correl. #1051: Total 90430716 Coefficient 0.121826
+		    // allNode==(ss-1)->ttHit Correl. #1094: Total 90430716 Coefficient 0.119906
+		    // allNode&&!opponentWorsening Correl. #1031: Total 90430716 Coefficient 0.108853
+		    // allNode||ss->ttHit Correl. #1083: Total 90430716 Coefficient 0.107215
+		    // !allNode&&opponentWorsening Correl. #1032: Total 90430716 Coefficient 0.107209
+		    // !excludedMove&&ss->ttHit Correl. #7082: Total 90430716 Coefficient 0.102342
+		    // bool(excludedMove)==ss->ttHit Correl. #7084: Total 90430716 Coefficient 0.102342
+		    // allNode==bool(excludedMove) Correl. #1074: Total 90430716 Coefficient 0.101792
+		    // allNode||bool(excludedMove) Correl. #1073: Total 90430716 Coefficient 0.101447
+		    // allNode&&!improving Correl. #1021: Total 90430716 Coefficient 0.101139
+		    // !improving&&ss->ttHit Correl. #2082: Total 90430716 Coefficient 0.092442
+		    // !allNode&&ss->ttHit Correl. #1082: Total 90430716 Coefficient 0.0883739
+		    // !opponentWorsening&&ss->ttHit Correl. #3082: Total 90430716 Coefficient 0.0841662
+		    // improving&&!priorCapture Correl. #2041: Total 90430716 Coefficient 0.0838333
+		    // allNode==ss->ttHit Correl. #1084: Total 90430716 Coefficient 0.0799521
+		    // improving||bool(excludedMove) Correl. #2073: Total 90430716 Coefficient 0.0797128
+		    // improving&&bool(excludedMove) Correl. #2070: Total 90430716 Coefficient 0.0795241
+		    // improving&&!(ss-1)->moveCount==0 Correl. #2051: Total 90430716 Coefficient 0.0794342
+		    // opponentWorsening&&bool(excludedMove) Correl. #3070: Total 90430716 Coefficient 0.0786717
+		    // improving&&!(ss-1)->currentMove==Move::null() Correl. #2061: Total 90430716 Coefficient 0.0782323
+		    // improving Correl. #1: Total 90430716 Coefficient 0.0778753
 
+	            //std::array<bool, 9> C = { (ss-1)->inCheck, (ss-1)->ttPv, bool((ss-1)->excludedMove),
+	            //    ss->staticEval > alpha, eval > alpha, ss->staticEval > eval, ss->statScore > 0,
+	            //    type_of(movedPiece) == PAWN, type_of(movedPiece) == KNIGHT};
+		    // eval>alpha&ss->statScore>0   Correl. #5070: Total 90430716 Coefficient 0.18542
+		    // ss->staticEval>alpha&&ss->statScore>0  Correl. #4070: Total 90430716 Coefficient 0.175863
+		    // ss->staticEval>alpha&&!ss->staticEval>eval   Correl. #4061: Total 90430716 Coefficient 0.142959
+		    // eval>alpha&&!ss->staticEval>eval    Correl. #5061: Total 90430716 Coefficient 0.13514
+		    // ss->staticEval>alpha&&eval>alpha   Correl. #4050: Total 90430716 Coefficient 0.134474
+		    // eval>alpha   Correl. #4: Total 90430716 Coefficient 0.128462
+		    // !(ss-1)->excludedMove&&eval>alpha   Correl. #3052: Total 90430716 Coefficient 0.127635
+		    // ss->staticEval>alpha==ss->staticEval>eval   Correl. #4064: Total 90430716 Coefficient 0.125735
+		    // !(ss-1)->inCheck&&eval>alpha   Correl. #1052: Total 90430716 Coefficient 0.123766
+		    // bool((ss-1)->excludedMove)||eval>alpha   Correl. #3053: Total 90430716 Coefficient 0.119479
+		    // bool((ss-1)->excludedMove)==eval>alpha   Correl. #3054: Total 90430716 Coefficient 0.118338
+		    // eval>alpha||ss->statScore>0   Correl. #5073: Total 90430716 Coefficient 0.117761
+		    // eval>alpha&&type_of(movedPiece)!=KNIGHT  Correl. #5091: Total 90430716 Coefficient 0.11729
+		    // ss->staticEval>alpha   Correl. #3: Total 90430716 Coefficient 0.114343
+		    // !(ss-1)->excludedMove&&ss->staticEval>alpha   Correl. #3042: Total 90430716 Coefficient 0.114015
+		    //    Correl. #4073: Total 90430716 Coefficient 0.111093
+		    //    Correl. #3072: Total 90430716 Coefficient 0.110916
+		    //    Correl. #1042: Total 90430716 Coefficient 0.110343
+		    //    Correl. #4053: Total 90430716 Coefficient 0.110288
+		    // ss->statScore > 0   Correl. #6: Total 90430716 Coefficient 0.110171
+		    
                     if(false && prediction.failureValue + prediction.successValue > 0)
 		    { 
 		            constexpr int B = 100;
@@ -2186,7 +2305,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     if (tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
-        dbg_print();
+        //dbg_print();
     }
 
     // We should not stop pondering until told so by the GUI

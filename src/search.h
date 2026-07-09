@@ -376,7 +376,7 @@ class Worker {
     SharedHistories& sharedHistory;
     ContinuationHistory (&continuationHistory)[2][2];
 
-    NaiveBayes<13> lmrModel;
+    NaiveBayes<7> lmrModel;
 
    private:
     bool iterative_deepening();
