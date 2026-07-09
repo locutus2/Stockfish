@@ -1331,18 +1331,20 @@ moves_loop:  // When in check, search starts here
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
+            const std::array<bool, 7> features = {
+              allNode, depth<8, ss->ttPv, improving, bool(excludedMove), eval> alpha,
+              ss->statScore > 0};
+            const auto prediction = lmrModel.predict(features);
+
+            //dbg_hit_on (prediction.failureValue > prediction.successValue * 1024);
+            if (prediction.failureValue > prediction.successValue * 1024)
+                r += 512;
+
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
-            const auto prediction =
-              lmrModel.predict({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck,
-                                PvNode, depth < 8, ttCapture, ss->ttPv});
-
-            if (prediction.failureValue > prediction.successValue * 171)
-                r += 512;
-
             Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
 
             ss->reduction = newDepth - d;
@@ -1367,9 +1369,7 @@ moves_loop:  // When in check, search starts here
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1415);
             }
 
-            lmrModel.learn({cutNode, capture, givesCheck, ss->cutoffCnt > 2, ss->inCheck, PvNode,
-                            depth < 8, ttCapture, ss->ttPv},
-                           value > alpha);
+            lmrModel.learn(features, value > alpha);
         }
 
         // Step 18. Full-depth search when LMR is skipped
