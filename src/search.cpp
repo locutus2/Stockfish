@@ -712,6 +712,13 @@ Value Search::Worker::search(
     if (depth <= 0)
         return qsearch<PvNode ? PV : NonPV>(pos, ss, alpha, beta);
 
+    Depth origDepth = depth;
+    if(depth < 32)
+    {
+	    for(int d = 0; d < 32; d++)
+		    dbg_hit_on(d == depth, d);
+    }
+
     // Limit the depth if extensions made it too large
     depth = std::min(depth, MAX_PLY - 1);
 
@@ -720,7 +727,11 @@ Value Search::Worker::search(
     {
         alpha = value_draw(nodes);
         if (alpha >= beta)
+	{
+	    if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+	    if(origDepth < 32) dbg_hit_on(false, 200 + origDepth);
             return alpha;
+	}
     }
 
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
@@ -769,7 +780,11 @@ Value Search::Worker::search(
         // Step 2. Check for aborted search and immediate draw
         if (threads.stop.load(std::memory_order_relaxed) || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
+	{
+	    if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+	    if(origDepth < 32) dbg_hit_on(((ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : value_draw(nodes)) > alpha, 200 + origDepth);
             return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : value_draw(nodes);
+	}
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply + 1), but if alpha is already bigger because
@@ -780,7 +795,11 @@ Value Search::Worker::search(
         alpha = std::max(mated_in(ss->ply), alpha);
         beta  = std::min(mate_in(ss->ply + 1), beta);
         if (alpha >= beta)
+	{
+	    if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+	    if(origDepth < 32) dbg_hit_on(false, 200 + origDepth);
             return alpha;
+	}
     }
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
@@ -884,13 +903,25 @@ Value Search::Worker::search(
 
                 // Check that the ttValue after the tt move would also trigger a cutoff
                 if (!is_valid(ttDataNext.value))
+		{
+	            if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+	            if(origDepth < 32) dbg_hit_on(ttData.value > alpha, 200 + origDepth);
                     return ttData.value;
+		}
 
                 if ((ttData.value >= beta) == (-ttDataNext.value >= beta))
+		{
+	            if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+	            if(origDepth < 32) dbg_hit_on(ttData.value > alpha, 200 + origDepth);
                     return ttData.value;
+		}
             }
             else
+	    {
+	        if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+	        if(origDepth < 32) dbg_hit_on(ttData.value > alpha, 200 + origDepth);
                 return ttData.value;
+	    }
         }
     }  // No cutoff, but why? Does the stored inexact value mismatch our aspiration window?
     else if (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
@@ -971,7 +1002,12 @@ Value Search::Worker::search(
     // If eval is really low, skip search entirely and return the qsearch value.
     // For PvNodes, we must have a guard against mates being returned.
     if (!PvNode && eval < alpha - 465 - 300 * depth * depth)
-        return qsearch<NonPV>(pos, ss, alpha, beta);
+    {
+	if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+        Value v = qsearch<NonPV>(pos, ss, alpha, beta);
+	if(origDepth < 32) dbg_hit_on(v > alpha, 200 + origDepth);
+        return v;
+    }
 
     // Step 8. Futility pruning: child node
     // The depth condition is important for mate finding.
@@ -986,7 +1022,11 @@ Value Search::Worker::search(
                              + std::abs(correctionValue) / 182069;
 
         if (eval - futilityMargin >= beta)
+	{
+	    if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+	    if(origDepth < 32) dbg_hit_on((716 * beta + 308 * eval) / 1024 > alpha, 200 + origDepth);
             return (716 * beta + 308 * eval) / 1024;
+	}
     }
 
     // Step 9. Null move search with verification search
@@ -1007,7 +1047,11 @@ Value Search::Worker::search(
         if (nullValue >= beta && !is_win(nullValue))
         {
             if (nmpMinPly || depth < 16)
+	    {
+	        if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+	        if(origDepth < 32) dbg_hit_on(nullValue > alpha, 200 + origDepth);
                 return nullValue;
+	    }
 
             assert(!nmpMinPly);  // Recursive verification is not allowed
 
@@ -1020,7 +1064,11 @@ Value Search::Worker::search(
             nmpMinPly = 0;
 
             if (v >= beta)
+	    {
+	        if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+	        if(origDepth < 32) dbg_hit_on(nullValue > alpha, 200 + origDepth);
                 return nullValue;
+	    }
         }
     }
 
@@ -1075,7 +1123,11 @@ Value Search::Worker::search(
                                probCutDepth + 1, move, unadjustedStaticEval, tt.generation());
 
                 if (!is_decisive(value))
+		{
+	            if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+	            if(origDepth < 32) dbg_hit_on(value - (probCutBeta - beta) > alpha, 200 + origDepth);
                     return value - (probCutBeta - beta);
+		}
             }
         }
     }
@@ -1086,7 +1138,13 @@ moves_loop:  // When in check, search starts here
     probCutBeta = beta + 428;
     if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - 4 && ttData.value >= probCutBeta
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value))
+    {
+	if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
+	if(origDepth < 32) dbg_hit_on(probCutBeta > alpha, 200 + origDepth);
         return probCutBeta;
+    }
+
+    if(origDepth < 32) dbg_hit_on(false, 100 + origDepth);
 
     const PieceToHistory* contHist[] = {
       (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
@@ -1620,6 +1678,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     static_assert(nodeType != Root);
     constexpr bool PvNode = nodeType == PV;
+
+    for(int d = 0; d < 32; d++)
+         dbg_hit_on(d == 0, d);
 
     assert(alpha >= -VALUE_INFINITE && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || (alpha == beta - 1));
