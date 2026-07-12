@@ -1613,6 +1613,383 @@ moves_loop:  // When in check, search starts here
 	         dbg_correl_of(T, T2, 1000*(i+1)+CL[i]*100);
 	         dbg_correl_of(T, T2, 1000*(i+1)+CL[i]*100 + origDepth);
 	    }
+	    /*
+	     * Hit #0: Total 2172719925 Hits 568475493 Hit Rate (%) 26.1642
+Hit #1: Total 2172719925 Hits 579333760 Hit Rate (%) 26.664
+Hit #2: Total 2172719925 Hits 179246322 Hit Rate (%) 8.24986
+Hit #3: Total 2172719925 Hits 167447388 Hit Rate (%) 7.70681
+Hit #4: Total 2172719925 Hits 139371885 Hit Rate (%) 6.41463
+Hit #5: Total 2172719925 Hits 109744959 Hit Rate (%) 5.05104
+Hit #6: Total 2172719925 Hits 85337951 Hit Rate (%) 3.9277
+Hit #7: Total 2172719925 Hits 71422778 Hit Rate (%) 3.28725
+Hit #8: Total 2172719925 Hits 59282293 Hit Rate (%) 2.72848
+Hit #9: Total 2172719925 Hits 48310433 Hit Rate (%) 2.2235
+Hit #10: Total 2172719925 Hits 38592026 Hit Rate (%) 1.77621
+Hit #11: Total 2172719925 Hits 30520864 Hit Rate (%) 1.40473
+Hit #12: Total 2172719925 Hits 23917146 Hit Rate (%) 1.10079
+Hit #13: Total 2172719925 Hits 18468693 Hit Rate (%) 0.850026
+Hit #14: Total 2172719925 Hits 14029544 Hit Rate (%) 0.645713
+Hit #15: Total 2172719925 Hits 10494138 Hit Rate (%) 0.482995
+Hit #16: Total 2172719925 Hits 7717682 Hit Rate (%) 0.355208
+Hit #17: Total 2172719925 Hits 5632103 Hit Rate (%) 0.259219
+Hit #18: Total 2172719925 Hits 4093430 Hit Rate (%) 0.188401
+Hit #19: Total 2172719925 Hits 2983151 Hit Rate (%) 0.1373
+Hit #20: Total 2172719925 Hits 2185987 Hit Rate (%) 0.100611
+Hit #21: Total 2172719925 Hits 1614133 Hit Rate (%) 0.0742909
+Hit #22: Total 2172719925 Hits 1202938 Hit Rate (%) 0.0553655
+Hit #23: Total 2172719925 Hits 900776 Hit Rate (%) 0.0414584
+Hit #24: Total 2172719925 Hits 680220 Hit Rate (%) 0.0313073
+Hit #25: Total 2172719925 Hits 515997 Hit Rate (%) 0.0237489
+Hit #26: Total 2172719925 Hits 386081 Hit Rate (%) 0.0177695
+Hit #27: Total 2172719925 Hits 286443 Hit Rate (%) 0.0131836
+Hit #28: Total 2172719925 Hits 207105 Hit Rate (%) 0.00953206
+Hit #29: Total 2172719925 Hits 147442 Hit Rate (%) 0.00678606
+Hit #30: Total 2172719925 Hits 101892 Hit Rate (%) 0.00468961
+Hit #31: Total 2172719925 Hits 68872 Hit Rate (%) 0.00316985
+Hit #101: Total 593917660 Hits 386247009 Hit Rate (%) 65.0338
+Hit #102: Total 182488043 Hits 102913559 Hit Rate (%) 56.3947
+Hit #103: Total 169289316 Hits 92765584 Hit Rate (%) 54.7971
+Hit #104: Total 140530978 Hits 77123254 Hit Rate (%) 54.8799
+Hit #105: Total 110451618 Hits 63019999 Hit Rate (%) 57.0567
+Hit #106: Total 85832493 Hits 49100729 Hit Rate (%) 57.2053
+Hit #107: Total 71830733 Hits 40573777 Hit Rate (%) 56.4853
+Hit #108: Total 59631206 Hits 32467466 Hit Rate (%) 54.4471
+Hit #109: Total 48581288 Hits 26220088 Hit Rate (%) 53.9716
+Hit #110: Total 38617153 Hits 20632424 Hit Rate (%) 53.4281
+Hit #111: Total 30521160 Hits 16173948 Hit Rate (%) 52.9926
+Hit #112: Total 23917146 Hits 12567548 Hit Rate (%) 52.5462
+Hit #113: Total 18468694 Hits 9630628 Hit Rate (%) 52.1457
+Hit #114: Total 14029544 Hits 7219858 Hit Rate (%) 51.4618
+Hit #115: Total 10494138 Hits 5278810 Hit Rate (%) 50.3025
+Hit #116: Total 7717682 Hits 3764765 Hit Rate (%) 48.781
+Hit #117: Total 5632103 Hits 2627196 Hit Rate (%) 46.6468
+Hit #118: Total 4093430 Hits 1839166 Hit Rate (%) 44.9297
+Hit #119: Total 2983151 Hits 1295343 Hit Rate (%) 43.422
+Hit #120: Total 2185987 Hits 914976 Hit Rate (%) 41.8564
+Hit #121: Total 1614133 Hits 655885 Hit Rate (%) 40.6339
+Hit #122: Total 1202938 Hits 475931 Hit Rate (%) 39.5641
+Hit #123: Total 900776 Hits 349825 Hit Rate (%) 38.836
+Hit #124: Total 680220 Hits 255677 Hit Rate (%) 37.5874
+Hit #125: Total 515997 Hits 188425 Hit Rate (%) 36.5167
+Hit #126: Total 386081 Hits 133801 Hit Rate (%) 34.6562
+Hit #127: Total 286443 Hits 94075 Hit Rate (%) 32.8425
+Hit #128: Total 207105 Hits 62973 Hit Rate (%) 30.4063
+Hit #129: Total 147442 Hits 41724 Hit Rate (%) 28.2986
+Hit #130: Total 101892 Hits 25970 Hit Rate (%) 25.4878
+Hit #131: Total 68872 Hits 16115 Hit Rate (%) 23.3985
+Hit #201: Total 386247009 Hits 354373726 Hit Rate (%) 91.748
+Hit #202: Total 102913559 Hits 91381489 Hit Rate (%) 88.7944
+Hit #203: Total 92765584 Hits 83582696 Hit Rate (%) 90.101
+Hit #204: Total 77123254 Hits 70210847 Hit Rate (%) 91.0372
+Hit #205: Total 63019999 Hits 57881409 Hit Rate (%) 91.8461
+Hit #206: Total 49100729 Hits 45469261 Hit Rate (%) 92.604
+Hit #207: Total 40573777 Hits 37513059 Hit Rate (%) 92.4564
+Hit #208: Total 32467466 Hits 29893785 Hit Rate (%) 92.073
+Hit #209: Total 26220088 Hits 24090305 Hit Rate (%) 91.8773
+Hit #210: Total 20632424 Hits 19128748 Hit Rate (%) 92.7121
+Hit #211: Total 16173948 Hits 14989843 Hit Rate (%) 92.6789
+Hit #212: Total 12567548 Hits 11611030 Hit Rate (%) 92.389
+Hit #213: Total 9630628 Hits 8882294 Hit Rate (%) 92.2296
+Hit #214: Total 7219858 Hits 6644602 Hit Rate (%) 92.0323
+Hit #215: Total 5278810 Hits 4842992 Hit Rate (%) 91.744
+Hit #216: Total 3764765 Hits 3441617 Hit Rate (%) 91.4165
+Hit #217: Total 2627196 Hits 2386277 Hit Rate (%) 90.8298
+Hit #218: Total 1839166 Hits 1656466 Hit Rate (%) 90.0661
+Hit #219: Total 1295343 Hits 1154835 Hit Rate (%) 89.1528
+Hit #220: Total 914976 Hits 803697 Hit Rate (%) 87.838
+Hit #221: Total 655885 Hits 567752 Hit Rate (%) 86.5627
+Hit #222: Total 475931 Hits 404557 Hit Rate (%) 85.0033
+Hit #223: Total 349825 Hits 293590 Hit Rate (%) 83.9248
+Hit #224: Total 255677 Hits 211634 Hit Rate (%) 82.774
+Hit #225: Total 188425 Hits 154278 Hit Rate (%) 81.8777
+Hit #226: Total 133801 Hits 108047 Hit Rate (%) 80.752
+Hit #227: Total 94075 Hits 75408 Hit Rate (%) 80.1573
+Hit #228: Total 62973 Hits 50054 Hit Rate (%) 79.4849
+Hit #229: Total 41724 Hits 32839 Hit Rate (%) 78.7053
+Hit #230: Total 25970 Hits 20432 Hit Rate (%) 78.6754
+Hit #231: Total 16115 Hits 12614 Hit Rate (%) 78.2749
+Hit #300: Total 23075010 Hits 4666807 Hit Rate (%) 20.2245
+Hit #301: Total 23075010 Hits 2754497 Hit Rate (%) 11.9371
+Hit #310: Total 20320513 Hits 2488410 Hit Rate (%) 12.2458
+Hit #311: Total 2754497 Hits 2178397 Hit Rate (%) 79.0851
+Hit #320: Total 18408203 Hits 576100 Hit Rate (%) 3.12958
+Hit #321: Total 4666807 Hits 2178397 Hit Rate (%) 46.6785
+Hit #400: Total 21868982 Hits 4017552 Hit Rate (%) 18.371
+Hit #401: Total 1206028 Hits 649255 Hit Rate (%) 53.8342
+Hit #410: Total 21868982 Hits 1548690 Hit Rate (%) 7.08167
+Hit #411: Total 1206028 Hits 1205807 Hit Rate (%) 99.9817
+Hit #500: Total 20320292 Hits 2488351 Hit Rate (%) 12.2456
+Hit #501: Total 221 Hits 59 Hit Rate (%) 26.6968
+Hit #510: Total 1548690 Hits 1529201 Hit Rate (%) 98.7416
+Hit #511: Total 1205807 Hits 649196 Hit Rate (%) 53.8391
+Hit #520: Total 17851430 Hits 19489 Hit Rate (%) 0.109173
+Hit #521: Total 556773 Hits 556611 Hit Rate (%) 99.9709
+Hit #530: Total 4017552 Hits 1529201 Hit Rate (%) 38.063
+Hit #531: Total 649255 Hits 649196 Hit Rate (%) 99.9909
+Correl. #0: Total 23075010 Coefficient 0.539517
+Correl. #1: Total 14580182 Coefficient 0.689859
+Correl. #2: Total 3241022 Coefficient 0.365404
+Correl. #3: Total 1840848 Coefficient 0.311718
+Correl. #4: Total 1158891 Coefficient 0.307967
+Correl. #5: Total 706593 Coefficient 0.294102
+Correl. #6: Total 494461 Coefficient 0.314058
+Correl. #7: Total 407880 Coefficient 0.32036
+Correl. #8: Total 348876 Coefficient 0.303959
+Correl. #9: Total 270840 Coefficient 0.222567
+Correl. #10: Total 25121 Coefficient 0.333996
+Correl. #11: Total 295 Coefficient -nan
+Correl. #13: Total 1 Coefficient -nan
+Correl. #1000: Total 16021015 Coefficient 0.46684
+Correl. #1001: Total 9937575 Coefficient 0.699869
+Correl. #1002: Total 2475512 Coefficient 0.331821
+Correl. #1003: Total 1114602 Coefficient 0.238875
+Correl. #1004: Total 741799 Coefficient 0.180415
+Correl. #1005: Total 490676 Coefficient 0.118077
+Correl. #1006: Total 371212 Coefficient 0.114327
+Correl. #1007: Total 325232 Coefficient 0.111671
+Correl. #1008: Total 295059 Coefficient 0.108671
+Correl. #1009: Total 246028 Coefficient 0.0950526
+Correl. #1010: Total 23034 Coefficient 0.306817
+Correl. #1011: Total 285 Coefficient -nan
+Correl. #1013: Total 1 Coefficient -nan
+Correl. #1100: Total 7053995 Coefficient 0.440862
+Correl. #1101: Total 4642607 Coefficient 0.622772
+Correl. #1102: Total 765510 Coefficient 0.229437
+Correl. #1103: Total 726246 Coefficient 0.0687196
+Correl. #1104: Total 417092 Coefficient 0.0304128
+Correl. #1105: Total 215917 Coefficient -0.0506194
+Correl. #1106: Total 123249 Coefficient -0.0293294
+Correl. #1107: Total 82648 Coefficient 0.000636343
+Correl. #1108: Total 53817 Coefficient 0.0243326
+Correl. #1109: Total 24812 Coefficient 0.0574729
+Correl. #1110: Total 2087 Coefficient 0.183125
+Correl. #1111: Total 10 Coefficient -nan
+Correl. #2000: Total 17586013 Coefficient 0.64321
+Correl. #2001: Total 12282683 Coefficient 0.788415
+Correl. #2002: Total 2364775 Coefficient 0.425842
+Correl. #2003: Total 1056319 Coefficient 0.313085
+Correl. #2004: Total 622271 Coefficient 0.282288
+Correl. #2005: Total 387503 Coefficient 0.259637
+Correl. #2006: Total 272740 Coefficient 0.271863
+Correl. #2007: Total 226787 Coefficient 0.27834
+Correl. #2008: Total 195156 Coefficient 0.263442
+Correl. #2009: Total 159151 Coefficient 0.196706
+Correl. #2010: Total 18401 Coefficient 0.340965
+Correl. #2011: Total 227 Coefficient -nan
+Correl. #2100: Total 5488997 Coefficient 0.317786
+Correl. #2101: Total 2297499 Coefficient 0.373557
+Correl. #2102: Total 876247 Coefficient 0.266116
+Correl. #2103: Total 784529 Coefficient 0.283935
+Correl. #2104: Total 536620 Coefficient 0.315803
+Correl. #2105: Total 319090 Coefficient 0.306178
+Correl. #2106: Total 221721 Coefficient 0.335119
+Correl. #2107: Total 181093 Coefficient 0.343522
+Correl. #2108: Total 153720 Coefficient 0.322586
+Correl. #2109: Total 111689 Coefficient 0.235587
+Correl. #2110: Total 6720 Coefficient 0.324687
+Correl. #2111: Total 68 Coefficient -nan
+Correl. #2113: Total 1 Coefficient -nan
+Correl. #3000: Total 12240247 Coefficient 0.347622
+Correl. #3001: Total 5536104 Coefficient 0.455906
+Correl. #3002: Total 1871832 Coefficient 0.27064
+Correl. #3003: Total 1608304 Coefficient 0.277223
+Correl. #3004: Total 1094417 Coefficient 0.295828
+Correl. #3005: Total 672246 Coefficient 0.284986
+Correl. #3006: Total 468275 Coefficient 0.306759
+Correl. #3007: Total 386893 Coefficient 0.31598
+Correl. #3008: Total 330378 Coefficient 0.301141
+Correl. #3009: Total 255421 Coefficient 0.221451
+Correl. #3010: Total 16206 Coefficient 0.326005
+Correl. #3011: Total 170 Coefficient -nan
+Correl. #3013: Total 1 Coefficient -nan
+Correl. #3100: Total 10834763 Coefficient 0.922228
+Correl. #3101: Total 9044078 Coefficient 0.944374
+Correl. #3102: Total 1369190 Coefficient 0.722878
+Correl. #3103: Total 232544 Coefficient 0.421015
+Correl. #3104: Total 64474 Coefficient 0.454877
+Correl. #3105: Total 34347 Coefficient 0.462671
+Correl. #3106: Total 26186 Coefficient 0.451762
+Correl. #3107: Total 20987 Coefficient 0.37106
+Correl. #3108: Total 18498 Coefficient 0.33574
+Correl. #3109: Total 15419 Coefficient 0.212763
+Correl. #3110: Total 8915 Coefficient 0.391019
+Correl. #3111: Total 125 Coefficient -nan
+Correl. #4000: Total 23075010 Coefficient 0.539517
+Correl. #4001: Total 14580182 Coefficient 0.689859
+Correl. #4002: Total 3241022 Coefficient 0.365404
+Correl. #4003: Total 1840848 Coefficient 0.311718
+Correl. #4004: Total 1158891 Coefficient 0.307967
+Correl. #4005: Total 706593 Coefficient 0.294102
+Correl. #4006: Total 494461 Coefficient 0.314058
+Correl. #4007: Total 407880 Coefficient 0.32036
+Correl. #4008: Total 348876 Coefficient 0.303959
+Correl. #4009: Total 270840 Coefficient 0.222567
+Correl. #4010: Total 25121 Coefficient 0.333996
+Correl. #4011: Total 295 Coefficient -nan
+Correl. #4013: Total 1 Coefficient -nan
+Correl. #5000: Total 22280927 Coefficient 0.552445
+Correl. #5001: Total 14297276 Coefficient 0.691306
+Correl. #5002: Total 3092839 Coefficient 0.363363
+Correl. #5003: Total 1687303 Coefficient 0.331122
+Correl. #5004: Total 1072725 Coefficient 0.329869
+Correl. #5005: Total 658511 Coefficient 0.309737
+Correl. #5006: Total 465651 Coefficient 0.322424
+Correl. #5007: Total 386333 Coefficient 0.322235
+Correl. #5008: Total 333361 Coefficient 0.29642
+Correl. #5009: Total 261929 Coefficient 0.20588
+Correl. #5010: Total 24703 Coefficient 0.322414
+Correl. #5011: Total 295 Coefficient -nan
+Correl. #5013: Total 1 Coefficient -nan
+Correl. #5100: Total 794083 Coefficient 0.179993
+Correl. #5101: Total 282906 Coefficient 0.551237
+Correl. #5102: Total 148183 Coefficient 0.113877
+Correl. #5103: Total 153545 Coefficient -0.0256848
+Correl. #5104: Total 86166 Coefficient -0.0126726
+Correl. #5105: Total 48082 Coefficient 0.0405643
+Correl. #5106: Total 28810 Coefficient 0.117872
+Correl. #5107: Total 21547 Coefficient 0.187375
+Correl. #5108: Total 15515 Coefficient 0.257964
+Correl. #5109: Total 8911 Coefficient 0.295004
+Correl. #5110: Total 418 Coefficient 0.239049
+Correl. #6000: Total 18068077 Coefficient 0.653158
+Correl. #6001: Total 12636876 Coefficient 0.776082
+Correl. #6002: Total 2400031 Coefficient 0.400757
+Correl. #6003: Total 1059185 Coefficient 0.369601
+Correl. #6004: Total 613100 Coefficient 0.402403
+Correl. #6005: Total 375282 Coefficient 0.409585
+Correl. #6006: Total 292159 Coefficient 0.383385
+Correl. #6007: Total 256040 Coefficient 0.36413
+Correl. #6008: Total 231127 Coefficient 0.303306
+Correl. #6009: Total 190750 Coefficient 0.205758
+Correl. #6010: Total 13262 Coefficient 0.307755
+Correl. #6011: Total 265 Coefficient -nan
+Correl. #6100: Total 5006933 Coefficient 0.267736
+Correl. #6101: Total 1943306 Coefficient 0.389676
+Correl. #6102: Total 840991 Coefficient 0.283984
+Correl. #6103: Total 781663 Coefficient 0.231842
+Correl. #6104: Total 545791 Coefficient 0.207467
+Correl. #6105: Total 331311 Coefficient 0.172537
+Correl. #6106: Total 202302 Coefficient 0.217714
+Correl. #6107: Total 151840 Coefficient 0.247042
+Correl. #6108: Total 117749 Coefficient 0.275283
+Correl. #6109: Total 80090 Coefficient 0.221541
+Correl. #6110: Total 11859 Coefficient 0.337655
+Correl. #6111: Total 30 Coefficient -nan
+Correl. #6113: Total 1 Coefficient -nan
+Correl. #7100: Total 23075010 Coefficient 0.539517
+Correl. #7101: Total 14580182 Coefficient 0.689859
+Correl. #7102: Total 3241022 Coefficient 0.365404
+Correl. #7103: Total 1840848 Coefficient 0.311718
+Correl. #7104: Total 1158891 Coefficient 0.307967
+Correl. #7105: Total 706593 Coefficient 0.294102
+Correl. #7106: Total 494461 Coefficient 0.314058
+Correl. #7107: Total 407880 Coefficient 0.32036
+Correl. #7108: Total 348876 Coefficient 0.303959
+Correl. #7109: Total 270840 Coefficient 0.222567
+Correl. #7110: Total 25121 Coefficient 0.333996
+Correl. #7111: Total 295 Coefficient -nan
+Correl. #7113: Total 1 Coefficient -nan
+Correl. #8000: Total 20519073 Coefficient 0.599843
+Correl. #8001: Total 13975411 Coefficient 0.712151
+Correl. #8002: Total 2872798 Coefficient 0.413404
+Correl. #8003: Total 1306429 Coefficient 0.365306
+Correl. #8004: Total 800352 Coefficient 0.340497
+Correl. #8005: Total 491003 Coefficient 0.322426
+Correl. #8006: Total 345672 Coefficient 0.337759
+Correl. #8007: Total 283411 Coefficient 0.339441
+Correl. #8008: Total 237903 Coefficient 0.295599
+Correl. #8009: Total 182375 Coefficient 0.214104
+Correl. #8010: Total 23424 Coefficient 0.361188
+Correl. #8011: Total 294 Coefficient -nan
+Correl. #8013: Total 1 Coefficient -nan
+Correl. #8100: Total 2555937 Coefficient 0.227938
+Correl. #8101: Total 604771 Coefficient 0.325766
+Correl. #8102: Total 368224 Coefficient 0.193533
+Correl. #8103: Total 534419 Coefficient 0.125398
+Correl. #8104: Total 358539 Coefficient 0.1907
+Correl. #8105: Total 215590 Coefficient 0.235811
+Correl. #8106: Total 148789 Coefficient 0.262657
+Correl. #8107: Total 124469 Coefficient 0.287611
+Correl. #8108: Total 110973 Coefficient 0.299476
+Correl. #8109: Total 88465 Coefficient 0.231961
+Correl. #8110: Total 1697 Coefficient 0.189095
+Correl. #8111: Total 1 Coefficient -nan
+Correl. #9000: Total 20639998 Coefficient 0.532508
+Correl. #9001: Total 12560106 Coefficient 0.686727
+Correl. #9002: Total 2869252 Coefficient 0.357917
+Correl. #9003: Total 1808953 Coefficient 0.309413
+Correl. #9004: Total 1155116 Coefficient 0.30801
+Correl. #9005: Total 702465 Coefficient 0.293991
+Correl. #9006: Total 493595 Coefficient 0.314062
+Correl. #9007: Total 407411 Coefficient 0.320497
+Correl. #9008: Total 347728 Coefficient 0.304414
+Correl. #9009: Total 270052 Coefficient 0.222881
+Correl. #9010: Total 25024 Coefficient 0.334182
+Correl. #9011: Total 295 Coefficient -nan
+Correl. #9013: Total 1 Coefficient -nan
+Correl. #9100: Total 2435012 Coefficient 0.18365
+Correl. #9101: Total 2020076 Coefficient 0.233551
+Correl. #9102: Total 371770 Coefficient 0.125026
+Correl. #9103: Total 31895 Coefficient 0.143392
+Correl. #9104: Total 3775 Coefficient 0.146611
+Correl. #9105: Total 4128 Coefficient 0.184651
+Correl. #9106: Total 866 Coefficient 0.19392
+Correl. #9107: Total 469 Coefficient 0.120708
+Correl. #9108: Total 1148 Coefficient -0.0201654
+Correl. #9109: Total 788 Coefficient -nan
+Correl. #9110: Total 97 Coefficient -nan
+Correl. #10000: Total 23003724 Coefficient 0.539868
+Correl. #10001: Total 14526957 Coefficient 0.690257
+Correl. #10002: Total 3233982 Coefficient 0.366088
+Correl. #10003: Total 1834982 Coefficient 0.312366
+Correl. #10004: Total 1157901 Coefficient 0.308114
+Correl. #10005: Total 703019 Coefficient 0.293926
+Correl. #10006: Total 494012 Coefficient 0.313986
+Correl. #10007: Total 407780 Coefficient 0.320358
+Correl. #10008: Total 348856 Coefficient 0.303958
+Correl. #10009: Total 270818 Coefficient 0.222564
+Correl. #10010: Total 25121 Coefficient 0.333996
+Correl. #10011: Total 295 Coefficient -nan
+Correl. #10013: Total 1 Coefficient -nan
+Correl. #10100: Total 71286 Coefficient 0.326172
+Correl. #10101: Total 53225 Coefficient 0.452385
+Correl. #10102: Total 7040 Coefficient 0.0666694
+Correl. #10103: Total 5866 Coefficient 0.0902175
+Correl. #10104: Total 990 Coefficient 0.0344282
+Correl. #10105: Total 3574 Coefficient 0.218642
+Correl. #10106: Total 449 Coefficient 0.160024
+Correl. #10107: Total 100 Coefficient -nan
+Correl. #10108: Total 20 Coefficient -nan
+Correl. #10109: Total 22 Coefficient -nan
+Correl. #11000: Total 21868982 Coefficient 0.572962
+Correl. #11001: Total 14580182 Coefficient 0.689859
+Correl. #11002: Total 3083440 Coefficient 0.380795
+Correl. #11003: Total 1381474 Coefficient 0.210163
+Correl. #11004: Total 868735 Coefficient 0.187726
+Correl. #11005: Total 549902 Coefficient 0.174152
+Correl. #11006: Total 416867 Coefficient 0.165342
+Correl. #11007: Total 365994 Coefficient 0.157451
+Correl. #11008: Total 329539 Coefficient 0.151391
+Correl. #11009: Total 267456 Coefficient 0.151947
+Correl. #11010: Total 25097 Coefficient 0.347355
+Correl. #11011: Total 295 Coefficient -nan
+Correl. #11013: Total 1 Coefficient -nan
+Correl. #11100: Total 1206028 Coefficient 0.00736945
+Correl. #11102: Total 157582 Coefficient 0.0143204
+Correl. #11103: Total 459374 Coefficient 0.00418267
+Correl. #11104: Total 290156 Coefficient -nan
+Correl. #11105: Total 156691 Coefficient -nan
+Correl. #11106: Total 77594 Coefficient -nan
+Correl. #11107: Total 41886 Coefficient -nan
+Correl. #11108: Total 19337 Coefficient -nan
+Correl. #11109: Total 3384 Coefficient -nan
+Correl. #11110: Total 24 Coefficient -nan
+
+===========================
+Total time (ms) : 4118828
+Nodes searched  : 1991860457
+Nodes/second    : 483598
+	     */
     }
 
     // Adjust best value for fail high cases
