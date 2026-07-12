@@ -712,7 +712,11 @@ Value Search::Worker::search(
     if (depth <= 0)
         return qsearch<PvNode ? PV : NonPV>(pos, ss, alpha, beta);
 
+    bool CC = false;
+    bool C = true;
+    Value V = 0;
     Depth origDepth = depth;
+    Value origAlpha = alpha;
     if(depth < 32)
     {
 	    for(int d = 0; d < 32; d++)
@@ -1003,10 +1007,12 @@ Value Search::Worker::search(
     // For PvNodes, we must have a guard against mates being returned.
     if (!PvNode && eval < alpha - 465 - 300 * depth * depth)
     {
+	CC = true;
+	C = cutNode;
 	if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
-        Value v = qsearch<NonPV>(pos, ss, alpha, beta);
-	if(origDepth < 32) dbg_hit_on(v > alpha, 200 + origDepth);
-        return v;
+        V = qsearch<NonPV>(pos, ss, alpha, beta);
+	if(origDepth < 32) dbg_hit_on(V > alpha, 200 + origDepth);
+        if(!CC) return V;
     }
 
     // Step 8. Futility pruning: child node
@@ -1582,6 +1588,32 @@ moves_loop:  // When in check, search starts here
     // return a fail low score.
 
     assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
+
+    if(CC && moveCount)
+    {
+	    bool T = bestValue > origAlpha;
+	    bool T2 = V > origAlpha;
+	    dbg_hit_on(T, 300);
+	    dbg_hit_on(T2, 301);
+	    dbg_hit_on(T, 310 + T2);
+	    dbg_hit_on(T2, 320 + T);
+
+	    dbg_hit_on(T, 400+C);
+	    dbg_hit_on(T2, 410+C);
+	    dbg_hit_on(T, 500 + 10*T2+C);
+	    dbg_hit_on(T2, 520 + 10*T+C);
+
+	    std::vector<bool>CL = {cutNode, improving, priorCapture, ss->inCheck, ttCapture, opponentWorsening, ss->ttHit, ss->ttPv,
+	    (ss-1)->moveCount == 0, (ss-1)->currentMove == Move::null(), bool(excludedMove)};
+	    dbg_correl_of(T, T2, 0);
+	    dbg_correl_of(T, T2, origDepth);
+	    
+	    for(int i = 0; i < int(CL.size()); i++)
+	    {
+	         dbg_correl_of(T, T2, 1000*(i+1)+CL[i]*100);
+	         dbg_correl_of(T, T2, 1000*(i+1)+CL[i]*100 + origDepth);
+	    }
+    }
 
     // Adjust best value for fail high cases
     if (bestValue >= beta && !is_decisive(bestValue) && !is_decisive(alpha))
