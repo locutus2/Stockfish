@@ -1008,7 +1008,7 @@ Value Search::Worker::search(
     if (!PvNode && eval < alpha - 465 - 300 * depth * depth)
     {
 	CC = true;
-	C = cutNode;
+	C = bool(excludedMove);
 	if(origDepth < 32) dbg_hit_on(true, 100 + origDepth);
         V = qsearch<NonPV>(pos, ss, alpha, beta);
 	if(origDepth < 32) dbg_hit_on(V > alpha, 200 + origDepth);
