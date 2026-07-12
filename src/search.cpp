@@ -1598,21 +1598,70 @@ moves_loop:  // When in check, search starts here
 	    dbg_hit_on(T, 310 + T2);
 	    dbg_hit_on(T2, 320 + T);
 
-	    dbg_hit_on(T, 400+C);
-	    dbg_hit_on(T2, 410+C);
-	    dbg_hit_on(T, 500 + 10*T2+C);
-	    dbg_hit_on(T2, 520 + 10*T+C);
+	    //dbg_hit_on(T, 400+C);
+	    //dbg_hit_on(T2, 410+C);
+	    //dbg_hit_on(T, 500 + 10*T2+C);
+	    //dbg_hit_on(T2, 520 + 10*T+C);
 
 	    std::vector<bool>CL = {cutNode, improving, priorCapture, ss->inCheck, ttCapture, opponentWorsening, ss->ttHit, ss->ttPv,
-	    (ss-1)->moveCount == 0, (ss-1)->currentMove == Move::null(), bool(excludedMove)};
+	                           (ss-1)->moveCount == 0, (ss-1)->currentMove == Move::null(), bool(excludedMove)};
 	    dbg_correl_of(T, T2, 0);
 	    dbg_correl_of(T, T2, origDepth);
 	    
 	    for(int i = 0; i < int(CL.size()); i++)
 	    {
+		 dbg_hit_on(T, 10000 + 10000*i+1000*T2+CL[i]*100);
+		 dbg_hit_on(T, 10000 + 10000*i+1000*T2+CL[i]*100+origDepth);
+	         //dbg_hit_on(T2, 30000 + 1000*i+CL[i]*100);
+	         //dbg_hit_on(T2, 30000 + 1000*i+CL[i]*100+origDepth);
+
 	         dbg_correl_of(T, T2, 1000*(i+1)+CL[i]*100);
 	         dbg_correl_of(T, T2, 1000*(i+1)+CL[i]*100 + origDepth);
 	    }
+	    /*
+	     * LTC
+	     * Hit #50100: Total 400143 Hits 168900 Hit Rate (%) 42.2099
+	     * Hit #10100: Total 4882002 Hits 1590777 Hit Rate (%) 32.5845
+	     * Hit #60100: Total 4139422 Hits 1197899 Hit Rate (%) 28.9388
+	     * Hit #80100: Total 1854397 Hits 534773 Hit Rate (%) 28.8381
+	     * Hit #20100: Total 4658841 Hits 1275880 Hit Rate (%) 27.3862
+	     * Hit #110100: Total 221 Hits 59 Hit Rate (%) 26.6968
+	     * Hit #30000: Total 10549817 Hits 2368227 Hit Rate (%) 22.448
+	     * Hit #90000: Total 17889575 Hits 2458283 Hit Rate (%) 13.7414
+	     * Hit #100100: Total 69573 Hits 8549 Hit Rate (%) 12.2878
+	     * Hit #40000: Total 20320513 Hits 2488410 Hit Rate (%) 12.2458
+	     * Hit #70100: Total 20320513 Hits 2488410 Hit Rate (%) 12.2458
+	     * Hit #100000: Total 20250940 Hits 2479861 Hit Rate (%) 12.2457
+	     * Hit #110000: Total 20320292 Hits 2488351 Hit Rate (%) 12.2456
+	     * Hit #50000: Total 19920370 Hits 2319510 Hit Rate (%) 11.6439
+	     * Hit #80000: Total 18466116 Hits 1953637 Hit Rate (%) 10.5796
+	     * Hit #60000: Total 16181091 Hits 1290511 Hit Rate (%) 7.97543
+	     * Hit #20000: Total 15661672 Hits 1212530 Hit Rate (%) 7.74202
+	     * Hit #10000: Total 15438511 Hits 897633 Hit Rate (%) 5.81425
+	     * Hit #90100: Total 2430938 Hits 30127 Hit Rate (%) 1.23932
+	     * Hit #30100: Total 9770696 Hits 120183 Hit Rate (%) 1.23004
+	     *
+	     * Hit #91100: Total 4074 Hits 2144 Hit Rate (%) 52.6264
+	     * Hit #81100: Total 701540 Hits 373833 Hit Rate (%) 53.2875
+	     * Hit #111100: Total 1205807 Hits 649196 Hit Rate (%) 53.8391
+	     * Hit #51100: Total 393940 Hits 237172 Hit Rate (%) 60.2051
+	     * Hit #61100: Total 867511 Hits 543321 Hit Rate (%) 62.6299
+	     * Hit #31000: Total 1690430 Hits 1150311 Hit Rate (%) 68.0484
+	     * Hit #21100: Total 830156 Hits 575469 Hit Rate (%) 69.3206
+	     * Hit #11000: Total 582504 Hits 435075 Hit Rate (%) 74.6905
+	     * Hit #101000: Total 2752784 Hits 2176918 Hit Rate (%) 79.0806
+	     * Hit #41000: Total 2754497 Hits 2178397 Hit Rate (%) 79.0851
+	     * Hit #71100: Total 2754497 Hits 2178397 Hit Rate (%) 79.0851
+	     * Hit #91000: Total 2750423 Hits 2176253 Hit Rate (%) 79.1243
+	     * Hit #11100: Total 2171993 Hits 1743322 Hit Rate (%) 80.2637
+	     * Hit #51000: Total 2360557 Hits 1941225 Hit Rate (%) 82.2359
+	     * Hit #21000: Total 1924341 Hits 1602928 Hit Rate (%) 83.2975
+	     * Hit #101100: Total 1713 Hits 1479 Hit Rate (%) 86.3398
+	     * Hit #61000: Total 1886986 Hits 1635076 Hit Rate (%) 86.6501
+	     * Hit #81000: Total 2052957 Hits 1804564 Hit Rate (%) 87.9007
+	     * Hit #31100: Total 1064067 Hits 1028086 Hit Rate (%) 96.6185
+	     * Hit #111000: Total 1548690 Hits 1529201 Hit Rate (%) 98.7416
+	     * */
 	    /*
 	     * Hit #0: Total 2172719925 Hits 568475493 Hit Rate (%) 26.1642
 Hit #1: Total 2172719925 Hits 579333760 Hit Rate (%) 26.664
