@@ -973,7 +973,7 @@ Value Search::Worker::search(
     if (!PvNode && eval < alpha - 465 - 300 * depth * depth)
     {
         value = qsearch<NonPV>(pos, ss, alpha, beta);
-        if (!ttCapture || value > alpha)
+        if (value > alpha || (ss - 1)->statScore > -9728)
             return value;
     }
 
