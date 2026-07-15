@@ -953,6 +953,19 @@ Value Search::Worker::search(
         }
     }
 
+    bool CC = false;
+    Value V = 0;
+    Value alphaOrig = alpha;
+
+    auto addStats = [&](Value v) {
+	                const bool T = v > alphaOrig;
+			constexpr int B = 128;
+			constexpr int M = 512;
+			const int index = std::clamp((V + M*B/2) / M, 0, B);
+			//int index = std::clamp(((V - 1) + M*B/2) / M, 0, B);
+			dbg_hit_on(T, index);
+		};
+
     if (ss->inCheck)
         goto moves_loop;
 
@@ -971,7 +984,14 @@ Value Search::Worker::search(
     // If eval is really low, skip search entirely and return the qsearch value.
     // For PvNodes, we must have a guard against mates being returned.
     if (!PvNode && eval < alpha - 465 - 300 * depth * depth)
-        return qsearch<NonPV>(pos, ss, alpha, beta);
+    {
+        V = qsearch<NonPV>(pos, ss, alpha, beta);
+	//CC = ttCapture && V <= alpha;
+	CC = V <= alpha;
+	if(!CC) return V;
+	//V -= alpha;
+	V = (ss-1)->statScore;
+    }
 
     // Step 8. Futility pruning: child node
     // The depth condition is important for mate finding.
@@ -986,7 +1006,10 @@ Value Search::Worker::search(
                              + std::abs(correctionValue) / 182069;
 
         if (eval - futilityMargin >= beta)
+	{
+	    if(CC) addStats((716 * beta + 308 * eval) / 1024);
             return (716 * beta + 308 * eval) / 1024;
+	}
     }
 
     // Step 9. Null move search with verification search
@@ -1007,7 +1030,10 @@ Value Search::Worker::search(
         if (nullValue >= beta && !is_win(nullValue))
         {
             if (nmpMinPly || depth < 16)
+	    {
+	        if(CC) addStats(nullValue);
                 return nullValue;
+	    }
 
             assert(!nmpMinPly);  // Recursive verification is not allowed
 
@@ -1020,7 +1046,10 @@ Value Search::Worker::search(
             nmpMinPly = 0;
 
             if (v >= beta)
+	    {
+	        if(CC) addStats(nullValue);
                 return nullValue;
+	    }
         }
     }
 
@@ -1075,7 +1104,10 @@ Value Search::Worker::search(
                                probCutDepth + 1, move, unadjustedStaticEval, tt.generation());
 
                 if (!is_decisive(value))
+		{
+	            if(CC) addStats(value - (probCutBeta - beta));
                     return value - (probCutBeta - beta);
+		}
             }
         }
     }
@@ -1086,7 +1118,10 @@ moves_loop:  // When in check, search starts here
     probCutBeta = beta + 428;
     if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - 4 && ttData.value >= probCutBeta
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value))
+    {
+	if(CC) addStats(probCutBeta);
         return probCutBeta;
+    }
 
     const PieceToHistory* contHist[] = {
       (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
@@ -1261,6 +1296,7 @@ moves_loop:  // When in check, search starts here
             else if (value >= beta && !is_decisive(value))
             {
                 ttMoveHistory << -442 - 108 * depth;
+	        if(CC) addStats(value);
                 return value;
             }
 
@@ -1522,7 +1558,25 @@ moves_loop:  // When in check, search starts here
     // All legal moves have been searched and if there are no legal moves, it
     // must be a mate or a stalemate. If we are in a singular extension search then
     // return a fail low score.
+/*
+	if(false&&CC)
+	{
+		bool T = bestValue > alphaOrig;
+		//bool T2 = V > 0;
 
+		//constexpr int B = 100;
+		//constexpr int M = 32;
+		//constexpr int B = 64;
+		//constexpr int M = 1;
+		//constexpr int B = 128;
+		//constexpr int M = 64;
+		constexpr int B = 128;
+		constexpr int M = 512;
+		int index = std::clamp((V + M*B/2) / M, 0, B);
+		//int index = std::clamp(((V - 1) + M*B/2) / M, 0, B);
+		dbg_hit_on(T, index);
+	}
+*/
     assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
 
     // Adjust best value for fail high cases
@@ -1604,6 +1658,8 @@ moves_loop:  // When in check, search starts here
     }
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
+
+    if(CC) addStats(bestValue);
 
     return bestValue;
 }
