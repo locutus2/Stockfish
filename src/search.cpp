@@ -991,7 +991,7 @@ Value Search::Worker::search(
     }
 
     // Step 9. Null move search with verification search
-    if ((cutNode || (allNode && correctionValue > 24486584))
+    if ((cutNode || (allNode && correctionValue > 12243292))
         && ss->staticEval >= beta - 13 * depth - 47 * improving + 365 && !excludedMove
         && pos.non_pawn_material(us) && ss->ply >= nmpMinPly && !is_loss(beta))
     {
