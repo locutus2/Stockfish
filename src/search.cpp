@@ -997,7 +997,7 @@ Value Search::Worker::search(
     }
 
     // Step 9. Null move search with verification search
-    if ((cutNode || (false&&allNode /*&& correctionValue > 8*1024*1024*//*-0*33554432*/)) && ss->staticEval >= beta - 14 * depth - 45 * improving + 374 && !excludedMove
+    if (((allNode && correctionValue > 24486584) || cutNode || (false&&allNode /*&& correctionValue > 8*1024*1024*//*-0*33554432*/)) && ss->staticEval >= beta - 14 * depth - 45 * improving + 374 && !excludedMove
         && pos.non_pawn_material(us) && ss->ply >= nmpMinPly && !is_loss(beta))
     {
         assert((ss - 1)->currentMove != Move::null());
@@ -1007,7 +1007,7 @@ Value Search::Worker::search(
 	//CC = allNode;// && correctionValue > 33554432;
         Depth R = 7 + depth / 3;
 	//if(CC) R /= 2;
-	CC = true;
+	CC = !cutNode;
 	//CC = false;
 	constexpr int B = 100;
 	constexpr double S = B / 6.0;
@@ -1017,13 +1017,21 @@ Value Search::Worker::search(
 	V = v / std::sqrt(2);
 	
 	//V = ((ss-1)->statScore + 4929.08) * (S / 12333.3);
-	//V = (correctionValue / 1024 -7084.51) * (S / 16742.5);
+	V = (correctionValue / 1024 -7084.51) * (S / 16742.5);
 	
+	//V = correctionValue / 1024;
+	V = (correctionValue / 1024 +26452.4) * (S / 27078.0);
 	V = std::clamp(V + B/2, 0, B);
+
+//			if(!cutNode)
+			{
         dbg_mean_of(V, 0);	
         dbg_stdev_of(V, 0);	
         dbg_mean_of(V, depthOrig);	
         dbg_stdev_of(V,depthOrig);	
+//			}
+//			else
+//			{
 	//CC = true;
         do_null_move(pos, st, ss);
 
@@ -1058,6 +1066,7 @@ Value Search::Worker::search(
 		    }
 	    }
         }
+			}
     }
 
     improving |= ss->staticEval >= beta;
