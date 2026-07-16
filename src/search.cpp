@@ -953,6 +953,13 @@ Value Search::Worker::search(
         }
     }
 
+    bool CC = false;
+    bool P = false;
+    int V = 0;
+    Depth depthOrig = depth;
+    Value alphaOrig = alpha;
+    std::vector<bool> C = {ttCapture, priorCapture, ss->ttPv, improving, opponentWorsening, ss->ttHit};
+
     if (ss->inCheck)
         goto moves_loop;
 
@@ -990,13 +997,34 @@ Value Search::Worker::search(
     }
 
     // Step 9. Null move search with verification search
-    if (cutNode && ss->staticEval >= beta - 14 * depth - 45 * improving + 374 && !excludedMove
+    if ((cutNode || (false&&allNode /*&& correctionValue > 8*1024*1024*//*-0*33554432*/)) && ss->staticEval >= beta - 14 * depth - 45 * improving + 374 && !excludedMove
         && pos.non_pawn_material(us) && ss->ply >= nmpMinPly && !is_loss(beta))
     {
         assert((ss - 1)->currentMove != Move::null());
 
         // Null move dynamic reduction based on depth
+	//CC = correctionValue < -33554432;
+	//CC = allNode;// && correctionValue > 33554432;
         Depth R = 7 + depth / 3;
+	//if(CC) R /= 2;
+	CC = true;
+	//CC = false;
+	constexpr int B = 100;
+	constexpr double S = B / 6.0;
+	double v = 0;
+	v -= ((ss-1)->statScore + 4929.08) * (S / 12333.3);
+	v += (correctionValue / 1024 - 7084.51) * (S / 16742.5);
+	V = v / std::sqrt(2);
+	
+	//V = ((ss-1)->statScore + 4929.08) * (S / 12333.3);
+	//V = (correctionValue / 1024 -7084.51) * (S / 16742.5);
+	
+	V = std::clamp(V + B/2, 0, B);
+        dbg_mean_of(V, 0);	
+        dbg_stdev_of(V, 0);	
+        dbg_mean_of(V, depthOrig);	
+        dbg_stdev_of(V,depthOrig);	
+	//CC = true;
         do_null_move(pos, st, ss);
 
         Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false);
@@ -1007,20 +1035,28 @@ Value Search::Worker::search(
         if (nullValue >= beta && !is_win(nullValue))
         {
             if (nmpMinPly || depth < 16)
-                return nullValue;
+	    {
+                if(!CC) return nullValue;
+		P = true;
+	    }
+	    else {
 
-            assert(!nmpMinPly);  // Recursive verification is not allowed
+		    assert(!nmpMinPly);  // Recursive verification is not allowed
 
-            // Do verification search at high depths, with null move pruning disabled
-            // until ply exceeds nmpMinPly.
-            nmpMinPly = ss->ply + 3 * (depth - R) / 4;
+		    // Do verification search at high depths, with null move pruning disabled
+		    // until ply exceeds nmpMinPly.
+		    nmpMinPly = ss->ply + 3 * (depth - R) / 4;
 
-            Value v = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false);
+		    Value v = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false);
 
-            nmpMinPly = 0;
+		    nmpMinPly = 0;
 
-            if (v >= beta)
-                return nullValue;
+		    if (v >= beta)
+		    {
+			if(!CC) return nullValue;
+		P = true;
+		    }
+	    }
         }
     }
 
@@ -1605,6 +1641,20 @@ moves_loop:  // When in check, search starts here
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
+    if(CC)
+    {
+	    bool T = bestValue > alphaOrig;
+            dbg_hit_on(T, 0);
+            dbg_hit_on(P, 1);
+            dbg_hit_on(T, 10+P);
+
+	    dbg_hit_on(T, 1000+V);
+	    dbg_hit_on(T, 2000+1000*P+V);
+	    /*
+	    for(int i = 0; i < int(C.size()); i++)
+                 dbg_hit_on(T, 100+i*100+10*C[i]+P);
+		 */
+    }
     return bestValue;
 }
 
