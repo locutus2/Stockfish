@@ -713,6 +713,9 @@ Value Search::Worker::search(
     if (depth <= 0)
         return qsearch<PvNode ? PV : NonPV>(pos, ss, alpha, beta);
 
+    for(int i = 0; i < 32; i++)
+	    dbg_hit_on(i == depth, i);
+
     // Limit the depth if extensions made it too large
     depth = std::min(depth, MAX_PLY - 1);
 
@@ -1622,6 +1625,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     static_assert(nodeType != Root);
     constexpr bool PvNode = nodeType == PV;
+
+    for(int i = 0; i < 32; i++)
+	    dbg_hit_on(i == 0, i);
 
     assert(alpha >= -VALUE_INFINITE && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || (alpha == beta - 1));
