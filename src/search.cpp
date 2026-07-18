@@ -2088,7 +2088,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     TimePoint elapsed = tm.elapsed([&worker]() { return worker.threads.nodes_searched(); });
     TimePoint tick    = worker.limits.startTime + elapsed;
 
-    if (tick - lastInfoTime >= 1000)
+    if (tick - lastInfoTime >= 100000)
     {
         lastInfoTime = tick;
         dbg_print();
