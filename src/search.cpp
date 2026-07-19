@@ -385,6 +385,7 @@ bool Search::Worker::iterative_deepening() {
             // high/low, re-search with a bigger window until we don't fail
             // high/low anymore.
             int failedHighCnt = 0;
+	    int researches = 0;
             while (true)
             {
                 // Adjust the effective depth searched, but ensure at least one
@@ -419,6 +420,8 @@ bool Search::Worker::iterative_deepening() {
                 // otherwise exit the loop.
                 if (bestValue <= alpha)
                 {
+		    //std::cout << "info fail low research=" << researches << " depth=" << adjustedDepth << "/" << rootDepth << "  value=" << bestValue << "/" << alpha << std::endl;
+			++researches;
                     beta  = alpha;
                     alpha = std::max(bestValue - delta, -VALUE_INFINITE);
 
@@ -428,6 +431,8 @@ bool Search::Worker::iterative_deepening() {
                 }
                 else if (bestValue >= beta)
                 {
+		    //std::cout << "info fail high research=" << researches << " depth=" << adjustedDepth << "/" << rootDepth << "  value=" << bestValue << "/" << beta << std::endl;
+			++researches;
                     alpha = std::max(beta - delta, alpha);
                     beta  = std::min(bestValue + delta, VALUE_INFINITE);
                     ++failedHighCnt;
@@ -1347,7 +1352,8 @@ moves_loop:  // When in check, search starts here
 	}
 
         if (allNode)
-            r += (r + 653) * 276 / (256 * depth + 268);
+            r += r * (276 - depth) / (256 * depth + 268);
+            //r += r * 276 / (256 * depth + 268);
             //r += 0 + 1 * (r - 0*653 + 0*155 * depth) * (276 + 0*4  - 0*1 * depth) / (256 * depth + 268);
 
         // Step 17. Late moves reduction / extension (LMR)
