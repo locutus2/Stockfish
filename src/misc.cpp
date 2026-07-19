@@ -350,10 +350,10 @@ void dbg_hit_on(bool cond, int slot) {
         ++hit.at(slot)[1];
 }
 
-void dbg_mean_of(i64 value, int slot) {
+void dbg_mean_of(i64 value, int slot, int weight) {
 
-    ++mean.at(slot)[0];
-    mean.at(slot)[1] += value;
+    mean.at(slot)[0] += weight;
+    mean.at(slot)[1] += weight * value;
 }
 
 void dbg_stdev_of(i64 value, int slot) {

@@ -699,6 +699,13 @@ void Search::Worker::clear() {
     refreshTable.clear(network[numaAccessToken]);
 }
 
+void addStats(Depth depth)
+{
+    dbg_mean_of(depth, 30);
+    for(int i = 0; i < 32; i++)
+	    dbg_hit_on(i == depth, i);
+}
+
 
 // Main search function for both PV and non-PV nodes
 template<NodeType nodeType>
@@ -713,8 +720,7 @@ Value Search::Worker::search(
     if (depth <= 0)
         return qsearch<PvNode ? PV : NonPV>(pos, ss, alpha, beta);
 
-    for(int i = 0; i < 32; i++)
-	    dbg_hit_on(i == depth, i);
+    addStats(depth);
 
     // Limit the depth if extensions made it too large
     depth = std::min(depth, MAX_PLY - 1);
@@ -1341,7 +1347,7 @@ moves_loop:  // When in check, search starts here
 	}
 
         if (allNode)
-            r += r * 276 / (256 * depth + 268);
+            r += (r + 653) * 276 / (256 * depth + 268);
             //r += 0 + 1 * (r - 0*653 + 0*155 * depth) * (276 + 0*4  - 0*1 * depth) / (256 * depth + 268);
 
         // Step 17. Late moves reduction / extension (LMR)
@@ -1636,8 +1642,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     static_assert(nodeType != Root);
     constexpr bool PvNode = nodeType == PV;
 
-    for(int i = 0; i < 32; i++)
-	    dbg_hit_on(i == 0, i);
+    addStats(0);
 
     assert(alpha >= -VALUE_INFINITE && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || (alpha == beta - 1));
