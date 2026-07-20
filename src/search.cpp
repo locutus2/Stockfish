@@ -1353,8 +1353,8 @@ moves_loop:  // When in check, search starts here
 	}
 
         if (allNode)
-            r += r * (276 - depth) / (256 * depth + 268);
-            //r += r * 276 / (256 * depth + 268);
+            //r += r * (276 - depth) / (256 * depth + 268);
+            r += r * (276 + 0) / (256 * depth + 268);
             //r += 0 + 1 * (r - 0*653 + 0*155 * depth) * (276 + 0*4  - 0*1 * depth) / (256 * depth + 268);
 
         // Step 17. Late moves reduction / extension (LMR)
