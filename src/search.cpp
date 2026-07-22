@@ -1350,11 +1350,15 @@ moves_loop:  // When in check, search starts here
 		dbg_mean_of(155 * depth * 276 / (256 * depth + 268), 2);
 		dbg_mean_of(1000 * 276 / (256 * depth + 268), 3);
 		dbg_mean_of(1000 * depth / (256 * depth + 268), 4);
+                dbg_mean_of(r * (276) / (256 * depth + 268), 10);
+                dbg_mean_of(r * (28*moveCount) / (256 * depth + 268), 11);
+                dbg_stdev_of(r * (276) / (256 * depth + 268), 10);
+                dbg_stdev_of(r * (28*moveCount) / (256 * depth + 268), 11);
 	}
 
         if (allNode)
-            //r += r * (276 - depth) / (256 * depth + 268);
-            r += r * (276 + 0) / (256 * depth + 268);
+            r += r * (276 - 2*depth) / (256 * depth + 268);
+            //r += r * (276 + 28*moveCount) / (256 * depth + 268);
             //r += 0 + 1 * (r - 0*653 + 0*155 * depth) * (276 + 0*4  - 0*1 * depth) / (256 * depth + 268);
 
         // Step 17. Late moves reduction / extension (LMR)
