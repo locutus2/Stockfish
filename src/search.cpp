@@ -708,7 +708,7 @@ void Search::Worker::clear() {
 void addStats(Depth depth)
 {
     dbg_mean_of(depth, 30);
-    for(int i = 0; i < 32; i++)
+    for(int i = 0; i < 64; i++)
 	    dbg_hit_on(i == depth, i);
 }
 
@@ -1358,7 +1358,7 @@ moves_loop:  // When in check, search starts here
 
         if (allNode)
             //r += r * (276 - 2*depth) / (256 * depth + 268);
-            r += r * (276 + 14*moveCount) / (256 * depth + 268);
+            r += r * (276 + 1 * ss->ply + 0*moveCount) / (256 * depth + 268);
             //r += 0 + 1 * (r - 0*653 + 0*155 * depth) * (276 + 0*4  - 0*1 * depth) / (256 * depth + 268);
 
         // Step 17. Late moves reduction / extension (LMR)
