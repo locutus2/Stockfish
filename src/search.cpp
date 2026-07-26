@@ -1348,10 +1348,10 @@ moves_loop:  // When in check, search starts here
         //int r1 = r * (193+89*!capture) / (256 * depth + 268);
         //int r1 = r * (276-83+89*!capture) / (256 * depth + 268);
         //int r1 = r * (276-9+124*capture) / (256 * depth + 268);
-        int r1 = r * (276+32*capture) / (256 * depth + 268);
+        //int r1 = r * (276+32*capture) / (256 * depth + 268);
         //int r1 = r * ss->ply / (2 * rootDepth);
         //int r1 = r * ss->ply * 3 / (17 * rootDepth);
-        //int r1 = r * ss->ply * 45 / (256 * rootDepth);
+        int r1 = r * ss->ply * 45 / (256 * rootDepth);
         //int r1 = r * ss->ply * 67 / (256 * rootDepth);
         //int r1 = r * ss->ply / (2 * (ss->ply + depth));
         //int r1 = r * ss->ply / (4 * (ss->ply + depth));
