@@ -1344,21 +1344,36 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 439 / 4096;
 
         // Scale up reductions for expected ALL nodes
+	//bool CC = allNode;
+	bool CC = false;
+	//bool C = capture;
+	//bool C = givesCheck;
+	//bool C = ss->inCheck;
+	bool C = ss->ttPv;
         int r0 = r * 276 / (256 * depth + 268);
+        //int r1 = r * ss->ttPv * 276 / (256 * depth + 268); // E(ss->ttPv) = 0,01538384731616250939402871718065
+        int r1 = r * (276 - 1 + 65 * ss->ttPv) / (256 * depth + 268);
+        //int r1 = r * ss->inCheck * 276 / (256 * depth + 268); // E(ss->inCheck) = 0,10227634244985646720786894300912
+        //int r1 = r * (276 + 1 - 10 * ss->inCheck) / (256 * depth + 268); 
+        //int r1 = r * priorCapture * 276 / (256 * depth + 268); // E(priorCapture) = 0,29923068547862410341796589735215
+        //int r1 = r * (276 - 3 + 10 * priorCapture) / (256 * depth + 268);
+        //int r1 = r * givesCheck * 276 / (256 * depth + 268); // E(givesCheck) = 0,10946785316900753912297613451984
+        //int r1 = r * (276 + 1 - 9 * givesCheck) / (256 * depth + 268);
+        //int r1 = r * capture * 276 / (256 * depth + 268); // E(capture) = 0,07246376811594202898550724637681
+        //int r1 = r * (276 + 1 - 14 * capture) / (256 * depth + 268);
+	//
         //int r1 = r * (193+89*!capture) / (256 * depth + 268);
         //int r1 = r * (276-83+89*!capture) / (256 * depth + 268);
         //int r1 = r * (276-9+124*capture) / (256 * depth + 268);
         //int r1 = r * (276+32*capture) / (256 * depth + 268);
         //int r1 = r * ss->ply / (2 * rootDepth);
         //int r1 = r * ss->ply * 3 / (17 * rootDepth);
-        int r1 = r * ss->ply * 45 / (256 * rootDepth);
+        //int r1 = r * ss->ply * 45 / (256 * rootDepth);
         //int r1 = r * ss->ply * 67 / (256 * rootDepth);
         //int r1 = r * ss->ply / (2 * (ss->ply + depth));
         //int r1 = r * ss->ply / (4 * (ss->ply + depth));
         //int r1 = r * ss->ply * 85 / (256 * (ss->ply + depth));
         //int r1 = r * (184 + 21 * ss->ply) / (256 * depth + 85 * ss->ply + 179);
-	bool CC = allNode;
-	bool C = capture;
 	//r0 = r1;
         if (allNode)
 	{
@@ -1380,7 +1395,9 @@ moves_loop:  // When in check, search starts here
         if (allNode)
 	{
 	    //r += (r0 + r1) / 2;
-	    r += r1;
+	    //r += r1;
+	    if(CC) r += r0;
+	    else r += r1;
             //r += r * 276 / (256 * depth + 268);
             //r += (r + 0*653) * (276 + 0 * !capture + 0 * (ss+1)->cutoffCnt + 0 * ss->ply / rootDepth + 0 * ss->ply + 0*moveCount  + 2 * depth) / (256 * depth + 268);
 	}
