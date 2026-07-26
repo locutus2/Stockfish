@@ -1343,11 +1343,31 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 439 / 4096;
 
         // Scale up reductions for expected ALL nodes
+        int r0 = r * 276 / (256 * depth + 268);
+        //int r1 = r * (193+89*!capture) / (256 * depth + 268);
+        //int r1 = r * (276-83+89*!capture) / (256 * depth + 268);
+        //int r1 = r * (276-9+124*capture) / (256 * depth + 268);
+        int r1 = r * (276+32*capture) / (256 * depth + 268);
+        //int r1 = r * ss->ply / (2 * rootDepth);
+        //int r1 = r * ss->ply * 3 / (17 * rootDepth);
+        //int r1 = r * ss->ply * 45 / (256 * rootDepth);
+        //int r1 = r * ss->ply * 67 / (256 * rootDepth);
+        //int r1 = r * ss->ply / (2 * (ss->ply + depth));
+        //int r1 = r * ss->ply / (4 * (ss->ply + depth));
+        //int r1 = r * ss->ply * 85 / (256 * (ss->ply + depth));
+        //int r1 = r * (184 + 21 * ss->ply) / (256 * depth + 85 * ss->ply + 179);
+	bool CC = allNode;
+	bool C = capture;
+	//r0 = r1;
         if (allNode)
 	{
 		dbg_mean_of(depth, 0);
-		dbg_mean_of(653 * 276 / (256 * depth + 268), 1);
-		dbg_mean_of(155 * depth * 276 / (256 * depth + 268), 2);
+		dbg_mean_of(r0, 1);
+		dbg_mean_of(r1, 2);
+		dbg_correl_of(r0, r1, 0);
+
+		//dbg_mean_of(653 * 276 / (256 * depth + 268), 1);
+		//dbg_mean_of(155 * depth * 276 / (256 * depth + 268), 2);
 		dbg_mean_of(1000 * 276 / (256 * depth + 268), 3);
 		dbg_mean_of(1000 * depth / (256 * depth + 268), 4);
                 dbg_mean_of(r * (276) / (256 * depth + 268), 10);
@@ -1357,8 +1377,12 @@ moves_loop:  // When in check, search starts here
 	}
 
         if (allNode)
-            r += r * 276 / (256 * depth + 268);
-            //r += (r + 0*653) * (276 + 0 * ss->ply / rootDepth + -1 * ss->ply + 0*moveCount) / (256 * depth + 268);
+	{
+	    //r += (r0 + r1) / 2;
+	    r += r1;
+            //r += r * 276 / (256 * depth + 268);
+            //r += (r + 0*653) * (276 + 0 * !capture + 0 * (ss+1)->cutoffCnt + 0 * ss->ply / rootDepth + 0 * ss->ply + 0*moveCount  + 2 * depth) / (256 * depth + 268);
+	}
             //r += 0 + 1 * (r - 0*653 + 0*155 * depth) * (276 + 0*4  - 0*1 * depth) / (256 * depth + 268);
 
         // Step 17. Late moves reduction / extension (LMR)
@@ -1425,6 +1449,13 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+	if(CC)
+	{
+		bool T = value > alpha;
+		dbg_hit_on(T, 1000);
+		dbg_hit_on(T, 1010+C);
+	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
