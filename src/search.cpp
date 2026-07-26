@@ -1352,7 +1352,7 @@ moves_loop:  // When in check, search starts here
 	bool C = ss->ttPv;
         int r0 = r * 276 / (256 * depth + 268);
         //int r1 = r * ss->ttPv * 276 / (256 * depth + 268); // E(ss->ttPv) = 0,01538384731616250939402871718065
-        int r1 = r * (276 - 1 + 65 * ss->ttPv) / (256 * depth + 268);
+        //int r1 = r * (276 - 1 + 65 * ss->ttPv) / (256 * depth + 268);
         //int r1 = r * ss->inCheck * 276 / (256 * depth + 268); // E(ss->inCheck) = 0,10227634244985646720786894300912
         //int r1 = r * (276 + 1 - 10 * ss->inCheck) / (256 * depth + 268); 
         //int r1 = r * priorCapture * 276 / (256 * depth + 268); // E(priorCapture) = 0,29923068547862410341796589735215
@@ -1374,13 +1374,20 @@ moves_loop:  // When in check, search starts here
         //int r1 = r * ss->ply / (4 * (ss->ply + depth));
         //int r1 = r * ss->ply * 85 / (256 * (ss->ply + depth));
         //int r1 = r * (184 + 21 * ss->ply) / (256 * depth + 85 * ss->ply + 179);
+        //int r1 = r * ss->ply * 110 / (256 * (depth + ss->ply + rootDepth));
+        //int r1 = r * 276 * 45 * ss->ply / (256 * rootDepth * (256 * depth + 268));
+        int r1 = r * 140 * ss->ply / (rootDepth * (256 * depth + 268));
+        int r2 = i64(r) * 276 * 45 * ss->ply / (256 * rootDepth * (256 * depth + 268));
 	//r0 = r1;
         if (allNode)
 	{
 		dbg_mean_of(depth, 0);
 		dbg_mean_of(r0, 1);
 		dbg_mean_of(r1, 2);
+		dbg_mean_of(r2, 3);
 		dbg_correl_of(r0, r1, 0);
+		dbg_correl_of(r0, r2, 1);
+		dbg_correl_of(r1, r2, 2);
 
 		//dbg_mean_of(653 * 276 / (256 * depth + 268), 1);
 		//dbg_mean_of(155 * depth * 276 / (256 * depth + 268), 2);
