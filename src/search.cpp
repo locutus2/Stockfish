@@ -1362,6 +1362,9 @@ moves_loop:  // When in check, search starts here
         //int r1 = r * capture * 276 / (256 * depth + 268); // E(capture) = 0,07246376811594202898550724637681
         //int r1 = r * (276 + 1 - 14 * capture) / (256 * depth + 268);
 	//
+        //int r1 = (r + 653) * 276 / (256 * depth + 268);
+        //int r1 = (r + 653) * 204 / (256 * depth + 268);
+        //int r1 = (r + 653) * 203 / (256 * depth + 268); // corrected
         //int r1 = r * (193+89*!capture) / (256 * depth + 268);
         //int r1 = r * (276-83+89*!capture) / (256 * depth + 268);
         //int r1 = r * (276-9+124*capture) / (256 * depth + 268);
@@ -1369,14 +1372,17 @@ moves_loop:  // When in check, search starts here
         //int r1 = r * ss->ply / (2 * rootDepth);
         //int r1 = r * ss->ply * 3 / (17 * rootDepth);
         //int r1 = r * ss->ply * 45 / (256 * rootDepth);
+        //int r1 = r * ss->ply * 44 / (256 * rootDepth); // corrected
         //int r1 = r * ss->ply * 67 / (256 * rootDepth);
         //int r1 = r * ss->ply / (2 * (ss->ply + depth));
         //int r1 = r * ss->ply / (4 * (ss->ply + depth));
         //int r1 = r * ss->ply * 85 / (256 * (ss->ply + depth));
         //int r1 = r * (184 + 21 * ss->ply) / (256 * depth + 85 * ss->ply + 179);
-        //int r1 = r * ss->ply * 110 / (256 * (depth + ss->ply + rootDepth));
+        int r1 = r * 110 * ss->ply / (256 * (depth + ss->ply + rootDepth));
         //int r1 = r * 276 * 45 * ss->ply / (256 * rootDepth * (256 * depth + 268));
-        int r1 = r * 140 * ss->ply / (rootDepth * (256 * depth + 268));
+        //int r1 = r * 140 * ss->ply / (rootDepth * (256 * depth + 268));
+        //int r1 = r * 313 * ss->ply / (rootDepth * (256 * depth + 268)); // corrected
+	//int r1 = 0;
         int r2 = i64(r) * 276 * 45 * ss->ply / (256 * rootDepth * (256 * depth + 268));
 	//r0 = r1;
         if (allNode)
