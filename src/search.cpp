@@ -1348,8 +1348,9 @@ moves_loop:  // When in check, search starts here
 	bool CC = false;
 	//bool C = capture;
 	//bool C = givesCheck;
-	//bool C = ss->inCheck;
-	bool C = ss->ttPv;
+	bool C = ss->inCheck;
+	//bool C = ss->ttPv;
+
         int r0 = r * 276 / (256 * depth + 268);
         //int r1 = r * ss->ttPv * 276 / (256 * depth + 268); // E(ss->ttPv) = 0,01538384731616250939402871718065
         //int r1 = r * (276 - 1 + 65 * ss->ttPv) / (256 * depth + 268);
@@ -1384,10 +1385,15 @@ moves_loop:  // When in check, search starts here
         //int r1 = r * 313 * ss->ply / (rootDepth * (256 * depth + 268));
         //int r1 = r * 307 * ss->ply / (rootDepth * (256 * depth + 268)); // corrected
         //int r1 = i64(r) * 67 * ss->ply * ss->ply / (i64(256) * rootDepth * (depth + ss->ply)); 
-        int r1 = i64(r) * ss->ply * (32 * rootDepth + 23 * (depth + ss->ply)) / (i64(256) * rootDepth * (depth + ss->ply)); 
+        //int r1 = i64(r) * ss->ply * (32 * rootDepth + 23 * (depth + ss->ply)) / (i64(256) * rootDepth * (depth + ss->ply)); 
 	//int r1 = 0;
+        //int r1 = i64(r) * (138 * rootDepth + ss->ply * (23 * depth + 24)) / (rootDepth * (256 * depth + 268));
+        int r1 = i64(r) * (133 * rootDepth + ss->ply * (22 * depth + 23)) / (rootDepth * (256 * depth + 268));
         int r2 = i64(r) * 276 * 45 * ss->ply / (256 * rootDepth * (256 * depth + 268));
 	//r0 = r1;
+        //int r0 = r * 45 * ss->ply / (256 * rootDepth);
+        //int r1 = C * r0;
+
         if (allNode)
 	{
 		dbg_mean_of(depth, 0);
@@ -1487,7 +1493,8 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		bool T = value > alpha;
-		dbg_hit_on(T, 1000);
+		dbg_hit_on(C, 1000);
+		dbg_hit_on(T, 1001);
 		dbg_hit_on(T, 1010+C);
 	}
 
