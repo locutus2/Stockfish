@@ -1331,7 +1331,8 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
-            r += r * 307 * ss->ply / (rootDepth * (256 * depth + 268));
+            r += i64(r) * (133 * rootDepth + ss->ply * (22 * depth + 23))
+               / (rootDepth * (256 * depth + 268));
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
