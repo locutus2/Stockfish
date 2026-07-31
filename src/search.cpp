@@ -1300,6 +1300,8 @@ moves_loop:  // When in check, search starts here
 
         u64 nodeCount = rootNode ? u64(nodes) : 0;
 
+	bool see0 = pos.see_ge(move, 0);
+
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck, ss);
 
@@ -1345,15 +1347,15 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
 	bool C0 = depth >= 2 && moveCount > 1;
-	//bool CC = allNode;
-	bool CC = false;
+	bool CC = allNode;
+	//bool CC = false;
 	//bool C = capture;
 	//bool C = givesCheck;
 	//bool C = ss->inCheck;
 	//bool C = priorCapture;
 	//bool C = improving;
 	//bool C = opponentWorsening;
-	bool C = ss->statScore > 0;
+	//bool C = ss->statScore > 0;
 	//bool C = ss->ttPv;
 	//bool C = type_of(movedPiece) == PAWN;
 	//int C = (ss+1)->cutoffCnt;
@@ -1372,9 +1374,19 @@ moves_loop:  // When in check, search starts here
 	//bool C = bool(excludedMove);
 	//bool C = bool(ttData.move);
 	//bool C = type_of(movedPiece) == KING;
+	//bool C = type_of(movedPiece) == QUEEN;
+	//bool C = type_of(movedPiece) == ROOK;
+	//bool C = type_of(movedPiece) == BISHOP;
+	//bool C = type_of(movedPiece) == KNIGHT;
+	bool C = see0;
 
         int r0 = r * 276 / (256 * depth + 268);
-        int r1 = r * (277 - 10 * givesCheck) / (256 * depth + 268);
+        int r1 = r * C * 276 / (256 * depth + 268);
+
+        //int r1 = r * (277 - 136 * ((ss-1)->currentMove == Move::null())) / (256 * depth + 268);
+        //int r1 = r * (275 + 32 * ttCapture) / (256 * depth + 268);
+        //int r1 = r * (275 + 11 * ss->ttPv) / (256 * depth + 268);
+        //int r1 = r * (277 - 10 * givesCheck) / (256 * depth + 268);
         //int r1 = r * (277 - 13 * capture) / (256 * depth + 268);
         //int r1 = r * (277 - 5 * (ss->statScore > 0)) / (256 * depth + 268);
 	//
@@ -1419,7 +1431,6 @@ moves_loop:  // When in check, search starts here
         int r2 = i64(r) * 276 * 45 * ss->ply / (256 * rootDepth * (256 * depth + 268));
 	//r0 = r1;
         //int r0 = r * 45 * ss->ply / (256 * rootDepth);
-        //int r1 = C * r0;
 
         if (allNode && C0)
 	{
