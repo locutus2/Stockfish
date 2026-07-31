@@ -1344,22 +1344,40 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 439 / 4096;
 
         // Scale up reductions for expected ALL nodes
-	bool CC = allNode;
-	//bool CC = false;
+	bool C0 = depth >= 2 && moveCount > 1;
+	//bool CC = allNode;
+	bool CC = false;
 	//bool C = capture;
 	//bool C = givesCheck;
 	//bool C = ss->inCheck;
 	//bool C = priorCapture;
 	//bool C = improving;
 	//bool C = opponentWorsening;
-	//bool C = ss->statScore > 0;
+	bool C = ss->statScore > 0;
 	//bool C = ss->ttPv;
 	//bool C = type_of(movedPiece) == PAWN;
 	//int C = (ss+1)->cutoffCnt;
-	//int C = (ss+1)->cutoffCnt == 0;
-	bool C = (ss-1)->currentMove == Move::null();
+	//bool C = (ss+1)->cutoffCnt == 0;
+	//bool C = (ss+1)->cutoffCnt == 1;
+	//bool C = (ss+1)->cutoffCnt > 1;
+	//bool C = (ss-1)->currentMove == Move::null();
+	//bool C = (ss-1)->moveCount == 0;
+	//int C = (ss-1)->moveCount;
+	//bool C = (ss-1)->moveCount == 1;
+	//bool C = ttCapture;
+	//bool C = ss->staticEval > alpha;
+	//bool C = eval > alpha;
+	//bool C = ss->staticEval > eval;
+	//bool C = ss->staticEval < eval;
+	//bool C = bool(excludedMove);
+	//bool C = bool(ttData.move);
+	//bool C = type_of(movedPiece) == KING;
 
         int r0 = r * 276 / (256 * depth + 268);
+        int r1 = r * (277 - 10 * givesCheck) / (256 * depth + 268);
+        //int r1 = r * (277 - 13 * capture) / (256 * depth + 268);
+        //int r1 = r * (277 - 5 * (ss->statScore > 0)) / (256 * depth + 268);
+	//
         //int r1 = r * ss->ttPv * 276 / (256 * depth + 268); // E(ss->ttPv) = 0,01538384731616250939402871718065
         //int r1 = r * (276 - 1 + 65 * ss->ttPv) / (256 * depth + 268);
         //int r1 = r * ss->inCheck * 276 / (256 * depth + 268); // E(ss->inCheck) = 0,10227634244985646720786894300912
@@ -1401,9 +1419,9 @@ moves_loop:  // When in check, search starts here
         int r2 = i64(r) * 276 * 45 * ss->ply / (256 * rootDepth * (256 * depth + 268));
 	//r0 = r1;
         //int r0 = r * 45 * ss->ply / (256 * rootDepth);
-        int r1 = C * r0;
+        //int r1 = C * r0;
 
-        if (allNode)
+        if (allNode && C0)
 	{
 		dbg_mean_of(depth, 0);
 		dbg_mean_of(r0, 1);
@@ -1499,7 +1517,7 @@ moves_loop:  // When in check, search starts here
         // Step 19. Undo move
         undo_move(pos, move);
 
-	if(CC)
+	if(CC && C0)
 	{
 		C = std::min(99, int(C));
 		bool T = value > alpha;
