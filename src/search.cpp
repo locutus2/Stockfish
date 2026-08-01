@@ -1352,7 +1352,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = capture;
 	//bool C = givesCheck;
 	//bool C = ss->inCheck;
-	//bool C = priorCapture;
+	bool C = priorCapture;
 	//bool C = improving;
 	//bool C = opponentWorsening;
 	//bool C = ss->statScore > 0;
@@ -1378,7 +1378,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = type_of(movedPiece) == ROOK;
 	//bool C = type_of(movedPiece) == BISHOP;
 	//bool C = type_of(movedPiece) == KNIGHT;
-	bool C = see0;
+	//bool C = see0;
 
         int r0 = r * 276 / (256 * depth + 268);
         int r1 = r * C * 276 / (256 * depth + 268);
@@ -1536,6 +1536,7 @@ moves_loop:  // When in check, search starts here
 		    dbg_hit_on(C==c, 1000+c);
 		dbg_hit_on(T, 1100);
 		dbg_hit_on(T, 1200+C);
+		dbg_mean_of(r0, 5+C);
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
