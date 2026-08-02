@@ -1355,9 +1355,9 @@ moves_loop:  // When in check, search starts here
 	bool CC = allNode;
 	//bool CC = false;
 	//bool C = capture;
-	//bool C = givesCheck;
+	bool C = givesCheck;
 	//bool C = ss->inCheck;
-	bool C = priorCapture;
+	//bool C = priorCapture;
 	//bool C = improving;
 	//bool C = opponentWorsening;
 	//bool C = ss->statScore > 0;
@@ -1385,7 +1385,8 @@ moves_loop:  // When in check, search starts here
 	//bool C = type_of(movedPiece) == KNIGHT;
 	//bool C = see0;
 
-        int r0 = r * 276 / (256 * depth + 268);
+        //int r0 = r * 276 / (256 * depth + 268);
+        int r0 = r * (276 - 8 * givesCheck) / (256 * depth + 268);
         int r1 = r * C * 276 / (256 * depth + 268);
 
         //int r1 = r * (277 - 136 * ((ss-1)->currentMove == Move::null())) / (256 * depth + 268);
