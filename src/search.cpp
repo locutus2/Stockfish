@@ -1334,13 +1334,25 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 439 / 4096;
 
+	bool CC = allNode;
+	bool CC2 = false;
+	bool C = givesCheck;
+	int W = -1;
+	int r0 = 0;
+	int r1 = 0;
         // Scale up reductions for expected ALL nodes
         if (allNode)
-            r += r * 276 / (256 * depth + 268);
+	{
+            r0 = r * 276 / (256 * depth + 268);
+            r1 = r * (276 + W*C) / (256 * depth + 268);
+            r += r1;
+            //r += r * (276 -0*C) / (256 * depth + 268);
+	}
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
+	    CC2 = allNode;
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
@@ -1402,6 +1414,29 @@ moves_loop:  // When in check, search starts here
 
         // Step 19. Undo move
         undo_move(pos, move);
+
+	if(CC)
+	{
+		bool T = value > alpha;
+
+		dbg_hit_on(T,0);
+		dbg_hit_on(T,1+C);
+
+		dbg_mean_of(r0, 0);
+		dbg_mean_of(r0, 1+C);
+		dbg_mean_of(r1, 5+0);
+		dbg_mean_of(r1, 5+1+C);
+
+		if(CC2)
+		{
+		   dbg_hit_on(T,10);
+		   dbg_hit_on(T,11+C);
+		   dbg_mean_of(r0, 10);
+		   dbg_mean_of(r0, 11+C);
+		   dbg_mean_of(r1, 15+0);
+		   dbg_mean_of(r1, 15+1+C);
+		}
+	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
