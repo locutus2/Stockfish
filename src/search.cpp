@@ -140,6 +140,7 @@ void update_all_stats(const Position& pos,
                       Stack*          ss,
                       Search::Worker& workerThread,
                       Move            bestMove,
+                      Move            secondBestMove,
                       Square          prevSq,
                       SearchedList&   quietsSearched,
                       SearchedList&   capturesSearched,
@@ -735,7 +736,7 @@ Value Search::Worker::search(
     StateInfo st;
 
     Key   posKey;
-    Move  move, excludedMove, bestMove;
+    Move  move, excludedMove, bestMove, secondBestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
@@ -789,11 +790,11 @@ Value Search::Worker::search(
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     Square prevSq  = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
-    bestMove       = Move::none();
-    priorReduction = (ss - 1)->reduction;
-    (ss - 1)->reduction = 0;
-    ss->statScore       = 0;
-    (ss + 2)->cutoffCnt = 0;
+    secondBestMove = bestMove = Move::none();
+    priorReduction            = (ss - 1)->reduction;
+    (ss - 1)->reduction       = 0;
+    ss->statScore             = 0;
+    (ss + 2)->cutoffCnt       = 0;
 
     const auto correctionValue = correction_value(*this, pos, ss);
 
@@ -1494,7 +1495,8 @@ moves_loop:  // When in check, search starts here
 
             if (value + inc > alpha)
             {
-                bestMove = move;
+                secondBestMove = bestMove;
+                bestMove       = move;
 
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     ss->pv->update(move, (ss + 1)->pv);
@@ -1545,8 +1547,8 @@ moves_loop:  // When in check, search starts here
     // we update the stats of searched moves.
     else if (bestMove)
     {
-        update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth,
-                         ttData.move, PvNode);
+        update_all_stats(pos, ss, *this, bestMove, secondBestMove, prevSq, quietsSearched,
+                         capturesSearched, depth, ttData.move, PvNode);
         if (!PvNode)
             ttMoveHistory << (bestMove == ttData.move ? 918 : -747);
     }
@@ -1930,6 +1932,7 @@ void update_all_stats(const Position& pos,
                       Stack*          ss,
                       Search::Worker& workerThread,
                       Move            bestMove,
+                      Move            secondBestMove,
                       Square          prevSq,
                       SearchedList&   quietsSearched,
                       SearchedList&   capturesSearched,
@@ -1967,6 +1970,20 @@ void update_all_stats(const Position& pos,
         // Increase stats for the best move in case it was a capture move
         capturedPiece = type_of(pos.piece_on(bestMove.to_sq()));
         captureHistory[movedPiece][bestMove.to_sq()][capturedPiece] << bonus * 1427 / 1024;
+    }
+
+    if (secondBestMove.is_ok())
+    {
+        if (!pos.capture_stage(secondBestMove))
+            update_quiet_histories(pos, ss, workerThread, secondBestMove, bonus * 450 / 1024);
+
+        else
+        {
+            // Increase stats for the second best move in case it was a capture move
+            capturedPiece = type_of(pos.piece_on(secondBestMove.to_sq()));
+            captureHistory[pos.moved_piece(secondBestMove)][secondBestMove.to_sq()][capturedPiece]
+              << bonus * 714 / 1024;
+        }
     }
 
     // Extra penalty for a quiet early move that was not a TT move in
