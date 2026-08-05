@@ -1495,8 +1495,10 @@ moves_loop:  // When in check, search starts here
 
             if (value + inc > alpha)
             {
-                secondBestMove = bestMove;
-                bestMove       = move;
+                if (value > alpha)
+                    secondBestMove = bestMove;
+
+                bestMove = move;
 
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     ss->pv->update(move, (ss + 1)->pv);
