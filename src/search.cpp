@@ -1975,14 +1975,14 @@ void update_all_stats(const Position& pos,
     if (secondBestMove.is_ok())
     {
         if (!pos.capture_stage(secondBestMove))
-            update_quiet_histories(pos, ss, workerThread, secondBestMove, bonus * 450 / 1024);
+            update_quiet_histories(pos, ss, workerThread, secondBestMove, bonus * 225 / 1024);
 
         else
         {
             // Increase stats for the second best move in case it was a capture move
             capturedPiece = type_of(pos.piece_on(secondBestMove.to_sq()));
             captureHistory[pos.moved_piece(secondBestMove)][secondBestMove.to_sq()][capturedPiece]
-              << bonus * 714 / 1024;
+              << bonus * 357 / 1024;
         }
     }
 
