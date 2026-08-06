@@ -1598,12 +1598,14 @@ moves_loop:  // When in check, search starts here
     // static evaluation is saved as it was before correction history.
     if (!excludedMove && !(rootNode && pvIdx))
         ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
-                       bestValue >= beta        ? BOUND_LOWER
-                       : PvNode && realBestMove ? BOUND_EXACT
-                                                : BOUND_UPPER,
-                       moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6),
-                       (realBestMove ? realBestMove : bestMove), unadjustedStaticEval,
-                       tt.generation());
+                       bestValue >= beta    ? BOUND_LOWER
+                       : PvNode && bestMove ? BOUND_EXACT
+                                            : BOUND_UPPER,
+                       moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6), bestMove,
+                       unadjustedStaticEval, tt.generation());
+
+    if (realBestMove)
+        bestMove = realBestMove;
 
     // Adjust correction history if the best move is not a capture
     // and the error direction matches whether we are above/below bounds.
