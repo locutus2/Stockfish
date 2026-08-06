@@ -1546,12 +1546,12 @@ moves_loop:  // When in check, search starts here
 
     // If there is a move that produces search value greater than alpha,
     // we update the stats of searched moves.
-    else if (bestMove)
+    else if (realBestMove)
     {
-        update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth,
-                         ttData.move, PvNode);
+        update_all_stats(pos, ss, *this, realBestMove, prevSq, quietsSearched, capturesSearched,
+                         depth, ttData.move, PvNode);
         if (!PvNode)
-            ttMoveHistory << (bestMove == ttData.move ? 918 : -747);
+            ttMoveHistory << (realBestMove == ttData.move ? 918 : -747);
     }
 
     // Bonus for prior quiet countermove that caused the fail low
@@ -1603,9 +1603,6 @@ moves_loop:  // When in check, search starts here
                                             : BOUND_UPPER,
                        moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6), bestMove,
                        unadjustedStaticEval, tt.generation());
-
-    if (realBestMove)
-        bestMove = realBestMove;
 
     // Adjust correction history if the best move is not a capture
     // and the error direction matches whether we are above/below bounds.
