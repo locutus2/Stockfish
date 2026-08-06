@@ -759,7 +759,7 @@ Value Search::Worker::search(
     StateInfo st;
 
     Key   posKey;
-    Move  move, excludedMove, bestMove;
+    Move  move, excludedMove, bestMove, realBestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
@@ -812,12 +812,12 @@ Value Search::Worker::search(
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
-    Square prevSq  = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
-    bestMove       = Move::none();
-    priorReduction = (ss - 1)->reduction;
-    (ss - 1)->reduction = 0;
-    ss->statScore       = 0;
-    (ss + 2)->cutoffCnt = 0;
+    Square prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
+    bestMove = realBestMove = Move::none();
+    priorReduction          = (ss - 1)->reduction;
+    (ss - 1)->reduction     = 0;
+    ss->statScore           = 0;
+    (ss + 2)->cutoffCnt     = 0;
 
     const auto correctionValue = correction_value(*this, pos, ss);
 
@@ -1520,6 +1520,9 @@ moves_loop:  // When in check, search starts here
             {
                 bestMove = move;
 
+                if (value > alpha)
+                    realBestMove = move;
+
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     ss->pv->update(move, (ss + 1)->pv);
 
@@ -1627,11 +1630,11 @@ moves_loop:  // When in check, search starts here
 
     // Adjust correction history if the best move is not a capture
     // and the error direction matches whether we are above/below bounds.
-    if (!ss->inCheck && !(bestMove && pos.capture(bestMove))
-        && (bestValue > ss->staticEval) == bool(bestMove))
+    if (!ss->inCheck && !(realBestMove && pos.capture(realBestMove))
+        && (bestValue > ss->staticEval) == bool(realBestMove))
     {
         auto bonus =
-          std::clamp(int(bestValue - ss->staticEval) * depth * (bestMove ? 12 : 18) / 128,
+          std::clamp(int(bestValue - ss->staticEval) * depth * (realBestMove ? 12 : 18) / 128,
                      -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *this, 1061 * bonus / 1024);
     }
