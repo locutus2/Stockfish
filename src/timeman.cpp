@@ -125,7 +125,7 @@ void TimeManagement::init(Search::LimitsType& limits,
     }
 
     optScale *= std::sqrt(
-      1 + 0.4 * (limits.time[us] - limits.time[~us]) / (limits.time[us] + limits.time[~us] + 1));
+      1 + 0.8 * (limits.time[us] - limits.time[~us]) / (limits.time[us] + limits.time[~us] + 1));
 
     // Limit the maximum possible time for this move
     optimumTime = TimePoint(std::max(1.0, optScale * timeLeft));
