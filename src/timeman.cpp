@@ -23,6 +23,7 @@
 #include <cmath>
 
 #include "search.h"
+#include "types.h"
 #include "ucioption.h"
 
 namespace Stockfish {
@@ -128,6 +129,13 @@ void TimeManagement::init(Search::LimitsType& limits,
     {
         optScale = std::min((0.88 + ply / 116.4) / mtg, 0.88 * limits.time[us] / timeLeft);
         maxScale = 1.3 + 0.11 * mtg;
+    }
+
+    if (!useNodesTime)
+    {
+        double timeAdvantage =
+          (limits.time[us] - limits.time[~us]) / (1.0 + limits.time[us] + limits.time[~us]);
+        optScale *= 1 + 0.9 * std::min(timeAdvantage, 0.0);
     }
 
     // Limit the maximum possible time for this move
