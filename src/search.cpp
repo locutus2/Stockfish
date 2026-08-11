@@ -1568,47 +1568,55 @@ moves_loop:  // When in check, search starts here
     if (!moveCount)
         bestValue = excludedMove ? alpha : ss->inCheck ? mated_in(ss->ply) : VALUE_DRAW;
 
-    // If there is a move that produces search value greater than alpha,
-    // we update the stats of searched moves.
-    else if (bestMove)
+    else
     {
-        update_all_stats(pos, ss, *this, (realBestMove ? realBestMove : bestMove), prevSq,
-                         quietsSearched, capturesSearched, depth, ttData.move, PvNode);
+        // If there is a move that produces search value greater or equal than alpha,
+        // we update the stats of searched moves.
+        if (bestMove)
+        {
+            update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched,
+                             depth, ttData.move, PvNode);
 
-        if (!PvNode)
-            ttMoveHistory << (bestMove == ttData.move ? 918 : -747);
-    }
+            if (!PvNode)
+                ttMoveHistory << (bestMove == ttData.move ? 918 : -747);
+        }
 
-    // Bonus for prior quiet countermove that caused the fail low
-    else if (!priorCapture && prevSq != SQ_NONE)
-    {
-        int bonusScale = -241;
-        bonusScale -= (ss - 1)->statScore / 98;
-        bonusScale += std::min(59 * depth, 420);
-        bonusScale += 186 * ((ss - 1)->moveCount > 9);
-        bonusScale += 142 * (!ss->inCheck && bestValue <= ss->staticEval - 106);
-        bonusScale += 159 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 68);
+        if (!realBestMove && prevSq != SQ_NONE)
+        {
+            // Bonus for prior quiet countermove that caused the fail low
+            if (!priorCapture)
+            {
+                int bonusScale = -241;
+                bonusScale -= (ss - 1)->statScore / 98;
+                bonusScale += std::min(59 * depth, 420);
+                bonusScale += 186 * ((ss - 1)->moveCount > 9);
+                bonusScale += 142 * (!ss->inCheck && bestValue <= ss->staticEval - 106);
+                bonusScale += 159 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 68);
 
-        bonusScale = std::max(bonusScale, 0);
+                bonusScale = std::max(bonusScale, 0);
 
-        // scaledBonus ranges from 0 to roughly 2.3M, overflows happen for multipliers larger than 900
-        const int scaledBonus = std::min(150 * depth - 85, 1337) * bonusScale;
+                // scaledBonus ranges from 0 to roughly 2.3M, overflows happen for multipliers larger than 900
+                const int scaledBonus = std::min(150 * depth - 85, 1337) * bonusScale;
 
-        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      scaledBonus * 263 / 16384);
+                update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
+                                              scaledBonus * 263 / 16384);
 
-        mainHistory[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 215 / 32768;
+                mainHistory[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 215 / 32768;
 
-        if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
-            sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq] << scaledBonus * 324 / 8192;
-    }
+                if (type_of(pos.piece_on(prevSq)) != PAWN
+                    && ((ss - 1)->currentMove).type_of() != PROMOTION)
+                    sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq]
+                      << scaledBonus * 324 / 8192;
+            }
 
-    // Bonus for prior capture countermove that caused the fail low
-    else if (priorCapture && prevSq != SQ_NONE)
-    {
-        Piece capturedPiece = pos.captured_piece();
-        assert(capturedPiece != NO_PIECE);
-        captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 892;
+            // Bonus for prior capture countermove that caused the fail low
+            else
+            {
+                Piece capturedPiece = pos.captured_piece();
+                assert(capturedPiece != NO_PIECE);
+                captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 892;
+            }
+        }
     }
 
     if (PvNode)
