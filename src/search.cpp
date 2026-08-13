@@ -1345,7 +1345,7 @@ moves_loop:  // When in check, search starts here
             r += 4026 + 933 * !ttData.move;
 
         if (!PvNode && !is_decisive(alpha) && !is_decisive(alphaLastPvNode))
-            r += std::max(alphaLastPvNode - alpha, 0);
+            r -= std::max(alphaLastPvNode - alpha, 0);
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
