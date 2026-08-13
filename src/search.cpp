@@ -1344,6 +1344,9 @@ moves_loop:  // When in check, search starts here
         if (cutNode)
             r += 4026 + 933 * !ttData.move;
 
+        if (!PvNode && !is_decisive(alpha) && !is_decisive(alphaLastPvNode))
+            r += std::max(alphaLastPvNode - alpha, 0);
+
         // Increase reduction if ttMove is a capture
         if (ttCapture)
             r += 1079;
@@ -1414,15 +1417,10 @@ moves_loop:  // When in check, search starts here
             if (!ttData.move)
                 r += 1127;
 
-            Depth d             = newDepth - (r > 5234) - (r > 5487 && newDepth > 2);
-            Value adjustedAlpha = std::max(alpha, alphaLastPvNode);
+            Depth d = newDepth - (r > 5234) - (r > 5487 && newDepth > 2);
             // Note that if expected reduction is high, we reduce search depth here
-            value = -search<NonPV>(pos, ss + 1, -(adjustedAlpha + 1), -adjustedAlpha, d, !cutNode,
-                                   -betaLastPvNode, -alphaLastPvNode);
-
-            if (value > alpha && value <= adjustedAlpha)
-                value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d - 1, !cutNode,
-                                       -betaLastPvNode, -alphaLastPvNode);
+            value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, !cutNode, -betaLastPvNode,
+                                   -alphaLastPvNode);
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
