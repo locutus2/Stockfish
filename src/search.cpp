@@ -1414,15 +1414,16 @@ moves_loop:  // When in check, search starts here
             if (!ttData.move)
                 r += 1127;
 
-            Depth d             = newDepth - (r > 5234) - (r > 5487 && newDepth > 2);
-            Value adjustedAlpha = std::max(alpha, alphaLastPvNode);
-            // Note that if expected reduction is high, we reduce search depth here
-            value = -search<NonPV>(pos, ss + 1, -(adjustedAlpha + 1), -adjustedAlpha, d, !cutNode,
-                                   -betaLastPvNode, -alphaLastPvNode);
+            if (alpha < alphaLastPvNode)
+                r -= 1024;
 
-            if (value > alpha && value <= adjustedAlpha)
-                value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d - 1, !cutNode,
-                                       -betaLastPvNode, -alphaLastPvNode);
+            else if (alpha > betaLastPvNode)
+                r -= 1024;
+
+            // Note that if expected reduction is high, we reduce search depth here
+            Depth d = newDepth - (r > 5234) - (r > 5487 && newDepth > 2);
+            value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, !cutNode, -betaLastPvNode,
+                                   -alphaLastPvNode);
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
@@ -1439,7 +1440,8 @@ moves_loop:  // When in check, search starts here
                     || ttData.depth > 1))
                 newDepth = std::max(newDepth, 1);
 
-            value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false, -beta, -alpha);
+            value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false, -betaLastPvNode,
+                                -alphaLastPvNode);
         }
 
         // Step 19. Undo move
