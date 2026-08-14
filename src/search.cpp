@@ -1415,10 +1415,7 @@ moves_loop:  // When in check, search starts here
                 r += 1127;
 
             if (alpha < alphaLastPvNode)
-                r -= 1024;
-
-            else if (alpha > betaLastPvNode)
-                r -= 1024;
+                r += 1024;
 
             // Note that if expected reduction is high, we reduce search depth here
             Depth d = newDepth - (r > 5234) - (r > 5487 && newDepth > 2);
