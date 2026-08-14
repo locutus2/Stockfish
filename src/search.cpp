@@ -728,8 +728,13 @@ void Search::Worker::clear() {
 
 // Main search function for both PV and non-PV nodes
 template<NodeType nodeType>
-Value Search::Worker::search(
-  Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, const bool cutNode) {
+Value Search::Worker::search(Position&  pos,
+                             Stack*     ss,
+                             Value      alpha,
+                             Value      beta,
+                             Depth      depth,
+                             const bool cutNode,
+                             int        baseReduction) {
 
     constexpr bool PvNode   = nodeType != NonPV;
     constexpr bool rootNode = nodeType == Root;
@@ -1166,7 +1171,7 @@ moves_loop:  // When in check, search starts here
 
         int delta = beta - alpha;
 
-        int r = reduction(improving, depth, moveCount, delta);
+        int r = baseReduction + reduction(improving, depth, moveCount, delta);
 
         // Increase reduction for ttPv nodes (*Scaler)
         // Larger values scale well
@@ -1371,9 +1376,10 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
             Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
+            int   unusedReduction = r - r / 1024 * 1024;
 
             ss->reduction = newDepth - d;
-            value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+            value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true, unusedReduction);
             ss->reduction = 0;
 
             // Do a full-depth search when reduced LMR search fails high
