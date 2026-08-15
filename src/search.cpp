@@ -1167,7 +1167,9 @@ moves_loop:  // When in check, search starts here
 
         int delta = beta - alpha;
 
-        int r           = unusedReduction + reduction(improving, depth, moveCount, delta);
+        int r = reduction(improving, depth, moveCount, delta);
+
+        r += unusedReduction;
         unusedReduction = 0;
 
         // Increase reduction for ttPv nodes (*Scaler)
@@ -1328,7 +1330,7 @@ moves_loop:  // When in check, search starts here
             r -= 3023 + PvNode * 1004 + (ttData.value > alpha) * 885
                + (ttData.depth >= depth) * (816 + cutNode * 940);
 
-        r += 697;  // Base reduction offset to compensate for other tweaks
+        r += 504;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 65;
         r -= std::abs(correctionValue) / 26310;
 
@@ -1372,7 +1374,9 @@ moves_loop:  // When in check, search starts here
             // beyond the first move depth.
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
-            Depth d         = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
+            Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
+
+            // Calculate fractional part of r
             unusedReduction = r - r / 1024 * 1024;
 
             ss->reduction = newDepth - d;
