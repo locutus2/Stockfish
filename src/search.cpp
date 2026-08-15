@@ -1171,7 +1171,9 @@ moves_loop:  // When in check, search starts here
 
         int delta = beta - alpha;
 
-        int r = baseReduction + reduction(improving, depth, moveCount, delta);
+        int r = reduction(improving, depth, moveCount, delta);
+
+        r += baseReduction;
 
         // Increase reduction for ttPv nodes (*Scaler)
         // Larger values scale well
@@ -1337,7 +1339,7 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += 4026 + 933 * !ttData.move;
+            r += 3835 + 933 * !ttData.move;
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
