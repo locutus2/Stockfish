@@ -1167,8 +1167,7 @@ moves_loop:  // When in check, search starts here
 
         int delta = beta - alpha;
 
-        int r           = unusedReduction + reduction(improving, depth, moveCount, delta);
-        unusedReduction = 0;
+        int r           = reduction(improving, depth, moveCount, delta);
 
         // Increase reduction for ttPv nodes (*Scaler)
         // Larger values scale well
@@ -1331,6 +1330,8 @@ moves_loop:  // When in check, search starts here
         r += 697;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 65;
         r -= std::abs(correctionValue) / 26310;
+        r += unusedReduction;
+        unusedReduction = 0;
 
         // Increase reduction for cut nodes
         if (cutNode)
