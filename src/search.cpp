@@ -1125,7 +1125,8 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int moveCount = 0;
+    int moveCount       = 0;
+    int unusedReduction = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1166,7 +1167,8 @@ moves_loop:  // When in check, search starts here
 
         int delta = beta - alpha;
 
-        int r = reduction(improving, depth, moveCount, delta);
+        int r           = unusedReduction + reduction(improving, depth, moveCount, delta);
+        unusedReduction = 0;
 
         // Increase reduction for ttPv nodes (*Scaler)
         // Larger values scale well
@@ -1370,7 +1372,8 @@ moves_loop:  // When in check, search starts here
             // beyond the first move depth.
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
-            Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
+            Depth d         = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
+            unusedReduction = r - r / 1024 * 1024;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
