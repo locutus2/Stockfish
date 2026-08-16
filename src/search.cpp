@@ -55,6 +55,9 @@ namespace Stockfish {
 static constexpr std::array<int, 16> lmrDivisor = {3637, 2787, 2761, 2939, 3171, 3347, 3147, 2762,
                                                    2772, 3106, 3107, 3060, 3112, 2991, 3090, 3542};
 
+constexpr std::array<int, 16> UnusedReductionBias = {0,   0,   -755, -371, 23,  244, 435, 519,
+                                                     560, 585, 609,  624,  626, 635, 638, 645};
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1330,9 +1333,10 @@ moves_loop:  // When in check, search starts here
             r -= 3023 + PvNode * 1004 + (ttData.value > alpha) * 885
                + (ttData.depth >= depth) * (816 + cutNode * 940);
 
-        r += 143;  // Base reduction offset to compensate for other tweaks
+        r += 697;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 65;
         r -= std::abs(correctionValue) / 26310;
+        r -= UnusedReductionBias[std::min(depth, 15)];
 
         // Increase reduction for cut nodes
         if (cutNode)
