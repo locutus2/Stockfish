@@ -1052,8 +1052,7 @@ Value Search::Worker::search(
                 return nullValue;
         }
 
-        if (depth > 1)
-            --depth;
+        depth = std::max(depth - 2, 1);
     }
 
     improving |= ss->staticEval >= beta;
