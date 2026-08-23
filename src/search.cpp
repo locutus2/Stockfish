@@ -764,7 +764,7 @@ Value Search::Worker::search(
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    bool  givesCheck, improving, nmpFailed, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
@@ -820,6 +820,7 @@ Value Search::Worker::search(
     (ss - 1)->reduction = 0;
     ss->statScore       = 0;
     (ss + 2)->cutoffCnt = 0;
+    nmpFailed           = false;
 
     const auto correctionValue = correction_value(*this, pos, ss);
 
@@ -1052,8 +1053,7 @@ Value Search::Worker::search(
                 return nullValue;
         }
 
-        if (depth > 1)
-            --depth;
+        nmpFailed = true;
     }
 
     improving |= ss->staticEval >= beta;
@@ -1342,6 +1342,10 @@ moves_loop:  // When in check, search starts here
         // Increase reduction if ttMove is a capture
         if (ttCapture)
             r += 1079;
+
+        // Increase reduction if null move pruning failed
+        if (nmpFailed)
+            r += 1024;
 
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 1)
