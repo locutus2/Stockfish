@@ -1324,7 +1324,7 @@ moves_loop:  // When in check, search starts here
         do_move(pos, move, st, givesCheck, ss);
 
         // Add extension to new depth
-        newDepth += extension;
+        newDepth += extension - nmpFailed;
 
         // Decrease reduction for PvNodes (*Scaler)
         if (ss->ttPv)
@@ -1342,10 +1342,6 @@ moves_loop:  // When in check, search starts here
         // Increase reduction if ttMove is a capture
         if (ttCapture)
             r += 1079;
-
-        // Increase reduction if null move pruning failed
-        if (nmpFailed)
-            r += 1024;
 
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 1)
