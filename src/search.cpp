@@ -982,6 +982,11 @@ Value Search::Worker::search(
         }
     }
 
+    bool NMPfail = false;
+    std::vector<bool> C = {improving, ttCapture, ss->ttPv, priorCapture, opponentWorsening, priorReduction > 0};
+    Value alphaOrig = alpha;
+    Value NMPmargin = 0;
+
     if (ss->inCheck)
         goto moves_loop;
 
@@ -1029,7 +1034,9 @@ Value Search::Worker::search(
         do_null_move(pos, st, ss);
 
         Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false);
-
+        C.push_back((ss+1)->currentMove && pos.capture_stage((ss+1)->currentMove));
+        C.push_back((ss+1)->currentMove && pos.gives_check((ss+1)->currentMove));
+        C.push_back(beta - nullValue > 2000);
         undo_null_move(pos);
 
         // Do not return unproven mate or TB scores
@@ -1052,11 +1059,14 @@ Value Search::Worker::search(
                 return nullValue;
         }
 
-        if (depth > 1)
-            --depth;
+        //if (depth > 1)
+        //    --depth;
+	NMPfail = true;
+	NMPmargin = beta - nullValue;
     }
 
     improving |= ss->staticEval >= beta;
+    C[0] = improving;
 
     // Step 10. Internal iterative reductions
     // At sufficient depth, reduce depth for PV/Cut nodes without a TTMove.
@@ -1645,6 +1655,17 @@ moves_loop:  // When in check, search starts here
     }
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
+
+    bool CC = NMPfail;
+    if(CC)
+    {
+	    bool T = bestValue > alphaOrig;
+	    //int index = 1000+std::clamp(NMPmargin/100, -999, 999);
+	    dbg_hit_on(T,0);
+	    //dbg_hit_on(T,index);
+	    for(int i = 0; i < int(C.size()); i++)
+	        dbg_hit_on(T,10+10*i+C[i]);
+    }
 
     return bestValue;
 }
