@@ -50,11 +50,59 @@
 
 #define SF_MAX_SEM_NAME_LEN NAME_MAX
 
+#include "memory.h"
 #include "misc.h"
+#include "thread_native.h"
+
+#if defined(__linux__) && !defined(MADV_COLLAPSE)
+    #define MADV_COLLAPSE 25
+#endif
 
 namespace Stockfish::shm {
 
 namespace detail {
+
+inline void* map_shared(int fd, usize size) noexcept {
+#if defined(__linux__)
+    constexpr usize Alignment = 2 * 1024 * 1024;
+    const long      pageSize  = sysconf(_SC_PAGESIZE);
+
+    if (size >= Alignment && pageSize > 0)
+    {
+        // File-backed huge pages require matching virtual-address and file-offset alignment.
+        // Reserve the address range first so MAP_FIXED cannot replace an unrelated mapping.
+        const usize mappingSize =
+          ((size + static_cast<usize>(pageSize) - 1) / static_cast<usize>(pageSize))
+          * static_cast<usize>(pageSize);
+        const usize reservationSize = mappingSize + Alignment;
+        void*       reservation =
+          mmap(nullptr, reservationSize, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+        if (reservation != MAP_FAILED)
+        {
+            char* const base        = static_cast<char*>(reservation);
+            char* const alignedBase = align_ptr_up<Alignment>(base);
+            void*       mapped =
+              mmap(alignedBase, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, fd, 0);
+
+            if (mapped != MAP_FAILED)
+            {
+                const usize prefixSize = static_cast<usize>(alignedBase - base);
+                const usize suffixSize = reservationSize - prefixSize - mappingSize;
+                if (prefixSize)
+                    munmap(reservation, prefixSize);
+                if (suffixSize)
+                    munmap(alignedBase + mappingSize, suffixSize);
+                return mapped;
+            }
+
+            munmap(reservation, reservationSize);
+        }
+    }
+#endif
+
+    return mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+}
 
 class SharedMemoryRegistry {
    private:
@@ -206,9 +254,9 @@ class SharedMemory {
     std::string init_lock_path_;
 
     // serve requests for the shared segment on this .sock
-    std::string socket_path_;
-    std::thread server_thread_;
-    UniqueFd    shutdown_;  // close to signal server thread shutdown
+    std::string  socket_path_;
+    NativeThread server_thread_;
+    UniqueFd     shutdown_;  // close to signal server thread shutdown
 
     static std::string make_sentinel_base(const std::string& name) {
         char buf[32];
@@ -375,91 +423,93 @@ class SharedMemory {
     //  - Forwards the file descriptor fd
     //  - Exits when shutdown_receiver is hung up on
     //  - Listens on server_fd
-    static std::thread
+    static NativeThread
     make_server_thread(UniqueFd fd, UniqueFd shutdown_receiver, UniqueFd server_fd) {
-        return std::thread([fd = std::move(fd), shutdown_receiver = std::move(shutdown_receiver),
-                            server_fd = std::move(server_fd)]() {
-            enum {
-                FdServer,
-                FdShutdown,
-                FdCount,
-            };
+        return create_native_thread(
+          NativeThreadOptions{},
+          [fd = std::move(fd), shutdown_receiver = std::move(shutdown_receiver),
+           server_fd = std::move(server_fd)]() {
+              enum {
+                  FdServer,
+                  FdShutdown,
+                  FdCount,
+              };
 
-            struct pollfd fds[FdCount];
-            fds[FdServer].fd     = server_fd.get();
-            fds[FdServer].events = POLLIN;
+              struct pollfd fds[FdCount];
+              fds[FdServer].fd     = server_fd.get();
+              fds[FdServer].events = POLLIN;
 
-            fds[FdShutdown].fd     = shutdown_receiver.get();
-            fds[FdShutdown].events = POLLIN;
+              fds[FdShutdown].fd     = shutdown_receiver.get();
+              fds[FdShutdown].events = POLLIN;
 
-            while (true)
-            {
-                int ret = poll(fds, FdCount, -1);
-                if (ret < 0)
-                {
-                    if (errno == EINTR)
-                        continue;
+              while (true)
+              {
+                  int ret = poll(fds, FdCount, -1);
+                  if (ret < 0)
+                  {
+                      if (errno == EINTR)
+                          continue;
 
-                    break;
-                }
+                      break;
+                  }
 
-                if (fds[FdShutdown].revents)
-                    break;  // shutdown requested by main thread
+                  if (fds[FdShutdown].revents)
+                      break;  // shutdown requested by main thread
 
-                if (fds[FdServer].revents & POLLIN)
-                {
+                  if (fds[FdServer].revents & POLLIN)
+                  {
                     // Another fish wants access
 #if !defined(__APPLE__)
-                    UniqueFd client_fd(accept4(server_fd.get(), nullptr, nullptr, SOCK_CLOEXEC));
+                      UniqueFd client_fd(accept4(server_fd.get(), nullptr, nullptr, SOCK_CLOEXEC));
 #else
-                    UniqueFd client_fd(accept(server_fd.get(), nullptr, nullptr));
-                    set_cloexec(client_fd.get());
+                      UniqueFd client_fd(accept(server_fd.get(), nullptr, nullptr));
+                      set_cloexec(client_fd.get());
 #endif
-                    if (!client_fd.is_valid())
-                        continue;  // including EINTR
+                      if (!client_fd.is_valid())
+                          continue;  // including EINTR
 
-                    msghdr msg    = {};
-                    char   buf[1] = {};
-                    iovec  iov[1];
-                    iov[0].iov_base = buf;
-                    iov[0].iov_len  = 1;
-                    msg.msg_iov     = iov;
-                    msg.msg_iovlen  = 1;
+                      msghdr msg    = {};
+                      char   buf[1] = {};
+                      iovec  iov[1];
+                      iov[0].iov_base = buf;
+                      iov[0].iov_len  = 1;
+                      msg.msg_iov     = iov;
+                      msg.msg_iovlen  = 1;
 
-                    union {
-                        char           buf[CMSG_SPACE(sizeof(int))];
-                        struct cmsghdr align;
-                    } control_msg = {};
+                      union {
+                          char           buf[CMSG_SPACE(sizeof(int))];
+                          struct cmsghdr align;
+                      } control_msg = {};
 
-                    msg.msg_control    = control_msg.buf;
-                    msg.msg_controllen = sizeof(control_msg.buf);
+                      msg.msg_control    = control_msg.buf;
+                      msg.msg_controllen = sizeof(control_msg.buf);
 
-                    // Send over rights to the memfd (SCM_RIGHTS). The fd may be given a different number, but
-                    // will refer to the same underlying file. Once it's mmapped then it will share physical memory
-                    // between the processes.
-                    // See https://man7.org/linux/man-pages/man7/unix.7.html for more information on SCM_RIGHTS
-                    int             raw_fd = fd.get();
-                    struct cmsghdr* cmsg   = CMSG_FIRSTHDR(&msg);
-                    cmsg->cmsg_level       = SOL_SOCKET;
-                    cmsg->cmsg_type        = SCM_RIGHTS;
-                    cmsg->cmsg_len         = CMSG_LEN(sizeof(raw_fd));
-                    memcpy(CMSG_DATA(cmsg), &raw_fd, sizeof(raw_fd));
+                      // Send over rights to the memfd (SCM_RIGHTS). The fd may be given a different number, but
+                      // will refer to the same underlying file. Once it's mmapped then it will share physical memory
+                      // between the processes.
+                      // See https://man7.org/linux/man-pages/man7/unix.7.html for more information on SCM_RIGHTS
+                      int             raw_fd = fd.get();
+                      struct cmsghdr* cmsg   = CMSG_FIRSTHDR(&msg);
+                      cmsg->cmsg_level       = SOL_SOCKET;
+                      cmsg->cmsg_type        = SCM_RIGHTS;
+                      cmsg->cmsg_len         = CMSG_LEN(sizeof(raw_fd));
+                      memcpy(CMSG_DATA(cmsg), &raw_fd, sizeof(raw_fd));
 
 #ifdef SO_NOSIGPIPE
-                    int yes = 1;
-                    setsockopt(client_fd.get(), SOL_SOCKET, SO_NOSIGPIPE, &yes, sizeof(yes));
+                      int yes = 1;
+                      setsockopt(client_fd.get(), SOL_SOCKET, SO_NOSIGPIPE, &yes, sizeof(yes));
 #endif
 
 #ifdef MSG_NOSIGNAL
-                    int flags = MSG_NOSIGNAL;
+                      int flags = MSG_NOSIGNAL;
 #else
-                    int flags = 0;
+                      int flags = 0;
 #endif
-                    while (sendmsg(client_fd.get(), &msg, flags) < 0 && errno == EINTR)
-                    {}
-                }
-            }
-        });
+                      while (sendmsg(client_fd.get(), &msg, flags) < 0 && errno == EINTR)
+                      {}
+                  }
+              }
+          });
     }
 
    public:
@@ -512,8 +562,7 @@ class SharedMemory {
             assert(memfd.is_valid());
 
             // Try to map the memfd
-            T* mapped_mem = static_cast<T*>(
-              mmap(NULL, sizeof(T), PROT_READ | PROT_WRITE, MAP_SHARED, memfd.get(), 0));
+            T* mapped_mem = static_cast<T*>(detail::map_shared(memfd.get(), sizeof(T)));
             if (mapped_mem == MAP_FAILED)
                 return false;
 
@@ -525,6 +574,10 @@ class SharedMemory {
             {
                 // Creator is responsible for initialization
                 *mapped_mem = initial_value;
+
+#if defined(__linux__)
+                (void) madvise(mapped_mem, sizeof(T), MADV_COLLAPSE);
+#endif
             }
 
             mapped_ptr_ = data_ptr_ = mapped_mem;
@@ -562,6 +615,10 @@ class SharedMemory {
             // other fishes can use.
             server_thread_ = make_server_thread(std::move(memfd), std::move(shutdown_receiver),
                                                 std::move(server_fd));
+            if (!server_thread_.joinable())
+            {
+                return false;
+            }
         }
 
         return true;
