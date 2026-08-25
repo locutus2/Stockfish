@@ -61,8 +61,9 @@ class TimeManagement {
     TimePoint optimumTime = NoBound;
     TimePoint maximumTime = NoBound;
 
-    i64  availableNodes = -1;     // When in 'nodes as time' mode
-    bool useNodesTime   = false;  // True if we are in 'nodes as time' mode
+    i64  availableNodes    = -1;     // When in 'nodes as time' mode
+    bool useNodesTime      = false;  // True if we are in 'nodes as time' mode
+    bool opponentTimeScale = 0.0;    // Has only an effect with time odds is played
 };
 
 }  // namespace Stockfish

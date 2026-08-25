@@ -31,7 +31,8 @@ TimePoint TimeManagement::optimum() const { return optimumTime; }
 TimePoint TimeManagement::maximum() const { return maximumTime; }
 
 void TimeManagement::clear() {
-    availableNodes = -1;  // When in 'nodes as time' mode
+    availableNodes    = -1;  // When in 'nodes as time' mode
+    opponentTimeScale = 0.0;
 }
 
 void TimeManagement::advance_nodes_time(i64 nodes) {
@@ -86,6 +87,12 @@ void TimeManagement::init(Search::LimitsType& limits,
         moveOverhead *= npmsec;
     }
 
+    if (opponentTimeScale <= 0)
+    {
+        opponentTimeScale =
+          (limits.time[us] && limits.time[~us] ? double(limits.time[us]) / limits.time[~us] : 1.0);
+    }
+
     // These numbers are used where multiplications, divisions,
     // or comparisons with constants are involved.
     const i64       scaleFactor = useNodesTime ? npmsec : 1;
@@ -132,8 +139,8 @@ void TimeManagement::init(Search::LimitsType& limits,
 
     if (!useNodesTime)
     {
-        double timeAdvantage =
-          (limits.time[us] - limits.time[~us]) / (1.0 + limits.time[us] + limits.time[~us]);
+        double timeAdvantage = (limits.time[us] - opponentTimeScale * limits.time[~us])
+                             / (1.0 + limits.time[us] + opponentTimeScale * limits.time[~us]);
         optScale *= 1 + 0.5 * std::min(timeAdvantage, 0.0);
     }
 
