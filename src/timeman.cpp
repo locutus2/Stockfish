@@ -88,10 +88,8 @@ void TimeManagement::init(Search::LimitsType& limits,
     }
 
     if (opponentTimeScale <= 0)
-    {
         opponentTimeScale =
           (limits.time[us] && limits.time[~us] ? double(limits.time[us]) / limits.time[~us] : 1.0);
-    }
 
     // These numbers are used where multiplications, divisions,
     // or comparisons with constants are involved.
@@ -141,7 +139,7 @@ void TimeManagement::init(Search::LimitsType& limits,
     {
         double timeAdvantage = (limits.time[us] - opponentTimeScale * limits.time[~us])
                              / (1.0 + limits.time[us] + opponentTimeScale * limits.time[~us]);
-        optScale *= 1 + 0.5 * std::min(timeAdvantage, 0.0);
+        optScale *= 1 + 0.9 * std::min(timeAdvantage, 0.0);
     }
 
     // Limit the maximum possible time for this move
