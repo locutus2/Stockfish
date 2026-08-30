@@ -267,7 +267,7 @@ class TBFile: public std::ifstream {
 
     #ifndef _WIN32
         struct stat statbuf;
-        int         fd = ::open(fname.c_str(), O_RDONLY);
+        int         fd = ::open(fname.c_str(), O_RDONLY | O_CLOEXEC);
 
         if (fd == -1)
             return *baseAddress = nullptr, nullptr;
@@ -287,9 +287,6 @@ class TBFile: public std::ifstream {
         *mapping     = statbuf.st_size;
         *size        = usize(statbuf.st_size);
         *baseAddress = mmap(nullptr, statbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
-        #if defined(MADV_RANDOM)
-        madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
-        #endif
         ::close(fd);
 
         if (*baseAddress == MAP_FAILED)
@@ -297,6 +294,10 @@ class TBFile: public std::ifstream {
             std::cerr << "Could not mmap() " << fname.string() << std::endl;
             exit(EXIT_FAILURE);
         }
+
+        #if defined(MADV_RANDOM)
+        madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
+        #endif
     #else
         // Note FILE_FLAG_RANDOM_ACCESS is only a hint to Windows and as such may get ignored.
         HANDLE fd = CreateFileW(fname.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
