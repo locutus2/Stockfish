@@ -1090,7 +1090,18 @@ Value Search::Worker::search(
                                probCutDepth + 1, move, unadjustedStaticEval, tt.generation());
 
                 if (!is_decisive(value))
-                    return value - (probCutBeta - beta);
+                {
+                    value -= probCutBeta - beta;
+                    if (probCutDepth > 0 && value > ss->staticEval)
+                    {
+                        const int bonus =
+                          std::clamp(int(value - ss->staticEval) * probCutDepth * 177 / 1024,
+                                     -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
+                        update_correction_history(pos, ss, *this, bonus);
+                    }
+
+                    return value;
+                }
             }
         }
     }
