@@ -135,8 +135,8 @@ void TimeManagement::init(Search::LimitsType& limits,
     {
         double timeAdvantage =
           (limits.time[us] - limits.time[~us]) / (1.0 + limits.time[us] + limits.time[~us]);
-        optScale *= 1 + 0.9 * std::min(timeAdvantage, 0.0);
-        maxScale *= 1 + 0.9 * std::min(timeAdvantage, 0.0);
+        if (timeAdvantage < 0)
+            optScale *= 1 + 0.9 * timeAdvantage * (timeAdvantage + 2);
     }
 
     // Limit the maximum possible time for this move
