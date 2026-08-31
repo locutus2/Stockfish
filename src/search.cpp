@@ -1278,7 +1278,8 @@ moves_loop:  // When in check, search starts here
             {
                 ttMoveHistory << -421 - 110 * depth;
 
-                if (!ss->inCheck && !ttCapture && value > ss->staticEval)
+                if (!ss->inCheck && value > ss->staticEval
+                    && !(ss->currentMove && pos.capture_stage(ss->currentMove)))
                 {
                     const int bonus =
                       std::clamp(int(value - ss->staticEval) * singularDepth * 177 / 1024,
