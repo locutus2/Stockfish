@@ -82,6 +82,32 @@ using SearchedList                  = ValueList<Move, SEARCHEDLIST_CAPACITY>;
 // (*Scaler) All tuned parameters at time controls shorter than
 // optimized for require verifications at longer time controls.
 
+int correction_value2(const Worker& w, const Position& pos, const Stack* const ss) {
+    const Color us     = pos.side_to_move();
+    const auto  m      = (ss - 1)->currentMove;
+    const auto& shared = w.sharedHistory;
+    const int   pcv    = shared.pawn_correction_entry(pos)[us].pawn;
+    const int   micv   = shared.minor_piece_correction_entry(pos)[us].minor;
+    const int   wnpcv  = shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite;
+    const int   bnpcv  = shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack;
+    const int   cntcv =
+      m.is_ok()
+          ? 8761
+            * ((*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+               + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
+          : 64049;
+    const int   cntcv2 =
+      m.is_ok()
+          ? 8761
+            * ((*(ss - 1)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+               + 0*(*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
+          : 64049;
+
+    return 1.37449*(15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv + 0*cntcv2) + 0*131072;
+    //return 1.24603*(15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv + 0*cntcv2) + 151.577*131072;
+    //return 1.18*(15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv + 0*cntcv2) + 152.468*131072;
+}
+
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
     const Color us     = pos.side_to_move();
     const auto  m      = (ss - 1)->currentMove;
@@ -127,6 +153,9 @@ void update_correction_history(const Position& pos,
         const Piece  pc = pos.piece_on(to);
         (*(ss - 2)->continuationCorrectionHistory)[pc][to] << bonus * 130 / 128;
         (*(ss - 4)->continuationCorrectionHistory)[pc][to] << bonus * 70 / 128;
+
+        (*(ss - 1)->continuationCorrectionHistory)[pc][to] << bonus * 130 / 128;
+        //(*(ss - 3)->continuationCorrectionHistory)[pc][to] << bonus * 70 / 128;
     }
 }
 
@@ -295,6 +324,7 @@ bool Search::Worker::iterative_deepening() {
           &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
+        (ss - i)->staticEval2                    = VALUE_NONE;
     }
 
     for (int i = 0; i <= MAX_PLY + 2; ++i)
@@ -810,6 +840,7 @@ Value Search::Worker::search(
     (ss + 2)->cutoffCnt = 0;
 
     const auto correctionValue = correction_value(*this, pos, ss);
+    const auto correctionValue2 = correction_value2(*this, pos, ss);
 
     // Step 4. Transposition table lookup
     excludedMove                   = ss->excludedMove;
@@ -827,7 +858,10 @@ Value Search::Worker::search(
 
     // Skip early pruning when in check
     if (ss->inCheck)
+    {
         ss->staticEval = eval = (ss - 2)->staticEval;
+        ss->staticEval2 = (ss - 2)->staticEval2;
+    }
     else if (excludedMove)
         unadjustedStaticEval = eval = ss->staticEval;
     else if (ss->ttHit)
@@ -838,6 +872,7 @@ Value Search::Worker::search(
             unadjustedStaticEval = evaluate(pos);
 
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        ss->staticEval2 = to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
 
         // ttValue can be used as a better position evaluation
         if (is_valid(ttData.value)
@@ -848,6 +883,7 @@ Value Search::Worker::search(
     {
         unadjustedStaticEval = evaluate(pos);
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        ss->staticEval2 = to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
 
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
@@ -1625,6 +1661,28 @@ moves_loop:  // When in check, search starts here
                                             : BOUND_UPPER,
                        moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6), bestMove,
                        unadjustedStaticEval, tt.generation());
+
+    if(!ss->inCheck && !excludedMove && !is_decisive(bestValue))
+    {
+	    int value1 = bestValue-unadjustedStaticEval;
+	    int value2 = ss->staticEval-unadjustedStaticEval;
+	    int value3 = ss->staticEval2-unadjustedStaticEval;
+
+            dbg_mean_of(value1, 1);
+            dbg_mean_of(value2, 2);
+            dbg_mean_of(value3, 3);
+            dbg_stdev_of(value1, 1);
+            dbg_stdev_of(value2, 2);
+            dbg_stdev_of(value3, 3);
+
+            dbg_mean_of(value1-value2, 12);
+            dbg_mean_of(value1-value3, 13);
+            dbg_stdev_of(value1-value2, 12);
+            dbg_stdev_of(value1-value3, 13);
+	    
+            dbg_correl_of(value2, value1, 2);
+            dbg_correl_of(value3, value1, 3);
+    }
 
     // Adjust correction history if the best move is not a capture and
     // the error direction matches whether we are above/below bounds.
