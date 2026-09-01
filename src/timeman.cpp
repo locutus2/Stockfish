@@ -132,10 +132,14 @@ void TimeManagement::init(Search::LimitsType& limits,
         maxScale = 1.3 + 0.11 * mtg;
     }
 
-    if (!useNodesTime && limits.movestogo != 1)
+    if (!useNodesTime)
     {
         double timeAdvantage =
           (limits.time[us] - limits.time[~us]) / (1.0 + limits.time[us] + limits.time[~us]);
+
+        if (limits.movestogo > 0)
+            timeAdvantage *= 1.0 - 1.0 / limits.movestogo;
+
         optScale *= 1 + 0.9 * std::min(timeAdvantage, 0.0);
     }
 
