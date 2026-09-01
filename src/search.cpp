@@ -92,12 +92,12 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const int   bnpcv  = shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack;
     const int   cntcv =
       m.is_ok()
-          ? 8761
+          ? 12042
             * ((*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
-          : 64049;
+          : 88035;
 
-    return 15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv;
+    return 21086 * pcv + 14527 * micv + 17739 * (wnpcv + bnpcv) + cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -1001,7 +1001,7 @@ Value Search::Worker::search(
 
         Value futilityMargin = futilityMult * depth
                              - (2789 * improving + 335 * opponentWorsening) * futilityMult / 1024
-                             + std::abs(correctionValue) / 198435;
+                             + std::abs(correctionValue) / 272747;
 
         if (eval - futilityMargin >= beta)
             return (661 * beta + 363 * eval) / 1024;
@@ -1256,7 +1256,7 @@ moves_loop:  // When in check, search starts here
 
             if (value < singularBeta)
             {
-                int corrValAdj   = std::abs(correctionValue) / 198368;
+                int corrValAdj   = std::abs(correctionValue) / 272655;
                 int doubleMargin = -2 + 204 * PvNode - 152 * !ttCapture - corrValAdj
                                  - 1175 * ttMoveHistory / 114178 - (ss->ply > rootDepth) * 38;
                 int tripleMargin = 70 + 279 * PvNode - 188 * !ttCapture + 81 * ss->ttPv - corrValAdj
@@ -1321,7 +1321,7 @@ moves_loop:  // When in check, search starts here
         r += 697;
 
         r -= moveCount * 65;
-        r -= std::abs(correctionValue) / 26310;
+        r -= std::abs(correctionValue) / 36163;
 
         // Increase reduction for cut nodes
         if (cutNode)
