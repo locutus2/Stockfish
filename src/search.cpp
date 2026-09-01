@@ -101,9 +101,15 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
           ? 8761
             * ((*(ss - 1)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                + 0*(*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
-          : 64049;
+          : 0*64049/2;
 
-    return 1.37449*(15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv + 0*cntcv2) + 0*131072;
+    //return 0.641417 * (15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv 
+//	    + cntcv2 * 0.328770045632210972451141982576 / 0.203662300958092835603966019864);
+    return 15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv 
+	    + cntcv2 * 0.328770045632210972451141982576 / 0.203662300958092835603966019864;
+    //return cntcv2;
+    //return 15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv;
+    //return 1.37449*(15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv + 0*cntcv2) + 0*131072;
     //return 1.24603*(15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv + 0*cntcv2) + 151.577*131072;
     //return 1.18*(15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv + 0*cntcv2) + 152.468*131072;
 }
@@ -840,7 +846,7 @@ Value Search::Worker::search(
     (ss + 2)->cutoffCnt = 0;
 
     const auto correctionValue = correction_value(*this, pos, ss);
-    const auto correctionValue2 = correction_value2(*this, pos, ss);
+    const auto correctionValue2 = 1 * correctionValue + correction_value2(*this, pos, ss);
 
     // Step 4. Transposition table lookup
     excludedMove                   = ss->excludedMove;
@@ -1667,6 +1673,7 @@ moves_loop:  // When in check, search starts here
 	    int value1 = bestValue-unadjustedStaticEval;
 	    int value2 = ss->staticEval-unadjustedStaticEval;
 	    int value3 = ss->staticEval2-unadjustedStaticEval;
+	    //int value3 = ss->staticEval2-unadjustedStaticEval - value2;
 
             dbg_mean_of(value1, 1);
             dbg_mean_of(value2, 2);
@@ -1674,12 +1681,14 @@ moves_loop:  // When in check, search starts here
             dbg_stdev_of(value1, 1);
             dbg_stdev_of(value2, 2);
             dbg_stdev_of(value3, 3);
-
+/*
             dbg_mean_of(value1-value2, 12);
             dbg_mean_of(value1-value3, 13);
             dbg_stdev_of(value1-value2, 12);
             dbg_stdev_of(value1-value3, 13);
+	    */
 	    
+            dbg_correl_of(value2, value3, 1);
             dbg_correl_of(value2, value1, 2);
             dbg_correl_of(value3, value1, 3);
     }
