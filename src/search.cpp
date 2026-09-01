@@ -92,12 +92,13 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const int   bnpcv  = shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack;
     const int   cntcv =
       m.is_ok()
-          ? 8761
-            * ((*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-               + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
-          : 64049;
+          ? 7885
+              * ((*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+                 + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
+            + 6307 * (*(ss - 6)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+          : 80695;
 
-    return 15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv;
+    return 13806 * pcv + 9512 * micv + 11615 * (wnpcv + bnpcv) + cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -127,6 +128,7 @@ void update_correction_history(const Position& pos,
         const Piece  pc = pos.piece_on(to);
         (*(ss - 2)->continuationCorrectionHistory)[pc][to] << bonus * 130 / 128;
         (*(ss - 4)->continuationCorrectionHistory)[pc][to] << bonus * 70 / 128;
+        (*(ss - 6)->continuationCorrectionHistory)[pc][to] << bonus * 35 / 128;
     }
 }
 
@@ -653,6 +655,7 @@ void Search::Worker::do_move(
 
         prefetch(&(*(ss - 1)->continuationCorrectionHistory)[pc][to]);
         prefetch(&(*(ss - 3)->continuationCorrectionHistory)[pc][to]);
+        prefetch(&(*(ss - 5)->continuationCorrectionHistory)[pc][to]);
     }
 
     ++nodes;
