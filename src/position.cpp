@@ -489,6 +489,7 @@ void Position::set_state() const {
     st->key               = 0;
     st->minorPieceKey     = 0;
     st->nonPawnKey[WHITE] = st->nonPawnKey[BLACK] = 0;
+    st->threatsKey[WHITE] = st->threatsKey[BLACK] = 0;
     st->pawnKey                                   = Zobrist::noPawns;
     st->nonPawnMaterial[WHITE] = st->nonPawnMaterial[BLACK] = VALUE_ZERO;
     st->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
@@ -1669,6 +1670,15 @@ bool Position::pos_is_ok() const {
     assert(material_key_is_ok() && "pos_is_ok: materialKey");
 
     return true;
+}
+
+void Position::calculate_threats_key(Color c) {
+	st->threatsKey[c] = (attacks_by<KING>(c)
+	                    | attacks_by<PAWN>(c)
+	                    | attacks_by<KNIGHT>(c)
+	                    | attacks_by<BISHOP>(c)
+	                    | attacks_by<ROOK>(c)
+	                    | attacks_by<QUEEN>(c)) & pieces();
 }
 
 }  // namespace Stockfish
