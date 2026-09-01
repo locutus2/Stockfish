@@ -132,7 +132,7 @@ void TimeManagement::init(Search::LimitsType& limits,
         maxScale = 1.3 + 0.11 * mtg;
     }
 
-    if (!useNodesTime)
+    if (!useNodesTime && limits.movestogo != 1)
     {
         double timeAdvantage =
           (limits.time[us] - limits.time[~us]) / (1.0 + limits.time[us] + limits.time[~us]);
