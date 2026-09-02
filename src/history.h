@@ -253,17 +253,11 @@ struct SharedHistories {
 
     template<Color c>
     auto& threats_correction_entry(const Position& pos) {
-        Key key = pos.threats_key(c);
-        key ^= key >> 32;
-        key ^= key >> 16;
-        return correctionHistory[key & sizeMinus1];
+        return correctionHistory[pos.threats_key(c) & sizeMinus1];
     }
     template<Color c>
     const auto& threats_correction_entry(const Position& pos) const {
-        Key key = pos.threats_key(c);
-        key ^= key >> 32;
-        key ^= key >> 16;
-        return correctionHistory[key & sizeMinus1];
+        return correctionHistory[pos.threats_key(c) & sizeMinus1];
     }
 
     UnifiedCorrectionHistory               correctionHistory;

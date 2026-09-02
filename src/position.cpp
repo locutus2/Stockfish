@@ -1678,9 +1678,11 @@ bool Position::pos_is_ok() const {
 }
 
 Key Position::calculate_threats_key(Color c) const {
-    return (attacks_by<KING>(c) | attacks_by<PAWN>(c) | attacks_by<KNIGHT>(c)
-            | attacks_by<BISHOP>(c) | attacks_by<ROOK>(c) | attacks_by<QUEEN>(c))
-         & pieces();
+    Key key = (attacks_by<KING>(c) | attacks_by<PAWN>(c) | attacks_by<KNIGHT>(c)
+               | attacks_by<BISHOP>(c) | attacks_by<ROOK>(c) | attacks_by<QUEEN>(c))
+            & pieces();
+    key ^= key >> 32;
+    return key ^ (key >> 16);
 }
 
 }  // namespace Stockfish
