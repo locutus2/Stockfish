@@ -96,25 +96,24 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
             * ((*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
           : 64049;
-    const int   cntcv2 =
+    const int cntcv2 =
       m.is_ok()
-          ? 8761
-               *0*(*(ss - 6)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-               //*(*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-               //*(*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-               //*(*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-          : 0;
+        ? 8761 * 0 * (*(ss - 6)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        //*(*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        //*(*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        //*(*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        : 0;
 
-    const int   wtcv  = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
-    const int   btcv  = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
+    const int wtcv = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
+    const int btcv = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
     return 12906 * (wtcv + btcv);
     //return 12906 * (wnpcv + bnpcv);
     //return 10569 * micv;
     //return 15341 * pcv;
-    //return 0.641417 * (15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv 
-//	    + cntcv2 * 0.328770045632210972451141982576 / 0.203662300958092835603966019864);
-    //return 15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv 
-//	    + cntcv2 * 0.328770045632210972451141982576 / 0.203662300958092835603966019864;
+    //return 0.641417 * (15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv
+    //	    + cntcv2 * 0.328770045632210972451141982576 / 0.203662300958092835603966019864);
+    //return 15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv
+    //	    + cntcv2 * 0.328770045632210972451141982576 / 0.203662300958092835603966019864;
     return cntcv2;
     //return 15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv;
     //return 1.37449*(15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv + 0*cntcv2) + 0*131072;
@@ -341,7 +340,7 @@ bool Search::Worker::iterative_deepening() {
           &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
-        (ss - i)->staticEval2                    = VALUE_NONE;
+        (ss - i)->staticEval2                   = VALUE_NONE;
     }
 
     for (int i = 0; i <= MAX_PLY + 2; ++i)
@@ -868,11 +867,12 @@ Value Search::Worker::search(
     //const auto correctionValue2 = 1.0975994323780992549962552721826 * (1 * correctionValue + -0.22382890780593399281649592617495 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.96488810193129130006206418166551 * (1 * correctionValue + 0.14305909885062690153483867301882 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.9250214374464063839840400398999 * (1 * correctionValue + 2*0.14305909885062690153483867301882 * correction_value2(*this, pos, ss));
-    const auto correctionValue2 = 0.96859223968115809244582894314902 * (1 * correctionValue + 0.15148955810903554331642815773567 * correction_value2(*this, pos, ss));
-   
-    dbg_mean_of(std::abs(correctionValue), 12); 
-    dbg_mean_of(std::abs(correctionValue2), 13); 
-   
+    //const auto correctionValue2 = 0.96859223968115809244582894314902 * (1 * correctionValue + 0.15148955810903554331642815773567 * correction_value2(*this, pos, ss));
+    const auto correctionValue2 = 1 * (0 * correctionValue + 1 * correction_value2(*this, pos, ss));
+
+    dbg_mean_of(std::abs(correctionValue), 12);
+    dbg_mean_of(std::abs(correctionValue2), 13);
+
     // Step 4. Transposition table lookup
     excludedMove                   = ss->excludedMove;
     posKey                         = pos.key();
@@ -891,7 +891,7 @@ Value Search::Worker::search(
     if (ss->inCheck)
     {
         ss->staticEval = eval = (ss - 2)->staticEval;
-        ss->staticEval2 = (ss - 2)->staticEval2;
+        ss->staticEval2       = (ss - 2)->staticEval2;
     }
     else if (excludedMove)
         unadjustedStaticEval = eval = ss->staticEval;
@@ -903,7 +903,7 @@ Value Search::Worker::search(
             unadjustedStaticEval = evaluate(pos);
 
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
-        ss->staticEval2 = to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
+        ss->staticEval2       = to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
 
         // ttValue can be used as a better position evaluation
         if (is_valid(ttData.value)
@@ -914,7 +914,7 @@ Value Search::Worker::search(
     {
         unadjustedStaticEval = evaluate(pos);
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
-        ss->staticEval2 = to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
+        ss->staticEval2       = to_corrected_static_eval(unadjustedStaticEval, correctionValue2);
 
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
@@ -1693,29 +1693,29 @@ moves_loop:  // When in check, search starts here
                        moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6), bestMove,
                        unadjustedStaticEval, tt.generation());
 
-    if(!ss->inCheck && !excludedMove && !is_decisive(bestValue))
+    if (!ss->inCheck && !excludedMove && !is_decisive(bestValue))
     {
-	    int value1 = bestValue-unadjustedStaticEval;
-	    int value2 = ss->staticEval-unadjustedStaticEval;
-	    int value3 = ss->staticEval2-unadjustedStaticEval;
-	    //int value3 = ss->staticEval2-unadjustedStaticEval - value2;
+        int value1 = bestValue - unadjustedStaticEval;
+        int value2 = ss->staticEval - unadjustedStaticEval;
+        int value3 = ss->staticEval2 - unadjustedStaticEval;
+        //int value3 = ss->staticEval2-unadjustedStaticEval - value2;
 
-            dbg_mean_of(value1, 1);
-            dbg_mean_of(value2, 2);
-            dbg_mean_of(value3, 3);
-            dbg_stdev_of(value1, 1);
-            dbg_stdev_of(value2, 2);
-            dbg_stdev_of(value3, 3);
-/*
+        dbg_mean_of(value1, 1);
+        dbg_mean_of(value2, 2);
+        dbg_mean_of(value3, 3);
+        dbg_stdev_of(value1, 1);
+        dbg_stdev_of(value2, 2);
+        dbg_stdev_of(value3, 3);
+        /*
             dbg_mean_of(value1-value2, 12);
             dbg_mean_of(value1-value3, 13);
             dbg_stdev_of(value1-value2, 12);
             dbg_stdev_of(value1-value3, 13);
 	    */
-	    
-            dbg_correl_of(value2, value3, 1);
-            dbg_correl_of(value2, value1, 2);
-            dbg_correl_of(value3, value1, 3);
+
+        dbg_correl_of(value2, value3, 1);
+        dbg_correl_of(value2, value1, 2);
+        dbg_correl_of(value3, value1, 3);
     }
 
     // Adjust correction history if the best move is not a capture and

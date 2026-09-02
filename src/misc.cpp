@@ -424,13 +424,11 @@ void dbg_print() {
                         * sqrt(E(correl[i][4]) - sqr(E(correl[i][3]))));
             double A = (E(correl[i][5]) - E(correl[i][1]) * E(correl[i][3]))
                      / (E(correl[i][2]) - sqr(E(correl[i][1])));
-	    double B = E(correl[i][3]) - A * E(correl[i][1]);
-	    double C = E(correl[i][5]) / E(correl[i][2]);
+            double B = E(correl[i][3]) - A * E(correl[i][1]);
+            double C = E(correl[i][5]) / E(correl[i][2]);
             //std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << std::endl;
-            std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r 
-		      << " y = " << A << " * x + " << B
-		      << " or y = " << C << " * x"
-		      << std::endl;
+            std::cerr << "Correl. #" << i << ": Total " << n << " Coefficient " << r << " y = " << A
+                      << " * x + " << B << " or y = " << C << " * x" << std::endl;
         }
 }
 
