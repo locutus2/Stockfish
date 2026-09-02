@@ -1261,9 +1261,28 @@ void Position::update_piece_threats(Piece               pc,
     write_multiple_dirties<DirtyThreat::ThreatenedSqOffset, DirtyThreat::ThreatenedPcOffset>(
       *this, threatened, {pc, NO_PIECE, s, Square(0), putPiece}, dts);
 
+    Bitboard tmp = threatened;
+    while (tmp)
+    {
+        Square threatenedSq = pop_lsb(tmp);
+        Piece  threatenedPc = piece_on(threatenedSq);
+
+        st->threatsKey[color_of(pc)] ^= Zobrist::psq[threatenedPc][threatenedSq];
+    }
+
     const Bitboard directSliders = pt == QUEEN ? sliders & pieces(QUEEN) : sliders;
+    const Bitboard sources       = directSliders | incomingThreats;
+
     write_multiple_dirties<DirtyThreat::PcSqOffset, DirtyThreat::PcOffset>(
       *this, directSliders | incomingThreats, {NO_PIECE, pc, Square(0), s, putPiece}, dts);
+
+    const Key key = Zobrist::psq[pc][s];
+
+    if (popcount(sources & pieces(WHITE)) & 1)
+        st->threatsKey[WHITE] ^= key;
+
+    if (popcount(sources & pieces(BLACK)) & 1)
+        st->threatsKey[BLACK] ^= key;
 
     // For ICL, direct threats were written above
     if constexpr (ComputeRay)
