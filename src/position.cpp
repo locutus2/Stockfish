@@ -526,9 +526,6 @@ void Position::set_state() const {
 
     st->key ^= Zobrist::castling[st->castlingRights];
     st->materialKey = compute_material_key();
-
-    st->threatsKey[WHITE] = compute_threats_key(WHITE);
-    st->threatsKey[BLACK] = compute_threats_key(BLACK);
 }
 
 Key Position::compute_material_key() const {
@@ -537,14 +534,6 @@ Key Position::compute_material_key() const {
         for (int cnt = 0; cnt < pieceCount[pc]; ++cnt)
             k ^= Zobrist::psq[pc][8 + cnt];
     return k;
-}
-
-Key Position::compute_threats_key(Color c) const {
-    Key key = (attacks_by<KING>(c) | attacks_by<PAWN>(c) | attacks_by<KNIGHT>(c)
-               | attacks_by<BISHOP>(c) | attacks_by<ROOK>(c) | attacks_by<QUEEN>(c))
-            & pieces();
-    key ^= key >> 32;
-    return key ^ (key >> 16);
 }
 
 
@@ -1085,9 +1074,6 @@ void Position::do_move(Move                      m,
     dpps.after[WHITE] = pieces(WHITE, PAWN);
     dpps.after[BLACK] = pieces(BLACK, PAWN);
 
-    st->threatsKey[WHITE] = compute_threats_key(WHITE);
-    st->threatsKey[BLACK] = compute_threats_key(BLACK);
-
     assert(dp.pc != NO_PIECE);
     assert(!(bool(captured) || m.type_of() == CASTLING) ^ (dp.remove_sq != SQ_NONE));
     assert(dp.from != SQ_NONE);
@@ -1234,11 +1220,17 @@ void Position::update_piece_threats(Piece               pc,
                 const Square threatenedSq = lsb(discovered);
                 const Piece  threatenedPc = piece_on(threatenedSq);
                 if (can_slider_threat(threatenedPc, slider))
+                {
                     add_dirty_threat(dts, !putPiece, slider, threatenedPc, sliderSq, threatenedSq);
+                    st->threatsKey[color_of(slider)] ^= Zobrist::psq[threatenedPc][threatenedSq];
+                }
             }
 
             if (addDirectAttacks && can_slider_threat(pc, slider))
+            {
                 add_dirty_threat(dts, putPiece, slider, pc, sliderSq, s);
+                st->threatsKey[color_of(slider)] ^= Zobrist::psq[pc][s];
+            }
         }
     };
 
@@ -1285,6 +1277,7 @@ void Position::update_piece_threats(Piece               pc,
         assert(threatenedPc != NO_PIECE);
 
         add_dirty_threat(dts, putPiece, pc, threatenedPc, s, threatenedSq);
+        st->threatsKey[color_of(pc)] ^= Zobrist::psq[threatenedPc][threatenedSq];
     }
 
     if constexpr (ComputeRay)
@@ -1300,6 +1293,7 @@ void Position::update_piece_threats(Piece               pc,
         assert(srcPc != NO_PIECE);
 
         add_dirty_threat(dts, putPiece, srcPc, pc, srcSq, s);
+        st->threatsKey[color_of(srcPc)] ^= Zobrist::psq[pc][s];
     }
 #endif
 }

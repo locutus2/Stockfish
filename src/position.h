@@ -195,7 +195,6 @@ class Position {
     // Initialization helpers (used while setting up a position)
     void set_castling_right(Color c, Square rfrom);
     Key  compute_material_key() const;
-    Key  compute_threats_key(Color c) const;
     void set_state() const;
     void set_check_info() const;
 
