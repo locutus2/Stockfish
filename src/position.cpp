@@ -1684,9 +1684,8 @@ Key Position::calculate_threats_key(Color c) const {
 	                    | attacks_by<BISHOP>(c)
 	                    | attacks_by<ROOK>(c)
 	                    | attacks_by<QUEEN>(c)) & pieces();
-	key += key >> 32;
-	key += key >> 16;
-	return key;
+	key ^= key >> 32;
+	return key ^ (key >> 16);
 }
 
 }  // namespace Stockfish

@@ -866,7 +866,8 @@ Value Search::Worker::search(
     //const auto correctionValue2 = 1.0121870725197776863694194400069 * (1 * correctionValue + -0.04974762309741174216603642359727 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.99988660310140517656842085368965 * (1 * correctionValue + 6.5736859155733033465228429633143e-4 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 1.0975994323780992549962552721826 * (1 * correctionValue + -0.22382890780593399281649592617495 * correction_value2(*this, pos, ss));
-    const auto correctionValue2 = 0.96488810193129130006206418166551 * (1 * correctionValue + 0.14305909885062690153483867301882 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 0.96488810193129130006206418166551 * (1 * correctionValue + 0.14305909885062690153483867301882 * correction_value2(*this, pos, ss));
+    const auto correctionValue2 = 0.9250214374464063839840400398999 * (1 * correctionValue + 2*0.14305909885062690153483867301882 * correction_value2(*this, pos, ss));
    
     dbg_mean_of(std::abs(correctionValue), 12); 
     dbg_mean_of(std::abs(correctionValue2), 13); 
