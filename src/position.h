@@ -49,6 +49,7 @@ struct StateInfo {
     Key    pawnKey;
     Key    minorPieceKey;
     Key    nonPawnKey[COLOR_NB];
+    Key    threatsKey[COLOR_NB];
     Value  nonPawnMaterial[COLOR_NB];
     int    castlingRights;
     int    rule50;
@@ -164,6 +165,7 @@ class Position {
     Key pawn_key() const;
     Key minor_piece_key() const;
     Key non_pawn_key(Color c) const;
+    Key threats_key(Color c) const;
 
     // Other properties of the position
     Color side_to_move() const;
@@ -214,6 +216,7 @@ class Position {
                      DirtyPiece* const   dp  = nullptr);
     template<bool AfterMove = false>
     Key adjust_key50(Key k) const;
+    Key calculate_threats_key(Color c) const;
 
     // Data members
     std::array<Piece, SQUARE_NB>        board;
@@ -330,6 +333,8 @@ inline Key Position::material_key() const { return st->materialKey; }
 inline Key Position::minor_piece_key() const { return st->minorPieceKey; }
 
 inline Key Position::non_pawn_key(Color c) const { return st->nonPawnKey[c]; }
+
+inline Key Position::threats_key(Color c) const { return st->threatsKey[c]; }
 
 inline Value Position::non_pawn_material(Color c) const { return st->nonPawnMaterial[c]; }
 

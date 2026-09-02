@@ -90,14 +90,16 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const int   micv   = shared.minor_piece_correction_entry(pos)[us].minor;
     const int   wnpcv  = shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite;
     const int   bnpcv  = shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack;
+    const int   wtcv   = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
+    const int   btcv   = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
     const int   cntcv =
       m.is_ok()
-          ? 8761
+          ? 8453
             * ((*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
-          : 64049;
+          : 61800;
 
-    return 15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv;
+    return 14802 * pcv + 10198 * micv + 12453 * (wnpcv + bnpcv) + 1782 * (wtcv + btcv) + cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -114,12 +116,15 @@ void update_correction_history(const Position& pos,
     const Color us = pos.side_to_move();
 
     constexpr int nonPawnWeight = 186;
+    constexpr int threatsWeight = 186;
     auto&         shared        = workerThread.sharedHistory;
 
     shared.pawn_correction_entry(pos)[us].pawn << bonus;
     shared.minor_piece_correction_entry(pos)[us].minor << bonus * 150 / 128;
     shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite << bonus * nonPawnWeight / 128;
     shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack << bonus * nonPawnWeight / 128;
+    shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite << bonus * threatsWeight / 128;
+    shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack << bonus * threatsWeight / 128;
 
     if (m.is_ok())
     {
