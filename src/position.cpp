@@ -526,9 +526,6 @@ void Position::set_state() const {
 
     st->key ^= Zobrist::castling[st->castlingRights];
     st->materialKey = compute_material_key();
-   
-    st->threatsKey[WHITE] = calculate_threats_key(WHITE);
-    st->threatsKey[BLACK] = calculate_threats_key(BLACK);
 }
 
 Key Position::compute_material_key() const {
@@ -1077,9 +1074,6 @@ void Position::do_move(Move                      m,
     dpps.after[WHITE] = pieces(WHITE, PAWN);
     dpps.after[BLACK] = pieces(BLACK, PAWN);
 
-    st->threatsKey[WHITE] = calculate_threats_key(WHITE);
-    st->threatsKey[BLACK] = calculate_threats_key(BLACK);
-
     assert(dp.pc != NO_PIECE);
     assert(!(bool(captured) || m.type_of() == CASTLING) ^ (dp.remove_sq != SQ_NONE));
     assert(dp.from != SQ_NONE);
@@ -1226,11 +1220,17 @@ void Position::update_piece_threats(Piece               pc,
                 const Square threatenedSq = lsb(discovered);
                 const Piece  threatenedPc = piece_on(threatenedSq);
                 if (can_slider_threat(threatenedPc, slider))
+                {
                     add_dirty_threat(dts, !putPiece, slider, threatenedPc, sliderSq, threatenedSq);
+                    st->threatsKey[color_of(slider)] ^= Zobrist::psq[threatenedPc][threatenedSq];
+                }
             }
 
             if (addDirectAttacks && can_slider_threat(pc, slider))
+            {
                 add_dirty_threat(dts, putPiece, slider, pc, sliderSq, s);
+                st->threatsKey[color_of(slider)] ^= Zobrist::psq[pc][s];
+            }
         }
     };
 
@@ -1277,6 +1277,7 @@ void Position::update_piece_threats(Piece               pc,
         assert(threatenedPc != NO_PIECE);
 
         add_dirty_threat(dts, putPiece, pc, threatenedPc, s, threatenedSq);
+        st->threatsKey[color_of(pc)] ^= Zobrist::psq[threatenedPc][threatenedSq];
     }
 
     if constexpr (ComputeRay)
@@ -1292,6 +1293,7 @@ void Position::update_piece_threats(Piece               pc,
         assert(srcPc != NO_PIECE);
 
         add_dirty_threat(dts, putPiece, srcPc, pc, srcSq, s);
+        st->threatsKey[color_of(srcPc)] ^= Zobrist::psq[pc][s];
     }
 #endif
 }
