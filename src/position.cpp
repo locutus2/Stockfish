@@ -489,7 +489,6 @@ void Position::set_state() const {
     st->key               = 0;
     st->minorPieceKey     = 0;
     st->nonPawnKey[WHITE] = st->nonPawnKey[BLACK] = 0;
-    st->threatsKey[WHITE] = st->threatsKey[BLACK] = 0;
     st->pawnKey                                   = Zobrist::noPawns;
     st->nonPawnMaterial[WHITE] = st->nonPawnMaterial[BLACK] = VALUE_ZERO;
     st->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
@@ -527,6 +526,9 @@ void Position::set_state() const {
 
     st->key ^= Zobrist::castling[st->castlingRights];
     st->materialKey = compute_material_key();
+   
+    st->threatsKey[WHITE] = calculate_threats_key(WHITE);
+    st->threatsKey[BLACK] = calculate_threats_key(BLACK);
 }
 
 Key Position::compute_material_key() const {
@@ -1074,6 +1076,9 @@ void Position::do_move(Move                      m,
 
     dpps.after[WHITE] = pieces(WHITE, PAWN);
     dpps.after[BLACK] = pieces(BLACK, PAWN);
+
+    st->threatsKey[WHITE] = calculate_threats_key(WHITE);
+    st->threatsKey[BLACK] = calculate_threats_key(BLACK);
 
     assert(dp.pc != NO_PIECE);
     assert(!(bool(captured) || m.type_of() == CASTLING) ^ (dp.remove_sq != SQ_NONE));
@@ -1672,13 +1677,16 @@ bool Position::pos_is_ok() const {
     return true;
 }
 
-void Position::calculate_threats_key(Color c) {
-	st->threatsKey[c] = (attacks_by<KING>(c)
+Key Position::calculate_threats_key(Color c) const {
+	Key key = ( attacks_by<KING>(c)
 	                    | attacks_by<PAWN>(c)
 	                    | attacks_by<KNIGHT>(c)
 	                    | attacks_by<BISHOP>(c)
 	                    | attacks_by<ROOK>(c)
 	                    | attacks_by<QUEEN>(c)) & pieces();
+	key += key >> 32;
+	key += key >> 16;
+	return key;
 }
 
 }  // namespace Stockfish

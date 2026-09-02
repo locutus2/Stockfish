@@ -216,7 +216,7 @@ class Position {
                      DirtyPiece* const   dp  = nullptr);
     template<bool AfterMove = false>
     Key adjust_key50(Key k) const;
-    void calculate_threats_key(Color c);
+    Key calculate_threats_key(Color c) const;
 
     // Data members
     std::array<Piece, SQUARE_NB>        board;
