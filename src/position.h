@@ -195,6 +195,7 @@ class Position {
     // Initialization helpers (used while setting up a position)
     void set_castling_right(Color c, Square rfrom);
     Key  compute_material_key() const;
+    Key  compute_threats_key(Color c) const;
     void set_state() const;
     void set_check_info() const;
 
@@ -216,7 +217,6 @@ class Position {
                      DirtyPiece* const   dp  = nullptr);
     template<bool AfterMove = false>
     Key adjust_key50(Key k) const;
-    Key calculate_threats_key(Color c) const;
 
     // Data members
     std::array<Piece, SQUARE_NB>        board;
