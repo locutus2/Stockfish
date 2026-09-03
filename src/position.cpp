@@ -1237,6 +1237,8 @@ void Position::update_piece_threats(Piece               pc,
                 {
                     add_dirty_threat(dts, !putPiece, slider, threatenedPc, sliderSq, threatenedSq);
                     st->threatsKey[color_of(slider)] ^= Zobrist::psq[threatenedPc][threatenedSq];
+                    st->threatsKey2 ^= Zobrist::psq[slider][sliderSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
+                    st->threatsKey3[color_of(slider)] ^= Zobrist::psq[slider][sliderSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
                 }
             }
 
@@ -1244,6 +1246,8 @@ void Position::update_piece_threats(Piece               pc,
             {
                 add_dirty_threat(dts, putPiece, slider, pc, sliderSq, s);
                 st->threatsKey[color_of(slider)] ^= Zobrist::psq[pc][s];
+                st->threatsKey2 ^= Zobrist::psq[slider][sliderSq] ^ Zobrist::psq[pc][s];
+                st->threatsKey3[color_of(slider)] ^= Zobrist::psq[slider][sliderSq] ^ Zobrist::psq[pc][s];
             }
         }
     };
@@ -1282,6 +1286,8 @@ void Position::update_piece_threats(Piece               pc,
         Piece  threatenedPc = piece_on(threatenedSq);
 
         st->threatsKey[color_of(pc)] ^= Zobrist::psq[threatenedPc][threatenedSq];
+        st->threatsKey2 ^= Zobrist::psq[threatenedPc][threatenedSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
+        st->threatsKey3[color_of(pc)] ^= Zobrist::psq[threatenedPc][threatenedSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
     }
 
     const Bitboard directSliders = pt == QUEEN ? sliders & pieces(QUEEN) : sliders;
@@ -1298,6 +1304,19 @@ void Position::update_piece_threats(Piece               pc,
     if (popcount(sources & pieces(BLACK)) & 1)
         st->threatsKey[BLACK] ^= key;
 
+    tmp = sources;
+    while (tmp)
+    {
+        Square srcSq = pop_lsb(tmp);
+        Piece  srcPc = piece_on(srcSq);
+        assert(srcSq != s);
+        assert(srcPc != NO_PIECE);
+
+        //st->threatsKey[color_of(srcPc)] ^= Zobrist::psq[pc][s];
+        st->threatsKey2 ^= Zobrist::psq[srcPc][srcSq] ^ key;
+        st->threatsKey3[color_of(srcSq)] ^= Zobrist::psq[srcPc][srcSq] ^ key;
+    }
+
     // For ICL, direct threats were written above
     if constexpr (ComputeRay)
         process_sliders(false);
@@ -1311,6 +1330,8 @@ void Position::update_piece_threats(Piece               pc,
 
         add_dirty_threat(dts, putPiece, pc, threatenedPc, s, threatenedSq);
         st->threatsKey[color_of(pc)] ^= Zobrist::psq[threatenedPc][threatenedSq];
+        st->threatsKey2 ^= Zobrist::psq[pc][s] ^ Zobrist::psq[threatenedPc][threatenedSq];
+        st->threatsKey3[color_of(pc)] ^= Zobrist::psq[pc][s] ^ Zobrist::psq[threatenedPc][threatenedSq];
     }
 
     if constexpr (ComputeRay)
@@ -1327,6 +1348,8 @@ void Position::update_piece_threats(Piece               pc,
 
         add_dirty_threat(dts, putPiece, srcPc, pc, srcSq, s);
         st->threatsKey[color_of(srcPc)] ^= Zobrist::psq[pc][s];
+        st->threatsKey2 ^= Zobrist::psq[srcPc][srcSq] ^ Zobrist::psq[pc][s];
+        st->threatsKey3[color_of(srcPc)] ^= Zobrist::psq[srcPc][srcSq] ^ Zobrist::psq[pc][s];
     }
 #endif
 }

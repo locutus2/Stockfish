@@ -157,21 +157,29 @@ enum CorrHistType {
 template<typename T, int D>
 struct CorrectionBundle {
     StatsEntry<T, D, true> pawn;
+    StatsEntry<T, D, true> pawn2;
     StatsEntry<T, D, true> minor;
     StatsEntry<T, D, true> nonPawnWhite;
     StatsEntry<T, D, true> nonPawnBlack;
     StatsEntry<T, D, true> threatsWhite;
     StatsEntry<T, D, true> threatsBlack;
     StatsEntry<T, D, true> major;
+    StatsEntry<T, D, true> threats2;
+    StatsEntry<T, D, true> threatsWhite3;
+    StatsEntry<T, D, true> threatsBlack3;
 
     void operator=(T val) {
         pawn         = val;
+        pawn2        = val;
         minor        = val;
         nonPawnWhite = val;
         nonPawnBlack = val;
         threatsWhite = val;
         threatsBlack = val;
         major        = val;
+        threats2     = val;
+        threatsWhite3 = val;
+        threatsBlack3 = val;
     }
 };
 
@@ -237,6 +245,13 @@ struct SharedHistories {
         return correctionHistory[pos.pawn_key() & sizeMinus1];
     }
 
+    auto& pawn_correction_entry2(const Position& pos) {
+        return correctionHistory[(pos.pawn_key() >> 32) & sizeMinus1];
+    }
+    const auto& pawn_correction_entry2(const Position& pos) const {
+        return correctionHistory[(pos.pawn_key() >> 32) & sizeMinus1];
+    }
+
     auto& minor_piece_correction_entry(const Position& pos) {
         return correctionHistory[pos.minor_piece_key() & sizeMinus1];
     }
@@ -267,6 +282,22 @@ struct SharedHistories {
     template<Color c>
     const auto& threats_correction_entry(const Position& pos) const {
         return correctionHistory[pos.threats_key(c) & sizeMinus1];
+    }
+
+    auto& threats_correction_entry2(const Position& pos) {
+        return correctionHistory[pos.threats_key2() & sizeMinus1];
+    }
+    const auto& threats_correction_entry2(const Position& pos) const {
+        return correctionHistory[pos.threats_key2() & sizeMinus1];
+    }
+
+    template<Color c>
+    auto& threats_correction_entry3(const Position& pos) {
+        return correctionHistory[pos.threats_key3(c) & sizeMinus1];
+    }
+    template<Color c>
+    const auto& threats_correction_entry3(const Position& pos) const {
+        return correctionHistory[pos.threats_key3(c) & sizeMinus1];
     }
 
     UnifiedCorrectionHistory               correctionHistory;

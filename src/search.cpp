@@ -106,8 +106,18 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
 
     const int wtcv = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
     const int btcv = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
+    const int wtcv3 = shared.threats_correction_entry3<WHITE>(pos)[us].threatsWhite3;
+    const int btcv3 = shared.threats_correction_entry3<BLACK>(pos)[us].threatsBlack3;
     const int macv = shared.major_piece_correction_entry(pos)[us].major;
-    return 10569 * macv;
+    const int tcv = shared.threats_correction_entry2(pos)[us].threats2;
+    //const int pcv2 = shared.pawn_correction_entry2(pos)[us].pawn2;
+    const int pcv2 = (shared.pawn_correction_entry(pos)[us].pawn2 + shared.pawn_correction_entry2(pos)[us].pawn2) / 2;
+    //return 15341 * (micv - pcv);// / 2;
+    return 15341 * (pcv2 - pcv);// / 2;
+    //return 15341 * pcv2;
+    //return 12906 * (wtcv3 + btcv3);
+    //return 12906 * tcv;
+    //return 10569 * macv;
     //return 12906 * (wtcv + btcv);
     //return 12906 * (wnpcv + bnpcv);
     //return 10569 * micv;
@@ -158,6 +168,10 @@ void update_correction_history(const Position& pos,
     auto&         shared        = workerThread.sharedHistory;
 
     shared.pawn_correction_entry(pos)[us].pawn << bonus;
+
+    shared.pawn_correction_entry2(pos)[us].pawn2 << bonus;
+    shared.pawn_correction_entry(pos)[us].pawn2 << bonus;
+
     shared.minor_piece_correction_entry(pos)[us].minor << bonus * 150 / 128;
     shared.major_piece_correction_entry(pos)[us].major << bonus * 150 / 128;
     shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite << bonus * nonPawnWeight / 128;
@@ -166,6 +180,9 @@ void update_correction_history(const Position& pos,
     constexpr int threatsWeight = 186;
     shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite << bonus * threatsWeight / 128;
     shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack << bonus * threatsWeight / 128;
+    shared.threats_correction_entry2(pos)[us].threats2 << bonus * threatsWeight / 128;
+    shared.threats_correction_entry3<WHITE>(pos)[us].threatsWhite3 << bonus * threatsWeight / 128;
+    shared.threats_correction_entry3<BLACK>(pos)[us].threatsBlack3 << bonus * threatsWeight / 128;
 
     if (m.is_ok())
     {
@@ -872,7 +889,8 @@ Value Search::Worker::search(
     //const auto correctionValue2 = 0.9250214374464063839840400398999 * (1 * correctionValue + 2*0.14305909885062690153483867301882 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.96859223968115809244582894314902 * (1 * correctionValue + 0.15148955810903554331642815773567 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.97426941544019390096674008607581 * (1 * correctionValue + 0.09384219854159132946903373743962 * correction_value2(*this, pos, ss));
-    const auto correctionValue2 = 0.99051804101977906660795097864685 * (1 * correctionValue + 0.09218856985497634016260153918375 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 0.99051804101977906660795097864685 * (1 * correctionValue + 0.09218856985497634016260153918375 * correction_value2(*this, pos, ss));
+    const auto correctionValue2 = 1 * (0 * correctionValue + 1 * correction_value2(*this, pos, ss));
 
     dbg_mean_of(std::abs(correctionValue), 12);
     dbg_mean_of(std::abs(correctionValue2), 13);
