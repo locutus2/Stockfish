@@ -88,6 +88,8 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const auto& shared = w.sharedHistory;
     const int   pcv0   = shared.pawn_correction_entry<0>(pos)[us].pawn;
     const int   pcv1   = shared.pawn_correction_entry<1>(pos)[us].pawn;
+    const int   pcv2   = shared.pawn_correction_entry<2>(pos)[us].pawn;
+    const int   pcv3   = shared.pawn_correction_entry<3>(pos)[us].pawn;
     const int   micv   = shared.minor_piece_correction_entry(pos)[us].minor;
     const int   wnpcv  = shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite;
     const int   bnpcv  = shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack;
@@ -98,7 +100,7 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
                + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
           : 64049;
 
-    return 7702 * (pcv0 + pcv1) + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv;
+    return 3835 * (pcv0 + pcv1 + pcv2 + pcv3) + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -119,6 +121,8 @@ void update_correction_history(const Position& pos,
 
     shared.pawn_correction_entry<0>(pos)[us].pawn << bonus;
     shared.pawn_correction_entry<1>(pos)[us].pawn << bonus;
+    shared.pawn_correction_entry<2>(pos)[us].pawn << bonus;
+    shared.pawn_correction_entry<3>(pos)[us].pawn << bonus;
     shared.minor_piece_correction_entry(pos)[us].minor << bonus * 150 / 128;
     shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite << bonus * nonPawnWeight / 128;
     shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack << bonus * nonPawnWeight / 128;
