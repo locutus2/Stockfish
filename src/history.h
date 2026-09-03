@@ -224,11 +224,13 @@ struct SharedHistories {
         return pawnHistory[pos.pawn_key() & pawnHistSizeMinus1];
     }
 
+    template<int i>
     auto& pawn_correction_entry(const Position& pos) {
-        return correctionHistory[pos.pawn_key() & sizeMinus1];
+        return correctionHistory[(pos.pawn_key() >> (i ? 32 : 0)) & sizeMinus1];
     }
+    template<int i>
     const auto& pawn_correction_entry(const Position& pos) const {
-        return correctionHistory[pos.pawn_key() & sizeMinus1];
+        return correctionHistory[(pos.pawn_key() >> (i ? 32 : 0)) & sizeMinus1];
     }
 
     auto& minor_piece_correction_entry(const Position& pos) {
