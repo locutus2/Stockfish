@@ -86,8 +86,8 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const Color us     = pos.side_to_move();
     const auto  m      = (ss - 1)->currentMove;
     const auto& shared = w.sharedHistory;
-    const int   pcv0   = shared.pawn_correction_entry<0>(pos)[us].pawn;
-    const int   pcv1   = shared.pawn_correction_entry<1>(pos)[us].pawn;
+    const int   pcv0   = shared.pawn_correction_entry<0>(pos)[us].pawn[0];
+    const int   pcv1   = shared.pawn_correction_entry<1>(pos)[us].pawn[1];
     const int   micv   = shared.minor_piece_correction_entry(pos)[us].minor;
     const int   wnpcv  = shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite;
     const int   bnpcv  = shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack;
@@ -117,8 +117,8 @@ void update_correction_history(const Position& pos,
     constexpr int nonPawnWeight = 186;
     auto&         shared        = workerThread.sharedHistory;
 
-    shared.pawn_correction_entry<0>(pos)[us].pawn << bonus;
-    shared.pawn_correction_entry<1>(pos)[us].pawn << bonus;
+    shared.pawn_correction_entry<0>(pos)[us].pawn[0] << bonus;
+    shared.pawn_correction_entry<1>(pos)[us].pawn[1] << bonus;
     shared.minor_piece_correction_entry(pos)[us].minor << bonus * 150 / 128;
     shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite << bonus * nonPawnWeight / 128;
     shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack << bonus * nonPawnWeight / 128;
