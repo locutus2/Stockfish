@@ -94,12 +94,12 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const int   btcv   = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
     const int   cntcv =
       m.is_ok()
-          ? 8453
+          ? 8536
             * ((*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
-          : 61800;
+          : 62401;
 
-    return 14802 * pcv + 10198 * micv + 12453 * (wnpcv + bnpcv) + 1782 * (wtcv + btcv) + cntcv;
+    return 14946 * pcv + 10297 * micv + 12574 * (wnpcv + bnpcv) + 1180 * (wtcv + btcv) + cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
