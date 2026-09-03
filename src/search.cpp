@@ -106,7 +106,9 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
 
     const int wtcv = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
     const int btcv = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
-    return 12906 * (wtcv + btcv);
+    const int macv = shared.major_piece_correction_entry(pos)[us].major;
+    return 10569 * macv;
+    //return 12906 * (wtcv + btcv);
     //return 12906 * (wnpcv + bnpcv);
     //return 10569 * micv;
     //return 15341 * pcv;
@@ -157,6 +159,7 @@ void update_correction_history(const Position& pos,
 
     shared.pawn_correction_entry(pos)[us].pawn << bonus;
     shared.minor_piece_correction_entry(pos)[us].minor << bonus * 150 / 128;
+    shared.major_piece_correction_entry(pos)[us].major << bonus * 150 / 128;
     shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite << bonus * nonPawnWeight / 128;
     shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack << bonus * nonPawnWeight / 128;
 
@@ -868,7 +871,8 @@ Value Search::Worker::search(
     //const auto correctionValue2 = 0.96488810193129130006206418166551 * (1 * correctionValue + 0.14305909885062690153483867301882 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.9250214374464063839840400398999 * (1 * correctionValue + 2*0.14305909885062690153483867301882 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.96859223968115809244582894314902 * (1 * correctionValue + 0.15148955810903554331642815773567 * correction_value2(*this, pos, ss));
-    const auto correctionValue2 = 0.97426941544019390096674008607581 * (1 * correctionValue + 0.09384219854159132946903373743962 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 0.97426941544019390096674008607581 * (1 * correctionValue + 0.09384219854159132946903373743962 * correction_value2(*this, pos, ss));
+    const auto correctionValue2 = 1 * (0 * correctionValue + 1 * correction_value2(*this, pos, ss));
 
     dbg_mean_of(std::abs(correctionValue), 12);
     dbg_mean_of(std::abs(correctionValue2), 13);
