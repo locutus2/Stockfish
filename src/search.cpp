@@ -98,7 +98,7 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
           : 64049;
     const int cntcv2 =
       m.is_ok()
-        ? 8761 * 0 * (*(ss - 6)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        ? 8761 * (*(ss - 6)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
@@ -112,8 +112,9 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
     const int tcv = shared.threats_correction_entry2(pos)[us].threats2;
     //const int pcv2 = shared.pawn_correction_entry2(pos)[us].pawn2;
     const int pcv2 = (shared.pawn_correction_entry(pos)[us].pawn2 + shared.pawn_correction_entry2(pos)[us].pawn2) / 2;
+    return cntcv2;
     //return 15341 * (micv - pcv);// / 2;
-    return 15341 * (pcv2 - pcv);// / 2;
+    //return 15341 * (pcv2 - pcv);// / 2;
     //return 15341 * pcv2;
     //return 12906 * (wtcv3 + btcv3);
     //return 12906 * tcv;
@@ -126,7 +127,6 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
     //	    + cntcv2 * 0.328770045632210972451141982576 / 0.203662300958092835603966019864);
     //return 15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv
     //	    + cntcv2 * 0.328770045632210972451141982576 / 0.203662300958092835603966019864;
-    return cntcv2;
     //return 15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv;
     //return 1.37449*(15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv + 0*cntcv2) + 0*131072;
     //return 1.24603*(15341 * pcv + 10569 * micv + 12906 * (wnpcv + bnpcv) + cntcv + 0*cntcv2) + 151.577*131072;
@@ -191,7 +191,7 @@ void update_correction_history(const Position& pos,
         (*(ss - 2)->continuationCorrectionHistory)[pc][to] << bonus * 130 / 128;
         //(*(ss - 3)->continuationCorrectionHistory)[pc][to] << bonus * 100 / 128;
         (*(ss - 4)->continuationCorrectionHistory)[pc][to] << bonus * 70 / 128;
-        //(*(ss - 6)->continuationCorrectionHistory)[pc][to] << bonus * 35 / 128;
+        (*(ss - 6)->continuationCorrectionHistory)[pc][to] << bonus * 52 / 128;
     }
 }
 
