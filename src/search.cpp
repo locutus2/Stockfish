@@ -98,12 +98,13 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
           : 64049;
     const int cntcv2 =
       m.is_ok()
-        ? 8761 * (*(ss - 6)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        ? 8761 * (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         : 0;
 
+    return cntcv2;
     const int wtcv = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
     const int btcv = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
     const int wtcv3 = shared.threats_correction_entry3<WHITE>(pos)[us].threatsWhite3;
@@ -112,7 +113,6 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
     const int tcv = shared.threats_correction_entry2(pos)[us].threats2;
     //const int pcv2 = shared.pawn_correction_entry2(pos)[us].pawn2;
     const int pcv2 = (shared.pawn_correction_entry(pos)[us].pawn2 + shared.pawn_correction_entry2(pos)[us].pawn2) / 2;
-    return cntcv2;
     //return 15341 * (micv - pcv);// / 2;
     //return 15341 * (pcv2 - pcv);// / 2;
     //return 15341 * pcv2;
@@ -191,7 +191,7 @@ void update_correction_history(const Position& pos,
         (*(ss - 2)->continuationCorrectionHistory)[pc][to] << bonus * 130 / 128;
         //(*(ss - 3)->continuationCorrectionHistory)[pc][to] << bonus * 100 / 128;
         (*(ss - 4)->continuationCorrectionHistory)[pc][to] << bonus * 70 / 128;
-        (*(ss - 6)->continuationCorrectionHistory)[pc][to] << bonus * 50 / 128;
+        //(*(ss - 6)->continuationCorrectionHistory)[pc][to] << bonus * 35 / 128;
     }
 }
 
@@ -890,7 +890,7 @@ Value Search::Worker::search(
     //const auto correctionValue2 = 0.96859223968115809244582894314902 * (1 * correctionValue + 0.15148955810903554331642815773567 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.97426941544019390096674008607581 * (1 * correctionValue + 0.09384219854159132946903373743962 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.99051804101977906660795097864685 * (1 * correctionValue + 0.09218856985497634016260153918375 * correction_value2(*this, pos, ss));
-    const auto correctionValue2 = 1 * (1 * correctionValue + 0.85629758610717638529239363338906 * correction_value2(*this, pos, ss));
+    const auto correctionValue2 = 0.96335818039330040642257012156227 * (1 * correctionValue + 0.42999214438286461317235728590354 * correction_value2(*this, pos, ss));
 
     dbg_mean_of(std::abs(correctionValue), 12);
     dbg_mean_of(std::abs(correctionValue2), 13);
