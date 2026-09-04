@@ -92,13 +92,13 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const int   bnpcv  = shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack;
     const int   cntcv =
       m.is_ok()
-          ? 8367
+          ? 8541
               * ((*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
-            + 6102 * (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-          : 61169;
+            + 6368 * (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+          : 85721;
 
-    return 14651 * pcv + 10094 * micv + 12326 * (wnpcv + bnpcv) + cntcv;
+    return 14956 * pcv + 10304 * micv + 12582 * (wnpcv + bnpcv) + cntcv;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
