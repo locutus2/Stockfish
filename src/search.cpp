@@ -98,11 +98,15 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
           : 64049;
     const int cntcv2 =
       m.is_ok()
-        ? 8761 * (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        ? 8761 * (*(ss - 6)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+         //+ 8761 * (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        //? 8761*0.38492995383601287840056521840763 * (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        // + 8761*0.42999214438286461317235728590354 * (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-        : 0;
+        //: 0;
+        : 64049/2;
 
     return cntcv2;
     const int wtcv = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
@@ -191,7 +195,7 @@ void update_correction_history(const Position& pos,
         (*(ss - 2)->continuationCorrectionHistory)[pc][to] << bonus * 130 / 128;
         //(*(ss - 3)->continuationCorrectionHistory)[pc][to] << bonus * 100 / 128;
         (*(ss - 4)->continuationCorrectionHistory)[pc][to] << bonus * 70 / 128;
-        //(*(ss - 6)->continuationCorrectionHistory)[pc][to] << bonus * 35 / 128;
+        (*(ss - 6)->continuationCorrectionHistory)[pc][to] << bonus * 35 / 128;
     }
 }
 
@@ -891,7 +895,7 @@ Value Search::Worker::search(
     //const auto correctionValue2 = 0.97426941544019390096674008607581 * (1 * correctionValue + 0.09384219854159132946903373743962 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.99051804101977906660795097864685 * (1 * correctionValue + 0.09218856985497634016260153918375 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.96335818039330040642257012156227 * (1 * correctionValue + 0.42999214438286461317235728590354 * correction_value2(*this, pos, ss));
-    const auto correctionValue2 = 0.96548732373785343756849565280924 * (1 * correctionValue + 0.38492995383601287840056521840763 * correction_value2(*this, pos, ss));
+    const auto correctionValue2 = 0.89995658429032340447266938511437 * (1 * correctionValue + 0.79990168176360644222406597842344 * correction_value2(*this, pos, ss));
 
     dbg_mean_of(std::abs(correctionValue), 12);
     dbg_mean_of(std::abs(correctionValue2), 13);
