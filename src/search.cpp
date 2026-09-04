@@ -98,7 +98,7 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
           : 64049;
     const int cntcv2 =
       m.is_ok()
-        ? 8761 * (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        ? 8761 * (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
@@ -890,7 +890,8 @@ Value Search::Worker::search(
     //const auto correctionValue2 = 0.96859223968115809244582894314902 * (1 * correctionValue + 0.15148955810903554331642815773567 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.97426941544019390096674008607581 * (1 * correctionValue + 0.09384219854159132946903373743962 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.99051804101977906660795097864685 * (1 * correctionValue + 0.09218856985497634016260153918375 * correction_value2(*this, pos, ss));
-    const auto correctionValue2 = 0.96335818039330040642257012156227 * (1 * correctionValue + 0.42999214438286461317235728590354 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 0.96335818039330040642257012156227 * (1 * correctionValue + 0.42999214438286461317235728590354 * correction_value2(*this, pos, ss));
+    const auto correctionValue2 = 0.96548732373785343756849565280924 * (1 * correctionValue + 0.38492995383601287840056521840763 * correction_value2(*this, pos, ss));
 
     dbg_mean_of(std::abs(correctionValue), 12);
     dbg_mean_of(std::abs(correctionValue2), 13);
