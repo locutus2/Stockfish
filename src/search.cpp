@@ -1372,7 +1372,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
-	//bool C = cutNode;
+	bool C = cutNode;
 	//bool C = PvNode;
 	//bool C = ss->ttPv;
 	//bool C = ss->staticEval > alpha;
@@ -1382,9 +1382,9 @@ moves_loop:  // When in check, search starts here
 	//bool C = priorReduction > 0;
 	//bool C = priorReduction > 1;
 	//bool C = cutNode && priorReduction == 0;
-	bool C = type_of(movedPiece) == KING;
+	//bool C = type_of(movedPiece) == KING;
 	//bool C = type_of(movedPiece) == PAWN;
-	int D = depth;
+	int D = 0;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
@@ -1395,8 +1395,8 @@ moves_loop:  // When in check, search starts here
             // std::clamp has been replaced by a more robust implementation.
             Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
 
-	    //CC = true;
-	    CC = ss->inCheck;
+	    CC = true;
+	    //CC = ss->inCheck;
 	    //CC = cutNode;
 	    //CC = priorReduction>0;
 	    //CC = d >= 4;
