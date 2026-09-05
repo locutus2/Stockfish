@@ -124,7 +124,7 @@ public:
 
     // Re-fits by maximum likelihood (IRLS / Newton-Raphson) over all
     // points added so far.
-    FitResult fit(int maxIter = 100, double tol = 1e-9) const {
+    FitResult fit(bool debug = false, int maxIter = 100, double tol = 1e-9) const {
         long n = count();
         if (n < 5)
 	{
@@ -161,7 +161,7 @@ public:
 
             XtWXinv = invert4(XtWX);
             Vec4 newBeta{};
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < 4; ++i) {
                 double s = 0.0;
                 for (int j = 0; j < 4; ++j) s += XtWXinv[i][j] * XtWz[j];
                 newBeta[i] = s;
@@ -173,11 +173,16 @@ public:
 
             beta = newBeta;
             r.iterations = iter + 1;
-	    std::cerr << "Finished iteration " << iter+1 << " error=" << maxDelta << std::endl;
-	    std::cerr << "=> beta:";
-	    for (int i = 0; i < 4; ++i)
-		    std::cerr << " " << beta[i];
-	    std::cerr << std::endl;
+
+	    if(debug)
+	    {
+		    std::cerr << "Finished iteration " << iter+1 << " error=" << maxDelta << std::endl;
+		    std::cerr << "=> beta:";
+		    for (int i = 0; i < 4; ++i)
+			    std::cerr << " " << beta[i];
+		    std::cerr << std::endl;
+	    }
+
             if (maxDelta < tol) { r.converged = true; break; }
         }
 

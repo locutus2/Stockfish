@@ -58,7 +58,7 @@ IncrementalLogisticRegression reg;
 void printRegFit()
 {
     std::cerr << "\n==== FINAL RESULT ====\n";
-    printFit(reg.fit(), reg.count());
+    printFit(reg.fit(true), reg.count());
 }
 
 static constexpr std::array<int, 16> lmrDivisor = {3637, 2787, 2761, 2939, 3171, 3347, 3147, 2762,
