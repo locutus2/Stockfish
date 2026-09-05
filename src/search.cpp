@@ -1369,7 +1369,8 @@ moves_loop:  // When in check, search starts here
 
 	bool CC = false;
 	//bool C = improving;
-	bool C = priorCapture;
+	//bool C = priorCapture;
+	bool C = ss->inCheck;
 	int D = depth;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
@@ -1444,13 +1445,14 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		bool T = value > alpha;
-		int index0 = 3 * D;
-		int index1 = 3 * D + C + 1;
-		dbg_hit_on(T, index0);
-		dbg_hit_on(T, index1);
-		dbg_correl_of(D, T, 0);
-		dbg_correl_of(D, T, 1+C);
-		dbg_diff_correl_of(C, D, T);
+		dbg_hit_on(T, C*100+D);
+		//int index0 = 3 * D;
+		//int index1 = 3 * D + C + 1;
+		//dbg_hit_on(T, index0);
+		//dbg_hit_on(T, index1);
+		//dbg_correl_of(D, T, 0);
+		//dbg_correl_of(D, T, 1+C);
+		//dbg_diff_correl_of(C, D, T);
 		reg.addPoint(D, C, T);
 	}
 
