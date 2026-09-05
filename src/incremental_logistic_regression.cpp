@@ -232,7 +232,7 @@ static void printFit(const FitResult& r, long n, std::ostream& out = std::cerr) 
     }
     out << "  -> Log-odds slope for C=false : " << r.beta[1] << "\n";
     out << "  -> Log-odds slope for C=true  : " << (r.beta[1] + r.beta[3]) << "\n";
-    out << "  -> Slope difference (A_true - A_false) = b3 = " << r.beta[3]
+    out << "  -> Slope difference (C=true - C=false) = b3 = " << r.beta[3]
               << ", p = " << r.pvalue[3];
     out << (r.pvalue[3] < 0.05 ? "  => significant at alpha=0.05\n"
                                       : "  => not significant at alpha=0.05\n");

@@ -1370,7 +1370,8 @@ moves_loop:  // When in check, search starts here
 	bool CC = false;
 	//bool C = improving;
 	//bool C = priorCapture;
-	bool C = ss->inCheck;
+	//bool C = ss->inCheck;
+	bool C = allNode;
 	int D = depth;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
