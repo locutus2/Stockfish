@@ -1358,6 +1358,9 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 276 / (256 * depth + 268);
 
+        else if (cutNode && r > 0)
+            r -= std::clamp(128 * newDepth - 1024 - r / 8, 0, r);
+
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
