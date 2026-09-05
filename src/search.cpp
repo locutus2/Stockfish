@@ -1359,7 +1359,7 @@ moves_loop:  // When in check, search starts here
             r += r * 276 / (256 * depth + 268);
 
         else if (cutNode)
-            r -= r * depth / (16 * depth + 8);
+            r -= r * depth / (8 * depth + 16);
 
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
