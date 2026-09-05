@@ -146,6 +146,7 @@ void dbg_mean_of(i64 value, int slot = 0);
 void dbg_stdev_of(i64 value, int slot = 0);
 void dbg_extremes_of(i64 value, int slot = 0);
 void dbg_correl_of(i64 value1, i64 value2, int slot = 0);
+void dbg_diff_correl_of(bool C, i64 value1, i64 value2, int slot = 0);
 void dbg_print();
 void dbg_clear();
 

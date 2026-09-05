@@ -43,6 +43,8 @@
 
 namespace Stockfish {
 
+void printRegFit();
+
 // Different node types, used as a template parameter
 enum NodeType {
     NonPV,

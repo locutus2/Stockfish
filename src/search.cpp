@@ -49,8 +49,17 @@
 #include "types.h"
 #include "uci.h"
 #include "ucioption.h"
+#include "incremental_logistic_regression.cpp"
 
 namespace Stockfish {
+
+IncrementalLogisticRegression reg;
+
+void printRegFit()
+{
+    std::cerr << "\n==== FINAL RESULT ====\n";
+    printFit(reg.fit(), reg.count());
+}
 
 static constexpr std::array<int, 16> lmrDivisor = {3637, 2787, 2761, 2939, 3171, 3347, 3147, 2762,
                                                    2772, 3106, 3107, 3060, 3112, 2991, 3090, 3542};
@@ -1358,6 +1367,9 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 276 / (256 * depth + 268);
 
+	bool CC = false;
+	bool C = improving;
+	int D = depth;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
@@ -1367,6 +1379,9 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
             Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
+
+	    CC = true;
+	    D = d;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
@@ -1424,6 +1439,19 @@ moves_loop:  // When in check, search starts here
 
         // Step 21. Undo move
         undo_move(pos, move);
+
+	if(CC)
+	{
+		bool T = value > alpha;
+		int index0 = 3 * D;
+		int index1 = 3 * D + C + 1;
+		dbg_hit_on(T, index0);
+		dbg_hit_on(T, index1);
+		dbg_correl_of(D, T, 0);
+		dbg_correl_of(D, T, 1+C);
+		dbg_diff_correl_of(C, D, T);
+		reg.addPoint(D, C, T);
+	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 

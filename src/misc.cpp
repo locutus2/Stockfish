@@ -308,7 +308,7 @@ std::string compiler_info() {
 
 
 // Debug functions used mainly to collect run-time statistics
-constexpr int MaxDebugSlots = 32;
+constexpr int MaxDebugSlots = 3200;
 
 namespace {
 
@@ -376,6 +376,16 @@ void dbg_extremes_of(i64 value, int slot) {
 }
 
 void dbg_correl_of(i64 value1, i64 value2, int slot) {
+
+    ++correl.at(slot)[0];
+    correl.at(slot)[1] += value1;
+    correl.at(slot)[2] += value1 * value1;
+    correl.at(slot)[3] += value2;
+    correl.at(slot)[4] += value2 * value2;
+    correl.at(slot)[5] += value1 * value2;
+}
+
+void dbg_diff_correl_of(bool C, i64 value1, i64 value2, int slot) {
 
     ++correl.at(slot)[0];
     correl.at(slot)[1] += value1;
