@@ -100,7 +100,7 @@ static double sigmoid(double eta) {
 // ---------- incremental (point-at-a-time) logistic regression ----------
 
 struct Observation {
-    double D, C, T; // T must be 0.0 or 1.0
+    int8_t D, C, T; // T must be 0.0 or 1.0
 };
 
 struct FitResult {
@@ -116,7 +116,7 @@ struct FitResult {
 class IncrementalLogisticRegression {
 public:
     // Add one observation. C should be 0.0 or 1.0, T should be 0.0 or 1.0.
-    void addPoint(double D, double C, double T) {
+    void addPoint(int8_t D, int8_t C, int8_t T) {
         data_.push_back({D, C, T});
     }
 
@@ -144,7 +144,7 @@ public:
             Vec4 XtWz{};
 
             for (const auto& obs : data_) {
-                Vec4 x = {1.0, obs.D, obs.C, obs.D * obs.C};
+                Vec4 x = {1.0, double(obs.D), double(obs.C), double(obs.D * obs.C)};
                 double eta = 0.0;
                 for (int k = 0; k < 4; ++k) eta += beta[k] * x[k];
                 double p = sigmoid(eta);
@@ -189,7 +189,7 @@ public:
         // Log-likelihood and Wald standard errors at the converged beta.
         double ll = 0.0;
         for (const auto& obs : data_) {
-            Vec4 x = {1.0, obs.D, obs.C, obs.D * obs.C};
+            Vec4 x = {1.0, double(obs.D), double(obs.C), double(obs.D * obs.C)};
             double eta = 0.0;
             for (int k = 0; k < 4; ++k) eta += beta[k] * x[k];
             double p = sigmoid(eta);
