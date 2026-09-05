@@ -1368,13 +1368,13 @@ moves_loop:  // When in check, search starts here
             r += r * 276 / (256 * depth + 268);
 
 	bool CC = false;
-	bool C = improving;
+	//bool C = improving;
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
 	//bool C = cutNode;
 	//bool C = PvNode;
-	//bool C = ss->ttPv;
+	bool C = ss->ttPv;
 	//bool C = ss->staticEval > alpha;
 	//bool C = ss->staticEval > eval;
 	//bool C = capture;
