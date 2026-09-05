@@ -1370,9 +1370,9 @@ moves_loop:  // When in check, search starts here
 	bool CC = false;
 	//bool C = improving;
 	//bool C = priorCapture;
-	//bool C = ss->inCheck;
+	bool C = ss->inCheck;
 	//bool C = allNode;
-	bool C = cutNode;
+	//bool C = cutNode;
 	//bool C = PvNode;
 	//bool C = ss->ttPv;
 	//bool C = ss->staticEval > alpha;
