@@ -1368,7 +1368,8 @@ moves_loop:  // When in check, search starts here
             r += r * 276 / (256 * depth + 268);
 
 	bool CC = false;
-	bool C = improving;
+	//bool C = improving;
+	bool C = priorCapture;
 	int D = depth;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
@@ -2141,7 +2142,7 @@ void SearchManager::check_time(Search::Worker& worker) {
     TimePoint elapsed = tm.elapsed([&worker]() { return worker.threads.nodes_searched(); });
     TimePoint tick    = worker.limits.startTime + elapsed;
 
-    if (tick - lastInfoTime >= 1000)
+    if (tick - lastInfoTime >= 10000)
     {
         lastInfoTime = tick;
         dbg_print();

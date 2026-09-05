@@ -124,7 +124,7 @@ public:
 
     // Re-fits by maximum likelihood (IRLS / Newton-Raphson) over all
     // points added so far.
-    FitResult fit(bool debug = false, int maxIter = 100, double tol = 1e-9) const {
+    FitResult fit(bool debug = false, int maxIter = 100, double tol = 1e-8) const {
         long n = count();
         if (n < 5)
 	{
