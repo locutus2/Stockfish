@@ -1373,12 +1373,12 @@ moves_loop:  // When in check, search starts here
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
-	//bool C = cutNode;
+	bool C = cutNode;
 	//bool C = PvNode;
 	//bool C = ss->ttPv;
 	//bool C = ss->staticEval > alpha;
 	//bool C = ss->staticEval > eval;
-	bool C = capture;
+	//bool C = capture;
 	//bool C = givesCheck;
 	//bool C = priorReduction > 0;
 	//bool C = priorReduction > 1;
@@ -1403,7 +1403,9 @@ moves_loop:  // When in check, search starts here
 	    //CC = d >= 4;
 	    //CC = d >= 2;
 	    //D = d;
-	    D = moveCount;
+	    //D = moveCount;
+	    //D = newDepth - d + 3;
+	    D = (ss+1)->cutoffCnt;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
@@ -1465,7 +1467,7 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		bool T = value > alpha;
-		dbg_hit_on(T, C*100+D);
+		dbg_hit_on(T, C*10000+D);
 		//int index0 = 3 * D;
 		//int index1 = 3 * D + C + 1;
 		//dbg_hit_on(T, index0);
