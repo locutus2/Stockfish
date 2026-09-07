@@ -1378,13 +1378,14 @@ moves_loop:  // When in check, search starts here
 	//bool C = ss->ttPv;
 	//bool C = ss->staticEval > alpha;
 	//bool C = ss->staticEval > eval;
-	bool C = capture;
+	//bool C = capture;
 	//bool C = givesCheck;
 	//bool C = priorReduction > 0;
 	//bool C = priorReduction > 1;
 	//bool C = cutNode && priorReduction == 0;
 	//bool C = type_of(movedPiece) == KING;
 	//bool C = type_of(movedPiece) == PAWN;
+	bool C = ttHit;
 	int D = 0;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
@@ -1402,11 +1403,11 @@ moves_loop:  // When in check, search starts here
 	    //CC = priorReduction>0;
 	    //CC = d >= 4;
 	    //CC = d >= 2;
-	    //D = d;
+	    D = d;
 	    //D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
-	    D = priorReduction + 3;
+	    //D = priorReduction + 3;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
