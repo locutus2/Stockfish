@@ -49,8 +49,8 @@
 #include "types.h"
 #include "uci.h"
 #include "ucioption.h"
-//#include "incremental_logistic_regression.cpp"
-#include "incremental_logistic_regression_quad.cpp"
+#include "incremental_logistic_regression.cpp"
+//#include "incremental_logistic_regression_quad.cpp"
 
 namespace Stockfish {
 
@@ -1373,12 +1373,12 @@ moves_loop:  // When in check, search starts here
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
-	bool C = cutNode;
+	//bool C = cutNode;
 	//bool C = PvNode;
 	//bool C = ss->ttPv;
 	//bool C = ss->staticEval > alpha;
 	//bool C = ss->staticEval > eval;
-	//bool C = capture;
+	bool C = capture;
 	//bool C = givesCheck;
 	//bool C = priorReduction > 0;
 	//bool C = priorReduction > 1;
@@ -1405,7 +1405,8 @@ moves_loop:  // When in check, search starts here
 	    //D = d;
 	    //D = moveCount;
 	    //D = newDepth - d + 3;
-	    D = (ss+1)->cutoffCnt;
+	    //D = (ss+1)->cutoffCnt;
+	    D = priorReduction + 3;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
