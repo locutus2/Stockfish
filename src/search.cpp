@@ -110,6 +110,7 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
         : 0;
         //: 64049/2;
 
+    //return 0;
     return cntcv2;
     const int wtcv = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
     const int btcv = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
@@ -900,7 +901,8 @@ Value Search::Worker::search(
     //const auto correctionValue2 = 0.96335818039330040642257012156227 * (1 * correctionValue + 0.42999214438286461317235728590354 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.89995658429032340447266938511437 * (1 * correctionValue + 0.79990168176360644222406597842344 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.97492530156036740565863735290863 * (1 * correctionValue + 0.74559074411642630709548748574273 * correction_value2(*this, pos, ss));
-    const auto correctionValue2 = 0.98698546367786688575403086517725 * (1 * correctionValue + 0.72491226017961918386608808808464 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 0.98698546367786688575403086517725 * (1 * correctionValue + 0.72491226017961918386608808808464 * correction_value2(*this, pos, ss));
+    const auto correctionValue2 = 1 * (0 * correctionValue + 1 * correction_value2(*this, pos, ss));
 
     dbg_mean_of(std::abs(correctionValue), 12);
     dbg_mean_of(std::abs(correctionValue2), 13);
