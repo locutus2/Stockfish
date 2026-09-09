@@ -147,6 +147,7 @@ void printRegFit(std::ostream& out)
     std::cerr << "\n==== FINAL RESULT ====\n";
     auto fitResult = reg.fit(true);
     printFit(fitResult, reg.count(), out);
+    std::cerr << "----------------------------" << std::endl;
     printRegFitCSV(fitResult, reg.count(), out);
 }
 
