@@ -79,6 +79,9 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
     out.setf(std::ios::fixed);
     out.precision(5);
 
+    //constexpr int MINN = 1000;
+    constexpr int MINN = 100;
+
     constexpr char SEP = ';';
     for(int row = 0;; row++)
     {
@@ -100,8 +103,8 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 	    }
 	    else
 	    {
-		    double nc = dbg_get_hit_on(row-1);
-		    double c = dbg_get_hit_on(10000 + row-1);
+		    double nc = dbg_get_hit_on(row-1, MINN);
+		    double c = dbg_get_hit_on(10000 + row-1, MINN);
 		    if(row >= 20000 || (nc < 0 && c < 0))
 			    break;
 
