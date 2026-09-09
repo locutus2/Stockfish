@@ -1478,7 +1478,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = cutNode && priorReduction == 0;
 	//bool C = type_of(movedPiece) == KING;
 	//bool C = type_of(movedPiece) == PAWN;
-	bool C = ttHit;
+	//bool C = ttHit;
 	int D = 0;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
