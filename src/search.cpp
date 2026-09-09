@@ -109,7 +109,8 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    if(row >= 20000 || (found && nc < 0 && c < 0))
 			    break;
 
-		    found = true;
+		    if(nc >= 0 || c >= 0) found = true;
+
 		    double enc = 0;
 		    double ec = 0;
 			    enc += r.beta[0];
@@ -1502,6 +1503,7 @@ moves_loop:  // When in check, search starts here
 	    //D = ss->cutoffCnt;
 	    //D = depth;
 	    //D = ss->cnStreak;
+	    //D = ss->ply;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
