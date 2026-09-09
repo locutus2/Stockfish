@@ -31,6 +31,7 @@
 #include <list>
 #include <ratio>
 #include <string>
+#include <sstream>
 #include <utility>
 
 #include "bitboard.h"
@@ -49,17 +50,108 @@
 #include "types.h"
 #include "uci.h"
 #include "ucioption.h"
+
+//#define QUAD_LOG_REG
+
+#ifdef QUAD_LOG_REG
+#include "incremental_logistic_regression_quad.cpp"
+#else
 #include "incremental_logistic_regression.cpp"
-//#include "incremental_logistic_regression_quad.cpp"
+#endif
+
 
 namespace Stockfish {
 
 IncrementalLogisticRegression reg;
 
-void printRegFit()
+void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
+    int N = 0;
+#ifdef QUAD_LOG_REG
+    N = 6;
+    static const char* names[6] = {"Intercept (b0)", "D slope (b1)",
+                                    "C offset (b2)", "D*C interaction (b3)",
+                                    "D^2 curvature (b4)", "D^2*C interaction (b5)"};
+#else	
+    N = 4;
+    static const char* names[4] = {"Intercept (b0)", "D slope (b1)",
+                                    "C offset (b2)", "D*C interaction (b3)"};
+#endif
+    out.setf(std::ios::fixed);
+    out.precision(5);
+
+    //constexpr int MINN = 1000;
+    constexpr int MINN = 100;
+
+    bool found = false;
+    constexpr char SEP = ';';
+    for(int row = 0;; row++)
+    {
+	    std::stringstream line;
+	    if(row < N)
+            {
+		    line << names[row] << SEP << r.beta[row];
+	    }
+	    else
+		    line << SEP;
+
+	    if(row == 0) // header
+	    {
+		    line << SEP << "index";
+		    line << SEP << "!C";
+		    line << SEP << "C";
+		    line << SEP << "reg(!C)";
+		    line << SEP << "reg(C)";
+	    }
+	    else
+	    {
+		    double nc = dbg_get_hit_on(row-1, MINN);
+		    double c = dbg_get_hit_on(10000 + row-1, MINN);
+		    if(row >= 20000 || (found && nc < 0 && c < 0))
+			    break;
+
+		    if(nc >= 0 || c >= 0) found = true;
+
+		    double enc = 0;
+		    double ec = 0;
+			    enc += r.beta[0];
+			    enc += r.beta[1]*(row-1);
+			    ec += r.beta[0];
+			    ec += r.beta[1]*(row-1);
+			    ec += r.beta[2];
+			    ec += r.beta[3]*(row-1);
+		    if(N >= 6)
+		    {
+			    enc += r.beta[4]*(row-1)*(row-1);
+			    ec += r.beta[4]*(row-1)*(row-1);
+			    ec += r.beta[5]*(row-1)*(row-1);
+		    }
+
+		    enc = 1 / (1 + std::exp(-enc));
+		    ec = 1 / (1 + std::exp(-ec));
+
+		    line << SEP << row-1;
+		    line << SEP << (nc < 0 ? "" : std::to_string(nc));
+		    line << SEP << (c < 0 ? "" : std::to_string(c));
+		    line << SEP << (nc < 0 ? "" : std::to_string(enc));
+		    line << SEP << (c < 0 ? "" : std::to_string(ec));
+	    }
+
+            std::string str;
+	    if(std::getline(line, str))
+	    {
+	        std::replace(str.begin(), str.end(), '.', ',');
+		out << str << std::endl;
+	    }
+    }
+}
+
+void printRegFit(std::ostream& out)
 {
     std::cerr << "\n==== FINAL RESULT ====\n";
-    printFit(reg.fit(true), reg.count());
+    auto fitResult = reg.fit(true);
+    printFit(fitResult, reg.count(), out);
+    std::cerr << "\n==== CSV ====\n";
+    printRegFitCSV(fitResult, reg.count(), out);
 }
 
 static constexpr std::array<int, 16> lmrDivisor = {3637, 2787, 2761, 2939, 3171, 3347, 3147, 2762,
@@ -818,6 +910,7 @@ Value Search::Worker::search(
     (ss - 1)->reduction = 0;
     ss->statScore       = 0;
     (ss + 2)->cutoffCnt = 0;
+    ss->cnStreak = rootNode || PvNode ? 0 : cutNode ? (ss - 1)->cnStreak : (ss - 1)->moveCount != 1 ? 0 : (ss - 1)->cnStreak + 1;
 
     const auto correctionValue = correction_value(*this, pos, ss);
 
@@ -1373,7 +1466,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
-	//bool C = cutNode;
+	bool C = cutNode;
 	//bool C = PvNode;
 	//bool C = ss->ttPv;
 	//bool C = ss->staticEval > alpha;
@@ -1403,11 +1496,15 @@ moves_loop:  // When in check, search starts here
 	    //CC = priorReduction>0;
 	    //CC = d >= 4;
 	    //CC = d >= 2;
-	    D = d;
-	    //D = moveCount;
+	    //D = d;
+	    D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
 	    //D = priorReduction + 3;
+	    //D = ss->cutoffCnt;
+	    //D = depth;
+	    //D = ss->cnStreak;
+	    //D = ss->ply;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);

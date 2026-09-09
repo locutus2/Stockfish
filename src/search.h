@@ -43,7 +43,7 @@
 
 namespace Stockfish {
 
-void printRegFit();
+void printRegFit(std::ostream& out = std::cerr);
 
 // Different node types, used as a template parameter
 enum NodeType {
@@ -131,6 +131,7 @@ struct Stack {
     bool                        followPV;
     int                         cutoffCnt;
     int                         reduction;
+    int                         cnStreak;
 };
 
 
