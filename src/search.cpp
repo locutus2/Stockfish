@@ -82,6 +82,7 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
     //constexpr int MINN = 1000;
     constexpr int MINN = 100;
 
+    bool found = false;
     constexpr char SEP = ';';
     for(int row = 0;; row++)
     {
@@ -105,9 +106,10 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 	    {
 		    double nc = dbg_get_hit_on(row-1, MINN);
 		    double c = dbg_get_hit_on(10000 + row-1, MINN);
-		    if(row >= 20000 || (nc < 0 && c < 0))
+		    if(row >= 20000 || (found && nc < 0 && c < 0))
 			    break;
 
+		    found = true;
 		    double enc = 0;
 		    double ec = 0;
 			    enc += r.beta[0];
@@ -1493,13 +1495,13 @@ moves_loop:  // When in check, search starts here
 	    //CC = d >= 4;
 	    //CC = d >= 2;
 	    //D = d;
-	    //D = moveCount;
+	    D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
 	    //D = priorReduction + 3;
 	    //D = ss->cutoffCnt;
 	    //D = depth;
-	    D = ss->cnStreak;
+	    //D = ss->cnStreak;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
