@@ -133,6 +133,7 @@ struct Stack {
     int                         reduction;
     int                         priorNMPFailHigh;
     int                         cnStreak;
+    int                         lmrResearches;
 };
 
 

@@ -911,6 +911,7 @@ Value Search::Worker::search(
     ss->statScore       = 0;
     (ss + 2)->cutoffCnt = 0;
     (ss + 1)->priorNMPFailHigh = 0;
+    (ss + 1)->lmrResearches = 0;
     ss->cnStreak = rootNode || PvNode ? 0 : cutNode ? (ss - 1)->cnStreak : (ss - 1)->moveCount != 1 ? 0 : (ss - 1)->cnStreak + 1;
 
     const auto correctionValue = correction_value(*this, pos, ss);
@@ -1505,7 +1506,7 @@ moves_loop:  // When in check, search starts here
 	    //CC = d >= 4;
 	    //CC = d >= 2;
 	    //D = d;
-	    D = moveCount;
+	    //D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
 	    //D = priorReduction + 3;
@@ -1513,6 +1514,8 @@ moves_loop:  // When in check, search starts here
 	    //D = depth;
 	    //D = ss->cnStreak;
 	    //D = ss->ply;
+	    //D = ss->ply + d;
+	    D = ss->lmrResearches;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
@@ -1530,7 +1533,10 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+		{
+	            ss->lmrResearches++;
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+		}
 
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1334);
