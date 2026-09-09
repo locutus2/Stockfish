@@ -148,7 +148,7 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 void printRegFit(std::ostream& out)
 {
     std::cerr << "\n==== FINAL RESULT ====\n";
-    auto fitResult = reg.fit(true);
+    auto fitResult = reg.fit(true, 30);
     printFit(fitResult, reg.count(), out);
     std::cerr << "\n==== CSV ====\n";
     printRegFitCSV(fitResult, reg.count(), out);
@@ -1505,7 +1505,7 @@ moves_loop:  // When in check, search starts here
 	    //CC = priorReduction>0;
 	    //CC = d >= 4;
 	    //CC = d >= 2;
-	    //D = d;
+	    D = d;
 	    //D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
@@ -1515,7 +1515,9 @@ moves_loop:  // When in check, search starts here
 	    //D = ss->cnStreak;
 	    //D = ss->ply;
 	    //D = ss->ply + d;
-	    D = ss->lmrResearches;
+	    //D = ss->lmrResearches;
+	    //D = ss->priorNMPFailHigh;
+	    //D = rootDepth;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
