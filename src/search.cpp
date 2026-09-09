@@ -120,8 +120,8 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 			    ec += r.beta[5]*(row-1)*(row-1);
 		    }
 
-		    enc *= 100;
-		    ec *= 100;
+		    enc = 1 / (1 + std::exp(-enc));
+		    ec = 1 / (1 + std::exp(-ec));
 
 		    line << SEP << row-1;
 		    line << SEP << (nc < 0 ? "" : std::to_string(nc));
@@ -903,6 +903,7 @@ Value Search::Worker::search(
     (ss - 1)->reduction = 0;
     ss->statScore       = 0;
     (ss + 2)->cutoffCnt = 0;
+    ss->cnStreak = rootNode || PvNode ? 0 : cutNode ? (ss - 1)->cnStreak : (ss - 1)->moveCount != 1 ? 0 : (ss - 1)->cnStreak + 1;
 
     const auto correctionValue = correction_value(*this, pos, ss);
 
@@ -1493,7 +1494,8 @@ moves_loop:  // When in check, search starts here
 	    //D = (ss+1)->cutoffCnt;
 	    //D = priorReduction + 3;
 	    //D = ss->cutoffCnt;
-	    D = deoth;
+	    //D = depth;
+	    D = ss->cnStreak;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
