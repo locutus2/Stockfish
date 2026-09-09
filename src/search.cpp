@@ -1376,6 +1376,12 @@ moves_loop:  // When in check, search starts here
             // std::clamp has been replaced by a more robust implementation.
             Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
 
+            if (cutNode && d >= 9)
+            {
+                r -= 85 * d - 680;
+                d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2));
+            }
+
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
