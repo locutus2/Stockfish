@@ -1505,13 +1505,13 @@ moves_loop:  // When in check, search starts here
 	    //CC = priorReduction>0;
 	    //CC = d >= 4;
 	    //CC = d >= 2;
-	    D = d;
+	    //D = d;
 	    //D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
 	    //D = priorReduction + 3;
 	    //D = ss->cutoffCnt;
-	    //D = depth;
+	    D = depth;
 	    //D = ss->cnStreak;
 	    //D = ss->ply;
 	    //D = ss->ply + d;
@@ -1552,6 +1552,8 @@ moves_loop:  // When in check, search starts here
             if (!ttData.move)
                 r += 1127;
 
+	    //CC = true;
+	    D = std::max(newDepth - (r > 5234) - (r > 5487 && newDepth > 2), 0);
             // If expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 5234) - (r > 5487 && newDepth > 2), !cutNode);
