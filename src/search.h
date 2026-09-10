@@ -134,6 +134,7 @@ struct Stack {
     int                         priorNMPFailHigh;
     int                         cnStreak;
     int                         lmrResearches;
+    int                         failedLmrResearches;
 };
 
 
