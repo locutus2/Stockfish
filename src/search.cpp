@@ -912,6 +912,7 @@ Value Search::Worker::search(
     (ss + 2)->cutoffCnt = 0;
     (ss + 1)->priorNMPFailHigh = 0;
     (ss + 1)->lmrResearches = 0;
+    (ss + 1)->failedLmrResearches = 0;
     ss->cnStreak = rootNode || PvNode ? 0 : cutNode ? (ss - 1)->cnStreak : (ss - 1)->moveCount != 1 ? 0 : (ss - 1)->cnStreak + 1;
 
     const auto correctionValue = correction_value(*this, pos, ss);
@@ -1475,7 +1476,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
-	bool C = cutNode;
+	//bool C = cutNode;
 	//bool C = PvNode;
 	//bool C = ss->ttPv;
 	//bool C = ss->staticEval > alpha;
@@ -1488,6 +1489,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = type_of(movedPiece) == KING;
 	//bool C = type_of(movedPiece) == PAWN;
 	//bool C = ttHit;
+	bool C = (pos.key() ^ nodes) & 1;
 	int D = 0;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
@@ -1516,6 +1518,7 @@ moves_loop:  // When in check, search starts here
 	    //D = ss->ply;
 	    //D = ss->ply + d;
 	    //D = ss->lmrResearches;
+	    D = ss->failedLmrResearches;
 	    //D = ss->priorNMPFailHigh;
 	    //D = rootDepth;
 
@@ -1538,6 +1541,9 @@ moves_loop:  // When in check, search starts here
 		{
 	            ss->lmrResearches++;
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+
+		    if(value <= alpha)
+	                ss->failedLmrResearches++;
 		}
 
                 // Post LMR continuation history updates
