@@ -1378,7 +1378,7 @@ moves_loop:  // When in check, search starts here
 
             if (cutNode && d >= 9)
             {
-                r -= 85 * d - 680;
+                r -= 170 * d - 1360;
                 d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2));
             }
 
