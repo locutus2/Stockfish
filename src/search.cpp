@@ -1475,7 +1475,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
-	bool C = cutNode;
+	//bool C = cutNode;
 	//bool C = PvNode;
 	//bool C = ss->ttPv;
 	//bool C = ss->staticEval > alpha;
@@ -1488,6 +1488,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = type_of(movedPiece) == KING;
 	//bool C = type_of(movedPiece) == PAWN;
 	//bool C = ttHit;
+	bool C = (pos.key() ^ nodes) & 1;
 	int D = 0;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
