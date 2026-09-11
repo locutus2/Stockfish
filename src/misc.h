@@ -150,6 +150,7 @@ void dbg_diff_correl_of(bool C, i64 value1, i64 value2, int slot = 0);
 void dbg_print();
 void dbg_clear();
 double dbg_get_hit_on(int slot = 0, int minn = 1);
+double dbg_get_mean_of(int slot = 0);
 
 using TimePoint = std::chrono::milliseconds::rep;  // A value in milliseconds
 static_assert(sizeof(TimePoint) == sizeof(i64), "TimePoint should be 64 bits");
