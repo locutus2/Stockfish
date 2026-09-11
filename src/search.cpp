@@ -55,6 +55,15 @@ namespace Stockfish {
 static constexpr std::array<int, 16> lmrDivisor = {3637, 2787, 2761, 2939, 3171, 3347, 3147, 2762,
                                                    2772, 3106, 3107, 3060, 3112, 2991, 3090, 3542};
 
+#define S(x) ((x))
+
+constexpr int reductionCorrection[2][21] = {
+  {S(0),  S(330), S(104), S(112), S(37), S(35), S(40), S(21), S(25), S(19), S(11),
+   S(14), S(13),  S(19),  S(10),  S(12), S(9),  S(10), S(9),  S(4),  S(2)},
+  {S(0),    S(-244), S(-303), S(-277), S(-328), S(-367),  S(-402),
+   S(-439), S(-453), S(-471), S(-498), S(-535), S(-581),  S(-641),
+   S(-700), S(-766), S(-852), S(-941), S(-999), S(-1072), S(-1140)}};
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1375,6 +1384,9 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
             Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
+
+            r += reductionCorrection[cutNode][std::min(d, 20)];
+            d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
