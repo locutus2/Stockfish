@@ -96,7 +96,7 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 	    }
 	    else if(row <= N)
             {
-		    line << names[row] << SEP << r.beta[row];
+		    line << names[row-1] << SEP << r.beta[row-1];
 	    }
 	    else
 		    line << SEP;
