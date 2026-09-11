@@ -62,6 +62,9 @@
 
 namespace Stockfish {
 
+constexpr int MAX_ROW = 10000;
+constexpr int AVERAGE = 2*MAX_ROW;
+
 IncrementalLogisticRegression reg;
 
 void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
@@ -87,7 +90,11 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
     for(int row = 0;; row++)
     {
 	    std::stringstream line;
-	    if(row < N)
+	    if(row == 0)
+            {
+		    line << "Average" << SEP << dbg_get_hit_on(AVERAGE);
+	    }
+	    else if(row <= N)
             {
 		    line << names[row] << SEP << r.beta[row];
 	    }
@@ -105,8 +112,8 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 	    else
 	    {
 		    double nc = dbg_get_hit_on(row-1, MINN);
-		    double c = dbg_get_hit_on(10000 + row-1, MINN);
-		    if(row >= 20000 || (found && nc < 0 && c < 0))
+		    double c = dbg_get_hit_on(MAX_ROW + row-1, MINN);
+		    if(row >= MAX_ROW || (found && nc < 0 && c < 0))
 			    break;
 
 		    if(nc >= 0 || c >= 0) found = true;
@@ -1507,7 +1514,7 @@ moves_loop:  // When in check, search starts here
 	    //CC = priorReduction>0;
 	    //CC = d >= 4;
 	    //CC = d >= 2;
-	    //D = d;
+	    D = d;
 	    //D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
@@ -1518,7 +1525,7 @@ moves_loop:  // When in check, search starts here
 	    //D = ss->ply;
 	    //D = ss->ply + d;
 	    //D = ss->lmrResearches;
-	    D = ss->failedLmrResearches;
+	    //D = ss->failedLmrResearches;
 	    //D = ss->priorNMPFailHigh;
 	    //D = rootDepth;
 
@@ -1588,7 +1595,8 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		bool T = value > alpha;
-		dbg_hit_on(T, C*10000+D);
+		dbg_hit_on(T, C*MAX_ROW+D);
+		dbg_hit_on(T, AVERAGE);
 		//int index0 = 3 * D;
 		//int index1 = 3 * D + C + 1;
 		//dbg_hit_on(T, index0);
