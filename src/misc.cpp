@@ -410,6 +410,13 @@ double dbg_get_hit_on(int slot, int minn)
     return n >= i64(minn) ? E(hit[slot][1]): -1.0;
 }
 
+double dbg_get_mean_of(int slot)
+{
+    i64  n = mean[slot][0];;
+    auto E   = [&n](i64 x) { return double(x) / n; };
+    return n ? E(mean[slot][1]) : 0.0;
+}
+
 void dbg_print() {
 
     i64  n;

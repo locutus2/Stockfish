@@ -62,6 +62,9 @@
 
 namespace Stockfish {
 
+constexpr int MAX_ROW = 10000;
+constexpr int AVERAGE = 2*MAX_ROW;
+
 IncrementalLogisticRegression reg;
 
 void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
@@ -87,9 +90,13 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
     for(int row = 0;; row++)
     {
 	    std::stringstream line;
-	    if(row < N)
+	    if(row == 0)
             {
-		    line << names[row] << SEP << r.beta[row];
+		    line << "Average" << SEP << dbg_get_hit_on(AVERAGE);
+	    }
+	    else if(row <= N)
+            {
+		    line << names[row-1] << SEP << r.beta[row-1];
 	    }
 	    else
 		    line << SEP;
@@ -101,13 +108,17 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    line << SEP << "C";
 		    line << SEP << "reg(!C)";
 		    line << SEP << "reg(C)";
+		    line << SEP << "red(!C)";
+		    line << SEP << "red(C)";
 	    }
 	    else
 	    {
 		    double nc = dbg_get_hit_on(row-1, MINN);
-		    double c = dbg_get_hit_on(10000 + row-1, MINN);
-		    if(row >= 20000 || (found && nc < 0 && c < 0))
+		    double c = dbg_get_hit_on(MAX_ROW + row-1);
+		    if(row >= MAX_ROW || (found && nc < 0 && c < 0))
 			    break;
+		    double ncRed = dbg_get_mean_of(row-1);
+		    double cRed = dbg_get_mean_of(MAX_ROW + row-1);
 
 		    if(nc >= 0 || c >= 0) found = true;
 
@@ -134,6 +145,8 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    line << SEP << (c < 0 ? "" : std::to_string(c));
 		    line << SEP << (nc < 0 ? "" : std::to_string(enc));
 		    line << SEP << (c < 0 ? "" : std::to_string(ec));
+		    line << SEP << (nc < 0 ? "" : std::to_string(ncRed));
+		    line << SEP << (c < 0 ? "" : std::to_string(cRed));
 	    }
 
             std::string str;
@@ -1491,6 +1504,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = ttHit;
 	bool C = (pos.key() ^ nodes) & 1;
 	int D = 0;
+	int V = 0;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
@@ -1501,6 +1515,7 @@ moves_loop:  // When in check, search starts here
             // std::clamp has been replaced by a more robust implementation.
             Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
 
+	    V = r;
 	    CC = true;
 	    //CC = ss->inCheck;
 	    //CC = cutNode;
@@ -1508,7 +1523,7 @@ moves_loop:  // When in check, search starts here
 	    //CC = d >= 4;
 	    //CC = d >= 2;
 	    //D = d;
-	    //D = moveCount;
+	    D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
 	    //D = priorReduction + 3;
@@ -1518,7 +1533,7 @@ moves_loop:  // When in check, search starts here
 	    //D = ss->ply;
 	    //D = ss->ply + d;
 	    //D = ss->lmrResearches;
-	    D = ss->failedLmrResearches;
+	    //D = ss->failedLmrResearches;
 	    //D = ss->priorNMPFailHigh;
 	    //D = rootDepth;
 
@@ -1590,7 +1605,10 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		bool T = value > alpha;
-		dbg_hit_on(T, C*10000+D);
+		dbg_hit_on(T, C*MAX_ROW+D);
+		dbg_hit_on(T, AVERAGE);
+		dbg_mean_of(V, C*MAX_ROW+D);
+		dbg_mean_of(V, AVERAGE);
 		//int index0 = 3 * D;
 		//int index1 = 3 * D + C + 1;
 		//dbg_hit_on(T, index0);
