@@ -55,7 +55,7 @@ namespace Stockfish {
 static constexpr std::array<int, 16> lmrDivisor = {3637, 2787, 2761, 2939, 3171, 3347, 3147, 2762,
                                                    2772, 3106, 3107, 3060, 3112, 2991, 3090, 3542};
 
-#define S(x) ((x))
+#define S(x) (2*(x))
 
 constexpr int reductionCorrection[2][21] = {
   {S(0),  S(330), S(104), S(112), S(37), S(35), S(40), S(21), S(25), S(19), S(11),
