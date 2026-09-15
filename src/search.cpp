@@ -1529,8 +1529,8 @@ moves_loop:  // When in check, search starts here
 	    //CC = priorReduction>0;
 	    //CC = d >= 4;
 	    //CC = d >= 2;
-	    //D = d;
-	    D = moveCount;
+	    D = d;
+	    //D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
 	    //D = priorReduction + 3;
