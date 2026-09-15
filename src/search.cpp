@@ -111,6 +111,7 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
         //: 64049/2;
 
     //return cntcv2;
+    return 0;
     const int wtcv = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
     const int btcv = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
     const int wtcv3 = shared.threats_correction_entry3<WHITE>(pos)[us].threatsWhite3;
@@ -925,6 +926,7 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+    ss->correctionValue = correctionValue;
 
     // Step 5. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
