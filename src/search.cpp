@@ -55,7 +55,7 @@ namespace Stockfish {
 static constexpr std::array<int, 16> lmrDivisor = {3637, 2787, 2761, 2939, 3171, 3347, 3147, 2762,
                                                    2772, 3106, 3107, 3060, 3112, 2991, 3090, 3542};
 
-#define S(x) (2*(x))
+#define S(x) (2 * (x))
 
 constexpr int reductionCorrection[2][21] = {
   {S(0),  S(330), S(104), S(112), S(37), S(35), S(40), S(21), S(25), S(19), S(11),
@@ -1393,7 +1393,8 @@ moves_loop:  // When in check, search starts here
               std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
 
             r += reductionCorrection[cutNode][std::min(d, 20)];
-            d = std::max(1, std::min(newDepth - r / 1024, newDepth + 2)) + PvNode;
+            d =
+              std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
 
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
