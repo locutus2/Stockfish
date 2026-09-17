@@ -94,13 +94,13 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     const int   bnpcvThem = shared.nonpawn_correction_entry<BLACK>(pos)[~us].nonPawnBlack;
     const int   cntcv =
       m.is_ok()
-          ? 7389
+          ? 6851
               * ((*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()])
-            + 5911 * (*(ss - 6)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-          : 75614;
+            + 5480 * (*(ss - 6)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+          : 70115;
 
-    return 12937 * pcv + 8913 * micv + 10884 * (wnpcvUs + bnpcvUs) - 3439 * (wnpcvThem + bnpcvThem)
+    return 11996 * pcv + 8265 * micv + 10092 * (wnpcvUs + bnpcvUs) - 6377 * (wnpcvThem + bnpcvThem)
          + cntcv;
 }
 
