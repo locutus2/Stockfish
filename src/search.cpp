@@ -113,7 +113,7 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
         : 0;
         //: 64049/2;
 
-    return 13806 * shared.pawn_correction_entry(pos)[~us].pawn;
+    return 0;
     return 11615 * (shared.nonpawn_correction_entry<WHITE>(pos)[~us].nonPawnWhite + shared.nonpawn_correction_entry<BLACK>(pos)[~us].nonPawnBlack);
     return cntcv;
     return 13806 * shared.pawn_correction_entry(pos)[us].pawn;
@@ -121,7 +121,6 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
     return 11615 * (shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite + shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack);
     return 9512 * shared.minor_piece_correction_entry(pos)[~us].minor;
     //return cntcv2;
-    //return 0;
     const int wtcv = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
     const int btcv = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
     const int wtcv3 = shared.threats_correction_entry3<WHITE>(pos)[us].threatsWhite3;
@@ -933,7 +932,8 @@ Value Search::Worker::search(
     //const auto correctionValue2 = 1.0786306664505174782215472300197 * (1 * correctionValue + 0.315934099 * 2 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 1.0075314557825840066149294175076* (1 * correctionValue + 0.04178472127878694918596752634923 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.7798090861425531258674397804028* (1.3462707851773349364186973794541 * correctionValue + 0.4253328475498086390628700244769 * correction_value2(*this, pos, ss));
-    const auto correctionValue2 = 1* (1.3275927800178593547824586275679 * correctionValue + 0.54184014103245170831488591177336 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 1* (1.3275927800178593547824586275679 * correctionValue + 0.54184014103245170831488591177336 * correction_value2(*this, pos, ss));
+    const auto correctionValue2 = 1* (1.258790587987879724289478879647* correctionValue + 1 * correction_value2(*this, pos, ss));
 
     dbg_mean_of(std::abs(correctionValue), 12);
     dbg_mean_of(std::abs(correctionValue2), 13);
@@ -1813,6 +1813,10 @@ moves_loop:  // When in check, search starts here
 	// a=stdev(Z)/stdev(X) * (corr(X,Z)-corr(X,Y)*corr(Y,Z))/(1-corr(X,Y)^2)
 	// b=stdev(Z)/stdev(Y) * (corr(Y,Z)-corr(X,Y)*corr(X,Z))/(1-corr(X,Y)^2)
 	// MSE=VAR(Z)*(1−(corr(X,Z)^2+corr(Y,Z)^2−2*corr(X,Y)*corr(X,Z)*corr(Y,Z)/(1−corr(X,Y)^2))
+	//
+	// Z=a*X
+	// a=stdev(Z)/stdev(X)*corr(X,Z)
+	// MSE=VAR(Z)*(1-corr(X,Z)^2)
     }
 
     // Adjust correction history if the best move is not a capture and
