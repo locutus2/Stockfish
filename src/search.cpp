@@ -113,13 +113,13 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
         : 0;
         //: 64049/2;
 
+    return 13806 * shared.pawn_correction_entry(pos)[~us].pawn;
     return 11615 * (shared.nonpawn_correction_entry<WHITE>(pos)[~us].nonPawnWhite + shared.nonpawn_correction_entry<BLACK>(pos)[~us].nonPawnBlack);
     return cntcv;
     return 13806 * shared.pawn_correction_entry(pos)[us].pawn;
     return 9512 * shared.minor_piece_correction_entry(pos)[us].minor;
     return 11615 * (shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite + shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack);
     return 9512 * shared.minor_piece_correction_entry(pos)[~us].minor;
-    return 13806 * shared.pawn_correction_entry(pos)[~us].pawn;
     //return cntcv2;
     //return 0;
     const int wtcv = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
@@ -930,10 +930,15 @@ Value Search::Worker::search(
     //const auto correctionValue2 = 1.0074913082892521642110715957881 * (1 * correctionValue + -0.0326555394101187182940185425704 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.90964283465700074653043235804679 * (1 * correctionValue + 0.41700632419645818635933622544904 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.73792081953098778583623973032527 * (1 * correctionValue + -0.315934099 * 4 * correction_value2(*this, pos, ss));
-    const auto correctionValue2 = 1.0786306664505174782215472300197 * (1 * correctionValue + 0.315934099 * 2 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 1.0786306664505174782215472300197 * (1 * correctionValue + 0.315934099 * 2 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 1.0075314557825840066149294175076* (1 * correctionValue + 0.04178472127878694918596752634923 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 0.7798090861425531258674397804028* (1.3462707851773349364186973794541 * correctionValue + 0.4253328475498086390628700244769 * correction_value2(*this, pos, ss));
+    const auto correctionValue2 = 1* (1.3275927800178593547824586275679 * correctionValue + 0.54184014103245170831488591177336 * correction_value2(*this, pos, ss));
 
     dbg_mean_of(std::abs(correctionValue), 12);
     dbg_mean_of(std::abs(correctionValue2), 13);
+    dbg_stdev_of(std::abs(correctionValue), 12);
+    dbg_stdev_of(std::abs(correctionValue2), 13);
 
     // Step 4. Transposition table lookup
     excludedMove                   = ss->excludedMove;
@@ -1776,16 +1781,38 @@ moves_loop:  // When in check, search starts here
         dbg_stdev_of(value1, 1);
         dbg_stdev_of(value2, 2);
         dbg_stdev_of(value3, 3);
-        /*
-            dbg_mean_of(value1-value2, 12);
-            dbg_mean_of(value1-value3, 13);
-            dbg_stdev_of(value1-value2, 12);
-            dbg_stdev_of(value1-value3, 13);
-	    */
+        
+        dbg_mean_of(value1-value2, 22);
+        dbg_mean_of(value1-value3, 23);
+        dbg_stdev_of(value1-value2, 22);
+        dbg_stdev_of(value1-value3, 23);
 
         dbg_correl_of(value2, value3, 1);
         dbg_correl_of(value2, value1, 2);
         dbg_correl_of(value3, value1, 3);
+
+	dbg_correl_of(value3, value1-value2, 30);
+	dbg_stdev_of(value1-value2, 30);
+	dbg_stdev_of(value3, 31);
+
+	// min least square Z and X+a*Y
+	// a_min = COV(Y, Z-X) / VAR(Y) = Corr(Y,Z-X) * Stdev(Z-X) / stdev(Y)
+	//
+	//-----------------------------
+	// Z=a*X+b*Y
+	// SXX=sum(X^2),SYY=sum(Y^2),SXY=sum(X*Y),
+	// SXZ=sum(X*Z),SYZ=sum(Y*Z).
+	//
+	// Der Determinant ist
+	// D=Var(X)*Var(Y)-Cov(X,Y)^2
+	//
+	// Falls D≠0, bekommst du
+	// a=(Cov(X,Z)*Var(Y)-Cox(Y,Z)*Cov(X,Y))/D,
+	// b=(Cov(Y,Z)*Var(X)-Cox(X,Z)*Cov(X,Y))/D
+	//
+	// a=stdev(Z)/stdev(X) * (corr(X,Z)-corr(X,Y)*corr(Y,Z))/(1-corr(X,Y)^2)
+	// b=stdev(Z)/stdev(Y) * (corr(Y,Z)-corr(X,Y)*corr(X,Z))/(1-corr(X,Y)^2)
+	// MSE=VAR(Z)*(1−(corr(X,Z)^2+corr(Y,Z)^2−2*corr(X,Y)*corr(X,Z)*corr(Y,Z)/(1−corr(X,Y)^2))
     }
 
     // Adjust correction history if the best move is not a capture and
