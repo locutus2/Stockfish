@@ -1107,6 +1107,12 @@ Value Search::Worker::search(
         }
     }
 
+    Value alphaOrig = alpha;
+    bool CC = false;
+    int D = depth;
+    int V = 0;
+    //bool C = (pos.key() ^ nodes) & 1;
+    bool C = priorCapture;
     if (ss->inCheck)
         goto moves_loop;
 
@@ -1123,8 +1129,32 @@ Value Search::Worker::search(
 
     // Step 8. Razoring
     // If eval is really low, skip search entirely and return the qsearch value
+    if (false&&allNode && !seekMate)
+    {
+	    int D = depth;
+	    int V = eval - alpha;
+		    bool T = eval < alpha - 342 * depth;
+		dbg_hit_on(T, C*MAX_ROW+D);
+		dbg_hit_on(T, AVERAGE);
+		dbg_mean_of(V, C*MAX_ROW+D);
+		dbg_mean_of(V, AVERAGE);
+		//
+		//int index0 = 3 * D;
+		//int index1 = 3 * D + C + 1;
+		//dbg_hit_on(T, index0);
+		//dbg_hit_on(T, index1);
+		//dbg_correl_of(D, T, 0);
+		//dbg_correl_of(D, T, 1+C);
+		//dbg_diff_correl_of(C, D, T);
+		reg.addPoint(D, C, T);
+    }
+
     if (allNode && eval < alpha - 342 * depth && !seekMate)
-        return qsearch<NonPV>(pos, ss, alpha, beta);
+    {
+	    CC = true;
+	    V = eval - alpha;
+        //return qsearch<NonPV>(pos, ss, alpha, beta);
+    }
 
     // Step 9. Futility pruning: child node
     // The depth condition is important for mate finding. It should NOT be tuned.
@@ -1499,7 +1529,7 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 276 / (256 * depth + 268);
 
-	bool CC = false;
+	//bool CC = false;
 	//bool C = improving;
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
@@ -1517,9 +1547,9 @@ moves_loop:  // When in check, search starts here
 	//bool C = type_of(movedPiece) == KING;
 	//bool C = type_of(movedPiece) == PAWN;
 	//bool C = ttHit;
-	bool C = (pos.key() ^ nodes) & 1;
-	int D = 0;
-	int V = 0;
+	//bool C = (pos.key() ^ nodes) & 1;
+	//int D = 0;
+	//int V = 0;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
@@ -1530,20 +1560,20 @@ moves_loop:  // When in check, search starts here
             Depth d =
               std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
 
-	    V = r;
-	    CC = true;
+	    //V = r;
+	    //CC = true;
 	    //CC = ss->inCheck;
 	    //CC = cutNode;
 	    //CC = priorReduction>0;
 	    //CC = d >= 4;
 	    //CC = d >= 2;
-	    D = d;
+	    //D = d;
 	    //D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
 	    //D = priorReduction + 3;
 	    //D = ss->cutoffCnt;
-	    D = depth;
+	    //D = depth;
 	    //D = ss->cnStreak;
 	    //D = ss->ply;
 	    //D = ss->ply + d;
@@ -1617,7 +1647,7 @@ moves_loop:  // When in check, search starts here
         // Step 21. Undo move
         undo_move(pos, move);
 
-	if(CC)
+	if(false&&CC)
 	{
 		bool T = value > alpha;
 		dbg_hit_on(T, C*MAX_ROW+D);
@@ -1846,6 +1876,15 @@ moves_loop:  // When in check, search starts here
         update_correction_history(pos, ss, *this, 1061 * bonus / 1024);
     }
 
+	if(CC)
+	{
+		bool T = bestValue > alphaOrig;
+		dbg_hit_on(T, C*MAX_ROW+D);
+		dbg_hit_on(T, AVERAGE);
+		dbg_mean_of(V, C*MAX_ROW+D);
+		dbg_mean_of(V, AVERAGE);
+		reg.addPoint(D, C, T);
+	}
     // The search is now complete
     assert(-VALUE_INFINITE < bestValue && bestValue < VALUE_INFINITE);
     return bestValue;
