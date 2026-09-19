@@ -108,14 +108,14 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    line << SEP << "C";
 		    line << SEP << "reg(!C)";
 		    line << SEP << "reg(C)";
-		    line << SEP << "red(!C)";
-		    line << SEP << "red(C)";
+		    line << SEP << "V(!C)";
+		    line << SEP << "V(C)";
 	    }
 	    else
 	    {
 		    double nc = dbg_get_hit_on(row-1, MINN);
 		    double c = dbg_get_hit_on(MAX_ROW + row-1, MINN);
-		    if(row >= MAX_ROW || (found && nc < 0 && c < 0))
+		    if(row >= MAX_ROW || (found && row > N && nc < 0 && c < 0))
 			    break;
 		    double ncRed = dbg_get_mean_of(row-1);
 		    double cRed = dbg_get_mean_of(MAX_ROW + row-1);
@@ -1154,6 +1154,7 @@ Value Search::Worker::search(
 	    CC = true;
 	    //V = eval - alpha;
 	    V = depth;
+	    C = priorCapture;
             D = 127 + std::clamp((eval - alpha + 342 * depth) / 8, -127, 127);
         //return qsearch<NonPV>(pos, ss, alpha, beta);
     }
