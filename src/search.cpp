@@ -115,7 +115,7 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 	    {
 		    double nc = dbg_get_hit_on(row-1, MINN);
 		    double c = dbg_get_hit_on(MAX_ROW + row-1, MINN);
-		    if(row >= MAX_ROW || (found && nc < 0 && c < 0))
+		    if(row >= MAX_ROW || (found && row > N && nc < 0 && c < 0))
 			    break;
 		    double ncRed = dbg_get_mean_of(row-1);
 		    double cRed = dbg_get_mean_of(MAX_ROW + row-1);
