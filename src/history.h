@@ -169,15 +169,15 @@ struct CorrectionBundle {
     StatsEntry<T, D, true> threatsBlack3;
 
     void operator=(T val) {
-        pawn         = val;
-        pawn2        = val;
-        minor        = val;
-        nonPawnWhite = val;
-        nonPawnBlack = val;
-        threatsWhite = val;
-        threatsBlack = val;
-        major        = val;
-        threats2     = val;
+        pawn          = val;
+        pawn2         = val;
+        minor         = val;
+        nonPawnWhite  = val;
+        nonPawnBlack  = val;
+        threatsWhite  = val;
+        threatsBlack  = val;
+        major         = val;
+        threats2      = val;
         threatsWhite3 = val;
         threatsBlack3 = val;
     }

@@ -103,33 +103,39 @@ int correction_value2(const Worker& w, const Position& pos, const Stack* const s
     //return 13806 * pcv + 9512 * micv + 11615 * (wnpcv + bnpcv) + cntcv;
     const int cntcv2 =
       m.is_ok()
-        ? 
-	8761 * (*(ss - 5)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-	//8761 * (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
-         //+ 8761 * (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        ? 8761 * (*(ss - 5)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        //8761 * (*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+        //+ 8761 * (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //? 8761*0.38492995383601287840056521840763 * (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         // + 8761*0.42999214438286461317235728590354 * (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         //*(*(ss - 3)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
         : 0;
-        //: 64049/2;
+    //: 64049/2;
 
-    return 0;
-    return 11615 * (shared.nonpawn_correction_entry<WHITE>(pos)[~us].nonPawnWhite + shared.nonpawn_correction_entry<BLACK>(pos)[~us].nonPawnBlack);
     return cntcv;
-    return 13806 * shared.pawn_correction_entry(pos)[us].pawn;
+    //return 0;
+    return 9512 * shared.minor_piece_correction_entry(pos)[~us].minor;
     return 9512 * shared.minor_piece_correction_entry(pos)[us].minor;
-    return 11615 * (shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite + shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack);
+    return 13806 * shared.pawn_correction_entry(pos)[~us].pawn;
+    return 13806 * shared.pawn_correction_entry(pos)[us].pawn;
+    return 11615
+         * (shared.nonpawn_correction_entry<WHITE>(pos)[~us].nonPawnWhite
+            + shared.nonpawn_correction_entry<BLACK>(pos)[~us].nonPawnBlack);
+    return cntcv;
+    return 11615
+         * (shared.nonpawn_correction_entry<WHITE>(pos)[us].nonPawnWhite
+            + shared.nonpawn_correction_entry<BLACK>(pos)[us].nonPawnBlack);
     return 9512 * shared.minor_piece_correction_entry(pos)[~us].minor;
     //return cntcv2;
-    const int wtcv = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
-    const int btcv = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
+    const int wtcv  = shared.threats_correction_entry<WHITE>(pos)[us].threatsWhite;
+    const int btcv  = shared.threats_correction_entry<BLACK>(pos)[us].threatsBlack;
     const int wtcv3 = shared.threats_correction_entry3<WHITE>(pos)[us].threatsWhite3;
     const int btcv3 = shared.threats_correction_entry3<BLACK>(pos)[us].threatsBlack3;
-    const int macv = shared.major_piece_correction_entry(pos)[us].major;
-    const int tcv = shared.threats_correction_entry2(pos)[us].threats2;
-    const int pcv2 = shared.pawn_correction_entry2(pos)[us].pawn2;
+    const int macv  = shared.major_piece_correction_entry(pos)[us].major;
+    const int tcv   = shared.threats_correction_entry2(pos)[us].threats2;
+    const int pcv2  = shared.pawn_correction_entry2(pos)[us].pawn2;
     //const int pcv2 = (shared.pawn_correction_entry(pos)[us].pawn2 + shared.pawn_correction_entry2(pos)[us].pawn2) / 2;
     return pcv2;
     //return 15341 * (micv - pcv);// / 2;
@@ -935,7 +941,13 @@ Value Search::Worker::search(
     //const auto correctionValue2 = 1.0075314557825840066149294175076* (1 * correctionValue + 0.04178472127878694918596752634923 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 0.7798090861425531258674397804028* (1.3462707851773349364186973794541 * correctionValue + 0.4253328475498086390628700244769 * correction_value2(*this, pos, ss));
     //const auto correctionValue2 = 1* (1.3275927800178593547824586275679 * correctionValue + 0.54184014103245170831488591177336 * correction_value2(*this, pos, ss));
-    const auto correctionValue2 = 1* (1.258790587987879724289478879647* correctionValue + 1 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 1* (1.258790587987879724289478879647* correctionValue + 1 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 1 * (1 * correctionValue + 0.03430128817419352263246348347126 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 1 * (1 * correctionValue + 0.35126631896013491377272300226208 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 1 * (1 * correctionValue + 0.4004686839437645985091981478626 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 1 * (1 * correctionValue + 0.04882755 * correction_value2(*this, pos, ss));
+    //const auto correctionValue2 = 1 * (1 * correctionValue + 0.53285481680986515726900528811004 * correction_value2(*this, pos, ss));
+    const auto correctionValue2 = 1 * (1 * correctionValue + 0.334419012 * correction_value2(*this, pos, ss));
 
     dbg_mean_of(std::abs(correctionValue), 12);
     dbg_mean_of(std::abs(correctionValue2), 13);
@@ -1786,42 +1798,42 @@ moves_loop:  // When in check, search starts here
         dbg_stdev_of(value1, 1);
         dbg_stdev_of(value2, 2);
         dbg_stdev_of(value3, 3);
-        
-        dbg_mean_of(value1-value2, 22);
-        dbg_mean_of(value1-value3, 23);
-        dbg_stdev_of(value1-value2, 22);
-        dbg_stdev_of(value1-value3, 23);
+
+        dbg_mean_of(value1 - value2, 22);
+        dbg_mean_of(value1 - value3, 23);
+        dbg_stdev_of(value1 - value2, 22);
+        dbg_stdev_of(value1 - value3, 23);
 
         dbg_correl_of(value2, value3, 1);
         dbg_correl_of(value2, value1, 2);
         dbg_correl_of(value3, value1, 3);
 
-	dbg_correl_of(value3, value1-value2, 30);
-	dbg_stdev_of(value1-value2, 30);
-	dbg_stdev_of(value3, 31);
+        dbg_correl_of(value3, value1 - value2, 30);
+        dbg_stdev_of(value1 - value2, 30);
+        dbg_stdev_of(value3, 31);
 
-	// min least square Z and X+a*Y
-	// a_min = COV(Y, Z-X) / VAR(Y) = Corr(Y,Z-X) * Stdev(Z-X) / stdev(Y)
-	//
-	//-----------------------------
-	// Z=a*X+b*Y
-	// SXX=sum(X^2),SYY=sum(Y^2),SXY=sum(X*Y),
-	// SXZ=sum(X*Z),SYZ=sum(Y*Z).
-	//
-	// Der Determinant ist
-	// D=Var(X)*Var(Y)-Cov(X,Y)^2
-	//
-	// Falls D≠0, bekommst du
-	// a=(Cov(X,Z)*Var(Y)-Cox(Y,Z)*Cov(X,Y))/D,
-	// b=(Cov(Y,Z)*Var(X)-Cox(X,Z)*Cov(X,Y))/D
-	//
-	// a=stdev(Z)/stdev(X) * (corr(X,Z)-corr(X,Y)*corr(Y,Z))/(1-corr(X,Y)^2)
-	// b=stdev(Z)/stdev(Y) * (corr(Y,Z)-corr(X,Y)*corr(X,Z))/(1-corr(X,Y)^2)
-	// MSE=VAR(Z)*(1−(corr(X,Z)^2+corr(Y,Z)^2−2*corr(X,Y)*corr(X,Z)*corr(Y,Z)/(1−corr(X,Y)^2))
-	//
-	// Z=a*X
-	// a=stdev(Z)/stdev(X)*corr(X,Z)
-	// MSE=VAR(Z)*(1-corr(X,Z)^2)
+        // min least square Z and X+a*Y
+        // a_min = COV(Y, Z-X) / VAR(Y) = Corr(Y,Z-X) * Stdev(Z-X) / stdev(Y)
+        //
+        //-----------------------------
+        // Z=a*X+b*Y
+        // SXX=sum(X^2),SYY=sum(Y^2),SXY=sum(X*Y),
+        // SXZ=sum(X*Z),SYZ=sum(Y*Z).
+        //
+        // Der Determinant ist
+        // D=Var(X)*Var(Y)-Cov(X,Y)^2
+        //
+        // Falls D≠0, bekommst du
+        // a=(Cov(X,Z)*Var(Y)-Cox(Y,Z)*Cov(X,Y))/D,
+        // b=(Cov(Y,Z)*Var(X)-Cox(X,Z)*Cov(X,Y))/D
+        //
+        // a=stdev(Z)/stdev(X) * (corr(X,Z)-corr(X,Y)*corr(Y,Z))/(1-corr(X,Y)^2)
+        // b=stdev(Z)/stdev(Y) * (corr(Y,Z)-corr(X,Y)*corr(X,Z))/(1-corr(X,Y)^2)
+        // MSE=VAR(Z)*(1−(corr(X,Z)^2+corr(Y,Z)^2−2*corr(X,Y)*corr(X,Z)*corr(Y,Z)/(1−corr(X,Y)^2))
+        //
+        // Z=a*X
+        // a=stdev(Z)/stdev(X)*corr(X,Z)
+        // MSE=VAR(Z)*(1-corr(X,Z)^2)
     }
 
     // Adjust correction history if the best move is not a capture and

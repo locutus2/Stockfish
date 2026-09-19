@@ -516,7 +516,7 @@ void Position::set_state() const {
                 if (type_of(pc) <= BISHOP)
                     st->minorPieceKey ^= Zobrist::psq[pc][s];
 
-		else if (type_of(pc) <= QUEEN)
+                else if (type_of(pc) <= QUEEN)
                     st->majorPieceKey ^= Zobrist::psq[pc][s];
             }
         }
@@ -910,7 +910,7 @@ void Position::do_move(Move                      m,
             if (type_of(captured) <= BISHOP)
                 st->minorPieceKey ^= Zobrist::psq[captured][capsq];
 
-	    else
+            else
                 st->majorPieceKey ^= Zobrist::psq[captured][capsq];
         }
 
@@ -992,7 +992,7 @@ void Position::do_move(Move                      m,
             if (pt <= BISHOP)
                 st->minorPieceKey ^= Zobrist::psq[promotion][to];
 
-	    else
+            else
                 st->majorPieceKey ^= Zobrist::psq[promotion][to];
 
             // Update material
@@ -1013,7 +1013,7 @@ void Position::do_move(Move                      m,
         if (type_of(pc) <= BISHOP)
             st->minorPieceKey ^= Zobrist::psq[pc][from] ^ Zobrist::psq[pc][to];
 
-	else if (type_of(pc) <= QUEEN)
+        else if (type_of(pc) <= QUEEN)
             st->majorPieceKey ^= Zobrist::psq[pc][from] ^ Zobrist::psq[pc][to];
     }
 
@@ -1237,8 +1237,10 @@ void Position::update_piece_threats(Piece               pc,
                 {
                     add_dirty_threat(dts, !putPiece, slider, threatenedPc, sliderSq, threatenedSq);
                     st->threatsKey[color_of(slider)] ^= Zobrist::psq[threatenedPc][threatenedSq];
-                    st->threatsKey2 ^= Zobrist::psq[slider][sliderSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
-                    st->threatsKey3[color_of(slider)] ^= Zobrist::psq[slider][sliderSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
+                    st->threatsKey2 ^=
+                      Zobrist::psq[slider][sliderSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
+                    st->threatsKey3[color_of(slider)] ^=
+                      Zobrist::psq[slider][sliderSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
                 }
             }
 
@@ -1247,7 +1249,8 @@ void Position::update_piece_threats(Piece               pc,
                 add_dirty_threat(dts, putPiece, slider, pc, sliderSq, s);
                 st->threatsKey[color_of(slider)] ^= Zobrist::psq[pc][s];
                 st->threatsKey2 ^= Zobrist::psq[slider][sliderSq] ^ Zobrist::psq[pc][s];
-                st->threatsKey3[color_of(slider)] ^= Zobrist::psq[slider][sliderSq] ^ Zobrist::psq[pc][s];
+                st->threatsKey3[color_of(slider)] ^=
+                  Zobrist::psq[slider][sliderSq] ^ Zobrist::psq[pc][s];
             }
         }
     };
@@ -1286,8 +1289,10 @@ void Position::update_piece_threats(Piece               pc,
         Piece  threatenedPc = piece_on(threatenedSq);
 
         st->threatsKey[color_of(pc)] ^= Zobrist::psq[threatenedPc][threatenedSq];
-        st->threatsKey2 ^= Zobrist::psq[threatenedPc][threatenedSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
-        st->threatsKey3[color_of(pc)] ^= Zobrist::psq[threatenedPc][threatenedSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
+        st->threatsKey2 ^=
+          Zobrist::psq[threatenedPc][threatenedSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
+        st->threatsKey3[color_of(pc)] ^=
+          Zobrist::psq[threatenedPc][threatenedSq] ^ Zobrist::psq[threatenedPc][threatenedSq];
     }
 
     const Bitboard directSliders = pt == QUEEN ? sliders & pieces(QUEEN) : sliders;
@@ -1331,7 +1336,8 @@ void Position::update_piece_threats(Piece               pc,
         add_dirty_threat(dts, putPiece, pc, threatenedPc, s, threatenedSq);
         st->threatsKey[color_of(pc)] ^= Zobrist::psq[threatenedPc][threatenedSq];
         st->threatsKey2 ^= Zobrist::psq[pc][s] ^ Zobrist::psq[threatenedPc][threatenedSq];
-        st->threatsKey3[color_of(pc)] ^= Zobrist::psq[pc][s] ^ Zobrist::psq[threatenedPc][threatenedSq];
+        st->threatsKey3[color_of(pc)] ^=
+          Zobrist::psq[pc][s] ^ Zobrist::psq[threatenedPc][threatenedSq];
     }
 
     if constexpr (ComputeRay)
