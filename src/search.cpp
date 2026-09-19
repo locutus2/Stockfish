@@ -1621,7 +1621,7 @@ moves_loop:  // When in check, search starts here
                 r += 1127;
 
 	    //CC = true;
-	    D = std::max(newDepth - (r > 5234) - (r > 5487 && newDepth > 2), 0);
+	    //D = std::max(newDepth - (r > 5234) - (r > 5487 && newDepth > 2), 0);
             // If expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 5234) - (r > 5487 && newDepth > 2), !cutNode);
