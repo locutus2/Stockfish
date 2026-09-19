@@ -114,7 +114,7 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 	    else
 	    {
 		    double nc = dbg_get_hit_on(row-1, MINN);
-		    double c = dbg_get_hit_on(MAX_ROW + row-1);
+		    double c = dbg_get_hit_on(MAX_ROW + row-1, MINN);
 		    if(row >= MAX_ROW || (found && nc < 0 && c < 0))
 			    break;
 		    double ncRed = dbg_get_mean_of(row-1);
@@ -1111,8 +1111,8 @@ Value Search::Worker::search(
     bool CC = false;
     int D = depth;
     int V = 0;
-    //bool C = (pos.key() ^ nodes) & 1;
-    bool C = priorCapture;
+    bool C = (pos.key() ^ nodes) & 1;
+    //bool C = priorCapture;
     if (ss->inCheck)
         goto moves_loop;
 
@@ -1131,8 +1131,8 @@ Value Search::Worker::search(
     // If eval is really low, skip search entirely and return the qsearch value
     if (false&&allNode && !seekMate)
     {
-	    int D = depth;
-	    int V = eval - alpha;
+	    D = depth;
+	    V = eval - alpha;
 		    bool T = eval < alpha - 342 * depth;
 		dbg_hit_on(T, C*MAX_ROW+D);
 		dbg_hit_on(T, AVERAGE);
@@ -1152,7 +1152,9 @@ Value Search::Worker::search(
     if (allNode && eval < alpha - 342 * depth && !seekMate)
     {
 	    CC = true;
-	    V = eval - alpha;
+	    //V = eval - alpha;
+	    V = depth;
+            D = 127 + std::clamp((eval - alpha + 342 * depth) / 8, -127, 127);
         //return qsearch<NonPV>(pos, ss, alpha, beta);
     }
 
