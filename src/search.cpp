@@ -1154,8 +1154,12 @@ Value Search::Worker::search(
 	    CC = true;
 	    //V = eval - alpha;
 	    V = depth;
-	    C = priorCapture;
-            D = 127 + std::clamp((eval - alpha + 342 * depth) / 8, -127, 127);
+	    //C = priorCapture;
+	    int v = qsearch<NonPV>(pos, ss, alpha, beta);
+	    //C = priorCapture;
+	    C = v <= alpha;
+            //D = 127 + std::clamp((eval - alpha + 342 * depth) / 8, -127, 127);
+            D = 127 + std::clamp((v - alpha) / 1, -127, 127);
         //return qsearch<NonPV>(pos, ss, alpha, beta);
     }
 
