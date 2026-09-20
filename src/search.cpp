@@ -297,7 +297,7 @@ bool Search::Worker::iterative_deepening() {
     {
         (ss - i)->continuationHistory =
           &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
-        (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][i & 1];
+        (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][i + 1];
         (ss - i)->staticEval                    = VALUE_NONE;
     }
 
