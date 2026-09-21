@@ -1627,9 +1627,9 @@ moves_loop:  // When in check, search starts here
 
             // Update Beta distributed prior
             if (value > alpha)
-                rm.countBest += depth;
+                rm.countBest += depth * depth;
             else
-                rm.countNotBest += depth;
+                rm.countNotBest += depth * depth;
         }
 
         // If we have an alternative move equal in value to the current bestmove,
