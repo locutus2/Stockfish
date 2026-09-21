@@ -810,10 +810,16 @@ Move Search::Worker::thompson_sampling() const {
     uint64_t maxP        = 0;
     bool     first       = true;
 
-    for (const auto& rm : rootMoves)
+    //for (const auto& rm : rootMoves)
+    for (unsigned int i = pvIdx; i < rootMoves.size(); i++)
     {
+        auto&    rm = rootMoves[i];
         uint64_t p =
           IntBetaSampler::sampleQ32(gen, uint32_t(rm.countBest) + 1, uint32_t(rm.countNotBest) + 1);
+        if (i != pvIdx)
+            p = p * 8 / (rootDepth + 8);
+            //p = std::max(int64_t(p) - 1024 * rootDepth, int64_t(0));
+
         if (first || p > maxP)
         {
             first       = false;
@@ -933,8 +939,8 @@ Value Search::Worker::search(
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
 
-    if(rootNode)
-	    dbg_hit_on(ttData.move != rootMoves[pvIdx].pv[0], rootDepth);
+    if (rootNode)
+        dbg_hit_on(ttData.move != rootMoves[pvIdx].pv[0], rootDepth);
 
     // Step 5. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
@@ -1630,9 +1636,9 @@ moves_loop:  // When in check, search starts here
 
             // Update Beta distributed prior
             if (value > alpha)
-                rm.countBest += depth*msb(rm.effort+1);
+                rm.countBest += 1;
             else
-                rm.countNotBest += depth*msb(rm.effort+1);
+                rm.countNotBest += 1;
         }
 
         // If we have an alternative move equal in value to the current bestmove,
@@ -1766,6 +1772,19 @@ moves_loop:  // When in check, search starts here
                      -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *this, 1061 * bonus / 1024);
     }
+
+    /*
+    if (rootNode)// && bestMove)
+    {
+        for (auto& rm : rootMoves)
+        {
+            if (rm.pv[0] == bestMove)
+                rm.countBest += depth;
+            else
+                rm.countNotBest += depth;
+        }
+    }
+    */
 
     // The search is now complete
     assert(-VALUE_INFINITE < bestValue && bestValue < VALUE_INFINITE);
