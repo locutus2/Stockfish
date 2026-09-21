@@ -71,6 +71,81 @@ using namespace Search;
 
 namespace {
 
+struct IntBetaSampler {
+
+    // Returns -log2(U1 * U2 * ... * Uk) in Q32 fixed point, with Ui ~ U(0,1].
+    // This is Gamma(k, 1) / ln(2), an exact Gamma(k) sample up to a constant factor
+    // that cancels in the Beta ratio. Requires k < 2^26 so the result fits in uint64_t.
+    //
+    // Gen must be a uniform random bit generator producing exactly 32 random bits
+    // per call, e.g. std::mt19937.
+    template<typename Gen>
+    static uint64_t gammaLog2Q32(Gen& gen, uint32_t k) {
+        static_assert(uint64_t(Gen::max()) - uint64_t(Gen::min()) == 0xFFFFFFFFULL,
+                      "BetaSampler requires a generator with a 32-bit output range");
+
+        // product = (m / 2^31) * 2^-e, with mantissa m in [2^31, 2^32), i.e. [1, 2) in Q31
+        uint64_t m = 1ULL << 31;  // product = 1.0
+        uint64_t e = 0;
+
+        for (uint32_t i = 0; i < k; ++i)
+        {
+            // Raw output shifted to [0, 2^32-1]; u in [1, 2^32] means U in (0, 1].
+            uint64_t u = (uint64_t(gen()) - uint64_t(Gen::min())) + 1;
+
+            uint64_t p = m * u;  // <= (2^32-1) * 2^32 < 2^64, and >= 2^31 (never 0)
+            unsigned t = 0;
+            while (!(p >> 63))  // renormalize so the top bit is set (t <= 32)
+            {
+                p <<= 1;
+                ++t;
+            }
+            m = p >> 32;  // new mantissa, again in [2^31, 2^32)
+            e += t;
+        }
+
+        // frac = log2(m / 2^31) in Q32, via the classic repeated-squaring method.
+        // m / 2^31 is in [1, 2), so log2 is in [0, 1). Absolute error is about 2^-30.
+        uint64_t x    = m;  // Q31
+        uint64_t frac = 0;
+        for (int i = 0; i < 32; ++i)
+        {
+            x = (x * x) >> 31;  // square in Q31; x < 2^32 so x*x < 2^64
+            frac <<= 1;
+            if (x >= (1ULL << 32))  // value >= 2 -> this fractional bit is 1
+            {
+                x >>= 1;
+                frac |= 1;
+            }
+        }
+
+        // product = 2^(log2(m') - e)  =>  -log2(product) = e - log2(m')
+        // The product is always <= 1, so e >= log2(m') and this never underflows.
+        return (e << 32) - frac;
+    }
+
+    // Deterministic integer Beta(a, b) sample, returned as value * 2^32 (range [0, 2^32]).
+    // a, b are the shape parameters as integers; both should be >= 1 and < 2^26.
+    template<typename Gen>
+    static uint64_t sampleQ32(Gen& gen, uint32_t a, uint32_t b) {
+        uint64_t X = gammaLog2Q32(gen, a);
+        uint64_t Y = gammaLog2Q32(gen, b);
+
+        uint64_t sum = X + Y;
+        if (sum == 0)           // probability ~2^-64, but keep it well-defined
+            return 1ULL << 31;  // 0.5
+
+        // Scale down so that (X << 32) cannot overflow; precision stays >= 31 bits.
+        unsigned s = 0;
+        while ((sum >> s) >= (1ULL << 32))
+            ++s;
+        X >>= s;
+        Y >>= s;
+
+        return (X << 32) / (X + Y);  // X + Y > 0 here
+    }
+};
+
 constexpr u64 NODES_LIMIT_OUTPUT = 10'000'000;
 
 constexpr int SEARCHEDLIST_CAPACITY = 32;
@@ -729,27 +804,19 @@ void Search::Worker::clear() {
 }
 
 Move Search::Worker::thompson_sampling() const {
-    static std::mt19937 gen(1234567);
+    std::mt19937 gen(1234567 + threadIdx);
 
-    // generate sample from Beta distribution with params alpha and beta
-    auto sampleBeta = [&](double alpha, double beta) {
-        std::gamma_distribution<double> gamma_alpha(alpha, 1.0);
-        std::gamma_distribution<double> gamma_beta(beta, 1.0);
-
-        double y = gamma_alpha(gen);
-        double z = gamma_beta(gen);
-
-        return y / (y + z);
-    };
-
-    Move   sampledMove = Move::none();
-    double maxP        = -1;
+    Move     sampledMove = Move::none();
+    uint64_t maxP        = 0;
+    bool     first       = true;
 
     for (const auto& rm : rootMoves)
     {
-        double p = sampleBeta(rm.countBest + 1, rm.countNotBest + 1);
-        if (p > maxP)
+        uint64_t p =
+          IntBetaSampler::sampleQ32(gen, uint32_t(rm.countBest) + 1, uint32_t(rm.countNotBest) + 1);
+        if (first || p > maxP)
         {
+            first       = false;
             maxP        = p;
             sampledMove = rm.pv[0];
         }
