@@ -1152,14 +1152,15 @@ Value Search::Worker::search(
     if (allNode && eval < alpha - 342 * depth && !seekMate)
     {
 	    CC = true;
-	    //V = eval - alpha;
-	    V = depth;
+	    V = eval - alpha;
+	    //V = depth;
 	    //C = priorCapture;
 	    int v = qsearch<NonPV>(pos, ss, alpha, beta);
 	    //C = priorCapture;
 	    C = v <= alpha;
+	    D = depth;
             //D = 127 + std::clamp((eval - alpha + 342 * depth) / 8, -127, 127);
-            D = 127 + std::clamp((v - alpha) / 1, -127, 127);
+            //D = 127 + std::clamp((v - alpha) / 1, -127, 127);
         //return qsearch<NonPV>(pos, ss, alpha, beta);
     }
 
