@@ -933,6 +933,9 @@ Value Search::Worker::search(
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
 
+    if(rootNode)
+	    dbg_hit_on(ttData.move != rootMoves[pvIdx].pv[0], rootDepth);
+
     // Step 5. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
 
@@ -1627,9 +1630,9 @@ moves_loop:  // When in check, search starts here
 
             // Update Beta distributed prior
             if (value > alpha)
-                rm.countBest++;
+                rm.countBest += depth*depth*msb(depth);
             else
-                rm.countNotBest++;
+                rm.countNotBest += depth*depth*msb(depth);
         }
 
         // If we have an alternative move equal in value to the current bestmove,
