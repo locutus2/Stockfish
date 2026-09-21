@@ -29,6 +29,7 @@
 #include <initializer_list>
 #include <iostream>
 #include <list>
+#include <random>
 #include <ratio>
 #include <string>
 #include <utility>
@@ -51,6 +52,41 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+
+double generate_beta(double alpha, double beta, std::mt19937& gen) {
+		    std::gamma_distribution<double> gamma_alpha(alpha, 1.0);
+		        std::gamma_distribution<double> gamma_beta(beta, 1.0);
+			    
+			    double y = gamma_alpha(gen);
+			        double z = gamma_beta(gen);
+				    
+				    return y / (y + z);
+}
+
+Move thompsonSampling(Search::RootMoves& rootMoves)
+{
+	//static std::random_device rd;
+	//static std::mt19937 gen(rd());
+	static std::mt19937 gen(1234567);
+	Move sampledMove = Move::none();
+	double maxP = -1;
+
+	for(const auto &rm : rootMoves)
+	{
+		double p = generate_beta(rm.countBest+1, rm.countNotBest+1, gen);
+		if(p > maxP)
+		{
+			maxP = p;
+			sampledMove = rm.pv[0];
+		}
+	}
+
+	for(auto &rm : rootMoves)
+		if(sampledMove == rm.pv[0])
+			rm.countSampled++;
+
+	return sampledMove;
+}
 
 inline int lmr_divisor(int depth) {
     int d = std::min(depth, 16);
@@ -409,6 +445,23 @@ bool Search::Worker::iterative_deepening() {
                 // search the already searched PV lines are preserved.
                 std::stable_sort(rootMoves.begin() + pvIdx, rootMoves.begin() + pvLast);
 
+		std::cerr << "------------------" << std::endl;
+		//Move sampledMove = thompsonSampling(rootMoves);
+                for (RootMove& rm : rootMoves)
+                {
+		    double alpha = rm.countBest+1;
+		    double beta = rm.countNotBest+1;
+	            //if(sampledMove == rm.pv[0]) rm.countSampled++;
+                    std::cerr //<< (sampledMove == rm.pv[0] ? "*" : "") 
+			      << "move=" << UCIEngine::move(rm.pv[0], rootPos.is_chess960())
+                              << " sampled=" << rm.countSampled
+                              << " best=" << rm.countBest << " notBest=" << rm.countNotBest
+                              << " mean=" << alpha/(alpha+beta)
+                              << " stdev="
+                              << std::sqrt(alpha * beta / (alpha + beta + 1) / std::pow(alpha + beta, 2))
+                              << std::endl;
+                }
+
                 // If search has been stopped, we break immediately. Sorting is
                 // safe because RootMoves is still valid, although it refers to
                 // the previous iteration.
@@ -762,7 +815,7 @@ Value Search::Worker::search(
     StateInfo st;
 
     Key   posKey;
-    Move  move, excludedMove, bestMove;
+    Move  move, excludedMove, bestMove, sampledMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
@@ -834,6 +887,14 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+
+    if(rootNode)
+    {
+	    sampledMove = thompsonSampling(rootMoves);
+	    std::cerr << "Thompson-Sampling: ttMove=" << UCIEngine::move(ttData.move, pos.is_chess960()) 
+		      << " sampledMove=" << UCIEngine::move(sampledMove, pos.is_chess960()) << std::endl;
+	    ttData.move = sampledMove;
+    }
 
     // Step 5. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
@@ -1658,6 +1719,38 @@ moves_loop:  // When in check, search starts here
           std::clamp(int(bestValue - ss->staticEval) * depth * (bestMove ? 12 : 18) / 128,
                      -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *this, 1061 * bonus / 1024);
+    }
+
+    if (rootNode)
+    {
+	std::cerr << "BestMove=" << UCIEngine::move(bestMove, pos.is_chess960()) << std::endl;
+	if(false)
+	{
+		for(auto&rm : rootMoves)
+		{
+			if(rm.pv[0] == bestMove)
+				rm.countBest++;
+			else
+				rm.countNotBest++;
+		}
+	}
+	else
+	{
+		//int V = 1;
+		int V = depth;
+		RootMove& rmSampled = *std::find(rootMoves.begin(), rootMoves.end(), sampledMove);
+		if(bestMove == sampledMove)
+			rmSampled.countBest+=V;
+		else
+		{
+			rmSampled.countNotBest+=V;
+			if(bestMove)
+			{
+			    RootMove& rmBest = *std::find(rootMoves.begin(), rootMoves.end(), bestMove);
+			    rmBest.countBest+=V;
+			}
+		}
+	}
     }
 
     // The search is now complete
