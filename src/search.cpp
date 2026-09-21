@@ -810,10 +810,15 @@ Move Search::Worker::thompson_sampling() const {
     uint64_t maxP        = 0;
     bool     first       = true;
 
-    for (const auto& rm : rootMoves)
+    for (unsigned int i = pvIdx; i < rootMoves.size(); i++)
     {
+        auto&    rm = rootMoves[i];
         uint64_t p =
           IntBetaSampler::sampleQ32(gen, uint32_t(rm.countBest) + 1, uint32_t(rm.countNotBest) + 1);
+
+        if (i != pvIdx)
+            p = p * 8 / (rootDepth + 8);
+
         if (first || p > maxP)
         {
             first       = false;
@@ -1627,9 +1632,9 @@ moves_loop:  // When in check, search starts here
 
             // Update Beta distributed prior
             if (value > alpha)
-                rm.countBest += depth * depth;
+                rm.countBest++;
             else
-                rm.countNotBest += depth * depth;
+                rm.countNotBest++;
         }
 
         // If we have an alternative move equal in value to the current bestmove,
