@@ -153,7 +153,6 @@ struct RootMove {
 
     u64         countBest        = 0;
     u64         countNotBest     = 0;
-    u64         countSampled     = 0;
     u64         effort           = 0;
     Value       score            = -VALUE_INFINITE;
     Value       previousScore    = -VALUE_INFINITE;
@@ -322,6 +321,9 @@ class Worker {
     // Called at instantiation to initialize reductions tables.
     // Reset histories, usually before a new game.
     void clear();
+
+    // Use thompson sampling to select the first move to search at root
+    Move thompson_sampling() const;
 
     // Called when the program receives the UCI 'go' command.
     // It searches from the root position and outputs the "bestmove".
