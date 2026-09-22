@@ -29,7 +29,6 @@
 #include <initializer_list>
 #include <iostream>
 #include <list>
-#include <random>
 #include <ratio>
 #include <string>
 #include <utility>
@@ -248,6 +247,7 @@ Search::Worker::Worker(SharedState&                   sharedState,
                        usize                          numaTotalThreads,
                        NumaReplicatedAccessToken      token) :
     // Unpack the SharedState struct into member variables
+    RNG(1234567 + threadId),
     sharedHistory(sharedState.sharedHistories.at(token.get_numa_index())),
     continuationHistory(sharedHistory.continuationHistory()),
     threadIdx(threadId),
@@ -803,8 +803,7 @@ void Search::Worker::clear() {
     refreshTable.clear(network[numaAccessToken]);
 }
 
-Move Search::Worker::thompson_sampling() const {
-    std::mt19937 gen(1234567 + threadIdx);
+Move Search::Worker::thompson_sampling() {
 
     Move     sampledMove = Move::none();
     uint64_t maxP        = 0;
@@ -815,10 +814,10 @@ Move Search::Worker::thompson_sampling() const {
     {
         auto&    rm = rootMoves[i];
         uint64_t p =
-          IntBetaSampler::sampleQ32(gen, uint32_t(rm.countBest) + 1, uint32_t(rm.countNotBest) + 1);
-        if (i != pvIdx)
-            p = p * 8 / (rootDepth + 8);
-            //p = std::max(int64_t(p) - 1024 * rootDepth, int64_t(0));
+          IntBetaSampler::sampleQ32(RNG, uint32_t(rm.countBest) + 1, uint32_t(rm.countNotBest) + 1);
+        //if (i != pvIdx)
+        //    p = p * 8 / (rootDepth + 8);
+        //p = std::max(int64_t(p) - 1024 * rootDepth, int64_t(0));
 
         if (first || p > maxP)
         {
@@ -934,13 +933,16 @@ Value Search::Worker::search(
     auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
 
     ss->ttHit    = ttHit;
-    ttData.move  = rootNode ? thompson_sampling() : ttHit ? ttData.move : Move::none();
+    ttData.move  = rootNode ? rootMoves[pvIdx].pv[0] : ttHit ? ttData.move : Move::none();
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
 
+    Move sampledMove = rootNode ? thompson_sampling() : Move::none();
     if (rootNode)
-        dbg_hit_on(ttData.move != rootMoves[pvIdx].pv[0], rootDepth);
+    {
+        //dbg_hit_on(sampledMove != ttData.move, rootDepth);
+    }
 
     // Step 5. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
@@ -1488,56 +1490,68 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 276 / (256 * depth + 268);
 
-        // Apply the computed LMR
-        if (depth >= 2 && moveCount > 1)
+        if (move != sampledMove)
         {
-            // In general we want to cap the LMR depth search at newDepth, but when
-            // reduction is negative, we allow this move a limited search extension
-            // beyond the first move depth. To avoid search explosion, extensions
-            // are not allowed deep, relative to rootDepth, in the search tree.
-            Depth d =
-              std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
-
-            ss->reduction = newDepth - d;
-            value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
-            ss->reduction = 0;
-
-            // Do a full-depth search when reduced LMR search fails high
-            // (*Scaler) Shallower searches here don't scale well
-            if (value > alpha)
+            // Apply the computed LMR
+            if (depth >= 2 && moveCount > 1)
             {
-                // Adjust full-depth search based on LMR results - if the result was
-                // good enough search deeper, if it was bad enough search shallower.
-                const bool doDeeperSearch    = d < newDepth && value > bestValue + 53;
-                const bool doShallowerSearch = value < bestValue + 8;
+                // In general we want to cap the LMR depth search at newDepth, but when
+                // reduction is negative, we allow this move a limited search extension
+                // beyond the first move depth. To avoid search explosion, extensions
+                // are not allowed deep, relative to rootDepth, in the search tree.
+                Depth d =
+                  std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0))
+                  + PvNode;
 
-                newDepth += doDeeperSearch - doShallowerSearch;
+                ss->reduction = newDepth - d;
+                value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+                ss->reduction = 0;
 
-                if (newDepth > d)
-                    value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+                // Do a full-depth search when reduced LMR search fails high
+                // (*Scaler) Shallower searches here don't scale well
+                if (value > alpha)
+                {
+                    // Adjust full-depth search based on LMR results - if the result was
+                    // good enough search deeper, if it was bad enough search shallower.
+                    const bool doDeeperSearch    = d < newDepth && value > bestValue + 53;
+                    const bool doShallowerSearch = value < bestValue + 8;
 
-                // Post LMR continuation history updates
-                update_continuation_histories(ss, movedPiece, move.to_sq(), 1334);
+                    newDepth += doDeeperSearch - doShallowerSearch;
+
+                    if (newDepth > d)
+                        value =
+                          -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+
+                    // Post LMR continuation history updates
+                    update_continuation_histories(ss, movedPiece, move.to_sq(), 1334);
+                }
             }
-        }
 
-        // Step 19. Full-depth search when LMR is skipped
-        else if (!PvNode || moveCount > 1)
-        {
-            // Increase reduction if ttMove is not present
-            if (!ttData.move)
-                r += 1127;
+            // Step 19. Full-depth search when LMR is skipped
+            else if (!PvNode || moveCount > 1)
+            {
+                // Increase reduction if ttMove is not present
+                if (!ttData.move)
+                    r += 1127;
 
-            // If expected reduction is high, we reduce search depth here
-            value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
-                                   newDepth - (r > 5234) - (r > 5487 && newDepth > 2), !cutNode);
+                // If expected reduction is high, we reduce search depth here
+                value =
+                  -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
+                                 newDepth - (r > 5234) - (r > 5487 && newDepth > 2), !cutNode);
+            }
         }
 
         // Step 20. For PV nodes only, do a full PV search on the first move
         // or after a fail high, otherwise let the parent node fail low with
         // value <= alpha and try another move.
-        if (PvNode && (moveCount == 1 || value > alpha))
+        if (PvNode && (moveCount == 1 || value > alpha || move == sampledMove))
         {
+		bool found = false;
+            if (rootNode && value <= alpha && move == sampledMove && ttData.move)
+	    {
+		    found = true;
+                dbg_hit_on(sampledMove != ttData.move, rootDepth);
+	    }
             (ss + 1)->pv = &pv;
             (ss + 1)->pv->clear();
 
@@ -1550,6 +1564,11 @@ moves_loop:  // When in check, search starts here
                 newDepth = std::max(newDepth, 1);
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
+
+	    if(found)
+	    {
+                dbg_hit_on(value > alpha, 100+rootDepth);
+	    }
         }
 
         // Step 21. Undo move
@@ -1636,9 +1655,9 @@ moves_loop:  // When in check, search starts here
 
             // Update Beta distributed prior
             if (value > alpha)
-                rm.countBest += 1;
+                rm.countBest += depth;
             else
-                rm.countNotBest += 1;
+                rm.countNotBest += depth;
         }
 
         // If we have an alternative move equal in value to the current bestmove,

@@ -26,6 +26,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <random>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -323,7 +324,7 @@ class Worker {
     void clear();
 
     // Use thompson sampling to select the first move to search at root
-    Move thompson_sampling() const;
+    Move thompson_sampling();
 
     // Called when the program receives the UCI 'go' command.
     // It searches from the root position and outputs the "bestmove".
@@ -381,6 +382,7 @@ class Worker {
     usize              pvIdx, pvLast;
     RelaxedAtomic<u64> nodes, tbHits, bestMoveChanges;
     int                selDepth, nmpMinPly;
+    std::mt19937       RNG;
 
     Value optimism[COLOR_NB];
 
