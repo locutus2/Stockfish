@@ -1436,7 +1436,7 @@ moves_loop:  // When in check, search starts here
         // Decrease reduction for PvNodes (*Scaler)
         if (ss->ttPv)
             r -= 3023 + PvNode * 1004 + (ttData.value > alpha) * 885
-               + (ttData.depth >= depth) * (816 + cutNode * 940);
+               + (ttData.depth >= depth) * (816 + cutNode * 940) + (move == sampledMove) * 1024;
 
         // Base reduction offset to compensate for other tweaks
         r += 697;
@@ -1527,7 +1527,7 @@ moves_loop:  // When in check, search starts here
         // Step 20. For PV nodes only, do a full PV search on the first move
         // or after a fail high, otherwise let the parent node fail low with
         // value <= alpha and try another move.
-        if (PvNode && (moveCount == 1 || value > alpha || (move == sampledMove && !(nodes & 0xF))))
+        if (PvNode && (moveCount == 1 || value > alpha))
         {
             (ss + 1)->pv = &pv;
             (ss + 1)->pv->clear();
