@@ -29,7 +29,6 @@
 #include <initializer_list>
 #include <iostream>
 #include <list>
-#include <random>
 #include <ratio>
 #include <string>
 #include <utility>
@@ -250,6 +249,7 @@ Search::Worker::Worker(SharedState&                   sharedState,
     // Unpack the SharedState struct into member variables
     sharedHistory(sharedState.sharedHistories.at(token.get_numa_index())),
     continuationHistory(sharedHistory.continuationHistory()),
+    RNG(1234567 + threadId),
     threadIdx(threadId),
     numaThreadIdx(numaThreadId),
     numaTotal(numaTotalThreads),
@@ -803,8 +803,7 @@ void Search::Worker::clear() {
     refreshTable.clear(network[numaAccessToken]);
 }
 
-Move Search::Worker::thompson_sampling() const {
-    std::mt19937 gen(1234567 + threadIdx);
+Move Search::Worker::thompson_sampling() {
 
     Move     sampledMove = Move::none();
     uint64_t maxP        = 0;
@@ -813,7 +812,7 @@ Move Search::Worker::thompson_sampling() const {
     for (const auto& rm : rootMoves)
     {
         uint64_t p =
-          IntBetaSampler::sampleQ32(gen, uint32_t(rm.countBest) + 1, uint32_t(rm.countNotBest) + 1);
+          IntBetaSampler::sampleQ32(RNG, uint32_t(rm.countBest) + 1, uint32_t(rm.countNotBest) + 1);
         if (first || p > maxP)
         {
             first       = false;
@@ -928,7 +927,7 @@ Value Search::Worker::search(
     auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
 
     ss->ttHit    = ttHit;
-    ttData.move  = rootNode ? thompson_sampling() : ttHit ? ttData.move : Move::none();
+    ttData.move  = rootNode ? rootMoves[pvIdx].pv[0] : ttHit ? ttData.move : Move::none();
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
@@ -1235,7 +1234,8 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int moveCount = 0;
+    int  moveCount   = 0;
+    Move sampledMove = rootNode ? thompson_sampling() : Move::none();
 
     // Step 14. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1527,7 +1527,7 @@ moves_loop:  // When in check, search starts here
         // Step 20. For PV nodes only, do a full PV search on the first move
         // or after a fail high, otherwise let the parent node fail low with
         // value <= alpha and try another move.
-        if (PvNode && (moveCount == 1 || value > alpha))
+        if (PvNode && (moveCount == 1 || value > alpha || move == sampledMove))
         {
             (ss + 1)->pv = &pv;
             (ss + 1)->pv->clear();
@@ -1624,12 +1624,6 @@ moves_loop:  // When in check, search starts here
                 // is not a problem when sorting because the sort is stable and the
                 // move position in the list is preserved -- just the PV is pushed up.
                 rm.score = -VALUE_INFINITE;
-
-            // Update Beta distributed prior
-            if (value > alpha)
-                rm.countBest++;
-            else
-                rm.countNotBest++;
         }
 
         // If we have an alternative move equal in value to the current bestmove,
@@ -1762,6 +1756,19 @@ moves_loop:  // When in check, search starts here
           std::clamp(int(bestValue - ss->staticEval) * depth * (bestMove ? 12 : 18) / 128,
                      -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *this, 1061 * bonus / 1024);
+    }
+
+    if (rootNode && bestMove)
+    {
+        // Update Beta distributed prior
+        for (int i = 0; i < moveCount && i < int(rootMoves.size()); i++)
+        {
+            auto& rm = rootMoves[i];
+            if (rm.pv[0] == bestMove)
+                rm.countBest++;
+            else
+                rm.countNotBest++;
+        }
     }
 
     // The search is now complete
