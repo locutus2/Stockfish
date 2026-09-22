@@ -1765,9 +1765,9 @@ moves_loop:  // When in check, search starts here
         {
             auto& rm = rootMoves[i];
             if (rm.pv[0] == bestMove)
-                rm.countBest++;
+                rm.countBest += depth;
             else
-                rm.countNotBest++;
+                rm.countNotBest += depth;
         }
     }
 
