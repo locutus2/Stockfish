@@ -1490,7 +1490,7 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 276 / (256 * depth + 268);
 
-        if (move != sampledMove)
+        //if (move != sampledMove)
         {
             // Apply the computed LMR
             if (depth >= 2 && moveCount > 1)
@@ -1547,9 +1547,9 @@ moves_loop:  // When in check, search starts here
         if (PvNode && (moveCount == 1 || value > alpha || move == sampledMove))
         {
 		bool found = false;
-            if (rootNode && value <= alpha && move == sampledMove && ttData.move)
+            if (rootNode && value <= alpha && move == sampledMove)
 	    {
-		    found = true;
+		    found = sampledMove != ttData.move;
                 dbg_hit_on(sampledMove != ttData.move, rootDepth);
 	    }
             (ss + 1)->pv = &pv;
@@ -1565,7 +1565,7 @@ moves_loop:  // When in check, search starts here
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
 
-	    if(found)
+	    if(found && moveCount > 1)
 	    {
                 dbg_hit_on(value > alpha, 100+rootDepth);
 	    }
@@ -1655,9 +1655,9 @@ moves_loop:  // When in check, search starts here
 
             // Update Beta distributed prior
             if (value > alpha)
-                rm.countBest += depth;
+                rm.countBest += 1;
             else
-                rm.countNotBest += depth;
+                rm.countNotBest += 1;
         }
 
         // If we have an alternative move equal in value to the current bestmove,
