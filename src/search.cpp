@@ -1010,9 +1010,8 @@ Value Search::Worker::search(
         value = qsearch<NonPV>(pos, ss, alpha, beta);
         if (!ttCapture && (value > ss->staticEval) == (value > alpha))
         {
-            auto bonus =
-              std::clamp(int(value - ss->staticEval) * depth * (value > alpha ? 12 : 18) / 128,
-                         -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
+            auto bonus = std::clamp(int(value - ss->staticEval) / 8, -CORRECTION_HISTORY_LIMIT / 4,
+                                    CORRECTION_HISTORY_LIMIT / 4);
             update_correction_history(pos, ss, *this, 530 * bonus / 1024);
         }
         return value;
