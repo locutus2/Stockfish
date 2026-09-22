@@ -1013,7 +1013,7 @@ Value Search::Worker::search(
             auto bonus =
               std::clamp(int(value - ss->staticEval) * depth * (value > alpha ? 12 : 18) / 128,
                          -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
-            update_correction_history(pos, ss, *this, 530 * bonus / 1024);
+            update_correction_history(pos, ss, *this, 265 * bonus / 1024);
         }
         return value;
     }
