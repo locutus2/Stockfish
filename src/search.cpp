@@ -1546,12 +1546,12 @@ moves_loop:  // When in check, search starts here
         // value <= alpha and try another move.
         if (PvNode && (moveCount == 1 || value > alpha || move == sampledMove))
         {
-		bool found = false;
+            bool found = false;
             if (rootNode && value <= alpha && move == sampledMove)
-	    {
-		    found = sampledMove != ttData.move;
+            {
+                found = sampledMove != ttData.move;
                 dbg_hit_on(sampledMove != ttData.move, rootDepth);
-	    }
+            }
             (ss + 1)->pv = &pv;
             (ss + 1)->pv->clear();
 
@@ -1565,10 +1565,10 @@ moves_loop:  // When in check, search starts here
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
 
-	    if(found && moveCount > 1)
-	    {
-                dbg_hit_on(value > alpha, 100+rootDepth);
-	    }
+            if (found && moveCount > 1)
+            {
+                dbg_hit_on(value > alpha, 100 + rootDepth);
+            }
         }
 
         // Step 21. Undo move
@@ -1652,12 +1652,6 @@ moves_loop:  // When in check, search starts here
                 // is not a problem when sorting because the sort is stable and the
                 // move position in the list is preserved -- just the PV is pushed up.
                 rm.score = -VALUE_INFINITE;
-
-            // Update Beta distributed prior
-            if (value > alpha)
-                rm.countBest += 1;
-            else
-                rm.countNotBest += 1;
         }
 
         // If we have an alternative move equal in value to the current bestmove,
@@ -1792,18 +1786,18 @@ moves_loop:  // When in check, search starts here
         update_correction_history(pos, ss, *this, 1061 * bonus / 1024);
     }
 
-    /*
-    if (rootNode)// && bestMove)
+    if (rootNode && bestMove)
     {
-        for (auto& rm : rootMoves)
+        // Update Beta distributed prior
+        for (int i = 0; i < moveCount && i < int(rootMoves.size()); i++)
         {
+            auto& rm = rootMoves[i];
             if (rm.pv[0] == bestMove)
-                rm.countBest += depth;
+                rm.countBest++;
             else
-                rm.countNotBest += depth;
+                rm.countNotBest++;
         }
     }
-    */
 
     // The search is now complete
     assert(-VALUE_INFINITE < bestValue && bestValue < VALUE_INFINITE);
