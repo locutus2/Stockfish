@@ -330,6 +330,7 @@ bool Search::Worker::iterative_deepening() {
     double lastBestMoveInstability = 1;
     double lastHighBestMoveEffort = 1;
     double lastUncertaintyBonus = 1;
+    double lastTotalTime = 1;
 
     lowPlyHistory.fill(102);
 
@@ -355,6 +356,7 @@ bool Search::Worker::iterative_deepening() {
         for (usize i = 0; i < rootMoves.size(); ++i)
         {
             rootMoves[i].previousScore      = rootMoves[i].score;
+            rootMoves[i].unchangedPreviousScore      = rootMoves[i].unchangedScore;
             rootMoves[i].previousPV         = rootMoves[i].pv;
             rootMoves[i].previousScoreExact = i < multiPV;
         }
@@ -611,10 +613,12 @@ bool Search::Worker::iterative_deepening() {
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
-	    Value  scoreSwing       = std::abs(rootMoves[0].score - rootMoves[0].previousScore);
+	    Value  scoreSwing       = std::abs(rootMoves[0].score - rootMoves[0].unchangedPreviousScore);
 	    //double uncertaintyBonus = 0.9776 + std::min(double(scoreSwing), 200.0) / 2046.0;
-	    double uncertaintyBonus = 0.9776 + std::min(double(scoreSwing), 400.0) / 2046.0;
+	    //double uncertaintyBonus = 0.9776 + std::min(double(scoreSwing), 400.0) / 2046.0;
+	    double uncertaintyBonus = 0.9776 + std::min(double(scoreSwing), 800.0) / 2046.0;
 
+            double totalTime = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
 	    /*
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort;
@@ -643,7 +647,8 @@ bool Search::Worker::iterative_deepening() {
 
 	    if(CC)
 	    {
-		double V = lastUncertaintyBonus - 1; constexpr double R = 0.1731034213098729227761485826002;
+		double V = lastTotalTime - 7; constexpr double R = 7.0;
+		//double V = lastUncertaintyBonus - 1; constexpr double R = 2*0.1731034213098729227761485826002;
 		//double V = lastUncertaintyBonus - 1; constexpr double R = 0.0865517106549364613880742913001;
 		//double V = bool(rootPos.checkers()) - 0.5; constexpr double R = 0.5;
 		//double V = lastHighBestMoveEffort - 1; constexpr double R = 0.307;
@@ -658,6 +663,7 @@ bool Search::Worker::iterative_deepening() {
 	    lastBestMoveInstability = bestMoveInstability;
 	    lastHighBestMoveEffort = highBestMoveEffort;
 	    lastUncertaintyBonus = uncertaintyBonus;
+	    lastTotalTime = totalTime;
         }
 
         mainThread->iterValue[iterIdx] = bestValue;
@@ -1526,6 +1532,7 @@ moves_loop:  // When in check, search starts here
                 rm.meanSquaredScore =
                   Value((v2 * w_mss + int64_t(rm.meanSquaredScore) * (Scale - w_mss)) / Scale);
 
+	    rm.unchangedScore = value;
             // PV move or new best move?
             if (moveCount == 1 || value > alpha)
             {
