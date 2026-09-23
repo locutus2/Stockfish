@@ -444,6 +444,7 @@ bool Search::Worker::iterative_deepening() {
     bool uciPvSent          = false;
     double lastTotalTime = 1;
     Move lastBestMove = Move::none();
+    Value lastEvalDiff = 0;
 
     lowPlyHistory.fill(102);
 
@@ -731,7 +732,8 @@ bool Search::Worker::iterative_deepening() {
 		int D = std::clamp(int(10*std::log(lastTotalTime)),0,255);
 		//bool C = (rootPos.key() ^ nodes ^ rootDepth) & 1;
 		//bool C = rootPos.checkers();
-		bool C = rootPos.capture_stage(lastBestMove);
+		//bool C = rootPos.capture_stage(lastBestMove);
+		bool C = lastEvalDiff > 0;
 		bool T = changedPV;
 		dbg_hit_on(T, C*MAX_ROW+D);
 		dbg_hit_on(T, AVERAGE);
@@ -760,6 +762,7 @@ bool Search::Worker::iterative_deepening() {
             double totalTime = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
 	    lastTotalTime = totalTime;
 	    lastBestMove = lastBestMovePV[0];
+	    lastEvalDiff = rootMoves[0].score - rootMoves[0].previousScore;
 
 	    /*
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
