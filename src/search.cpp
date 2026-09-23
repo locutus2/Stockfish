@@ -576,6 +576,7 @@ bool Search::Worker::iterative_deepening() {
             th->worker->bestMoveChanges = 0;
         }
 
+
         // Do we have time for the next iteration? Can we stop searching now?
         if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
         {
@@ -600,7 +601,7 @@ bool Search::Worker::iterative_deepening() {
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
             Value  scoreSwing       = std::abs(rootMoves[0].score - rootMoves[0].previousScore);
-            double uncertaintyBonus = 0.9776 + std::min(double(scoreSwing), 200.0) / 2045.75;
+            double uncertaintyBonus = 0.9567 + std::min(double(scoreSwing), 200.0) / 1045.0;
 
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort * uncertaintyBonus;
