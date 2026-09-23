@@ -327,6 +327,7 @@ bool Search::Worker::iterative_deepening() {
     int  searchAgainCounter = 0;
     int  failHighRecovery   = 0;
     bool uciPvSent          = false;
+    double highBestMoveEffort = 1;
 
     lowPlyHistory.fill(102);
 
@@ -513,6 +514,17 @@ bool Search::Worker::iterative_deepening() {
                 break;
         }
 
+
+	if(!lastBestMovePV.empty())
+	{
+		double V = highBestMoveEffort - 1;
+		bool changePv = lastBestMovePV[0] != rootMoves[0].pv[0];
+		constexpr double R = 0.307;
+		constexpr int B = 100;
+		int index = B + std::clamp(int(V/R*B), -B, B);
+		dbg_hit_on(changePv, index);
+	}
+
         const bool forgottenMate = lastBestMoveScore != -VALUE_INFINITE
                                 && is_mate_or_mated(lastBestMoveScore)
                                 && (std::abs(rootMoves[0].score) < std::abs(lastBestMoveScore)
@@ -596,7 +608,7 @@ bool Search::Worker::iterative_deepening() {
 
             double bestMoveInstability = 1.077 + 2.229 * totBestMoveChanges / threads.size();
 
-            double highBestMoveEffort = std::clamp(
+            highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
