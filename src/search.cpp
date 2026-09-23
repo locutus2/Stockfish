@@ -83,7 +83,7 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
     out.precision(5);
 
     //constexpr int MINN = 1000;
-    constexpr int MINN = 100;
+    constexpr int MINN = 1;//100;
 
     bool found = false;
     constexpr char SEP = ';';
@@ -442,6 +442,8 @@ bool Search::Worker::iterative_deepening() {
     int  searchAgainCounter = 0;
     int  failHighRecovery   = 0;
     bool uciPvSent          = false;
+    double lastTotalTime = 1;
+    Move lastBestMove = Move::none();
 
     lowPlyHistory.fill(102);
 
@@ -628,6 +630,14 @@ bool Search::Worker::iterative_deepening() {
                 break;
         }
 
+        bool CC = false;
+        bool changedPV = false;
+        if(!lastBestMovePV.empty())
+        {
+		CC = true;
+		changedPV = (lastBestMovePV[0] == rootMoves[0].pv[0]);
+        }
+
         const bool forgottenMate = lastBestMoveScore != -VALUE_INFINITE
                                 && is_mate_or_mated(lastBestMoveScore)
                                 && (std::abs(rootMoves[0].score) < std::abs(lastBestMoveScore)
@@ -692,7 +702,7 @@ bool Search::Worker::iterative_deepening() {
         }
 
         // Do we have time for the next iteration? Can we stop searching now?
-        if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
+        //if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
         {
             u64 nodesEffort = rootMoves[0].effort * 100000 / std::max(u64(1), u64(nodes));
 
@@ -714,6 +724,44 @@ bool Search::Worker::iterative_deepening() {
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
+            if(CC)
+            {
+		int V = int(1000*std::log(lastTotalTime));
+		//int D = std::clamp(int(100*lastTotalTime),0,255);
+		int D = std::clamp(int(10*std::log(lastTotalTime)),0,255);
+		//bool C = (rootPos.key() ^ nodes ^ rootDepth) & 1;
+		//bool C = rootPos.checkers();
+		bool C = rootPos.capture_stage(lastBestMove);
+		bool T = changedPV;
+		dbg_hit_on(T, C*MAX_ROW+D);
+		dbg_hit_on(T, AVERAGE);
+		dbg_mean_of(V, C*MAX_ROW+D);
+		dbg_mean_of(V, AVERAGE);
+		//int index0 = 3 * D;
+		//int index1 = 3 * D + C + 1;
+		//dbg_hit_on(T, index0);
+		//dbg_hit_on(T, index1);
+		//dbg_correl_of(D, T, 0);
+		//dbg_correl_of(D, T, 1+C);
+		//dbg_diff_correl_of(C, D, T);
+		reg.addPoint(D, C, T);
+                //double V = lastTotalTime - 7; constexpr double R = 7.0;
+                //double V = lastUncertaintyBonus - 1; constexpr double R = 2*0.1731034213098729227761485826002;
+                //double V = lastUncertaintyBonus - 1; constexpr double R = 0.0865517106549364613880742913001;
+                //double V = bool(rootPos.checkers()) - 0.5; constexpr double R = 0.5;
+                //double V = lastHighBestMoveEffort - 1; constexpr double R = 0.307;
+                //double V = lastBestMoveInstability - 1; constexpr double R = 2.5;
+                //constexpr int B = 10;
+                //dbg_mean_of(1000*V);
+                //dbg_stdev_of(1000*V);
+                //int index = B + std::clamp(int(V/R*B), -B, B);
+                //dbg_hit_on(changePv, index);
+            }
+            double totalTime = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
+	    lastTotalTime = totalTime;
+	    lastBestMove = lastBestMovePV[0];
+
+	    /*
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort;
 
@@ -737,6 +785,7 @@ bool Search::Worker::iterative_deepening() {
             }
             else
                 threads.increaseDepth = mainThread->ponder || elapsedTime <= totalTime * 0.50;
+		*/
         }
 
         mainThread->iterValue[iterIdx] = bestValue;
@@ -1617,7 +1666,7 @@ moves_loop:  // When in check, search starts here
         // Step 21. Undo move
         undo_move(pos, move);
 
-	if(CC)
+	if(false && CC)
 	{
 		bool T = value > alpha;
 		dbg_hit_on(T, C*MAX_ROW+D);
