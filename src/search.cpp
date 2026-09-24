@@ -447,6 +447,7 @@ bool Search::Worker::iterative_deepening() {
     double lastReduction = 1;
     double lastFallingEval = 1;
     double lastHighBestMoveEffort = 1;
+    double lastUncertaintyBonus = 1;
     Move lastBestMove = Move::none();
     Value lastEvalDiff = 0;
 
@@ -640,7 +641,7 @@ bool Search::Worker::iterative_deepening() {
         if(!lastBestMovePV.empty())
         {
 		CC = true;
-		changedPV = (lastBestMovePV[0] == rootMoves[0].pv[0]);
+		changedPV = (lastBestMovePV[0] != rootMoves[0].pv[0]);
         }
 
         const bool forgottenMate = lastBestMoveScore != -VALUE_INFINITE
@@ -729,16 +730,21 @@ bool Search::Worker::iterative_deepening() {
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
+	    Value  scoreSwing       = std::abs(rootMoves[0].score - rootMoves[0].previousScore);
+            double uncertaintyBonus = 0.9776 + std::min(double(scoreSwing), 200.0) / 2045.75;
+
             if(CC)
             {
 		//double X = std::log(lastTotalTime);
 		//double X = std::log(lastBestMoveInstability);
 		//double X = std::log(lastReduction);
 		//double X = std::log(lastFallingEval);
-		double X = std::log(lastHighBestMoveEffort);
+		//double X = std::log(lastHighBestMoveEffort); double S = 0.18998810129217980849237924789031;
+		//double X = std::log(lastUncertaintyBonus); double S = 0.0953135799257091967403393889689;
+		double X = rootDepth-1; double S = 20;
 		int V = int(1000*X);
-		//int D = std::clamp(int(100*lastTotalTime),0,255);
-		int D = std::clamp(int(200*X),0,255);
+		//int D = std::clamp(int(S*lastTotalTime),0,255);
+		int D = std::clamp(int(20/S*X),0,127);
 		//bool C = (rootPos.key() ^ nodes ^ rootDepth) & 1;
 		//bool C = rootPos.checkers();
 		bool C = rootPos.capture_stage(lastBestMove);
@@ -774,6 +780,7 @@ bool Search::Worker::iterative_deepening() {
 	    lastReduction = reduction;
 	    lastFallingEval = fallingEval;
 	    lastHighBestMoveEffort = highBestMoveEffort;
+	    lastUncertaintyBonus = uncertaintyBonus;
 	    lastBestMove = lastBestMovePV[0];
 	    lastEvalDiff = rootMoves[0].score - rootMoves[0].previousScore;
 
