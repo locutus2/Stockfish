@@ -300,7 +300,6 @@ class SearchManager {
     std::atomic_bool          ponder;
 
     std::array<Value, 4> iterValue;
-    double               previousTimeReduction;
     Value                bestPreviousScore;
     Value                bestPreviousAverageScore;
     bool                 stopOnPonderhit;

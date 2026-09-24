@@ -278,14 +278,13 @@ bool Search::Worker::iterative_deepening() {
     PVMoves pv;
 
     RootPVMoves lastBestMovePV;
-    Depth       lastBestMoveDepth = 0;
     Value       lastBestMoveScore = -VALUE_INFINITE;
 
     Value  alpha, beta;
-    Value  bestValue     = -VALUE_INFINITE;
-    Color  us            = rootPos.side_to_move();
-    double timeReduction = 1, totBestMoveChanges = 0;
-    int    delta, iterIdx                        = 0;
+    Value  bestValue          = -VALUE_INFINITE;
+    Color  us                 = rootPos.side_to_move();
+    double totBestMoveChanges = 0;
+    int    delta, iterIdx = 0;
 
     // Allocate stack with extra size to allow access from (ss - 7) to (ss + 2):
     // (ss - 7) is needed for update_continuation_histories(ss - 1) which accesses (ss - 6),
@@ -520,9 +519,6 @@ bool Search::Worker::iterative_deepening() {
 
         if (!threads.stop)
         {
-            if (lastBestMovePV.empty() || lastBestMovePV[0] != rootMoves[0].pv[0])
-                lastBestMoveDepth = rootDepth;
-
             // Do not replace (shorter) mate scores from a previous iteration
             if (!forgottenMate)
             {
@@ -586,21 +582,13 @@ bool Search::Worker::iterative_deepening() {
                                / 100.0;
             fallingEval = std::clamp(fallingEval, 0.576, 1.728);
 
-            // If the bestMove is stable over several iterations, reduce time accordingly
-            timeReduction = std::clamp(
-              interpolate(double(rootDepth - lastBestMoveDepth), 4.96, 18.79, 0.639, 1.712), 0.629,
-              1.544);
-
-            double reduction = std::pow(
-              15.625 * timeReduction / (1.468 + mainThread->previousTimeReduction), 0.2524);
-
-            double bestMoveInstability = 1.077 + 2.229 * totBestMoveChanges / threads.size();
+            double bestMoveInstability = 1.5846 + 3.2795 * totBestMoveChanges / threads.size();
 
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
-            double totalTime = mainThread->tm.optimum() * fallingEval * reduction
-                             * bestMoveInstability * highBestMoveEffort;
+            double totalTime =
+              mainThread->tm.optimum() * fallingEval * bestMoveInstability * highBestMoveEffort;
 
             if (rootMoves.size() == 1)
                 // Cap used time to 0.5s for a better viewer experience
@@ -630,8 +618,6 @@ bool Search::Worker::iterative_deepening() {
 
     if (!mainThread)
         return false;
-
-    mainThread->previousTimeReduction = timeReduction;
 
     // If the skill level is enabled, swap the best PV line with the sub-optimal one
     if (skill.enabled())
