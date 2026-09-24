@@ -443,6 +443,10 @@ bool Search::Worker::iterative_deepening() {
     int  failHighRecovery   = 0;
     bool uciPvSent          = false;
     double lastTotalTime = 1;
+    double lastBestMoveInstability = 1;
+    double lastReduction = 1;
+    double lastFallingEval = 1;
+    double lastHighBestMoveEffort = 1;
     Move lastBestMove = Move::none();
     Value lastEvalDiff = 0;
 
@@ -727,13 +731,18 @@ bool Search::Worker::iterative_deepening() {
 
             if(CC)
             {
-		int V = int(1000*std::log(lastTotalTime));
+		//double X = std::log(lastTotalTime);
+		//double X = std::log(lastBestMoveInstability);
+		//double X = std::log(lastReduction);
+		//double X = std::log(lastFallingEval);
+		double X = std::log(lastHighBestMoveEffort);
+		int V = int(1000*X);
 		//int D = std::clamp(int(100*lastTotalTime),0,255);
-		int D = std::clamp(int(10*std::log(lastTotalTime)),0,255);
+		int D = std::clamp(int(200*X),0,255);
 		//bool C = (rootPos.key() ^ nodes ^ rootDepth) & 1;
 		//bool C = rootPos.checkers();
-		//bool C = rootPos.capture_stage(lastBestMove);
-		bool C = lastEvalDiff > 0;
+		bool C = rootPos.capture_stage(lastBestMove);
+		//bool C = lastEvalDiff > 0;
 		bool T = changedPV;
 		dbg_hit_on(T, C*MAX_ROW+D);
 		dbg_hit_on(T, AVERAGE);
@@ -761,6 +770,10 @@ bool Search::Worker::iterative_deepening() {
             }
             double totalTime = fallingEval * reduction * bestMoveInstability * highBestMoveEffort;
 	    lastTotalTime = totalTime;
+	    lastBestMoveInstability = bestMoveInstability;
+	    lastReduction = reduction;
+	    lastFallingEval = fallingEval;
+	    lastHighBestMoveEffort = highBestMoveEffort;
 	    lastBestMove = lastBestMovePV[0];
 	    lastEvalDiff = rootMoves[0].score - rootMoves[0].previousScore;
 
