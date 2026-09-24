@@ -448,6 +448,7 @@ bool Search::Worker::iterative_deepening() {
     double lastFallingEval = 1;
     double lastHighBestMoveEffort = 1;
     double lastUncertaintyBonus = 1;
+    bool lastChangedPv = false;
     Move lastBestMove = Move::none();
     Value lastEvalDiff = 0;
 
@@ -738,16 +739,18 @@ bool Search::Worker::iterative_deepening() {
 		//double X = std::log(lastTotalTime);
 		//double X = std::log(lastBestMoveInstability);
 		//double X = std::log(lastReduction);
-		//double X = std::log(lastFallingEval);
+		double X = std::log(lastFallingEval); double S = 1.0986122886681096913952452369225;
 		//double X = std::log(lastHighBestMoveEffort); double S = 0.18998810129217980849237924789031;
 		//double X = std::log(lastUncertaintyBonus); double S = 0.0953135799257091967403393889689;
-		double X = rootDepth-1; double S = 20;
+		//double X = std::log(lastUncertaintyBonus); double S = 2*0.0953135799257091967403393889689;
+		//double X = rootDepth-1; double S = 20;
+		//double X = lastChangedPv; double S = 20;
 		int V = int(1000*X);
 		//int D = std::clamp(int(S*lastTotalTime),0,255);
 		int D = std::clamp(int(20/S*X),0,127);
-		//bool C = (rootPos.key() ^ nodes ^ rootDepth) & 1;
+		bool C = (rootPos.key() ^ nodes ^ rootDepth) & 1;
 		//bool C = rootPos.checkers();
-		bool C = rootPos.capture_stage(lastBestMove);
+		//bool C = rootPos.capture_stage(lastBestMove);
 		//bool C = lastEvalDiff > 0;
 		bool T = changedPV;
 		dbg_hit_on(T, C*MAX_ROW+D);
@@ -782,6 +785,7 @@ bool Search::Worker::iterative_deepening() {
 	    lastHighBestMoveEffort = highBestMoveEffort;
 	    lastUncertaintyBonus = uncertaintyBonus;
 	    lastBestMove = lastBestMovePV[0];
+	    lastChangedPv = changedPV;
 	    lastEvalDiff = rootMoves[0].score - rootMoves[0].previousScore;
 
 	    /*
