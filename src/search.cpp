@@ -518,10 +518,14 @@ bool Search::Worker::iterative_deepening() {
                                 && (std::abs(rootMoves[0].score) < std::abs(lastBestMoveScore)
                                     || rootMoves[0].is_inexact());
 
+        bool bestMoveChanged = false;
         if (!threads.stop)
         {
             if (lastBestMovePV.empty() || lastBestMovePV[0] != rootMoves[0].pv[0])
                 lastBestMoveDepth = rootDepth;
+
+            if (!lastBestMovePV.empty() && lastBestMovePV[0] != rootMoves[0].pv[0])
+                bestMoveChanged = true;
 
             // Do not replace (shorter) mate scores from a previous iteration
             if (!forgottenMate)
@@ -594,7 +598,8 @@ bool Search::Worker::iterative_deepening() {
             double reduction =
               (1.468 + mainThread->previousTimeReduction) / (2.284 * timeReduction);
 
-            double bestMoveInstability = 1.077 + 2.229 * totBestMoveChanges / threads.size();
+            double bestMoveInstability =
+              0.9915 + 2.052 * (totBestMoveChanges / threads.size() + bestMoveChanged);
 
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
