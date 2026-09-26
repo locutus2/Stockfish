@@ -352,6 +352,7 @@ bool Search::Worker::iterative_deepening() {
         for (usize i = 0; i < rootMoves.size(); ++i)
         {
             rootMoves[i].previousScore      = rootMoves[i].score;
+            rootMoves[i].previousRawScore   = rootMoves[i].rawScore;
             rootMoves[i].previousPV         = rootMoves[i].pv;
             rootMoves[i].previousScoreExact = i < multiPV;
         }
@@ -599,8 +600,8 @@ bool Search::Worker::iterative_deepening() {
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
-            Value  scoreSwing       = std::abs(rootMoves[0].score - rootMoves[0].previousScore);
-            double uncertaintyBonus = 0.9688 + std::min(double(scoreSwing), 400.0) / 4129.0;
+            Value  scoreSwing = std::abs(rootMoves[0].rawScore - rootMoves[0].previousRawScore);
+            double uncertaintyBonus = 0.9717 + std::min(double(scoreSwing), 200.0) / 2058.0;
 
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort * uncertaintyBonus;
@@ -1492,6 +1493,8 @@ moves_loop:  // When in check, search starts here
             else
                 rm.meanSquaredScore =
                   Value((v2 * w_mss + int64_t(rm.meanSquaredScore) * (Scale - w_mss)) / Scale);
+
+            rm.rawScore = value;
 
             // PV move or new best move?
             if (moveCount == 1 || value > alpha)
