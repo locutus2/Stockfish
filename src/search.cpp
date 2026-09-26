@@ -601,7 +601,7 @@ bool Search::Worker::iterative_deepening() {
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
             Value  scoreSwing = std::abs(rootMoves[0].rawScore - rootMoves[0].previousRawScore);
-            double uncertaintyBonus = 0.9717 + std::min(double(scoreSwing), 200.0) / 2058.0;
+            double uncertaintyBonus = 0.9831 + std::min(double(scoreSwing), 200.0) / 2034.0;
 
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort * uncertaintyBonus;
