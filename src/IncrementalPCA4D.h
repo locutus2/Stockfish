@@ -29,9 +29,11 @@
 #include <numeric>
 #include <stdexcept>
 
+template<int DIM>
 class IncrementalPCA4D {
 public:
-    static constexpr int N = 4; // fixed number of variables
+   //static constexpr int N = 4; // fixed number of variables
+    static constexpr int N = DIM; // fixed number of variables
 
     using Vector4 = std::array<double, N>;
     using Matrix4 = std::array<std::array<double, N>, N>;
@@ -220,7 +222,8 @@ private:
     /// Sort eigenpairs (columns of V, entries of lambda) by descending
     /// eigenvalue, in place.
     static void sortDescending(Matrix4& V, Vector4& lambda) {
-        std::array<int, N> idx{0, 1, 2, 3};
+        std::array<int, N> idx{};
+	for(int i = 0; i < N; i++) idx[i] = i;
         std::sort(idx.begin(), idx.end(),
                   [&](int a, int b) { return lambda[a] > lambda[b]; });
 

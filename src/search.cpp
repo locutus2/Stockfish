@@ -53,7 +53,9 @@
 
 namespace Stockfish {
 
-static void printVector(const IncrementalPCA4D::Vector4& v, std::ostream& out = std::cerr) {
+typedef IncrementalPCA4D<3> PCA;
+
+static void printVector(const PCA::Vector4& v, std::ostream& out = std::cerr) {
     out << std::fixed << std::setprecision(4);
     out << "[ ";
     for (double x : v)
@@ -61,19 +63,19 @@ static void printVector(const IncrementalPCA4D::Vector4& v, std::ostream& out = 
     out << "]";
 }
 
-static void printMatrixAsComponents(const IncrementalPCA4D::Matrix4& V,
+static void printMatrixAsComponents(const PCA::Matrix4& V,
                                     std::ostream&                    out = std::cerr) {
     // Print row i = coefficients of variable i across the 4 components (columns).
-    for (int i = 0; i < IncrementalPCA4D::N; ++i)
+    for (int i = 0; i < PCA::N; ++i)
     {
         out << "  var" << i << ": ";
-        for (int k = 0; k < IncrementalPCA4D::N; ++k)
+        for (int k = 0; k < PCA::N; ++k)
             out << std::setw(9) << V[i][k] << " ";
         out << "\n";
     }
 }
 
-IncrementalPCA4D pca;
+PCA pca;
 
 void printPCA(std::ostream& out) {
     out << "Samples processed: " << pca.sampleCount() << "\n\n";
@@ -664,34 +666,43 @@ bool Search::Worker::iterative_deepening() {
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
-            IncrementalPCA4D::Vector4 factor = {std::log(fallingEval), std::log(reduction),
+	    PCA::Vector4 factor = {/*std::log(fallingEval), */std::log(reduction),
                                                 std::log(bestMoveInstability),
                                                 std::log(highBestMoveEffort)};
 
-            if (false && rootDepth >= 15)
+            if (false&&rootDepth >= 15)
                 pca.addSample(factor);
 
             if (rootDepth >= 15)
             {
-
+/*
                 std::vector<double>              mean  = {-0.0946, 0.2147, 0.5175, -0.1978};
-		IncrementalPCA4D::Vector4              eigenvalues  = { 0.3807,    0.2755,    0.0663,    0.0006 };
+		PCA::Vector4              eigenvalues  = {};//{ 0.3807,    0.2755,    0.0663,    0.0006 };
                 std::vector<std::vector<double>> coeff = {{0.1184, 0.9929, 0.0104, -0.0032},
                                                           {0.3749, -0.0546, 0.9233, -0.0627},
                                                           {0.9190, -0.1057, -0.3799, -0.0063},
                                                           {0.0298, -0.0010, 0.0556, 0.9980}};
+							  */
+                std::vector<double>              mean  = {0.2147,    0.5175,   -0.1978};
+		PCA::Vector4              eigenvalues  = {0.3792,    0.0664,    0.0006};
+                std::vector<std::vector<double>> coeff = {{0.3784,    0.9235,   -0.0626},
+                                                          {0.9252,   -0.3795,   -0.0065},
+                                                          {0.0297,    0.0555,    0.9980}};
 
-
-                IncrementalPCA4D::Vector4 ev = {0, 0, 0, 0};
+		PCA::Vector4 ev = {};
                 for (int i = 0; i < int(ev.size()); i++)
                 {
+		    ev[i] = 0;
                     for (int j = 0; j < int(ev.size()); j++)
                         ev[i] += (factor[j] - mean[j]) * coeff[j][i];
                 }
 
-                IncrementalPCA4D::Vector4 wev = eigenvalues;
+		PCA::Vector4 wev = eigenvalues;
                 //IncrementalPCA4D::Vector4 wev = {1,0,0,0};
-                IncrementalPCA4D::Vector4 wm2 = {0, 0, 0, 0};
+		PCA::Vector4 wm2 = {};
+		for(int i = 0; i < int(ev.size()); i++)
+			wm2[i] = 0;
+
 		double w0m2 = 0;
                 double m0 = 0, m1 = 0, m2 = 0;
 		for(int i = 0; i < int(ev.size()); i++)
@@ -704,18 +715,25 @@ bool Search::Worker::iterative_deepening() {
                         //wm2[j] += coeff[j][i];
 		    }
 		}
+		double m3 = -0.212714 + factor[0]*0.731364+ factor[1]* 1.16303+ factor[2]* 0.0555249;
+		m2 = (m2 - 209.136/1000) / 233.849 * 835.215 + 534.236/1000;
+		w0m2 = -209.136/1000 / 233.849 * 835.215 + 534.236/1000;
+		for(int i = 0; i < int(ev.size()); i++)
+		    wm2[i] = wm2[i] / 233.849 * 835.215;
+
 		/*
 		m2 = (m2 - 538.696/1000) / 616.632 * 1003.1 + 439.642/1000;
 		w0m2 = -538.696/1000 / 616.632 * 1003.1 + 439.642/1000;
 		for(int i = 0; i < int(ev.size()); i++)
 		    wm2[i] = wm2[i] / 616.632 * 1003.1;
 		    */
-		//weights: -0.142349 1.16086 0.686613 1.0745 0.0558223
+		/*
 		double m3 = -0.142349 + factor[0]*1.16086+ factor[1]* 0.686613+ factor[2]* 1.0745+ factor[3]* 0.0558223;
 		m2 = (m2 - 160.082/1000) / 275.912 * 1003.1 + 439.642/1000;
 		w0m2 = -160.082/1000 / 275.912 * 1003.1 + 439.642/1000;
 		for(int i = 0; i < int(ev.size()); i++)
 		    wm2[i] = wm2[i] / 275.912 * 1003.1;
+		    */
 		/*
 		m2 = (m2 - 154.551/1000) / 849.749 * 1003.1 + 439.642/1000;
 		w0m2 = -154.551/1000 / 849.749 * 1003.1 + 439.642/1000;
@@ -766,7 +784,52 @@ bool Search::Worker::iterative_deepening() {
 		std::cerr << m0 << ";" << m2 << std::endl;
 		//std::cerr << m0 << ";" << m2 << ";" << m3 << std::endl;
             }
-            /*
+            /* without fallingEval
+	     * weight eigenvalues
+	     * weights: -0.212714 0.731364 1.16303 0.0555249
+Mean #0: Total 2000 Mean 0.1265
+Mean #1: Total 2000 Mean -0.0195
+Mean #2: Total 2000 Mean -0.0795
+Mean #100: Total 2000 Mean 534.236
+Mean #101: Total 2000 Mean -0.04
+Mean #102: Total 2000 Mean 535.062
+Mean #103: Total 2000 Mean 535.062
+Stdev #0: Total 2000 Stdev 615.251
+Stdev #1: Total 2000 Stdev 257.128
+Stdev #2: Total 2000 Stdev 24.5025
+Stdev #100: Total 2000 Stdev 835.215
+Stdev #101: Total 2000 Stdev 667.397
+Stdev #102: Total 2000 Stdev 835.722
+Stdev #103: Total 2000 Stdev 835.722
+Correl. #1: Total 2000 Coefficient 2.38907e-05
+Correl. #2: Total 2000 Coefficient -0.00142286
+Correl. #12: Total 2000 Coefficient -0.000497763
+Correl. #101: Total 2000 Coefficient 0.977909
+Correl. #102: Total 2000 Coefficient 0.993263
+Correl. #103: Total 2000 Coefficient 0.993263
+Correl. #112: Total 2000 Coefficient 0.947532
+Correl. #113: Total 2000 Coefficient 0.947532
+Correl. #123: Total 2000 Coefficient 1
+	     * Mean: [    0.2147    0.5175   -0.1978 ]
+
+Covariance matrix:
+[    0.1109    0.1095    0.0076 ]
+[    0.1095    0.3341    0.0090 ]
+[    0.0076    0.0090    0.0012 ]
+
+Correlation matrix:
+[    1.0000    0.5688    0.6739 ]
+[    0.5688    1.0000    0.4597 ]
+[    0.6739    0.4597    1.0000 ]
+
+Principal component coefficients (columns = PC1..PC4):
+  var0:    0.3784    0.9235   -0.0626
+  var1:    0.9252   -0.3795   -0.0065
+  var2:    0.0297    0.0555    0.9980
+
+Explained variance (eigenvalues): [    0.3792    0.0664    0.0006 ]
+Explained variance ratio:         [    0.8499    0.1487    0.0014 ]
+	     * -----------------------------------------------------
 	     * only first pc
 Mean #0: Total 2000 Mean 0.11
 Mean #1: Total 2000 Mean 0.0685
