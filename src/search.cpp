@@ -49,8 +49,73 @@
 #include "types.h"
 #include "uci.h"
 #include "ucioption.h"
+#include "IncrementalPCA4D.h"
 
 namespace Stockfish {
+
+static void printVector(const IncrementalPCA4D::Vector4& v, std::ostream& out = std::cerr) {
+    out << std::fixed << std::setprecision(4);
+    out << "[ ";
+    for (double x : v)
+        out << std::setw(9) << x << " ";
+    out << "]";
+}
+
+static void printMatrixAsComponents(const IncrementalPCA4D::Matrix4& V,
+                                    std::ostream&                    out = std::cerr) {
+    // Print row i = coefficients of variable i across the 4 components (columns).
+    for (int i = 0; i < IncrementalPCA4D::N; ++i)
+    {
+        out << "  var" << i << ": ";
+        for (int k = 0; k < IncrementalPCA4D::N; ++k)
+            out << std::setw(9) << V[i][k] << " ";
+        out << "\n";
+    }
+}
+
+IncrementalPCA4D pca;
+
+void printPCA(std::ostream& out) {
+    out << "Samples processed: " << pca.sampleCount() << "\n\n";
+
+    out << "Mean: ";
+    printVector(pca.mean(), out);
+    out << "\n\n";
+
+    out << "Covariance matrix:\n";
+    auto cov = pca.covariance();
+    for (const auto& row : cov)
+    {
+        printVector(row, out);
+        out << "\n";
+    }
+    out << "\n";
+
+    out << "Correlation matrix:\n";
+    auto cor = pca.correlation();
+    for (const auto& row : cor)
+    {
+        printVector(row, out);
+        out << "\n";
+    }
+    out << "\n";
+
+    auto components = pca.components();         // coefficients / loadings
+    auto variance   = pca.explainedVariance();  // eigenvalues
+    auto ratio      = pca.explainedVarianceRatio();
+
+    out << "Principal component coefficients (columns = PC1..PC4):\n";
+    printMatrixAsComponents(components, out);
+    out << "\n";
+
+    out << "Explained variance (eigenvalues): ";
+    printVector(variance, out);
+    out << "\n";
+
+    out << "Explained variance ratio:         ";
+    printVector(ratio, out);
+    out << "\n\n";
+}
 
 inline int lmr_divisor(int depth) {
     int d = std::min(depth, 16);
@@ -577,7 +642,7 @@ bool Search::Worker::iterative_deepening() {
         }
 
         // Do we have time for the next iteration? Can we stop searching now?
-        if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
+        //if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
         {
             u64 nodesEffort = rootMoves[0].effort * 100000 / std::max(u64(1), u64(nodes));
 
@@ -599,6 +664,84 @@ bool Search::Worker::iterative_deepening() {
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
+            IncrementalPCA4D::Vector4 factor = {std::log(fallingEval), std::log(reduction),
+                                                std::log(bestMoveInstability),
+                                                std::log(highBestMoveEffort)};
+
+            if (false && rootDepth >= 15)
+                pca.addSample(factor);
+
+            if (rootDepth >= 15)
+            {
+
+                std::vector<double>              mean  = {-0.0946, 0.2147, 0.5175, -0.1978};
+                std::vector<std::vector<double>> coeff = {{0.1184, 0.9929, 0.0104, -0.0032},
+                                                          {0.3749, -0.0546, 0.9233, -0.0627},
+                                                          {0.9190, -0.1057, -0.3799, -0.0063},
+                                                          {0.0298, -0.0010, 0.0556, 0.9980}};
+
+
+                IncrementalPCA4D::Vector4 ev = {0, 0, 0, 0};
+                for (int i = 0; i < int(ev.size()); i++)
+                {
+                    for (int j = 0; j < int(ev.size()); j++)
+                        ev[i] += (factor[j] - mean[j]) * coeff[j][i];
+                }
+
+                double m0 = 0, m1 = 0, m2 = 0;
+                m2 += 0.285091 +
+                  factor[0] * 1.1185 + factor[1] * 1.1809 + factor[2] * 0.4271 + factor[3] * 1.0824;
+                //m2 += 0.439576 + factor[0] * 1.119 + factor[1] * 0.2306 + factor[2] * 0.4649
+                //    + factor[3] * 0.0189
+                //    - (mean[0] * 1.119 + mean[1] * 0.2306 + mean[2] * 0.4649 + mean[3] * 0.0189);
+
+                for (int i = 0; i < int(ev.size()); i++)
+                {
+                    m0 += factor[i];
+                    m1 += ev[i];
+                }
+                for (int i = 0; i < int(ev.size()); i++)
+		{
+                    dbg_mean_of(1000 * ev[i], i);
+                    dbg_stdev_of(1000 * ev[i], i);
+                    for (int j = i + 1; j < int(ev.size()); j++)
+                        dbg_correl_of(1000 * ev[i], 1000 * ev[j], 10 * i + j);
+		}
+
+                dbg_mean_of(1000 * m0, 100);
+                dbg_mean_of(1000 * m1, 101);
+                dbg_mean_of(1000 * m2, 102);
+                dbg_stdev_of(1000 * m0, 100);
+                dbg_stdev_of(1000 * m1, 101);
+                dbg_stdev_of(1000 * m2, 102);
+                dbg_correl_of(1000 * m0, 1000 * m1, 101);
+                dbg_correl_of(1000 * m0, 1000 * m2, 102);
+                dbg_correl_of(1000 * m1, 1000 * m2, 112);
+                pca.addSample(ev);
+
+		std::cerr << m0 << ";" << m2 << std::endl;
+            }
+            /*
+	     * Samples processed: 2000
+
+Mean: [   -0.0946    0.2147    0.5175   -0.1978 ]
+
+Covariance matrix:
+[    0.2770    0.0026    0.0123    0.0011 ]
+[    0.0026    0.1109    0.1095    0.0076 ]
+[    0.0123    0.1095    0.3341    0.0090 ]
+[    0.0011    0.0076    0.0090    0.0012 ]
+
+Principal component coefficients (columns = PC1..PC4):
+  var0:    0.1184    0.9929    0.0104   -0.0032
+  var1:    0.3749   -0.0546    0.9233   -0.0627
+  var2:    0.9190   -0.1057   -0.3799   -0.0063
+  var3:    0.0298   -0.0010    0.0556    0.9980
+
+Explained variance (eigenvalues): [    0.3807    0.2755    0.0663    0.0006 ]
+Explained variance ratio:         [    0.5264    0.3810    0.0917    0.0009 ]
+	     * */
+            /*
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort;
 
@@ -622,6 +765,7 @@ bool Search::Worker::iterative_deepening() {
             }
             else
                 threads.increaseDepth = mainThread->ponder || elapsedTime <= totalTime * 0.50;
+		*/
         }
 
         mainThread->iterValue[iterIdx] = bestValue;
