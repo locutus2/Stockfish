@@ -689,8 +689,8 @@ bool Search::Worker::iterative_deepening() {
                         ev[i] += (factor[j] - mean[j]) * coeff[j][i];
                 }
 
-                //IncrementalPCA4D::Vector4 wev = eigenvalues;
-                IncrementalPCA4D::Vector4 wev = {1,0,0,0};
+                IncrementalPCA4D::Vector4 wev = eigenvalues;
+                //IncrementalPCA4D::Vector4 wev = {1,0,0,0};
                 IncrementalPCA4D::Vector4 wm2 = {0, 0, 0, 0};
 		double w0m2 = 0;
                 double m0 = 0, m1 = 0, m2 = 0;
@@ -704,21 +704,23 @@ bool Search::Worker::iterative_deepening() {
                         //wm2[j] += coeff[j][i];
 		    }
 		}
-		m2 = (m2 - 538.696/1000) / 616.632 * 1003.1 + 439.642/1000;
-		w0m2 += -538.696/1000 / 616.632 * 1003.1 + 439.642/1000;
-		for(int i = 0; i < int(ev.size()); i++)
-		    wm2[i] += wm2[i] / 616.632 * 1003.1;
 		/*
-		m2 = (m2 - 160.082/1000) / 275.912 * 1003.1 + 439.642/1000;
-		w0m2 += -160.082/1000 / 275.912 * 1003.1 + 439.642/1000;
+		m2 = (m2 - 538.696/1000) / 616.632 * 1003.1 + 439.642/1000;
+		w0m2 = -538.696/1000 / 616.632 * 1003.1 + 439.642/1000;
 		for(int i = 0; i < int(ev.size()); i++)
-		    wm2[i] += wm2[i] / 275.912 * 1003.1;
+		    wm2[i] = wm2[i] / 616.632 * 1003.1;
 		    */
+		//weights: -0.142349 1.16086 0.686613 1.0745 0.0558223
+		double m3 = -0.142349 + factor[0]*1.16086+ factor[1]* 0.686613+ factor[2]* 1.0745+ factor[3]* 0.0558223;
+		m2 = (m2 - 160.082/1000) / 275.912 * 1003.1 + 439.642/1000;
+		w0m2 = -160.082/1000 / 275.912 * 1003.1 + 439.642/1000;
+		for(int i = 0; i < int(ev.size()); i++)
+		    wm2[i] = wm2[i] / 275.912 * 1003.1;
 		/*
 		m2 = (m2 - 154.551/1000) / 849.749 * 1003.1 + 439.642/1000;
-		w0m2 += -154.551/1000 / 849.749 * 1003.1 + 439.642/1000;
+		w0m2 = -154.551/1000 / 849.749 * 1003.1 + 439.642/1000;
 		for(int i = 0; i < int(ev.size()); i++)
-		    wm2[i] += wm2[i] / 849.749 * 1003.1;
+		    wm2[i] = wm2[i] / 849.749 * 1003.1;
 		    */
 
 		std::cerr << "weights: " << w0m2;
@@ -748,19 +750,24 @@ bool Search::Worker::iterative_deepening() {
                 dbg_mean_of(1000 * m0, 100);
                 dbg_mean_of(1000 * m1, 101);
                 dbg_mean_of(1000 * m2, 102);
+                dbg_mean_of(1000 * m3, 103);
                 dbg_stdev_of(1000 * m0, 100);
                 dbg_stdev_of(1000 * m1, 101);
                 dbg_stdev_of(1000 * m2, 102);
+                dbg_stdev_of(1000 * m3, 103);
                 dbg_correl_of(1000 * m0, 1000 * m1, 101);
                 dbg_correl_of(1000 * m0, 1000 * m2, 102);
+                dbg_correl_of(1000 * m0, 1000 * m3, 103);
                 dbg_correl_of(1000 * m1, 1000 * m2, 112);
+                dbg_correl_of(1000 * m1, 1000 * m3, 113);
+                dbg_correl_of(1000 * m2, 1000 * m3, 123);
                 pca.addSample(ev);
 
 		std::cerr << m0 << ";" << m2 << std::endl;
+		//std::cerr << m0 << ";" << m2 << ";" << m3 << std::endl;
             }
             /*
 	     * only first pc
-	     * weights: -0.436676 0.311006 0.984765 2.41397 0.0782769
 Mean #0: Total 2000 Mean 0.11
 Mean #1: Total 2000 Mean 0.0685
 Mean #2: Total 2000 Mean -0.0305
@@ -815,7 +822,7 @@ Explained variance (eigenvalues): [    0.3807    0.2755    0.0663    0.0006 ]
 Explained variance ratio:         [    0.5264    0.3810    0.0917    0.0009 ]
 
 	     * eigenvalues weights:
-	     * weights: -0.142349 1.48017 0.875472 1.37005 0.0711767
+	     * weights: -0.142349 1.16086 0.686613 1.0745 0.0558223
 Mean #0: Total 2000 Mean 0.11
 Mean #1: Total 2000 Mean 0.0685
 Mean #2: Total 2000 Mean -0.0305
@@ -870,7 +877,6 @@ Explained variance (eigenvalues): [    0.3807    0.2755    0.0663    0.0006 ]
 Explained variance ratio:         [    0.5264    0.3810    0.0917    0.0009 ]
 
              * equal weights
-	     * weights: 0.2572 2.43885 2.57491 0.931277 2.36014
 Mean #0: Total 2000 Mean 0.11
 Mean #1: Total 2000 Mean 0.0685
 Mean #2: Total 2000 Mean -0.0305
