@@ -584,20 +584,23 @@ bool Search::Worker::iterative_deepening() {
             double fallingEval = (11.48 + 2.30 * (mainThread->bestPreviousAverageScore - bestValue)
                                   + 1.1 * (mainThread->iterValue[iterIdx] - bestValue))
                                / 100.0;
-            fallingEval = std::clamp(fallingEval, 0.576, 1.728);
+            fallingEval = std::pow(std::clamp(fallingEval, 0.576, 1.728), 1.16086);
 
             // If the bestMove is stable over several iterations, reduce time accordingly
             timeReduction = std::clamp(
               interpolate(double(rootDepth - lastBestMoveDepth), 4.96, 18.79, 0.639, 1.712), 0.629,
               1.544);
 
-            double reduction =
-              (1.468 + mainThread->previousTimeReduction) / (2.284 * timeReduction);
+            double reduction = std::pow(
+              (1.468 + mainThread->previousTimeReduction) / (2.8102 * timeReduction), 0.686613);
 
-            double bestMoveInstability = 1.077 + 2.229 * totBestMoveChanges / threads.size();
+            double bestMoveInstability =
+              std::pow(1.077 + 2.229 * totBestMoveChanges / threads.size(), 1.0745);
 
-            double highBestMoveEffort = std::clamp(
-              interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
+            double highBestMoveEffort = std::pow(
+              std::clamp(interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714),
+                         0.693, 0.838),
+              0.0558223);
 
             double totalTime = mainThread->tm.optimum() * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort;
