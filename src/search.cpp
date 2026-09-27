@@ -1500,7 +1500,7 @@ moves_loop:  // When in check, search starts here
             r += r * 276 / (256 * depth + 268);
 
 	bool CC = false;
-	//bool C = improving;
+	bool C = improving;
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
@@ -1517,12 +1517,18 @@ moves_loop:  // When in check, search starts here
 	//bool C = type_of(movedPiece) == KING;
 	//bool C = type_of(movedPiece) == PAWN;
 	//bool C = ttHit;
-	bool C = (pos.key() ^ nodes) & 1;
+	//bool C = (pos.key() ^ nodes) & 1;
 	int D = 0;
 	int V = 0;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
+	    CC = true;
+	    V = i64(u64(nodes ^ pos.key()) % 2049) - 1024;
+	    D = (V+1024)/32;
+
+	    r += V;
+
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth. To avoid search explosion, extensions
@@ -1530,20 +1536,20 @@ moves_loop:  // When in check, search starts here
             Depth d =
               std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
 
-	    V = r;
-	    CC = true;
+	    //V = r;
+	    //CC = true;
 	    //CC = ss->inCheck;
 	    //CC = cutNode;
 	    //CC = priorReduction>0;
 	    //CC = d >= 4;
 	    //CC = d >= 2;
-	    D = d;
+	    //D = d;
 	    //D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
 	    //D = priorReduction + 3;
 	    //D = ss->cutoffCnt;
-	    D = depth;
+	    //D = depth;
 	    //D = ss->cnStreak;
 	    //D = ss->ply;
 	    //D = ss->ply + d;
@@ -1589,7 +1595,7 @@ moves_loop:  // When in check, search starts here
                 r += 1127;
 
 	    //CC = true;
-	    D = std::max(newDepth - (r > 5234) - (r > 5487 && newDepth > 2), 0);
+	    //D = std::max(newDepth - (r > 5234) - (r > 5487 && newDepth > 2), 0);
             // If expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 5234) - (r > 5487 && newDepth > 2), !cutNode);
