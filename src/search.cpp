@@ -689,7 +689,8 @@ bool Search::Worker::iterative_deepening() {
                         ev[i] += (factor[j] - mean[j]) * coeff[j][i];
                 }
 
-                IncrementalPCA4D::Vector4 wev = eigenvalues;
+                //IncrementalPCA4D::Vector4 wev = eigenvalues;
+                IncrementalPCA4D::Vector4 wev = {1,0,0,0};
                 IncrementalPCA4D::Vector4 wm2 = {0, 0, 0, 0};
 		double w0m2 = 0;
                 double m0 = 0, m1 = 0, m2 = 0;
@@ -703,10 +704,16 @@ bool Search::Worker::iterative_deepening() {
                         //wm2[j] += coeff[j][i];
 		    }
 		}
+		m2 = (m2 - 538.696/1000) / 616.632 * 1003.1 + 439.642/1000;
+		w0m2 += -538.696/1000 / 616.632 * 1003.1 + 439.642/1000;
+		for(int i = 0; i < int(ev.size()); i++)
+		    wm2[i] += wm2[i] / 616.632 * 1003.1;
+		/*
 		m2 = (m2 - 160.082/1000) / 275.912 * 1003.1 + 439.642/1000;
 		w0m2 += -160.082/1000 / 275.912 * 1003.1 + 439.642/1000;
 		for(int i = 0; i < int(ev.size()); i++)
 		    wm2[i] += wm2[i] / 275.912 * 1003.1;
+		    */
 		/*
 		m2 = (m2 - 154.551/1000) / 849.749 * 1003.1 + 439.642/1000;
 		w0m2 += -154.551/1000 / 849.749 * 1003.1 + 439.642/1000;
@@ -752,9 +759,63 @@ bool Search::Worker::iterative_deepening() {
 		std::cerr << m0 << ";" << m2 << std::endl;
             }
             /*
+	     * only first pc
+	     * weights: -0.436676 0.311006 0.984765 2.41397 0.0782769
+Mean #0: Total 2000 Mean 0.11
+Mean #1: Total 2000 Mean 0.0685
+Mean #2: Total 2000 Mean -0.0305
+Mean #3: Total 2000 Mean -0.088
+Mean #100: Total 2000 Mean 439.642
+Mean #101: Total 2000 Mean -0.0205
+Mean #102: Total 2000 Mean 440.082
+Stdev #0: Total 2000 Stdev 616.425
+Stdev #1: Total 2000 Stdev 524.299
+Stdev #2: Total 2000 Stdev 257.086
+Stdev #3: Total 2000 Stdev 24.4288
+Stdev #100: Total 2000 Stdev 1003.1
+Stdev #101: Total 2000 Stdev 849.73
+Stdev #102: Total 2000 Stdev 1003.08
+Correl. #1: Total 2000 Coefficient -0.000179569
+Correl. #2: Total 2000 Coefficient -4.15755e-05
+Correl. #3: Total 2000 Coefficient -2.36292e-05
+Correl. #12: Total 2000 Coefficient 9.3916e-07
+Correl. #13: Total 2000 Coefficient -0.000495704
+Correl. #23: Total 2000 Coefficient -0.000462507
+Correl. #101: Total 2000 Coefficient 0.959658
+Correl. #102: Total 2000 Coefficient 0.886453
+Correl. #112: Total 2000 Coefficient 0.725447
+
+===========================
+Total time (ms) : 281107
+Nodes searched  : 126006188
+Nodes/second    : 448249
+Samples processed: 2000
+
+Mean: [    0.0000   -0.0000   -0.0000   -0.0000 ]
+
+Covariance matrix:
+[    0.3807   -0.0000   -0.0000    0.0000 ]
+[   -0.0000    0.2755    0.0000   -0.0000 ]
+[   -0.0000    0.0000    0.0663   -0.0000 ]
+[    0.0000   -0.0000   -0.0000    0.0006 ]
+
+Correlation matrix:
+[    1.0000   -0.0001   -0.0001    0.0005 ]
+[   -0.0001    1.0000    0.0001   -0.0009 ]
+[   -0.0001    0.0001    1.0000   -0.0005 ]
+[    0.0005   -0.0009   -0.0005    1.0000 ]
+
+Principal component coefficients (columns = PC1..PC4):
+  var0:    1.0000    0.0002    0.0001   -0.0000
+  var1:   -0.0002    1.0000   -0.0000    0.0000
+  var2:   -0.0001    0.0000    1.0000    0.0000
+  var3:    0.0000   -0.0000   -0.0000    1.0000
+
+Explained variance (eigenvalues): [    0.3807    0.2755    0.0663    0.0006 ]
+Explained variance ratio:         [    0.5264    0.3810    0.0917    0.0009 ]
+
 	     * eigenvalues weights:
 	     * weights: -0.142349 1.48017 0.875472 1.37005 0.0711767
--1.03626;-0.91784
 Mean #0: Total 2000 Mean 0.11
 Mean #1: Total 2000 Mean 0.0685
 Mean #2: Total 2000 Mean -0.0305
