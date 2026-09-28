@@ -576,7 +576,6 @@ bool Search::Worker::iterative_deepening() {
             th->worker->bestMoveChanges = 0;
         }
 
-
         // Do we have time for the next iteration? Can we stop searching now?
         if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
         {
