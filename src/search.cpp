@@ -776,6 +776,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
+    RNG.seed(1234567 + threadIdx);
     mainHistory.fill(-5);
     captureHistory.fill(-742);
 
@@ -1235,7 +1236,7 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int  moveCount   = 0;
-    Move sampledMove = rootNode ? thompson_sampling() : Move::none();
+    Move sampledMove = rootNode && !(nodes & 0xF) ? thompson_sampling() : Move::none();
 
     // Step 14. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1527,7 +1528,7 @@ moves_loop:  // When in check, search starts here
         // Step 20. For PV nodes only, do a full PV search on the first move
         // or after a fail high, otherwise let the parent node fail low with
         // value <= alpha and try another move.
-        if (PvNode && (moveCount == 1 || value > alpha || (move == sampledMove && !(nodes & 0xF))))
+        if (PvNode && (moveCount == 1 || value > alpha || move == sampledMove))
         {
             (ss + 1)->pv = &pv;
             (ss + 1)->pv->clear();
