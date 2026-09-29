@@ -328,6 +328,19 @@ bool Search::Worker::iterative_deepening() {
     int  failHighRecovery   = 0;
     bool uciPvSent          = false;
 
+    struct Stats {
+	    int depth;
+	    std::vector<Move> pv;
+	    double totalTime;
+	    long elapsedTime;
+	    double fallingEval;
+	    double reduction;
+	    double bestMoveInstability;
+	    double highBestMoveEffort;
+    };
+
+    std::vector<Stats> stats;
+
     lowPlyHistory.fill(102);
 
     for (Color c : {WHITE, BLACK})
@@ -577,7 +590,8 @@ bool Search::Worker::iterative_deepening() {
         }
 
         // Do we have time for the next iteration? Can we stop searching now?
-        if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
+        //if (limits.use_time_management() && !threads.stop && !mainThread->stopOnPonderhit)
+	if(rootMoves.size() > 1)
         {
             u64 nodesEffort = rootMoves[0].effort * 100000 / std::max(u64(1), u64(nodes));
 
@@ -599,9 +613,30 @@ bool Search::Worker::iterative_deepening() {
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
-            double totalTime = mainThread->tm.optimum() * fallingEval * reduction
+	    double optimumTime = 500; // ms
+            double totalTime = optimumTime * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort;
 
+	    stats.push_back({rootDepth, rootMoves[0].pv, totalTime, elapsed(), fallingEval, reduction, bestMoveInstability, highBestMoveEffort});
+
+	    if(stats.size() > 1 
+			    && stats.rbegin()->elapsedTime > stats.rbegin()->totalTime
+			    && (stats.rbegin()+1)->elapsedTime <= (stats.rbegin()+1)->totalTime)
+	    {
+		    bool pvChanged = (stats.rbegin()->pv[0] != (stats.rbegin()+1)->pv[0]);
+		    std::cerr << int(pvChanged) 
+			      << ";" << (stats.rbegin()+1)->depth
+			      << ";" << (stats.rbegin()+1)->totalTime
+			      << ";" << (stats.rbegin()+1)->elapsedTime
+			      << ";" << (stats.rbegin()+1)->fallingEval
+			      << ";" << (stats.rbegin()+1)->reduction
+			      << ";" << (stats.rbegin()+1)->bestMoveInstability
+			      << ";" << (stats.rbegin()+1)->highBestMoveEffort
+			      << std::endl;
+                    threads.stop = true;
+	    }
+
+	    /*
             if (rootMoves.size() == 1)
                 // Cap used time to 0.5s for a better viewer experience
                 totalTime = std::min(500.0, totalTime);
@@ -622,6 +657,7 @@ bool Search::Worker::iterative_deepening() {
             }
             else
                 threads.increaseDepth = mainThread->ponder || elapsedTime <= totalTime * 0.50;
+		*/
         }
 
         mainThread->iterValue[iterIdx] = bestValue;
