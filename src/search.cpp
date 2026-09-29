@@ -619,7 +619,7 @@ bool Search::Worker::iterative_deepening() {
 
 	    stats.push_back({rootDepth, rootMoves[0].pv, totalTime, elapsed(), fallingEval, reduction, bestMoveInstability, highBestMoveEffort});
 
-	    if(stats.size() > 1 
+	    if(stats.size() > 1 && rootMoves.size() > 1
 			    && stats.rbegin()->elapsedTime > stats.rbegin()->totalTime
 			    && (stats.rbegin()+1)->elapsedTime <= (stats.rbegin()+1)->totalTime)
 	    {
@@ -633,8 +633,10 @@ bool Search::Worker::iterative_deepening() {
 			      << ";" << (stats.rbegin()+1)->bestMoveInstability
 			      << ";" << (stats.rbegin()+1)->highBestMoveEffort
 			      << std::endl;
-                    threads.stop = true;
 	    }
+
+            if (elapsedTime > totalTime)
+                    threads.stop = true;
 
 	    /*
             if (rootMoves.size() == 1)
