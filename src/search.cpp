@@ -617,7 +617,8 @@ bool Search::Worker::iterative_deepening() {
             double totalTime = optimumTime * fallingEval * reduction
                              * bestMoveInstability * highBestMoveEffort;
 
-	    stats.push_back({rootDepth, rootMoves[0].pv, totalTime, elapsed(), fallingEval, reduction, bestMoveInstability, highBestMoveEffort});
+            auto elapsedTime = elapsed();
+	    stats.push_back({rootDepth, rootMoves[0].pv, totalTime, elapsedTime, fallingEval, reduction, bestMoveInstability, highBestMoveEffort});
 
 	    if(stats.size() > 1 && rootMoves.size() > 1
 			    && stats.rbegin()->elapsedTime > stats.rbegin()->totalTime
