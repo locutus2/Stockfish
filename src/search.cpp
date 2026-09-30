@@ -347,6 +347,8 @@ bool Search::Worker::iterative_deepening() {
         for (int i = 0; i < UINT_16_HISTORY_SIZE; i++)
             mainHistory[c][i] = mainHistory[c][i] * 729 / 1024;
 
+    bool first = true;
+
     // Iterative deepening loop until requested to stop or the target depth is reached
     while (rootDepth + 1 < MAX_PLY && !threads.stop
            && !(limits.depth && mainThread && rootDepth >= limits.depth))
@@ -615,7 +617,7 @@ bool Search::Worker::iterative_deepening() {
 
 	    double optimumTime = 500; // ms
             double totalTime = optimumTime * fallingEval * reduction
-                             * bestMoveInstability * highBestMoveEffort;
+                             * bestMoveInstability * highBestMoveEffort;// * std::exp(-0.295216);
 
             auto elapsedTime = elapsed();
 	    stats.push_back({rootDepth, rootMoves[0].pv, totalTime, elapsedTime, fallingEval, reduction, bestMoveInstability, highBestMoveEffort});
@@ -623,9 +625,8 @@ bool Search::Worker::iterative_deepening() {
             if (rootMoves.size() == 1)
                 // Cap used time to 0.5s for a better viewer experience
                 totalTime = std::min(500.0, totalTime);
-	    else if(stats.size() > 1 && rootMoves.size() > 1
-			    && stats.rbegin()->elapsedTime > stats.rbegin()->totalTime
-			    && (stats.rbegin()+1)->elapsedTime <= (stats.rbegin()+1)->totalTime)
+	    else if(stats.size() > 1 && !first)
+			    //&& (stats.rbegin()+1)->elapsedTime <= (stats.rbegin()+1)->totalTime)
 	    {
 		    bool pvChanged = (stats.rbegin()->pv[0] != (stats.rbegin()+1)->pv[0]);
 		    std::cerr << int(pvChanged) 
@@ -640,8 +641,11 @@ bool Search::Worker::iterative_deepening() {
 	    }
 
 
-            if (elapsedTime > totalTime)
-                    threads.stop = true;
+            if (!first || elapsedTime > totalTime)
+	    {
+                    if(!first) threads.stop = true;
+		    first = false;
+	    }
 
 	    /*
             if (rootMoves.size() == 1)
