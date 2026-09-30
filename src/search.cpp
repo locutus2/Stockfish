@@ -79,20 +79,20 @@ struct IntBetaSampler {
     // Gen must be a uniform random bit generator producing exactly 32 random bits
     // per call, e.g. std::mt19937.
     template<typename Gen>
-    static uint64_t gammaLog2Q32(Gen& gen, uint32_t k) {
-        static_assert(uint64_t(Gen::max()) - uint64_t(Gen::min()) == 0xFFFFFFFFULL,
+    static u64 gammaLog2Q32(Gen& gen, u32 k) {
+        static_assert(u64(Gen::max()) - u64(Gen::min()) == 0xFFFFFFFFULL,
                       "BetaSampler requires a generator with a 32-bit output range");
 
         // product = (m / 2^31) * 2^-e, with mantissa m in [2^31, 2^32), i.e. [1, 2) in Q31
-        uint64_t m = 1ULL << 31;  // product = 1.0
-        uint64_t e = 0;
+        u64 m = 1ULL << 31;  // product = 1.0
+        u64 e = 0;
 
-        for (uint32_t i = 0; i < k; ++i)
+        for (u32 i = 0; i < k; ++i)
         {
             // Raw output shifted to [0, 2^32-1]; u in [1, 2^32] means U in (0, 1].
-            uint64_t u = (uint64_t(gen()) - uint64_t(Gen::min())) + 1;
+            u64 u = (u64(gen()) - u64(Gen::min())) + 1;
 
-            uint64_t p = m * u;  // <= (2^32-1) * 2^32 < 2^64, and >= 2^31 (never 0)
+            u64      p = m * u;  // <= (2^32-1) * 2^32 < 2^64, and >= 2^31 (never 0)
             unsigned t = 0;
             while (!(p >> 63))  // renormalize so the top bit is set (t <= 32)
             {
@@ -105,8 +105,8 @@ struct IntBetaSampler {
 
         // frac = log2(m / 2^31) in Q32, via the classic repeated-squaring method.
         // m / 2^31 is in [1, 2), so log2 is in [0, 1). Absolute error is about 2^-30.
-        uint64_t x    = m;  // Q31
-        uint64_t frac = 0;
+        u64 x    = m;  // Q31
+        u64 frac = 0;
         for (int i = 0; i < 32; ++i)
         {
             x = (x * x) >> 31;  // square in Q31; x < 2^32 so x*x < 2^64
@@ -126,11 +126,11 @@ struct IntBetaSampler {
     // Deterministic integer Beta(a, b) sample, returned as value * 2^32 (range [0, 2^32]).
     // a, b are the shape parameters as integers; both should be >= 1 and < 2^26.
     template<typename Gen>
-    static uint64_t sampleQ32(Gen& gen, uint32_t a, uint32_t b) {
-        uint64_t X = gammaLog2Q32(gen, a);
-        uint64_t Y = gammaLog2Q32(gen, b);
+    static u64 sampleQ32(Gen& gen, u32 a, u32 b) {
+        u64 X = gammaLog2Q32(gen, a);
+        u64 Y = gammaLog2Q32(gen, b);
 
-        uint64_t sum = X + Y;
+        u64 sum = X + Y;
         if (sum == 0)           // probability ~2^-64, but keep it well-defined
             return 1ULL << 31;  // 0.5
 
@@ -806,14 +806,13 @@ void Search::Worker::clear() {
 
 Move Search::Worker::thompson_sampling() {
 
-    Move     sampledMove = Move::none();
-    uint64_t maxP        = 0;
-    bool     first       = true;
+    Move sampledMove = Move::none();
+    u64  maxP        = 0;
+    bool first       = true;
 
     for (const auto& rm : rootMoves)
     {
-        uint64_t p =
-          IntBetaSampler::sampleQ32(RNG, uint32_t(rm.countBest) + 1, uint32_t(rm.countNotBest) + 1);
+        u64 p = IntBetaSampler::sampleQ32(RNG, u32(rm.countBest) + 1, u32(rm.countNotBest) + 1);
         if (first || p > maxP)
         {
             first       = false;
