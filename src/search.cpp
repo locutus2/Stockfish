@@ -1137,7 +1137,10 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int moveCount = 0;
+    int  moveCount   = 0;
+    Move sampledMove = rootNode && !((nodes ^ pos.key()) & 0x3F)
+                       ? rootMoves[nodes % rootMoves.size()].pv[0]
+                       : Move::none();
 
     // Step 14. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1429,7 +1432,7 @@ moves_loop:  // When in check, search starts here
         // Step 20. For PV nodes only, do a full PV search on the first move
         // or after a fail high, otherwise let the parent node fail low with
         // value <= alpha and try another move.
-        if (PvNode && (moveCount == 1 || value > alpha))
+        if (PvNode && (moveCount == 1 || value > alpha || move == sampledMove))
         {
             (ss + 1)->pv = &pv;
             (ss + 1)->pv->clear();
