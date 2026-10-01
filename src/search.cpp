@@ -1773,7 +1773,7 @@ moves_loop:  // When in check, search starts here
             if (rm.pv[0] == bestMove)
                 rm.countBestMove += rootDepth;
             else
-                rm.countNotBestMove++;
+                rm.countNotBestMove += rootDepth;
         }
     }
 
