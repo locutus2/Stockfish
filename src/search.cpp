@@ -1510,7 +1510,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
-	//bool C = cutNode;
+	bool C = cutNode;
 	//bool C = PvNode;
 	//bool C = allNode && ss->ttPv;
 	//bool C = ss->ttPv;
@@ -1524,7 +1524,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = type_of(movedPiece) == KING;
 	//bool C = type_of(movedPiece) == PAWN;
 	//bool C = ttHit;
-	bool C = (pos.key() ^ nodes) & 1;
+	//bool C = (pos.key() ^ nodes) & 1;
 	int D = 0;
 	int V = 0;
         // Apply the computed LMR
@@ -1544,14 +1544,14 @@ moves_loop:  // When in check, search starts here
               std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
 
 	    V = r;
-	    CC = moveCount <= 127;
+	    CC = true;
 	    //CC = ss->inCheck;
 	    //CC = cutNode;
 	    //CC = priorReduction>0;
 	    //CC = d >= 4;
 	    //CC = d >= 2;
-	    //D = d;
-	    D = moveCount;
+	    D = d;
+	    //D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
 	    //D = priorReduction + 3;
