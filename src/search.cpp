@@ -813,7 +813,8 @@ Move Search::Worker::thompson_sampling() {
 
     for (const auto& rm : rootMoves)
     {
-        u64 p = IntBetaSampler::sampleQ32(RNG, u32(rm.countBest) + 1, u32(rm.countNotBest) + 1);
+        u64 p =
+          IntBetaSampler::sampleQ32(RNG, u32(rm.countBestMove + 1), u32(rm.countNotBestMove + 1));
         if (first || p > maxP)
         {
             first       = false;
@@ -1770,9 +1771,9 @@ moves_loop:  // When in check, search starts here
         {
             auto& rm = rootMoves[i];
             if (rm.pv[0] == bestMove)
-                rm.countBest++;
+                rm.countBestMove += rootDepth;
             else
-                rm.countNotBest++;
+                rm.countNotBestMove++;
         }
     }
 
