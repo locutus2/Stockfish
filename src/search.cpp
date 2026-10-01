@@ -1239,8 +1239,9 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int  moveCount   = 0;
-    Move sampledMove = rootNode && !(nodes & 0xF) ? thompson_sampling() : Move::none();
+    int  moveCount = 0;
+    Move sampledMove =
+      rootNode && !is_mainthread() && !(nodes & 0xF) ? thompson_sampling() : Move::none();
 
     // Step 14. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
