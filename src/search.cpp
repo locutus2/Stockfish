@@ -594,7 +594,7 @@ bool Search::Worker::iterative_deepening() {
             double reduction =
               (1.468 + mainThread->previousTimeReduction) / (2.284 * timeReduction);
 
-            double bestMoveInstability = 1.077 + 2.229 * totBestMoveChanges / threads.size();
+            double bestMoveInstability = 0.8255 + 0.5695 * totBestMoveChanges / threads.size();
 
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
@@ -1524,7 +1524,7 @@ moves_loop:  // When in check, search starts here
                 // This information is used for time management. In MultiPV mode,
                 // we must take care to only do this for the first PV line.
                 if (moveCount > 1 && !pvIdx)
-                    ++bestMoveChanges;
+                    bestMoveChanges += 3;
             }
             else
                 // All other moves but the PV are set to the lowest value: this
@@ -1532,6 +1532,9 @@ moves_loop:  // When in check, search starts here
                 // move position in the list is preserved -- just the PV is pushed up.
                 rm.score = -VALUE_INFINITE;
         }
+
+        else if (PvNode && ss->ply == 1 && moveCount > 1 && !pvIdx && value > alpha)
+            bestMoveChanges++;
 
         // If we have an alternative move equal in value to the current bestmove,
         // we sometimes promote it to bestmove by pretending it just exceeds
