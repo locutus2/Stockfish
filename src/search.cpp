@@ -476,6 +476,7 @@ bool Search::Worker::iterative_deepening() {
         for (usize i = 0; i < rootMoves.size(); ++i)
         {
             rootMoves[i].previousScore      = rootMoves[i].score;
+            rootMoves[i].previousRawScore   = rootMoves[i].rawScore;
             rootMoves[i].previousPV         = rootMoves[i].pv;
             rootMoves[i].previousScoreExact = i < multiPV;
         }
@@ -731,24 +732,30 @@ bool Search::Worker::iterative_deepening() {
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
 
-	    Value  scoreSwing       = std::abs(rootMoves[0].score - rootMoves[0].previousScore);
-            double uncertaintyBonus = 0.9776 + std::min(double(scoreSwing), 200.0) / 2045.75;
+	    //Value  scoreSwing       = std::abs(rootMoves[0].score - rootMoves[0].previousScore);
+            //double uncertaintyBonus = 0.9776 + std::min(double(scoreSwing), 200.0) / 2045.75;
+	    Value  scoreSwing       = std::abs(rootMoves[0].rawScore - rootMoves[0].previousRawScore);
+            double uncertaintyBonus = 1 + std::min(double(scoreSwing), 200.0) / 2000.0;
+	    //Value  scoreSwing       = std::abs(rootMoves[0].score - rootMoves[0].averageScore);
+            //double uncertaintyBonus = 1 + std::min(double(scoreSwing), 200.0) / 2000.00;
 
             if(CC)
             {
 		//double X = std::log(lastTotalTime);
 		//double X = std::log(lastBestMoveInstability);
 		//double X = std::log(lastReduction);
-		double X = std::log(lastFallingEval); double S = 1.0986122886681096913952452369225;
+		//double X = std::log(lastFallingEval); double S = 1.0986122886681096913952452369225;
 		//double X = std::log(lastHighBestMoveEffort); double S = 0.18998810129217980849237924789031;
 		//double X = std::log(lastUncertaintyBonus); double S = 0.0953135799257091967403393889689;
 		//double X = std::log(lastUncertaintyBonus); double S = 2*0.0953135799257091967403393889689;
+		double X = std::log(lastUncertaintyBonus); double S = 1*0.0953135799257091967403393889689;
 		//double X = rootDepth-1; double S = 20;
 		//double X = lastChangedPv; double S = 20;
 		int V = int(1000*X);
 		//int D = std::clamp(int(S*lastTotalTime),0,255);
 		int D = std::clamp(int(20/S*X),0,127);
-		bool C = (rootPos.key() ^ nodes ^ rootDepth) & 1;
+		//bool C = (rootPos.key() ^ nodes ^ rootDepth) & 1;
+		bool C = (rootPos.key() ^ nodes ^ rootDepth) & 0x7F;
 		//bool C = rootPos.checkers();
 		//bool C = rootPos.capture_stage(lastBestMove);
 		//bool C = lastEvalDiff > 0;
@@ -1756,6 +1763,8 @@ moves_loop:  // When in check, search starts here
             else
                 rm.meanSquaredScore =
                   Value((v2 * w_mss + int64_t(rm.meanSquaredScore) * (Scale - w_mss)) / Scale);
+
+	    rm.rawScore = rm.score;
 
             // PV move or new best move?
             if (moveCount == 1 || value > alpha)
