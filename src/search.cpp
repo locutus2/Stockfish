@@ -813,7 +813,7 @@ Move Search::Worker::thompson_sampling() {
 
     for (const auto& rm : rootMoves)
     {
-        u64 p = IntBetaSampler::sampleQ32(RNG, u32(rm.countBest) + 1, u32(rm.countNotBest) + 1);
+        u64 p = IntBetaSampler::sampleQ32(RNG, u32(rm.countBest + 1), u32(rm.countNotBest + 1));
         if (first || p > maxP)
         {
             first       = false;
@@ -1241,7 +1241,7 @@ moves_loop:  // When in check, search starts here
 
     int  moveCount = 0;
     Move sampledMove =
-      rootNode && !is_mainthread() && !(nodes & 0xF) ? thompson_sampling() : Move::none();
+      rootNode && !is_mainthread() && !(nodes & 0x7) ? thompson_sampling() : Move::none();
 
     // Step 14. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
