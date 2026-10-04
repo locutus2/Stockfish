@@ -1241,7 +1241,7 @@ moves_loop:  // When in check, search starts here
 
     int  moveCount = 0;
     Move sampledMove =
-      rootNode && !is_mainthread() && !(nodes & 0x7) ? thompson_sampling() : Move::none();
+      rootNode && !is_mainthread() && !(nodes & 0x3) ? thompson_sampling() : Move::none();
 
     // Step 14. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1764,7 +1764,7 @@ moves_loop:  // When in check, search starts here
         update_correction_history(pos, ss, *this, 1061 * bonus / 1024);
     }
 
-    if (rootNode && bestMove)
+    if (rootNode && !is_mainthread() && bestMove)
     {
         // Update Beta distributed prior
         for (int i = 0; i < moveCount && i < int(rootMoves.size()); i++)
