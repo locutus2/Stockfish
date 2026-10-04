@@ -595,7 +595,7 @@ bool Search::Worker::iterative_deepening() {
               (1.468 + mainThread->previousTimeReduction) / (2.284 * timeReduction);
 
             double bestMoveInstability =
-              std::pow(0.92556 + 0.3514 * totBestMoveChanges / threads.size(), 1.2417597);
+              std::pow(0.89662 + 0.34041 * totBestMoveChanges / threads.size(), 1.36593567);
 
             double highBestMoveEffort = std::clamp(
               interpolate(i64(nodesEffort), i64(75800), i64(104510), 0.969, 0.714), 0.693, 0.838);
@@ -1534,7 +1534,7 @@ moves_loop:  // When in check, search starts here
                 rm.score = -VALUE_INFINITE;
         }
 
-        else if (PvNode && ss->ply == 1 && moveCount > 1 && !pvIdx && value > alpha)
+        else if (PvNode && ss->ply == 1 && value > alpha && moveCount > 1 && !pvIdx)
             bestMoveChanges++;
 
         // If we have an alternative move equal in value to the current bestmove,
