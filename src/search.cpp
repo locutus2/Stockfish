@@ -1143,7 +1143,7 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int  moveCount   = 0;
-    Move sampledMove = rootNode && !((nodes ^ pos.key()) & 0x3F)
+    Move sampledMove = rootNode && !is_mainthread() && !((nodes + pos.key() + threadIdx) & 0x1F)
                        ? rootMoves[nodes % rootMoves.size()].pv[0]
                        : Move::none();
 
