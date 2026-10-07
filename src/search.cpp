@@ -1510,7 +1510,8 @@ moves_loop:  // When in check, search starts here
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
-	bool C = cutNode;
+	bool C = ss->statScore>0;
+	//bool C = cutNode;
 	//bool C = PvNode;
 	//bool C = allNode && ss->ttPv;
 	//bool C = ss->ttPv;
@@ -1525,16 +1526,17 @@ moves_loop:  // When in check, search starts here
 	//bool C = type_of(movedPiece) == PAWN;
 	//bool C = ttHit;
 	//bool C = (pos.key() ^ nodes) & 1;
+	//bool C = (pos.key() + nodes + threadIdx) & 0x7F;
 	int D = 0;
 	int V = 0;
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
-	    //CC = true;
-	    //V = i64(u64(nodes ^ pos.key()) % 2049) - 1024;
-	    //D = (V+1024)/32;
+	    CC = true;
+	    V = i64(u64(nodes + pos.key() + moveCount + depth) % 2049) / 64 * 64 - 1024;
+	    D = (V+1024)/64;
 
-	    //r += V;
+	    r += V;
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
@@ -1543,14 +1545,14 @@ moves_loop:  // When in check, search starts here
             Depth d =
               std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
 
-	    V = r;
-	    CC = true;
+	    //V = r;
+	    //CC = true;
 	    //CC = ss->inCheck;
 	    //CC = cutNode;
 	    //CC = priorReduction>0;
 	    //CC = d >= 4;
 	    //CC = d >= 2;
-	    D = d;
+	    //D = d;
 	    //D = moveCount;
 	    //D = newDepth - d + 3;
 	    //D = (ss+1)->cutoffCnt;
