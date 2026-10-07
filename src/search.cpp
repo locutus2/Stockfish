@@ -1013,7 +1013,7 @@ Value Search::Worker::search(
     if (allNode && eval < alpha - 342 * depth && !seekMate)
     {
         value = qsearch<NonPV>(pos, ss, alpha, beta);
-        if (value > alpha || (ss - 1)->moveCount < 4)
+        if (value <= alpha || depth < 4)
             return value;
     }
 
