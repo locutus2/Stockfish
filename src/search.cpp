@@ -1649,6 +1649,8 @@ moves_loop:  // When in check, search starts here
             const bool CC = true;
             const bool P = true;//nodes&1;
 
+            Depth d = std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
+
             if(CC && P)
             {
                 constexpr int rDelta = 1024;
