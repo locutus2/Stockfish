@@ -994,6 +994,9 @@ Value Search::Worker::search(
         }
     }
 
+    bool CC = false;
+    Value alphaOrig = alpha;
+    bool C1 = false, C2 = false;
     if (ss->inCheck)
         goto moves_loop;
 
@@ -1012,9 +1015,12 @@ Value Search::Worker::search(
     // If eval is really low, skip search entirely and return the qsearch value
     if (allNode && eval < alpha - 342 * depth && !seekMate)
     {
+	CC = true;
         value = qsearch<NonPV>(pos, ss, alpha, beta);
-        if (value > alpha || (ss - 1)->moveCount < 3)
-            return value;
+	C1 = value > alpha;
+	C2 = bool(excludedMove);
+        //if (value > alpha || (ss - 1)->moveCount < 3)
+       //     return value;
     }
 
     // Step 9. Futility pruning: child node
@@ -1030,7 +1036,14 @@ Value Search::Worker::search(
                              + std::abs(correctionValue) / 198435;
 
         if (eval - futilityMargin >= beta)
+	{
+		    if(CC)
+		    {
+			    bool T = (661 * beta + 363 * eval) / 1024 > alphaOrig;
+			    dbg_hit_on(T,10*C1+C2);
+		    }
             return (661 * beta + 363 * eval) / 1024;
+	}
     }
 
     // Step 10. Null move search with verification search
@@ -1054,6 +1067,11 @@ Value Search::Worker::search(
             if (nmpMinPly || depth < 16)
             {
                 ++ss->priorNMPFailHigh;
+		    if(CC)
+		    {
+			    bool T = nullValue > alphaOrig;
+			    dbg_hit_on(T,10*C1+C2);
+		    }
                 return nullValue;
             }
 
@@ -1071,6 +1089,11 @@ Value Search::Worker::search(
             if (v >= beta)
             {
                 ++ss->priorNMPFailHigh;
+		    if(CC)
+		    {
+			    bool T = nullValue > alphaOrig;
+			    dbg_hit_on(T,10*C1+C2);
+		    }
                 return nullValue;
             }
         }
@@ -1123,7 +1146,14 @@ Value Search::Worker::search(
                                probCutDepth + 1, move, unadjustedStaticEval, tt.generation());
 
                 if (!is_decisive(value))
+		{
+		    if(CC)
+		    {
+			    bool T = value - (probCutBeta - beta) > alphaOrig;
+			    dbg_hit_on(T,10*C1+C2);
+		    }
                     return value - (probCutBeta - beta);
+		}
             }
         }
     }
@@ -1134,7 +1164,14 @@ moves_loop:  // When in check, search starts here
     probCutBeta = beta + 428;
     if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - 4 && ttData.value >= probCutBeta
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value))
+    {
+		    if(CC)
+		    {
+			    bool T = probCutBeta > alphaOrig;
+			    dbg_hit_on(T,10*C1+C2);
+		    }
         return probCutBeta;
+    }
 
     const PieceToHistory* contHist[] = {
       (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
@@ -1318,6 +1355,11 @@ moves_loop:  // When in check, search starts here
                     update_correction_history(pos, ss, *this, bonus);
                 }
 
+		    if(CC)
+		    {
+			    bool T = value > alphaOrig;
+			    dbg_hit_on(T,10*C1+C2);
+		    }
                 return value;
             }
 
@@ -1667,6 +1709,12 @@ moves_loop:  // When in check, search starts here
           std::clamp(int(bestValue - ss->staticEval) * depth * (bestMove ? 12 : 18) / 128,
                      -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *this, 1061 * bonus / 1024);
+    }
+
+    if(CC)
+    {
+	    bool T = bestValue > alphaOrig;
+	    dbg_hit_on(T,10*C1+C2);
     }
 
     // The search is now complete
