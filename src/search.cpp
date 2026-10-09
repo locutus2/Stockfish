@@ -1646,7 +1646,8 @@ moves_loop:  // When in check, search starts here
             //ss->reduction = 0;
 
             //const bool CC = !ss->ttPv;
-            const bool CC = true;
+	    /*
+            const bool CC = false;
             const bool P = true;//nodes&1;
 
             Depth d = std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
@@ -1717,16 +1718,13 @@ moves_loop:  // When in check, search starts here
                     adaboost_learn(T, C, W[T]);
                 }
             }
-            else
-            {
-                Depth d = std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
+	    */
 
-                (ss + 1)->reduction = newDepth - d;
+            Depth d = std::max(1, newDepth + std::min(-r / 1024, ss->ply < 2 * rootDepth ? 2 : 0)) + PvNode;
 
-                value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
-                (ss + 1)->reduction = 0;
-            }
-
+            (ss + 1)->reduction = newDepth - d;
+            value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
+            (ss + 1)->reduction = 0;
 
             // Do a full-depth search when reduced LMR search fails high
             // (*Scaler) Shallower searches here don't scale well
