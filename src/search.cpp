@@ -205,9 +205,12 @@ void adaboost_collect_stats(bool T, const std::vector<bool>& C)
 bool adaboost_print_stats(std::ostream& out)
 {
     double freq = double(nConf[0][1] + nConf[1][1]) / nStats;
+    double negfreq = double(nConf[0][0] + nConf[1][0]) / nStats;
 
+    out << "=> positive frequency: " << 100. * freq << "%" << std::endl;
+    out << "=> negative frequency: " << 100. * negfreq << "%" << std::endl;
     out << "=> false positive rate: " << 100. * nConf[0][1] / (nConf[0][1] + nConf[0][0]) << "%" << std::endl;
-    out << "=> frequency: " << 100. * freq << "%" << std::endl;
+    out << "=> false negative rate: " << 100. * nConf[1][0] / (nConf[1][1] + nConf[1][0]) << "%" << std::endl;
     //out << "n: " << nStats << std::endl;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
     //out << "Conf true x predicted:" << std::endl;
@@ -1258,10 +1261,13 @@ Value Search::Worker::search(
     if (allNode && eval < alpha - 342 * depth && !seekMate)
     {
         razorValue = qsearch<NonPV>(pos, ss, alpha, beta);
-	CC = razorValue > alpha;
+	//CC = razorValue > alpha;
+	CC = true;
 
 	if(CC)
 	{
+		CONDITION(C,razorValue>alpha);
+		CONDITION(C,razorValue<=alpha);
 		CONDITION(C,ss->ttPv);
 		CONDITION(C,!ss->ttPv);
 		CONDITION(C,ttHit);
