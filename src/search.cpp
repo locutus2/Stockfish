@@ -52,8 +52,11 @@
 
 namespace Stockfish {
 
-constexpr double LEARN_MIN_FREQ = 0.001;
+std::vector<std::string> names;
 
+#define CONDITION(c,x) (c).push_back((x)); if((c).size() > names.size()) names.push_back(#x);
+
+/*
 std::vector<std::string> names = {
     "allNode", "!allNode", 
     "PvNode", "!PvNode",
@@ -82,6 +85,9 @@ std::vector<std::string> names = {
     "depth<11", "depth>=11",
     "depth<12", "depth>=12",
 };
+*/
+
+constexpr double LEARN_MIN_FREQ = 0.001;
 
 std::vector<bool> weak_learner_enabled;
 
@@ -1227,6 +1233,12 @@ Value Search::Worker::search(
         }
     }
 
+    bool CC = false;
+    std::vector<bool> C = {};
+    constexpr double W[2] = {1,1};
+    Value razorValue = 0;
+    Value alphaOrig = alpha;
+
     if (ss->inCheck)
         goto moves_loop;
 
@@ -1244,7 +1256,74 @@ Value Search::Worker::search(
     // Step 8. Razoring
     // If eval is really low, skip search entirely and return the qsearch value
     if (allNode && eval < alpha - 342 * depth && !seekMate)
-        return qsearch<NonPV>(pos, ss, alpha, beta);
+    {
+        razorValue = qsearch<NonPV>(pos, ss, alpha, beta);
+	CC = razorValue > alpha;
+
+	if(CC)
+	{
+		CONDITION(C,ss->ttPv);
+		CONDITION(C,!ss->ttPv);
+		CONDITION(C,ttHit);
+		CONDITION(C,!ttHit);
+		CONDITION(C,priorCapture);
+		CONDITION(C,!priorCapture);
+		CONDITION(C,improving);
+		CONDITION(C,!improving);
+		CONDITION(C,ttCapture);
+		CONDITION(C,!ttCapture);
+		CONDITION(C,bool(excludedMove));
+		CONDITION(C,!excludedMove);
+	}
+	else
+		return razorValue;
+/*
+	C = {
+              CONDITION(value>alpha),
+              CONDITION(value<=alpha),
+              CONDITION(ss->ttPv),
+              CONDITION(!ss->ttPv),
+              CONDITION(ttHit),
+              CONDITION(!ttHit),
+              CONDITION(priorCapture),
+              CONDITION(!priorCapture),
+              CONDITION(improving),
+              CONDITION(!improving),
+              CONDITION(ttCapture),
+              CONDITION(!ttCapture),
+              CONDITION(bool(excludedMove)),
+              CONDITION(!excludedMove),
+
+				allNode, !allNode, // 0 1 2
+				false&&PvNode, !PvNode, // 0 1 2
+				cutNode, !cutNode, // 0 1 2
+				improving, !improving, // 3 4
+				capture, !capture, // 5 6
+				givesCheck, !givesCheck, // 7 8
+				ss->inCheck, !ss->inCheck, // 9 10
+				priorCapture, !priorCapture, // 11 12
+				false&&ss->ttPv, !ss->ttPv, // 13 14
+				ss->statScore>0, ss->statScore<=0, // 15 16
+				extension<0,extension==0,extension>0,// 17 18
+				ttCapture,!ttCapture,
+				bool(excludedMove), !excludedMove,
+				ss->reduction>0, ss->reduction<=0,
+				(ss-1)->currentMove==Move::null(), (ss-1)->currentMove!=Move::null(),
+				ss->ttHit, !ss->ttHit, // 9 10
+				depth<3,depth>=3,
+				depth<4,depth>=4,
+				depth<5,depth>=5,
+				depth<6,depth>=6,
+				depth<7,depth>=7,
+				depth<8,depth>=8,
+				depth<9,depth>=9,
+				depth<10,depth>=10,
+				depth<11,depth>=11,
+				depth<12,depth>=12,
+			    };
+*/
+        //if(!CC) return qsearch<NonPV>(pos, ss, alpha, beta);
+    }
 
     // Step 9. Futility pruning: child node
     // The depth condition is important for mate finding. It should NOT be tuned.
@@ -1989,6 +2068,13 @@ moves_loop:  // When in check, search starts here
           std::clamp(int(bestValue - ss->staticEval) * depth * (bestMove ? 12 : 18) / 128,
                      -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *this, 1061 * bonus / 1024);
+    }
+
+    if(CC)
+    {
+	    bool T = bestValue > alphaOrig;
+	    adaboost_collect_stats(T, C);
+	    adaboost_learn(T, C, W[T]);
     }
 
     // The search is now complete
