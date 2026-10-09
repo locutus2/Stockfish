@@ -1261,13 +1261,14 @@ Value Search::Worker::search(
     if (allNode && eval < alpha - 342 * depth && !seekMate)
     {
         razorValue = qsearch<NonPV>(pos, ss, alpha, beta);
+	//CC = true;
 	//CC = razorValue > alpha;
-	CC = true;
+	CC = razorValue <= alpha;
 
 	if(CC)
 	{
-		CONDITION(C,razorValue>alpha);
-		CONDITION(C,razorValue<=alpha);
+		//CONDITION(C,razorValue>alpha);
+		//CONDITION(C,razorValue<=alpha);
 		CONDITION(C,ss->ttPv);
 		CONDITION(C,!ss->ttPv);
 		CONDITION(C,ttHit);
