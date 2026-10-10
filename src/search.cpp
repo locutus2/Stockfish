@@ -215,19 +215,21 @@ bool adaboost_print_stats(std::ostream& out)
     double tnr = TN / (TN + FP);
     double ppr = TP / (TP + FP);
     double npr = TN / (TN + FN);
+    double balanced_acc = (tpr + tnr) / 2;
 
     out << "=> prevalence: " << 100. * prevalence << "%" << std::endl;
     out << "=> accuracy: " << 100. * acc << "%" << std::endl;
+    out << "=> balanced accuracy: " << 100. * balanced_acc << "%" << std::endl;
     out << "=> true positive rate (sensitivity,recall): " << 100. * tpr << "%" << std::endl;
     out << "=> true negative rate (specifcity): " << 100. * tnr << "%" << std::endl;
     out << "=> positive predictive rate (precision): " << 100. * ppr << "%" << std::endl;
     out << "=> negative predictive rate: " << 100. * npr << "%" << std::endl;
     //out << "n: " << nStats << std::endl;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
-    //out << "Conf true x predicted:" << std::endl;
-    //out << nConf[0][0] << "\t" << nConf[0][1] << std::endl;
-    //out << nConf[1][0] << "\t" << nConf[1][1] << std::endl;
-    //
+    out << "=> Conf true x predicted class:" << std::endl;
+    out << "=> FALSE: " << nConf[0][0] << "\t" << nConf[0][1] << std::endl;
+    out << "=> TRUE:  " << nConf[1][0] << "\t" << nConf[1][1] << std::endl;
+    
     if(freq < LEARN_MIN_FREQ && !learner_index.empty())
     {
         weak_learner_enabled[learner_index[int(learner_index.size())-1]] = false;
@@ -1249,7 +1251,9 @@ Value Search::Worker::search(
 
     bool CC = false;
     std::vector<bool> C = {};
-    constexpr double W[2] = {1,1};
+    constexpr double P[2] = {0.984408, 0.015592};
+    //constexpr double W[2] = {1,1};
+    constexpr double W[2] = {P[1], P[0]};
     Value razorValue = 0;
     Value alphaOrig = alpha;
 
@@ -1275,8 +1279,8 @@ Value Search::Worker::search(
 	//CC = true;
 	//CC = !excludedMove;
 	//CC = razorValue > alpha;
-	CC = !excludedMove && razorValue > alpha;
-	//CC = razorValue <= alpha;
+	//CC = !excludedMove && razorValue > alpha;
+	CC = razorValue <= alpha;
 
 	if(CC)
 	{
@@ -1296,6 +1300,8 @@ Value Search::Worker::search(
 		CONDITION(C,!opponentWorsening);
 		CONDITION(C,ttCapture);
 		CONDITION(C,!ttCapture);
+		CONDITION(C,correctionValue>0);
+		CONDITION(C,correctionValue<=0);
 		CONDITION(C,(ss-1)->ttPv);
 		CONDITION(C,!(ss-1)->ttPv);
 		CONDITION(C,(ss-1)->inCheck);
