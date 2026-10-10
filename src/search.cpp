@@ -204,13 +204,24 @@ void adaboost_collect_stats(bool T, const std::vector<bool>& C)
 
 bool adaboost_print_stats(std::ostream& out)
 {
-    double freq = double(nConf[0][1] + nConf[1][1]) / nStats;
-    double negfreq = double(nConf[0][0] + nConf[1][0]) / nStats;
+    double TP = nConf[1][1];
+    double FP = nConf[0][1];
+    double TN = nConf[0][0];
+    double FN = nConf[1][0];
+    double freq = (FP + TP) / (TP + TN + FP + FN);
+    double acc = (TP + TN) / (TP + TN + FP + FN);
+    double prevalence = (TP + FN) / (TP + TN + FP + FN);
+    double tpr = TP / (TP + FN);
+    double tnr = TN / (TN + FP);
+    double ppr = TP / (TP + FP);
+    double npr = TN / (TN + FN);
 
-    out << "=> positive frequency: " << 100. * freq << "%" << std::endl;
-    out << "=> negative frequency: " << 100. * negfreq << "%" << std::endl;
-    out << "=> false positive rate: " << 100. * nConf[0][1] / (nConf[0][1] + nConf[0][0]) << "%" << std::endl;
-    out << "=> false negative rate: " << 100. * nConf[1][0] / (nConf[1][1] + nConf[1][0]) << "%" << std::endl;
+    out << "=> prevalence: " << 100. * prevalence << "%" << std::endl;
+    out << "=> accuracy: " << 100. * acc << "%" << std::endl;
+    out << "=> true positive rate (sensitivity,recall): " << 100. * tpr << "%" << std::endl;
+    out << "=> true negative rate (specifcity): " << 100. * tnr << "%" << std::endl;
+    out << "=> positive predictive rate (precision): " << 100. * ppr << "%" << std::endl;
+    out << "=> negative predictive rate: " << 100. * npr << "%" << std::endl;
     //out << "n: " << nStats << std::endl;
     //out << "n(false positive): " << nConf[0][1] << std::endl;
     //out << "Conf true x predicted:" << std::endl;
@@ -1262,13 +1273,17 @@ Value Search::Worker::search(
     {
         razorValue = qsearch<NonPV>(pos, ss, alpha, beta);
 	//CC = true;
+	//CC = !excludedMove;
 	//CC = razorValue > alpha;
-	CC = razorValue <= alpha;
+	CC = !excludedMove && razorValue > alpha;
+	//CC = razorValue <= alpha;
 
 	if(CC)
 	{
 		//CONDITION(C,razorValue>alpha);
 		//CONDITION(C,razorValue<=alpha);
+		//CONDITION(C,bool(excludedMove));
+		//CONDITION(C,!excludedMove);
 		CONDITION(C,ss->ttPv);
 		CONDITION(C,!ss->ttPv);
 		CONDITION(C,ttHit);
@@ -1277,10 +1292,33 @@ Value Search::Worker::search(
 		CONDITION(C,!priorCapture);
 		CONDITION(C,improving);
 		CONDITION(C,!improving);
+		CONDITION(C,opponentWorsening);
+		CONDITION(C,!opponentWorsening);
 		CONDITION(C,ttCapture);
 		CONDITION(C,!ttCapture);
-		CONDITION(C,bool(excludedMove));
-		CONDITION(C,!excludedMove);
+		CONDITION(C,(ss-1)->ttPv);
+		CONDITION(C,!(ss-1)->ttPv);
+		CONDITION(C,(ss-1)->inCheck);
+		CONDITION(C,!(ss-1)->inCheck);
+		CONDITION(C,(ss-1)->ttHit);
+		CONDITION(C,!(ss-1)->ttHit);
+		CONDITION(C,bool((ss-1)->excludedMove));
+		CONDITION(C,!(ss-1)->excludedMove);
+		CONDITION(C,(ss-1)->currentMove==Move::null());
+		CONDITION(C,(ss-1)->currentMove!=Move::null());
+		CONDITION(C,(ss-1)->statScore>0);
+		CONDITION(C,(ss-1)->statScore<=0);
+		CONDITION(C,(ss-1)->moveCount==0);
+		CONDITION(C,(ss-1)->moveCount==1);
+		CONDITION(C,(ss-1)->moveCount==2);
+		CONDITION(C,(ss-1)->moveCount==3);
+		CONDITION(C,(ss-1)->moveCount==4);
+		CONDITION(C,(ss-1)->moveCount>=5);
+		CONDITION(C,priorReduction==0);
+		CONDITION(C,priorReduction==1);
+		CONDITION(C,priorReduction==2);
+		CONDITION(C,priorReduction==3);
+		CONDITION(C,priorReduction>=4);
 	}
 	else
 		return razorValue;
