@@ -1252,8 +1252,8 @@ Value Search::Worker::search(
     bool CC = false;
     std::vector<bool> C = {};
     constexpr double P[2] = {0.984408, 0.015592};
-    //constexpr double W[2] = {1,1};
-    constexpr double W[2] = {P[1], P[0]};
+    constexpr double W[2] = {1,1};
+    //constexpr double W[2] = {P[1], P[0]};
     Value razorValue = 0;
     Value alphaOrig = alpha;
 
