@@ -1737,10 +1737,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     ss->ttHit    = ttHit;
     ttData.move  = ttHit ? ttData.move : Move::none();
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
-    pvHit        = ttHit && ttData.is_pv;
+    pvHit        = ss->excludedMove ? ss->ttPv : ttHit && ttData.is_pv;
 
     // At non-PV nodes we check for an early TT cutoff
-    if (!PvNode && ttData.depth >= DEPTH_QS && is_valid(ttData.value)
+    if (!PvNode && !ss->excludedMove && ttData.depth >= DEPTH_QS && is_valid(ttData.value)
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
         return ttData.value;
 
@@ -1748,6 +1748,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     Value unadjustedStaticEval = VALUE_NONE;
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
+    else if (ss->excludedMove)
+    {
+        unadjustedStaticEval = bestValue = ss->staticEval;
+        futilityBase                     = ss->staticEval + 306;
+    }
     else
     {
         const auto correctionValue = correction_value(*this, pos, ss);
@@ -1809,6 +1814,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     {
         assert(move.is_ok());
 
+        if (move == ss->excludedMove)
+            continue;
+
         if (!pos.legal(move))
             continue;
 
@@ -1857,7 +1865,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         // Step 7. Make and search the move
         do_move(pos, move, st, givesCheck, capture, ss);
 
-        value = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha);
+        (ss + 1)->excludedMove = Move::none();
+        value                  = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha);
         undo_move(pos, move);
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
@@ -1894,6 +1903,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             return mated_in(ss->ply);  // Plies to mate from the root
         }
 
+        else if (ss->excludedMove)
+            return alpha;
+
         // Only check for stalemate under specific conditions
         Color us = pos.side_to_move();
         if (!(pawn_single_push_bb(us, pos.pieces(us, PAWN)) & ~pos.pieces())
@@ -1907,9 +1919,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Step 10. Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
-    ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), pvHit,
-                   bestValue >= beta ? BOUND_LOWER : BOUND_UPPER, DEPTH_QS, bestMove,
-                   unadjustedStaticEval, tt.generation());
+    if (!ss->excludedMove)
+        ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), pvHit,
+                       bestValue >= beta ? BOUND_LOWER : BOUND_UPPER, DEPTH_QS, bestMove,
+                       unadjustedStaticEval, tt.generation());
 
     // The search is now complete
     assert(-VALUE_INFINITE < bestValue && bestValue < VALUE_INFINITE);
