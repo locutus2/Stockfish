@@ -1378,7 +1378,7 @@ moves_loop:  // When in check, search starts here
               / 1024;
 
         if (capture)
-            r += std::max((-48609 - 5 * ss->statScore) / 8, 0);
+            r += std::max((-48609 - 5 * ss->statScore) / 4, 0);
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 439 / 4096;
