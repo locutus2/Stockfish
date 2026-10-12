@@ -1369,8 +1369,11 @@ moves_loop:  // When in check, search starts here
             r -= 2179;
 
         if (capture)
-            ss->statScore = 873 * int(PieceValue[pos.captured_piece()]) / 128
-                          + captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())];
+            ss->statScore =
+              (1591 * int(PieceValue[pos.captured_piece()])
+               + 234 * captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())])
+                / 128
+              - 13710;
         else
             ss->statScore =
               (2252 * mainHistory[us][move.raw()] + 1126 * (*contHist[0])[movedPiece][move.to_sq()]
