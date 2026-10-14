@@ -87,6 +87,7 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 
     bool found = false;
     constexpr char SEP = ';';
+    constexpr int rowOffset = 2;
     for(int row = 0;; row++)
     {
 	    std::stringstream line;
@@ -94,9 +95,13 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
             {
 		    line << "Average" << SEP << dbg_get_hit_on(AVERAGE);
 	    }
-	    else if(row <= N)
+	    else if(row == 1)
             {
-		    line << names[row-1] << SEP << r.beta[row-1];
+		    line << "P(C)" << SEP << dbg_get_hit_on(AVERAGE+1);
+	    }
+	    else if(row < N+rowOffset)
+            {
+		    line << names[row-rowOffset] << SEP << r.beta[row-rowOffset];
 	    }
 	    else
 		    line << SEP;
@@ -1557,6 +1562,16 @@ moves_loop:  // When in check, search starts here
 		    r = 2.08694617087341 * r - 3621.09400722314;
 		    r = 1.36410595350499 * r - 592.364814862072;
 		    r = 1.209628583476 * r + 221.918197936406;
+	    }
+	    */
+	    /*
+	    if(CC)
+	    {
+		    constexpr double PC = 0.36; // C=cutnode
+		    if(C)
+		        r = r * PC + (1-PC) * (0.727532634375238 * r - 7658.43376773252);
+		    else
+		        r = r * (1-PC) + PC * (1.37450878867962 * r + 10526.5845212691);
 	    }
 	    */
 
