@@ -1394,7 +1394,6 @@ moves_loop:  // When in check, search starts here
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
-
             if (allNode)
                 r += r / 64 + 404;
 
