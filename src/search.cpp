@@ -1564,16 +1564,14 @@ moves_loop:  // When in check, search starts here
 		    r = 1.209628583476 * r + 221.918197936406;
 	    }
 	    */
-	    /*
 	    if(CC)
 	    {
-		    constexpr double PC = 0.36; // C=cutnode
+		    constexpr double PC = 0.384006; // C=cutnode
 		    if(C)
 		        r = r * PC + (1-PC) * (0.727532634375238 * r - 7658.43376773252);
 		    else
 		        r = r * (1-PC) + PC * (1.37450878867962 * r + 10526.5845212691);
 	    }
-	    */
 
 	    //r += V;
 
