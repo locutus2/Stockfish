@@ -1513,9 +1513,12 @@ moves_loop:  // When in check, search starts here
 	//bool C = opponentWorsening;
 	//bool C = improving;
 	//bool C = priorCapture;
+	bool C = cutNode;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
-	bool C = !allNode && capture;
+	//bool C = capture;
+	//bool C = givesCheck;
+	//bool C = !allNode && capture;
 	//bool C = cutNode && capture;
 	//bool C = ss->statScore>0;
 	//bool C = cutNode;
@@ -1542,9 +1545,20 @@ moves_loop:  // When in check, search starts here
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
-	    CC = true;
+	    //CC = true;
+	    CC = !PvNode;
 	    //V = i64(u64(nodes + pos.key() + moveCount + depth) % 2049) / 64 * 64 - 1024;
 	    //D = (V+1024)/64;
+
+	    /*
+	    if(CC&&capture)
+	    {
+		    r = -1.71391302207674 * r + 12549.7772636657;
+		    r = 2.08694617087341 * r - 3621.09400722314;
+		    r = 1.36410595350499 * r - 592.364814862072;
+		    r = 1.209628583476 * r + 221.918197936406;
+	    }
+	    */
 
 	    //r += V;
 
@@ -1647,16 +1661,19 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		V = r;
-		constexpr int M = 10000;
-		constexpr int B = 50;
+		constexpr int M = 20000;
+		constexpr int B = 100;
 		int D = std::clamp((V+M)*B/(2*M), 0, B);
 		//int D = V;
 
 		bool T = value > alpha;
 		dbg_hit_on(T, C*MAX_ROW+D);
 		dbg_hit_on(T, AVERAGE);
+		dbg_hit_on(C, AVERAGE+1);
+		dbg_hit_on(T, AVERAGE+10+C);
 		dbg_mean_of(V, C*MAX_ROW+D);
 		dbg_mean_of(V, AVERAGE);
+		dbg_mean_of(V, AVERAGE+10+C);
 		//int index0 = 3 * D;
 		//int index1 = 3 * D + C + 1;
 		//dbg_hit_on(T, index0);
