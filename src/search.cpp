@@ -1515,8 +1515,8 @@ moves_loop:  // When in check, search starts here
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
-	//bool C = !allNode && capture;
-	bool C = cutNode && capture;
+	bool C = !allNode && capture;
+	//bool C = cutNode && capture;
 	//bool C = ss->statScore>0;
 	//bool C = cutNode;
 	//bool C = PvNode;
