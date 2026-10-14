@@ -1515,6 +1515,8 @@ moves_loop:  // When in check, search starts here
 	//bool C = priorCapture;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
+	//bool C = !allNode && capture;
+	bool C = cutNode && capture;
 	//bool C = ss->statScore>0;
 	//bool C = cutNode;
 	//bool C = PvNode;
@@ -1522,7 +1524,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = ss->ttPv;
 	//bool C = ss->staticEval > alpha;
 	//bool C = ss->staticEval > eval;
-	bool C = capture;
+	//bool C = capture;
 	//bool C = givesCheck;
 	//bool C = priorReduction > 0;
 	//bool C = priorReduction > 1;
@@ -1532,10 +1534,10 @@ moves_loop:  // When in check, search starts here
 	//bool C = ttHit;
 	//bool C = (pos.key() ^ nodes) & 1;
 	//bool C = (pos.key() + nodes + threadIdx) & 0x7F;
-	int V = ss->statScore;
-	constexpr int M = 60000;
-	constexpr int B = 50;
-	int D = std::clamp((V+M)*B/(2*M), 0, B);
+	//int V = ss->statScore;
+	//constexpr int M = 60000;
+	//constexpr int B = 50;
+	int V = r;
 
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
@@ -1611,7 +1613,8 @@ moves_loop:  // When in check, search starts here
             if (!ttData.move)
                 r += 1127;
 
-	    CC = true;
+	    //CC = moveCount == 1;
+	    //V = newDepth - std::max(newDepth - (r > 5234) - (r > 5487 && newDepth > 2), 0);
 	    //D = std::max(newDepth - (r > 5234) - (r > 5487 && newDepth > 2), 0);
             // If expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
@@ -1623,7 +1626,7 @@ moves_loop:  // When in check, search starts here
         // value <= alpha and try another move.
         if (PvNode && (moveCount == 1 || value > alpha))
         {
-	    CC = false;
+	    //CC = false;
             (ss + 1)->pv = &pv;
             (ss + 1)->pv->clear();
 
@@ -1643,6 +1646,12 @@ moves_loop:  // When in check, search starts here
 
 	if(CC)
 	{
+		V = r;
+		constexpr int M = 10000;
+		constexpr int B = 50;
+		int D = std::clamp((V+M)*B/(2*M), 0, B);
+		//int D = V;
+
 		bool T = value > alpha;
 		dbg_hit_on(T, C*MAX_ROW+D);
 		dbg_hit_on(T, AVERAGE);
