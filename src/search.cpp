@@ -62,6 +62,8 @@
 
 namespace Stockfish {
 
+constexpr int M = 20000;
+constexpr int B = 100;
 constexpr int MAX_ROW = 10000;
 constexpr int AVERAGE = 2*MAX_ROW;
 
@@ -80,7 +82,13 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
                                     "C offset (b2)", "D*C interaction (b3)"};
 #endif
     out.setf(std::ios::fixed);
-    out.precision(5);
+    out.precision(10);
+
+    auto fmt = [](double x) {    
+	std::ostringstream s;
+        s << std::fixed << std::setprecision(10) << x;
+        return s.str();
+    };
 
     //constexpr int MINN = 1000;
     constexpr int MINN = 100;
@@ -88,20 +96,25 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
     bool found = false;
     constexpr char SEP = ';';
     constexpr int rowOffset = 6;
-    double AC = 0; 
-    double BC = 0; 
-    double ANC = 0; 
-    double BNC = 0; 
+    double PC = dbg_get_hit_on(AVERAGE+1);
+    double AC = (1 - PC) * r.beta[3] / r.beta[1]; 
+    double BC = (1 - PC) * M * (r.beta[3] + r.beta[2] / B) / r.beta[1]; 
+    //double BC = (1 - PC) *  M * (r.beta[3] + r.beta[2] / B) / r.beta[1];
+    // =(1-$B$2)*((($B$8+$B$10)*(20000)+400*$B$9)/$B$8-20000)
+    double ANC = -PC * r.beta[1] / (r.beta[1] + r.beta[3]); 
+    double BNC = -PC * M * (r.beta[3] + r.beta[2] / B) / (r.beta[1] + r.beta[3]); 
     for(int row = 0;; row++)
     {
 	    std::stringstream line;
+            line.setf(std::ios::fixed);
+            line.precision(10);
 	    if(row == 0)
             {
 		    line << "Average" << SEP << dbg_get_hit_on(AVERAGE);
 	    }
 	    else if(row == 1)
             {
-		    line << "P(C)" << SEP << dbg_get_hit_on(AVERAGE+1);
+		    line << "P(C)" << SEP << PC;
 	    }
 	    else if(row == 2)
             {
@@ -166,20 +179,17 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    ec = 1 / (1 + std::exp(-ec));
 
 		    line << SEP << row-1;
-		    line << SEP << (nc < 0 ? "" : std::to_string(nc));
-		    line << SEP << (c < 0 ? "" : std::to_string(c));
-		    line << SEP << (nc < 0 ? "" : std::to_string(enc));
-		    line << SEP << (c < 0 ? "" : std::to_string(ec));
-		    line << SEP << (nc < 0 ? "" : std::to_string(ncRed));
-		    line << SEP << (c < 0 ? "" : std::to_string(cRed));
+		    line << SEP << (nc < 0 ? "" : fmt(nc));
+		    line << SEP << (c < 0 ? "" : fmt(c));
+		    line << SEP << (nc < 0 ? "" : fmt(enc));
+		    line << SEP << (c < 0 ? "" : fmt(ec));
+		    line << SEP << (nc < 0 ? "" : fmt(ncRed));
+		    line << SEP << (c < 0 ? "" : fmt(cRed));
 	    }
 
-            std::string str;
-	    if(std::getline(line, str))
-	    {
-	        std::replace(str.begin(), str.end(), '.', ',');
-		out << str << std::endl;
-	    }
+            std::string str = line.str();
+	    std::replace(str.begin(), str.end(), '.', ',');
+	    out << str << std::endl;
     }
 }
 
@@ -1536,9 +1546,9 @@ moves_loop:  // When in check, search starts here
 
 	bool CC = false;
 	//bool C = opponentWorsening;
-	bool C = improving;
+	//bool C = improving;
 	//bool C = priorCapture;
-	//bool C = cutNode;
+	bool C = cutNode;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
 	//bool C = capture;
@@ -1570,8 +1580,8 @@ moves_loop:  // When in check, search starts here
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
-	    CC = true;
-	    //CC = !PvNode;
+	    //CC = true;
+	    CC = !PvNode;
 	    //V = i64(u64(nodes + pos.key() + moveCount + depth) % 2049) / 64 * 64 - 1024;
 	    //D = (V+1024)/64;
 
@@ -1716,8 +1726,6 @@ moves_loop:  // When in check, search starts here
 	if(CC)
 	{
 		V = r;
-		constexpr int M = 20000;
-		constexpr int B = 100;
 		int D = std::clamp((V+M)*B/(2*M), 0, B);
 		//int D = V;
 
