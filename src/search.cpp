@@ -1516,9 +1516,9 @@ moves_loop:  // When in check, search starts here
 
 	bool CC = false;
 	//bool C = opponentWorsening;
-	//bool C = improving;
+	bool C = improving;
 	//bool C = priorCapture;
-	bool C = cutNode;
+	//bool C = cutNode;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
 	//bool C = capture;
@@ -1550,8 +1550,8 @@ moves_loop:  // When in check, search starts here
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
-	    //CC = true;
-	    CC = !PvNode;
+	    CC = true;
+	    //CC = !PvNode;
 	    //V = i64(u64(nodes + pos.key() + moveCount + depth) % 2049) / 64 * 64 - 1024;
 	    //D = (V+1024)/64;
 
@@ -1564,6 +1564,7 @@ moves_loop:  // When in check, search starts here
 		    r = 1.209628583476 * r + 221.918197936406;
 	    }
 	    */
+	    /*
 	    if(CC)
 	    {
 		    constexpr double PC = 0.384006; // C=cutnode
@@ -1572,6 +1573,17 @@ moves_loop:  // When in check, search starts here
 		    else
 		        r += 0.143813621905705 * r + 4042.27161567447;
 	    }
+	    */
+	    /*
+	    if(CC)
+	    {
+		    constexpr double PC = 0.096962; // C=capture
+		    if(C)
+		        r += -2.27350753319864 * r + 9728.21015757464;
+		    else
+		        r += -0.160852782271997 * r + 688.279958400239;
+	    }
+	    */
 
 	    //r += V;
 
