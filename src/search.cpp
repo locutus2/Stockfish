@@ -87,7 +87,11 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 
     bool found = false;
     constexpr char SEP = ';';
-    constexpr int rowOffset = 2;
+    constexpr int rowOffset = 6;
+    double AC = 0; 
+    double BC = 0; 
+    double ANC = 0; 
+    double BNC = 0; 
     for(int row = 0;; row++)
     {
 	    std::stringstream line;
@@ -98,6 +102,22 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 	    else if(row == 1)
             {
 		    line << "P(C)" << SEP << dbg_get_hit_on(AVERAGE+1);
+	    }
+	    else if(row == 2)
+            {
+		    line << "A(C)" << SEP << AC;
+	    }
+	    else if(row == 3)
+            {
+		    line << "B(C)" << SEP << BC;
+	    }
+	    else if(row == 4)
+            {
+		    line << "A(!C)" << SEP << ANC;
+	    }
+	    else if(row == 5)
+            {
+		    line << "B(!C)" << SEP << BNC;
 	    }
 	    else if(row < N+rowOffset)
             {
