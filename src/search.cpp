@@ -1584,6 +1584,16 @@ moves_loop:  // When in check, search starts here
 		        r += -0.160852782271997 * r + 688.279958400239;
 	    }
 	    */
+	    /*
+	    if(CC)
+	    {
+		    constexpr double PC = 0.496758; // C=improving
+		    if(C)
+		        r += -0.184642130026247 * r - 6004.64473084026;
+		    else
+		        r += 0.287892318459309 * r + 9362.38708273319;
+	    }
+	    */
 
 	    //r += V;
 
