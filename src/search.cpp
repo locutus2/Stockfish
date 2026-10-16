@@ -1385,7 +1385,10 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
-            r += r * 276 / (256 * depth + 268);
+            r += r * (569 + 8 * depth) / (512 * depth + 804) + 404;
+
+        else if (cutNode)
+            r -= r / 64 + 472;
 
         // When seeking a mate, reduce non-checking moves more and checking moves less
         if (seekMate && r > 0)
@@ -1394,11 +1397,6 @@ moves_loop:  // When in check, search starts here
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
-            if (allNode)
-                r += r / 64 + 404;
-
-            else if (cutNode)
-                r -= r / 64 + 472;
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
