@@ -1667,6 +1667,22 @@ moves_loop:  // When in check, search starts here
 		        r += 0.287892318459309 * r + 9362.38708273319;
 	    }
 	    */
+	    /*
+	    if(CC)
+	    {
+		    //constexpr double PC = 0.384006; // C=cutnode
+		    if(C)
+		        r += 0.1*(-0.0707470618 * r - 3488.6657853611);
+		    else
+		        r += 0.1*(-0.433832037 * r + 2456.9974939242);
+
+		    //if(C)
+		    //    r += -0.3158002247 * r - 3631.231040938;
+		    //else
+		    //    r += -0.7732844733 * r + 4526.3477617432;
+	    }
+	    */
+
 
 	    //r += V;
 
@@ -1768,6 +1784,7 @@ moves_loop:  // When in check, search starts here
 
 	if(CC)
 	{
+		/*
 		// test validate logistic regression estimation
 		V = (nodes + depth) & 0xf;
 		V = V * V / 0xf;
@@ -1778,10 +1795,11 @@ moves_loop:  // When in check, search starts here
 		constexpr int L = 1024;
 		double rnd = ((nodes ^ pos.key()) % L) / double(L);
 		bool T = rnd < p;
+		*/
 
-		//V = r;
-		//int D = std::clamp((V+M)*B/(2*M), 0, B);
-		//bool T = value > alpha;
+		V = r;
+		int D = std::clamp((V+M)*B/(2*M), 0, B);
+		bool T = value > alpha;
 		
 		dbg_hit_on(T, C*MAX_ROW+D);
 		dbg_hit_on(T, AVERAGE);
