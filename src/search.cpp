@@ -153,7 +153,7 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 	    {
 		    double nc = dbg_get_hit_on(row-1, MINN);
 		    double c = dbg_get_hit_on(MAX_ROW + row-1, MINN);
-		    if(row >= MAX_ROW || (found && row > N && nc < 0 && c < 0))
+		    if(row >= MAX_ROW || (found && row > N + rowOffset && nc < 0 && c < 0))
 			    break;
 		    double ncRed = dbg_get_mean_of(row-1);
 		    double cRed = dbg_get_mean_of(MAX_ROW + row-1);
@@ -178,6 +178,19 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    enc = 1 / (1 + std::exp(-enc));
 		    ec = 1 / (1 + std::exp(-ec));
 
+		    //enc = std::log(nc/(1-nc));
+		    //ec = std::log(c/(1-c));
+
+		    /*
+		     * 0,100322202234265
+0,101239493710882
+0,199992707958971
+0,203559404173235
+
+		     * */
+		    //enc = 1 / (1 + std::exp(-0.100322202234265*(row-1)-0.101239493710882));
+		    //ec = 1 / (1 + std::exp(-0.199992707958971*(row-1)-0.203559404173235));
+
 		    line << SEP << row-1;
 		    line << SEP << (nc < 0 ? "" : fmt(nc));
 		    line << SEP << (c < 0 ? "" : fmt(c));
@@ -196,6 +209,38 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 void printRegFit(std::ostream& out)
 {
     std::cerr << "\n==== FINAL RESULT ====\n";
+
+
+    int N = 4;
+#ifdef QUAD_LOG_REG
+    N = 6;
+#else	
+    N = 4;
+#endif
+
+    constexpr int rowOffset = 6;
+    constexpr int MINN = 100;
+    bool found = false;
+    for(int row = 0;; row++)
+    {
+	double nc = dbg_get_hit_on(row, MINN);
+	double c = dbg_get_hit_on(MAX_ROW + row, MINN);
+	if(row >= MAX_ROW || (found && row >= N + rowOffset && nc < 0 && c < 0))
+	    break;
+
+        if(nc >= 0 || c >= 0) found = true;
+
+	int D = row;
+	constexpr int L = 100000;
+	for(int i = 0; i < L; i++)
+	{
+	    if(c >= 0) reg.addPoint(D, true, i < L*c);
+	    if(nc >= 0) reg.addPoint(D, false, i < L*nc);
+	}
+    }
+
+    //std::random_shuffle(reg.data_.begin(), reg.data_.end());
+
     auto fitResult = reg.fit(true, 30);
     printFit(fitResult, reg.count(), out);
     std::cerr << "\n==== CSV ====\n";
@@ -1723,11 +1768,21 @@ moves_loop:  // When in check, search starts here
 
 	if(CC)
 	{
-		V = r;
-		int D = std::clamp((V+M)*B/(2*M), 0, B);
-		//int D = V;
+		// test validate logistic regression estimation
+		V = (nodes + depth) & 0xf;
+		V = V * V / 0xf;
+		int D = V;
+		//constexpr double B0 = 0.5, B1 = 0.5, B2 = 0.5, B3 = 0.5;
+		constexpr double B0 = 0.1, B1 = 0.1, B2 = 0.1, B3 = 0.1;
+		double p = 1/(1+exp(-(B0+B1*D+B2*C+B3*C*D)));
+		constexpr int L = 1024;
+		double rnd = ((nodes ^ pos.key()) % L) / double(L);
+		bool T = rnd < p;
 
-		bool T = value > alpha;
+		//V = r;
+		//int D = std::clamp((V+M)*B/(2*M), 0, B);
+		//bool T = value > alpha;
+		
 		dbg_hit_on(T, C*MAX_ROW+D);
 		dbg_hit_on(T, AVERAGE);
 		dbg_hit_on(C, AVERAGE+1);
@@ -1735,14 +1790,8 @@ moves_loop:  // When in check, search starts here
 		dbg_mean_of(V, C*MAX_ROW+D);
 		dbg_mean_of(V, AVERAGE);
 		dbg_mean_of(V, AVERAGE+10+C);
-		//int index0 = 3 * D;
-		//int index1 = 3 * D + C + 1;
-		//dbg_hit_on(T, index0);
-		//dbg_hit_on(T, index1);
-		//dbg_correl_of(D, T, 0);
-		//dbg_correl_of(D, T, 1+C);
-		//dbg_diff_correl_of(C, D, T);
-		reg.addPoint(D, C, T);
+
+		//reg.addPoint(D, C, T);
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);

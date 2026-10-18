@@ -207,8 +207,8 @@ public:
         return r;
     }
 
-private:
     std::vector<Observation> data_;
+private:
 };
 
 // ---------- demo / usage ----------
