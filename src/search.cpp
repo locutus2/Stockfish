@@ -67,6 +67,8 @@ constexpr int B = 100;
 constexpr int MAX_ROW = 10000;
 constexpr int AVERAGE = 2*MAX_ROW;
 
+constexpr int MINN = 1000;
+
 IncrementalLogisticRegression reg;
 
 void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
@@ -91,18 +93,24 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
     };
 
     //constexpr int MINN = 1000;
-    constexpr int MINN = 100;
+    //constexpr int MINN = 100;
 
     bool found = false;
     constexpr char SEP = ';';
     constexpr int rowOffset = 6;
     double PC = dbg_get_hit_on(AVERAGE+1);
+    //V!C = (VC+M)*AC/A!C + (BC-B!C)2M/(B*A!C) - M
+    //    = VC*AC/A!C + M*AC/A!C + (BC-B!C)2M/(B*A!C) - M
     double AC = (1 - PC) * r.beta[3] / r.beta[1]; 
-    double BC = (1 - PC) * M * (r.beta[3] + r.beta[2] / B) / r.beta[1]; 
-    //double BC = (1 - PC) *  M * (r.beta[3] + r.beta[2] / B) / r.beta[1];
-    // =(1-$B$2)*((($B$8+$B$10)*(20000)+400*$B$9)/$B$8-20000)
-    double ANC = -PC * r.beta[1] / (r.beta[1] + r.beta[3]); 
-    double BNC = -PC * M * (r.beta[3] + r.beta[2] / B) / (r.beta[1] + r.beta[3]); 
+    double BC = (1 - PC) * M * (r.beta[3] + r.beta[2] * 2 / B) / r.beta[1]; 
+    double ANC = -PC * r.beta[3] / (r.beta[1] + r.beta[3]); 
+    double BNC = -PC * M * (r.beta[3] + r.beta[2] * 2 / B) / (r.beta[1] + r.beta[3]); 
+    //double AC = (1 - PC) * r.beta[3] / r.beta[1]; 
+    //double BC = (1 - PC) * M * (r.beta[3] + r.beta[2] / B) / r.beta[1]; 
+    ////double BC = (1 - PC) *  M * (r.beta[3] + r.beta[2] / B) / r.beta[1];
+    //// =(1-$B$2)*((($B$8+$B$10)*(20000)+400*$B$9)/$B$8-20000)
+    //double ANC = -PC * r.beta[1] / (r.beta[1] + r.beta[3]); 
+    //double BNC = -PC * M * (r.beta[3] + r.beta[2] / B) / (r.beta[1] + r.beta[3]); 
     for(int row = 0;; row++)
     {
 	    std::stringstream line;
@@ -219,7 +227,6 @@ void printRegFit(std::ostream& out)
 #endif
 
     constexpr int rowOffset = 6;
-    constexpr int MINN = 100;
     bool found = false;
     for(int row = 0;; row++)
     {
