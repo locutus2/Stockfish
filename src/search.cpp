@@ -67,6 +67,7 @@ constexpr int B = 100;
 constexpr int MAX_ROW = 10000;
 constexpr int AVERAGE = 2*MAX_ROW;
 
+constexpr int rowOffset = 6;
 constexpr int MINN = 1000;
 
 IncrementalLogisticRegression reg;
@@ -97,7 +98,6 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 
     bool found = false;
     constexpr char SEP = ';';
-    constexpr int rowOffset = 6;
     double PC = dbg_get_hit_on(AVERAGE+1);
     //V!C = (VC+M)*AC/A!C + (BC-B!C)2M/(B*A!C) - M
     //    = VC*AC/A!C + M*AC/A!C + (BC-B!C)2M/(B*A!C) - M
@@ -156,6 +156,8 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    line << SEP << "reg(C)";
 		    line << SEP << "red(!C)";
 		    line << SEP << "red(C)";
+		    line << SEP << "*red(!C)";
+		    line << SEP << "*red(C)";
 	    }
 	    else
 	    {
@@ -186,6 +188,9 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    enc = 1 / (1 + std::exp(-enc));
 		    ec = 1 / (1 + std::exp(-ec));
 
+		    double encRed = ncRed + ANC * ncRed + BNC;
+		    double ecRed = cRed + AC * cRed + BC;
+
 		    //enc = std::log(nc/(1-nc));
 		    //ec = std::log(c/(1-c));
 
@@ -206,6 +211,8 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    line << SEP << (c < 0 ? "" : fmt(ec));
 		    line << SEP << (nc < 0 ? "" : fmt(ncRed));
 		    line << SEP << (c < 0 ? "" : fmt(cRed));
+		    line << SEP << (nc < 0 ? "" : fmt(encRed));
+		    line << SEP << (c < 0 ? "" : fmt(ecRed));
 	    }
 
             std::string str = line.str();
@@ -226,7 +233,6 @@ void printRegFit(std::ostream& out)
     N = 4;
 #endif
 
-    constexpr int rowOffset = 6;
     bool found = false;
     for(int row = 0;; row++)
     {
@@ -1598,7 +1604,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = opponentWorsening;
 	//bool C = improving;
 	//bool C = priorCapture;
-	bool C = cutNode;
+	//bool C = cutNode;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
 	//bool C = capture;
@@ -1609,7 +1615,8 @@ moves_loop:  // When in check, search starts here
 	//bool C = cutNode;
 	//bool C = PvNode;
 	//bool C = allNode && ss->ttPv;
-	//bool C = ss->ttPv;
+	//bool C = PvNode;
+	bool C = ss->ttPv;
 	//bool C = ss->staticEval > alpha;
 	//bool C = ss->staticEval > eval;
 	//bool C = capture;
@@ -1631,6 +1638,7 @@ moves_loop:  // When in check, search starts here
         if (depth >= 2 && moveCount > 1)
         {
 	    //CC = true;
+	    //CC = !ss->inCheck;
 	    CC = !PvNode;
 	    //V = i64(u64(nodes + pos.key() + moveCount + depth) % 2049) / 64 * 64 - 1024;
 	    //D = (V+1024)/64;
