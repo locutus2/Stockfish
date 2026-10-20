@@ -1393,10 +1393,10 @@ moves_loop:  // When in check, search starts here
         if (depth >= 2 && moveCount > 1)
         {
             if (allNode)
-                r += r * 11 / 1024 + 785;
+                r += r * 3 / 1024 + 196;
 
             else if (cutNode)
-                r -= r * 16 / 1024 + 1111;
+                r -= r * 4 / 1024 + 278;
 
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
