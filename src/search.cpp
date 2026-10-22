@@ -70,7 +70,7 @@ constexpr int BR = 100;
 constexpr int M = 60000;
 constexpr int B = 100;
 constexpr int MAX_ROW = 10000;
-constexpr int AVERAGE = 2*MAX_ROW;
+constexpr int AVERAGE = 4*MAX_ROW;
 
 constexpr int rowOffset = 6;
 constexpr int MINN = 1000;
@@ -78,7 +78,7 @@ constexpr int MINN = 1000;
 IncrementalLogisticRegression reg;
 IncrementalLogisticRegression regR;
 
-void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
+void printRegFitCSV(const FitResult& r, long n, const FitResult& rR, long nR, std::ostream& out = std::cerr) {
     int N = 0;
 #ifdef QUAD_LOG_REG
     N = 6;
@@ -107,10 +107,23 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
     double PC = dbg_get_hit_on(AVERAGE+1);
     //V!C = (VC+M)*AC/A!C + (BC-B!C)2M/(B*A!C) - M
     //    = VC*AC/A!C + M*AC/A!C + (BC-B!C)2M/(B*A!C) - M
+    /*
     double AC = (1 - PC) * r.beta[3] / r.beta[1]; 
     double BC = (1 - PC) * M * (r.beta[3] + r.beta[2] * 2 / B) / r.beta[1]; 
     double ANC = -PC * r.beta[3] / (r.beta[1] + r.beta[3]); 
     double BNC = -PC * M * (r.beta[3] + r.beta[2] * 2 / B) / (r.beta[1] + r.beta[3]); 
+    */
+    // AR*DR+BR = AV*DV+BV
+    // DR = (AV*DV+BV-BR)/AR
+    // (R+mr)*br/(2*mr) = (AV*DV+BV-BR)/AR
+    // (R+mr)*br/(2*mr) = (AV*(V+mv)*bv/(2*mv)+BV-BR)/AR
+    // R = (AV*(V+mv)*bv/(2*mv)+BV-BR)*2*mr/AR/br - mr
+    // R = AV*bv*mr/(mv*br*AR) * V + (AV*mv*bv/(2*mv) +BV-BR)*2*mr/AR/br - mr
+    // R = AV*bv*mr/(mv*br*AR) * V + AV*bv*mr/(br*AR) + (BV-BR)*2*mr/AR/br - mr
+    double AC = (r.beta[3]+r.beta[1]) * B * MR / (BR * M * (rR.beta[3]+rR.beta[1])); 
+    double BC = (r.beta[3]+r.beta[1]) * B * MR / (BR * (rR.beta[3] + rR.beta[1])) + (r.beta[2] + r.beta[0] - rR.beta[2] - rR.beta[0]) * 2 * MR / (BR * (rR.beta[3] + rR.beta[1])) - MR; 
+    double ANC = r.beta[1] * B * MR / (BR * M * rR.beta[1]); 
+    double BNC = r.beta[1] * B * MR / (BR * rR.beta[1]) + (r.beta[0] - rR.beta[0]) * 2 * MR / (BR * rR.beta[1]) - MR; 
     //double AC = (1 - PC) * r.beta[3] / r.beta[1]; 
     //double BC = (1 - PC) * M * (r.beta[3] + r.beta[2] / B) / r.beta[1]; 
     ////double BC = (1 - PC) *  M * (r.beta[3] + r.beta[2] / B) / r.beta[1];
@@ -150,6 +163,10 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
             {
 		    line << names[row-rowOffset] << SEP << r.beta[row-rowOffset];
 	    }
+	    else if(row < 2*N+rowOffset)
+            {
+		    line << "R: " << names[row-rowOffset-N] << SEP << rR.beta[row-rowOffset-N];
+	    }
 	    else
 		    line << SEP;
 
@@ -162,44 +179,65 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    line << SEP << "logreg(C)";
 		    line << SEP << "V(!C)";
 		    line << SEP << "V(C)";
-		    line << SEP << "red(!C)";
-		    line << SEP << "red(C)";
-		    //line << SEP << "*red(!C)";
-		    //line << SEP << "*red(C)";
+		    line << SEP << "!CR";
+		    line << SEP << "CR";
+		    line << SEP << "logreg(!CR)";
+		    line << SEP << "logreg(CR)";
+		    line << SEP << "red(!CR)";
+		    line << SEP << "red(CR)";
+		    line << SEP << "*red(!CR)";
+		    line << SEP << "*red(CR)";
 	    }
 	    else
 	    {
 		    double nc = dbg_get_hit_on(row-1, MINN);
 		    double c = dbg_get_hit_on(MAX_ROW + row-1, MINN);
-		    if(row >= MAX_ROW || (found && row > N + rowOffset && nc < 0 && c < 0))
+		    double ncr = dbg_get_hit_on(2*MAX_ROW+row-1, MINN);
+		    double cr = dbg_get_hit_on(2*MAX_ROW+MAX_ROW + row-1, MINN);
+		    if(row >= MAX_ROW || (found && row > N + rowOffset && nc < 0 && c < 0 && ncr < 0 && cr < 0))
 			    break;
 		    double ncV = dbg_get_mean_of(row-1);
 		    double cV = dbg_get_mean_of(MAX_ROW + row-1);
 		    double ncRed = dbg_get_mean_of(2*MAX_ROW+row-1);
 		    double cRed = dbg_get_mean_of(2*MAX_ROW+MAX_ROW + row-1);
 
-		    if(nc >= 0 || c >= 0) found = true;
+		    if(nc >= 0 || c >= 0 || ncr >= 0 || cr >= 0) found = true;
 
 		    double enc = 0;
 		    double ec = 0;
-			    enc += r.beta[0];
-			    enc += r.beta[1]*(row-1);
-			    ec += r.beta[0];
-			    ec += r.beta[1]*(row-1);
-			    ec += r.beta[2];
-			    ec += r.beta[3]*(row-1);
+		    double encr = 0;
+		    double ecr = 0;
+		    enc += r.beta[0];
+		    enc += r.beta[1]*(row-1);
+		    ec += r.beta[0];
+		    ec += r.beta[1]*(row-1);
+		    ec += r.beta[2];
+		    ec += r.beta[3]*(row-1);
+		    encr += rR.beta[0];
+		    encr += rR.beta[1]*(row-1);
+		    ecr += rR.beta[0];
+		    ecr += rR.beta[1]*(row-1);
+		    ecr += rR.beta[2];
+		    ecr += rR.beta[3]*(row-1);
 		    if(N >= 6)
 		    {
 			    enc += r.beta[4]*(row-1)*(row-1);
 			    ec += r.beta[4]*(row-1)*(row-1);
 			    ec += r.beta[5]*(row-1)*(row-1);
+			    encr += rR.beta[4]*(row-1)*(row-1);
+			    ecr += rR.beta[4]*(row-1)*(row-1);
+			    ecr += rR.beta[5]*(row-1)*(row-1);
 		    }
 
 		    enc = 1 / (1 + std::exp(-enc));
 		    ec = 1 / (1 + std::exp(-ec));
+		    encr = 1 / (1 + std::exp(-encr));
+		    ecr = 1 / (1 + std::exp(-ecr));
 
-		    double encRed = ncRed + ANC * ncRed + BNC;
-		    double ecRed = cRed + AC * cRed + BC;
+		    //double encRed = ncRed + ANC * ncRed + BNC;
+		    //double ecRed = cRed + AC * cRed + BC;
+		    double encRed = ANC * ncV + BNC;
+		    double ecRed = AC * cV + BC;
 
 		    //enc = std::log(nc/(1-nc));
 		    //ec = std::log(c/(1-c));
@@ -221,10 +259,14 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    line << SEP << (c < 0 ? "" : fmt(ec));
 		    line << SEP << (nc < 0 ? "" : fmt(ncV));
 		    line << SEP << (c < 0 ? "" : fmt(cV));
-		    line << SEP << (nc < 0 ? "" : fmt(ncRed));
-		    line << SEP << (c < 0 ? "" : fmt(cRed));
-		    //line << SEP << (nc < 0 ? "" : fmt(encRed));
-		    //line << SEP << (c < 0 ? "" : fmt(ecRed));
+		    line << SEP << (ncr < 0 ? "" : fmt(ncr));
+		    line << SEP << (cr < 0 ? "" : fmt(cr));
+		    line << SEP << (ncr < 0 ? "" : fmt(encr));
+		    line << SEP << (cr < 0 ? "" : fmt(ecr));
+		    line << SEP << (ncr < 0 ? "" : fmt(ncRed));
+		    line << SEP << (cr < 0 ? "" : fmt(cRed));
+		    line << SEP << (nc < 0 ? "" : fmt(encRed));
+		    line << SEP << (c < 0 ? "" : fmt(ecRed));
 	    }
 
             std::string str = line.str();
@@ -250,10 +292,12 @@ void printRegFit(std::ostream& out)
     {
 	double nc = dbg_get_hit_on(row, MINN);
 	double c = dbg_get_hit_on(MAX_ROW + row, MINN);
-	if(row >= MAX_ROW || (found && row >= N + rowOffset && nc < 0 && c < 0))
+	double ncr = dbg_get_hit_on(2*MAX_ROW+row, MINN);
+	double cr = dbg_get_hit_on(2*MAX_ROW+MAX_ROW + row, MINN);
+	if(row >= MAX_ROW || (found && row >= N + rowOffset && nc < 0 && c < 0 && ncr < 0 && cr < 0))
 	    break;
 
-        if(nc >= 0 || c >= 0) found = true;
+        if(nc >= 0 || c >= 0 || ncr >= 0 || cr >= 0) found = true;
 
 	int D = row;
 	constexpr int L = 100000;
@@ -261,17 +305,19 @@ void printRegFit(std::ostream& out)
 	{
 	    if(c >= 0) reg.addPoint(D, true, i < L*c);
 	    if(nc >= 0) reg.addPoint(D, false, i < L*nc);
-	    //if(c >= 0) regR.addPoint(D, true, i < L*c);
-	    //if(nc >= 0) regR.addPoint(D, false, i < L*nc);
+	    if(cr >= 0) regR.addPoint(D, true, i < L*cr);
+	    if(ncr >= 0) regR.addPoint(D, false, i < L*ncr);
 	}
     }
 
     //std::random_shuffle(reg.data_.begin(), reg.data_.end());
 
     auto fitResult = reg.fit(true, 30);
+    auto fitResultR = regR.fit(true, 30);
     printFit(fitResult, reg.count(), out);
+    printFit(fitResultR, regR.count(), out);
     std::cerr << "\n==== CSV ====\n";
-    printRegFitCSV(fitResult, reg.count(), out);
+    printRegFitCSV(fitResult, reg.count(), fitResultR, regR.count(), out);
 }
 
 inline int lmr_divisor(int depth) {
@@ -1850,12 +1896,12 @@ moves_loop:  // When in check, search starts here
 
 		// for regR
 		dbg_hit_on(T, C*MAX_ROW+2*MAX_ROW+DR);
-		dbg_hit_on(T, 2*AVERAGE);
-		dbg_hit_on(C, 2*AVERAGE+1);
-		dbg_hit_on(T, 2*AVERAGE+10+C);
+		dbg_hit_on(T, AVERAGE+MAX_ROW);
+		dbg_hit_on(C, AVERAGE+MAX_ROW+1);
+		dbg_hit_on(T, AVERAGE+MAX_ROW+10+C);
 		dbg_mean_of(VR, C*MAX_ROW+2*MAX_ROW+DR);
-		dbg_mean_of(VR, 2*AVERAGE);
-		dbg_mean_of(VR, 2*AVERAGE+10+C);
+		dbg_mean_of(VR, AVERAGE+MAX_ROW);
+		dbg_mean_of(VR, AVERAGE+MAX_ROW+10+C);
 
 		//reg.addPoint(D, C, T);
 		//regR.addPoint(DR, C, T);
