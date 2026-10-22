@@ -62,12 +62,12 @@
 
 namespace Stockfish {
 
-constexpr int MR = 20000;
+constexpr int MR = 20000; // reduction
 constexpr int BR = 100;
 
 
-//constexpr int M = 20000 / 10;
-constexpr int M = 60000;
+constexpr int M = 1600; // ss->cutoffCnt 
+//constexpr int M = 60000; // statscore
 constexpr int B = 100;
 constexpr int MAX_ROW = 10000;
 constexpr int AVERAGE = 4*MAX_ROW;
@@ -1695,7 +1695,8 @@ moves_loop:  // When in check, search starts here
 	//int V = ss->statScore;
 	//constexpr int M = 60000;
 	//constexpr int B = 50;
-	int V = r;
+	//int V = r;
+	int V = ss->cutoffCnt;
 
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
@@ -1881,7 +1882,7 @@ moves_loop:  // When in check, search starts here
 		int VR = r;
 		int DR = std::clamp((VR+MR)*BR/(2*MR), 0, BR);
 
-		V = ss->statScore;
+		//V = ss->statScore;
 		int D = std::clamp((V+M)*B/(2*M), 0, B);
 		bool T = value > alpha;
 	
