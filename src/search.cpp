@@ -62,7 +62,12 @@
 
 namespace Stockfish {
 
-constexpr int M = 20000;
+constexpr int MR = 20000;
+constexpr int BR = 100;
+
+
+//constexpr int M = 20000 / 10;
+constexpr int M = 60000;
 constexpr int B = 100;
 constexpr int MAX_ROW = 10000;
 constexpr int AVERAGE = 2*MAX_ROW;
@@ -71,6 +76,7 @@ constexpr int rowOffset = 6;
 constexpr int MINN = 1000;
 
 IncrementalLogisticRegression reg;
+IncrementalLogisticRegression regR;
 
 void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
     int N = 0;
@@ -152,12 +158,14 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    line << SEP << "index";
 		    line << SEP << "!C";
 		    line << SEP << "C";
-		    line << SEP << "reg(!C)";
-		    line << SEP << "reg(C)";
+		    line << SEP << "logreg(!C)";
+		    line << SEP << "logreg(C)";
+		    line << SEP << "V(!C)";
+		    line << SEP << "V(C)";
 		    line << SEP << "red(!C)";
 		    line << SEP << "red(C)";
-		    line << SEP << "*red(!C)";
-		    line << SEP << "*red(C)";
+		    //line << SEP << "*red(!C)";
+		    //line << SEP << "*red(C)";
 	    }
 	    else
 	    {
@@ -165,8 +173,10 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    double c = dbg_get_hit_on(MAX_ROW + row-1, MINN);
 		    if(row >= MAX_ROW || (found && row > N + rowOffset && nc < 0 && c < 0))
 			    break;
-		    double ncRed = dbg_get_mean_of(row-1);
-		    double cRed = dbg_get_mean_of(MAX_ROW + row-1);
+		    double ncV = dbg_get_mean_of(row-1);
+		    double cV = dbg_get_mean_of(MAX_ROW + row-1);
+		    double ncRed = dbg_get_mean_of(2*MAX_ROW+row-1);
+		    double cRed = dbg_get_mean_of(2*MAX_ROW+MAX_ROW + row-1);
 
 		    if(nc >= 0 || c >= 0) found = true;
 
@@ -209,10 +219,12 @@ void printRegFitCSV(const FitResult& r, long n, std::ostream& out = std::cerr) {
 		    line << SEP << (c < 0 ? "" : fmt(c));
 		    line << SEP << (nc < 0 ? "" : fmt(enc));
 		    line << SEP << (c < 0 ? "" : fmt(ec));
+		    line << SEP << (nc < 0 ? "" : fmt(ncV));
+		    line << SEP << (c < 0 ? "" : fmt(cV));
 		    line << SEP << (nc < 0 ? "" : fmt(ncRed));
 		    line << SEP << (c < 0 ? "" : fmt(cRed));
-		    line << SEP << (nc < 0 ? "" : fmt(encRed));
-		    line << SEP << (c < 0 ? "" : fmt(ecRed));
+		    //line << SEP << (nc < 0 ? "" : fmt(encRed));
+		    //line << SEP << (c < 0 ? "" : fmt(ecRed));
 	    }
 
             std::string str = line.str();
@@ -249,6 +261,8 @@ void printRegFit(std::ostream& out)
 	{
 	    if(c >= 0) reg.addPoint(D, true, i < L*c);
 	    if(nc >= 0) reg.addPoint(D, false, i < L*nc);
+	    //if(c >= 0) regR.addPoint(D, true, i < L*c);
+	    //if(nc >= 0) regR.addPoint(D, false, i < L*nc);
 	}
     }
 
@@ -1623,6 +1637,8 @@ moves_loop:  // When in check, search starts here
 	//bool C = givesCheck;
 	//bool C = bool(excludedMove);
 	//bool C = priorReduction > 0;
+	//bool C = (ss-1)->inCheck;
+	//bool C = (ss-1)->currentMove==Move::null();
 	//bool C = priorReduction > 1;
 	//bool C = cutNode && priorReduction == 0;
 	//bool C = type_of(movedPiece) == KING;
@@ -1638,10 +1654,10 @@ moves_loop:  // When in check, search starts here
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
-	    //CC = true;
+	    CC = true;
 	    //CC = !ss->inCheck;
-	    //CC = !PvNode;
-	    CC = !PvNode && !excludedMove;
+	    CC = !PvNode;
+	    //CC = !PvNode && !excludedMove;
 	    //V = i64(u64(nodes + pos.key() + moveCount + depth) % 2049) / 64 * 64 - 1024;
 	    //D = (V+1024)/64;
 
@@ -1814,10 +1830,16 @@ moves_loop:  // When in check, search starts here
 		bool T = rnd < p;
 		*/
 
-		V = r;
+		//V = r;
+		//V = r / rootDepth;
+		int VR = r;
+		int DR = std::clamp((VR+MR)*BR/(2*MR), 0, BR);
+
+		V = ss->statScore;
 		int D = std::clamp((V+M)*B/(2*M), 0, B);
 		bool T = value > alpha;
-		
+	
+	        // for reg	
 		dbg_hit_on(T, C*MAX_ROW+D);
 		dbg_hit_on(T, AVERAGE);
 		dbg_hit_on(C, AVERAGE+1);
@@ -1826,7 +1848,17 @@ moves_loop:  // When in check, search starts here
 		dbg_mean_of(V, AVERAGE);
 		dbg_mean_of(V, AVERAGE+10+C);
 
+		// for regR
+		dbg_hit_on(T, C*MAX_ROW+2*MAX_ROW+DR);
+		dbg_hit_on(T, 2*AVERAGE);
+		dbg_hit_on(C, 2*AVERAGE+1);
+		dbg_hit_on(T, 2*AVERAGE+10+C);
+		dbg_mean_of(VR, C*MAX_ROW+2*MAX_ROW+DR);
+		dbg_mean_of(VR, 2*AVERAGE);
+		dbg_mean_of(VR, 2*AVERAGE+10+C);
+
 		//reg.addPoint(D, C, T);
+		//regR.addPoint(DR, C, T);
 	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
