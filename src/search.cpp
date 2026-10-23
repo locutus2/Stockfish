@@ -66,7 +66,8 @@ constexpr int MR = 20000; // reduction
 constexpr int BR = 100;
 
 
-constexpr int M = 1600; // ss->cutoffCnt 
+constexpr int M = 50; // (ss-1)->moveCount 
+//constexpr int M = 1600; // ss->cutoffCnt 
 //constexpr int M = 60000; // statscore
 constexpr int B = 100;
 constexpr int MAX_ROW = 10000;
@@ -1696,7 +1697,8 @@ moves_loop:  // When in check, search starts here
 	//constexpr int M = 60000;
 	//constexpr int B = 50;
 	//int V = r;
-	int V = ss->cutoffCnt;
+	//int V = ss->cutoffCnt;
+	int V = (ss-1)->moveCount;
 
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
