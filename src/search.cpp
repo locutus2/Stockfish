@@ -66,9 +66,10 @@ constexpr int MR = 20000; // reduction
 constexpr int BR = 100;
 
 
-constexpr int M = 50; // (ss-1)->moveCount 
+//constexpr int M = 50; // (ss-1)->moveCount 
 //constexpr int M = 1600; // ss->cutoffCnt 
 //constexpr int M = 60000; // statscore
+constexpr int M = 20000; // reduction
 constexpr int B = 100;
 constexpr int MAX_ROW = 10000;
 constexpr int AVERAGE = 4*MAX_ROW;
@@ -1665,7 +1666,7 @@ moves_loop:  // When in check, search starts here
 	//bool C = opponentWorsening;
 	//bool C = improving;
 	//bool C = priorCapture;
-	bool C = cutNode;
+	//bool C = cutNode;
 	//bool C = ss->inCheck;
 	//bool C = allNode;
 	//bool C = capture;
@@ -1693,19 +1694,20 @@ moves_loop:  // When in check, search starts here
 	//bool C = ttHit;
 	//bool C = (pos.key() ^ nodes) & 1;
 	//bool C = (pos.key() + nodes + threadIdx) & 0x7F;
+	bool C = (pos.key() + nodes + threadIdx) & 0xFF;
 	//int V = ss->statScore;
 	//constexpr int M = 60000;
 	//constexpr int B = 50;
-	//int V = r;
+	int V = r;
 	//int V = ss->cutoffCnt;
-	int V = (ss-1)->moveCount;
+	//int V = (ss-1)->moveCount;
 
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
 	    CC = true;
 	    //CC = !ss->inCheck;
-	    CC = !PvNode;
+	    //CC = !PvNode;
 	    //CC = !PvNode && !excludedMove;
 	    //V = i64(u64(nodes + pos.key() + moveCount + depth) % 2049) / 64 * 64 - 1024;
 	    //D = (V+1024)/64;
