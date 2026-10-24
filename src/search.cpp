@@ -1352,7 +1352,7 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += 4026 + 933 * !ttData.move;
+            r += 3748 + 933 * !ttData.move;
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
@@ -1383,7 +1383,11 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
-            r += r * 276 / (256 * depth + 268);
+            r += i64(r) * (1110 + 3 * depth) / (1024 * depth + 1072) + 196;
+
+        // Scale down reductions for expected CUT nodes
+        else if (cutNode)
+            r -= r / 256;
 
         // When seeking a mate, reduce non-checking moves more and checking moves less
         if (seekMate && r > 0)
@@ -1392,12 +1396,6 @@ moves_loop:  // When in check, search starts here
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
-            if (allNode)
-                r += r * 3 / 1024 + 196;
-
-            else if (cutNode)
-                r -= r * 4 / 1024 + 278;
-
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth. To avoid search explosion, extensions
