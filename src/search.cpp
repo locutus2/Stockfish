@@ -1388,7 +1388,17 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
+	{
+		if(r > 0)
+		{
+            bool C = priorCapture && !improving && ss->ttPv;
+            int r0 = r * 276 / (256 * depth + 268);
+            int r1 = C * r * 276 / (256 * depth + 268);
+	    dbg_mean_of(r0, 0);
+	    dbg_mean_of(r1, 1);
+		}
             r += r * 276 / (256 * depth + 268);
+	}
 
         // When seeking a mate, reduce non-checking moves more and checking moves less
         if (seekMate && r > 0)
