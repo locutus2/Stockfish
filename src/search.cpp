@@ -1699,7 +1699,9 @@ moves_loop:  // When in check, search starts here
 	//bool C = ttHit;
 	//bool C = (pos.key() ^ nodes) & 1;
 	//bool C = (pos.key() + nodes + threadIdx) & 0x7F;
-	bool C = (pos.key() + nodes + threadIdx) & 0xFF;
+	//bool C = (pos.key() + nodes + threadIdx) & 0xFF;
+	//bool C = allNode && priorCapture && !improving && ttHit;
+	bool C = allNode && priorCapture && !improving && ss->ttPv;
 	//int V = ss->statScore;
 	//constexpr int M = 60000;
 	//constexpr int B = 50;
@@ -1711,6 +1713,8 @@ moves_loop:  // When in check, search starts here
         if (depth >= 2 && moveCount > 1)
         {
 	    CC = true;
+	    //CC = allNode && priorCapture && !improving && ttHit;
+	    //CC = allNode  && priorCapture && !improving && ttHit;
 	    //CC = !ss->inCheck;
 	    //CC = !PvNode;
 	    //CC = !PvNode && !excludedMove;
