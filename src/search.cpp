@@ -2011,7 +2011,7 @@ void update_all_stats(const Position& pos,
     if (!PvNode)
         // Important: don't remove the cast to a 64-bit number else the multiplication
         // can overflow on 32-bit platforms which would change the bench signature
-        bonus += int(bonus * u64(quietsSearched.size() + capturesSearched.size()) / 256);
+        bonus += int(bonus * u64(quietsSearched.size() + capturesSearched.size()) * depth / 2048);
 
     if (!pos.capture_stage(bestMove))
     {
