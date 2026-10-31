@@ -2011,7 +2011,7 @@ void update_all_stats(const Position& pos,
       std::min(133 * depth - 81, 1487) + 364 * (bestMove == ttMove) + (ss - 1)->statScore / 28;
     int malus = std::min(968 * depth - 235, 2244);
 
-    bonus += bonus * (bestMoveCount - 1) * (1 + PvNode) / 256;
+    bonus += bonus * (bestMoveCount - 1) * (1 + 3 * PvNode) / 256;
 
     if (!pos.capture_stage(bestMove))
     {
