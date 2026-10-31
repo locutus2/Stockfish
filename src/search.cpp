@@ -349,6 +349,9 @@ bool Search::Worker::iterative_deepening() {
     {
         rootDepth++;
 
+        // Do not tune these values. They are not intended for playing strength.
+        int seekMateThreshold = 750 + 220000 / (rootDepth * rootDepth);
+
         // Signal the start of a new iteration
         if (mainThread)
             uciPvSent = false;
@@ -389,11 +392,11 @@ bool Search::Worker::iterative_deepening() {
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
-            // Do not tune these values. They are not intended for playing strength.
-            seekMate = std::abs(rootMoves[pvIdx].score) >= 750 + 220000 / (rootDepth * rootDepth);
+            seekMate = rootMoves[pvIdx].previousScore != -VALUE_INFINITE
+                    && std::abs(rootMoves[pvIdx].previousScore) >= seekMateThreshold;
 
             // Adjust optimism based on root move's averageScore
-            optimism[us]  = 114 * avg / (std::abs(avg) + 85);
+            optimism[us]  = 456 * avg / (std::abs(avg) + 85);
             optimism[~us] = -optimism[us];
 
             // Start with a small aspiration window and, in the case of a fail
@@ -665,7 +668,7 @@ void Search::Worker::do_move(Position&    pos,
     // prefetch_key() does not model castling, en passant or promotion exactly.
     // The correction-history prefetches also approximate castling and promotion.
     // For these rare moves the prefetches land on unused lines.
-    prefetch(tt.first_entry(pos.prefetch_key(move)));
+    prefetch(tt.get_cluster(pos.prefetch_key(move)));
 
     if (ss != nullptr)
     {
@@ -679,7 +682,7 @@ void Search::Worker::do_move(Position&    pos,
 
     ++nodes;
 
-    Dirties& dirties = accumulatorStack.push();
+    Dirties& dirties = accumulatorStack.push(pos);
     pos.do_move(move, st, givesCheck, dirties, &sharedHistory);
 
     if (ss != nullptr)
@@ -1040,7 +1043,8 @@ Value Search::Worker::search(
         assert((ss - 1)->currentMove != Move::null());
 
         // Null move dynamic reduction based on depth
-        Depth R = 7 + depth / 3 + std::max((ss->staticEval - beta) / 256, 0);
+        // Odd threads reduce one ply less
+        Depth R = 7 + depth / 3 + std::max((ss->staticEval - beta) / 256, 0) - int(threadIdx & 1);
         R -= seekMate * R / 2;
         do_null_move(pos, st, ss);
 
