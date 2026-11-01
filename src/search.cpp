@@ -2003,9 +2003,8 @@ void update_all_stats(const Position& pos,
     Piece                  movedPiece     = pos.moved_piece(bestMove);
     PieceType              capturedPiece;
 
-    int bonus = std::max(std::min(133 * depth - 81, 1487) + 364 * (bestMove == ttMove)
-                           + (ss - 1)->statScore / 28,
-                         std::min(66 * depth - 41, 743));
+    int bonus = std::min(133 * depth - 81, 1487)
+              + std::max(364 * (bestMove == ttMove) + (ss - 1)->statScore / 28, 0);
     int malus = std::min(968 * depth - 235, 2244);
 
     if (!PvNode)
