@@ -2005,7 +2005,7 @@ void update_all_stats(const Position& pos,
 
     int bonus = std::max(std::min(133 * depth - 81, 1487) + 364 * (bestMove == ttMove)
                            + (ss - 1)->statScore / 28,
-                         133 * std::min(depth, 2) - 81);
+                         133 * std::min(depth, 3) - 81);
     int malus = std::min(968 * depth - 235, 2244);
 
     if (!PvNode)
