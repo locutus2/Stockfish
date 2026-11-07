@@ -2014,7 +2014,7 @@ void update_all_stats(const Position& pos,
     PieceType              capturedPiece;
 
     int bonus = std::min(133 * depth - 81, 1487) + 364 * (bestMove == ttMove)
-              + (ss - 1)->statScore * depth / 157;
+              + (ss - 1)->statScore * std::min(depth, 12) / 149;
     int malus = std::min(968 * depth - 235, 2244);
 
     if (!PvNode)
