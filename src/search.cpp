@@ -769,7 +769,7 @@ Value Search::Worker::search(
     StateInfo st;
 
     Key   posKey;
-    Move  move, excludedMove, bestMove;
+    Move  move, excludedMove, bestMove, nullMoveRefutation;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
@@ -781,12 +781,13 @@ Value Search::Worker::search(
     SearchedList quietsSearched;
 
     // Step 1. Initialize node
-    ss->inCheck   = pos.checkers();
-    priorCapture  = pos.captured_piece();
-    Color us      = pos.side_to_move();
-    ss->moveCount = 0;
-    bestValue     = -VALUE_INFINITE;
-    maxValue      = VALUE_INFINITE;
+    ss->inCheck        = pos.checkers();
+    priorCapture       = pos.captured_piece();
+    Color us           = pos.side_to_move();
+    ss->moveCount      = 0;
+    bestValue          = -VALUE_INFINITE;
+    maxValue           = VALUE_INFINITE;
+    nullMoveRefutation = Move::none();
 
     ss->followPV = rootNode
                 || ((ss - 1)->followPV
@@ -1076,6 +1077,8 @@ Value Search::Worker::search(
                 return nullValue;
             }
         }
+        else
+            nullMoveRefutation = (ss + 1)->currentMove;
     }
 
     improving |= ss->staticEval >= beta;
@@ -1144,12 +1147,11 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &mainHistory, &lowPlyHistory, &captureHistory, contHist,
-                  &sharedHistory, ss->ply);
+                  &sharedHistory, ss->ply, nullMoveRefutation);
 
     value = bestValue;
 
     int moveCount = 0;
-
     // Step 14. Loop through all legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move()) != Move::none())
@@ -1798,7 +1800,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // to search the moves. We presently use two stages of move generator in
     // quiescence search: captures, or evasions only when in check.
     MovePicker mp(pos, ttData.move, DEPTH_QS, &mainHistory, &lowPlyHistory, &captureHistory,
-                  contHist, &sharedHistory, ss->ply);
+                  contHist, &sharedHistory, ss->ply, Move::none());
 
     // Step 5. Loop through all legal moves until no moves remain
     // or a beta cutoff occurs.

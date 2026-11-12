@@ -49,7 +49,8 @@ class MovePicker {
                const CapturePieceToHistory*,
                const PieceToHistory**,
                const SharedHistories*,
-               int);
+               int,
+               Move);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
     Move next_move();
     void skip_quiet_moves();
@@ -67,6 +68,7 @@ class MovePicker {
     const PieceToHistory**       continuationHistory;
     const SharedHistories*       sharedHistory;
     Move                         ttMove;
+    Move                         nullMoveRefutation;
     ExtMove *                    cur, *endCur, *endBadCaptures, *endBadMoves;
     Stages                       stage;
     Stages                       first_stage;
