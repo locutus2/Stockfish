@@ -1213,7 +1213,8 @@ moves_loop:  // When in check, search starts here
                 int   captHist = captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
 
                 // Futility pruning for captures
-                if (!givesCheck && lmrDepth < 8)
+                if (!givesCheck && lmrDepth < 8
+                    && (!nullMoveRefutation || move.to_sq() != nullMoveRefutation.from_sq()))
                 {
                     Value futilityValue = ss->staticEval + 234 + 247 * lmrDepth
                                         + PieceValue[capturedPiece] + 134 * captHist / 1024;
@@ -1226,7 +1227,6 @@ moves_loop:  // When in check, search starts here
                 // Avoid pruning sacrifices of our last piece for stalemate.
                 int margin = 177 * depth + captHist * 34 / 1024;
                 if ((alpha >= VALUE_DRAW || pos.non_pawn_material(us) != PieceValue[movedPiece])
-                    && (!nullMoveRefutation || move.to_sq() != nullMoveRefutation.from_sq())
                     && !pos.see_ge(move, -margin))
                     continue;
             }
