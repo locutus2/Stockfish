@@ -770,7 +770,7 @@ Value Search::Worker::search(
     StateInfo st;
 
     Key   posKey;
-    Move  move, excludedMove, bestMove;
+    Move  move, excludedMove, bestMove, nullMoveRefutation;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
@@ -782,12 +782,13 @@ Value Search::Worker::search(
     SearchedList quietsSearched;
 
     // Step 1. Initialize node
-    ss->inCheck   = pos.checkers();
-    priorCapture  = pos.captured_piece();
-    Color us      = pos.side_to_move();
-    ss->moveCount = 0;
-    bestValue     = -VALUE_INFINITE;
-    maxValue      = VALUE_INFINITE;
+    ss->inCheck        = pos.checkers();
+    priorCapture       = pos.captured_piece();
+    Color us           = pos.side_to_move();
+    ss->moveCount      = 0;
+    bestValue          = -VALUE_INFINITE;
+    maxValue           = VALUE_INFINITE;
+    nullMoveRefutation = Move::none();
 
     ss->followPV = rootNode
                 || ((ss - 1)->followPV
@@ -1077,6 +1078,8 @@ Value Search::Worker::search(
                 return nullValue;
             }
         }
+        else
+            nullMoveRefutation = (ss + 1)->currentMove;
     }
 
     improving |= ss->staticEval >= beta;
@@ -1223,6 +1226,7 @@ moves_loop:  // When in check, search starts here
                 // Avoid pruning sacrifices of our last piece for stalemate.
                 int margin = 177 * depth + captHist * 34 / 1024;
                 if ((alpha >= VALUE_DRAW || pos.non_pawn_material(us) != PieceValue[movedPiece])
+                    && (!nullMoveRefutation || move.to_sq() != nullMoveRefutation.from_sq())
                     && !pos.see_ge(move, -margin))
                     continue;
             }
