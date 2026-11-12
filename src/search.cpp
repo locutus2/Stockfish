@@ -1213,8 +1213,7 @@ moves_loop:  // When in check, search starts here
                 int   captHist = captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
 
                 // Futility pruning for captures
-                if (!givesCheck && lmrDepth < 8
-                    && (!nullMoveRefutation || move.to_sq() != nullMoveRefutation.from_sq()))
+                if (!givesCheck && lmrDepth < 8)
                 {
                     Value futilityValue = ss->staticEval + 234 + 247 * lmrDepth
                                         + PieceValue[capturedPiece] + 134 * captHist / 1024;
@@ -1237,7 +1236,11 @@ moves_loop:  // When in check, search starts here
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
-                if (history < -4136 * depth)
+                if (history < -4136 * depth
+                    && (!nullMoveRefutation
+                        || !(Attacks::between_bb(nullMoveRefutation.to_sq(),
+                                                 nullMoveRefutation.from_sq())
+                             & move.to_sq())))
                     continue;
 
                 history += 69 * mainHistory[us][move.raw()] / 32;
