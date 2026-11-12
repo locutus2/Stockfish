@@ -1236,11 +1236,7 @@ moves_loop:  // When in check, search starts here
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
-                if (history < -4136 * depth
-                    && (!nullMoveRefutation
-                        || !(Attacks::between_bb(nullMoveRefutation.to_sq(),
-                                                 nullMoveRefutation.from_sq())
-                             & move.to_sq())))
+                if (history < -4136 * depth)
                     continue;
 
                 history += 69 * mainHistory[us][move.raw()] / 32;
@@ -1264,7 +1260,11 @@ moves_loop:  // When in check, search starts here
                 lmrDepth = std::max(lmrDepth, 0);
 
                 // Prune moves with negative SEE
-                if (!pos.see_ge(move, -23 * lmrDepth * lmrDepth))
+                if ((!nullMoveRefutation
+                     || !(
+                       Attacks::between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq())
+                       & move.to_sq()))
+                    && !pos.see_ge(move, -23 * lmrDepth * lmrDepth))
                     continue;
             }
         }
