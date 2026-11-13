@@ -1183,7 +1183,8 @@ moves_loop:  // When in check, search starts here
         preventNullMoveRefutation =
           //nullMoveRefutation && move.to_sq() == nullMoveRefutation.from_sq();
           //nullMoveRefutation && move.from_sq() == nullMoveRefutation.to_sq();
-          nullMoveRefutation && (Attacks::between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq()) & move.to_sq());
+          //nullMoveRefutation && (Attacks::between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq()) & move.to_sq());
+          nullMoveRefutation && (Attacks::between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq()) & move.to_sq() & ~square_bb(nullMoveRefutation.from_sq()));
 
         // Calculate new depth for this move
         newDepth = depth - 1;
@@ -1267,6 +1268,33 @@ moves_loop:  // When in check, search starts here
 	 *  Hit #11: Total 7702 Hits 37 Hit Rate (%) 0.480395
 	 *
 	 *
+	 * ----------------------------------------
+	 *  C=nullMoveRefutation && (Attacks::between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq()) & move.to_sq() & ~square_bb(nullMoveRefutation.from_sq()));
+	 *
+	*  capture futility
+		*  Hit #0: Total 660 Hits 11 Hit Rate (%) 1.66667
+		*  Hit #10: Total 658 Hits 11 Hit Rate (%) 1.67173
+		*  Hit #11: Total 2 Hits 0 Hit Rate (%) 0
+		*
+		*  caputre see
+		*  Hit #0: Total 31577 Hits 138 Hit Rate (%) 0.437027
+		*  Hit #10: Total 31300 Hits 134 Hit Rate (%) 0.428115
+		*  Hit #11: Total 277 Hits 4 Hit Rate (%) 1.44404
+		*
+		*  non-capture history
+		*  Hit #0: Total 306 Hits 19 Hit Rate (%) 6.20915
+		*  Hit #10: Total 306 Hits 19 Hit Rate (%) 6.20915
+		*
+		*  non-capture futility
+		*  Hit #0: Total 93193 Hits 949 Hit Rate (%) 1.01832
+		*  Hit #10: Total 92685 Hits 929 Hit Rate (%) 1.00232
+		*  Hit #11: Total 508 Hits 20 Hit Rate (%) 3.93701
+		*
+		*  non-capture see
+		*  Hit #0: Total 215437 Hits 650 Hit Rate (%) 0.301712
+		*  Hit #10: Total 209391 Hits 622 Hit Rate (%) 0.297052
+		*  Hit #11: Total 6046 Hits 28 Hit Rate (%) 0.463116
+		*
 	 * */
 	bool CC = false, C = false;
 	C = preventNullMoveRefutation;
@@ -1306,9 +1334,9 @@ moves_loop:  // When in check, search starts here
                 if ((alpha >= VALUE_DRAW || pos.non_pawn_material(us) != PieceValue[movedPiece])
                     && !pos.see_ge(move, -margin))
 		{
-		    CC = bool(nullMoveRefutation);
-                    if(!CC) continue;
-                    //continue;
+		    //CC = bool(nullMoveRefutation);
+                    //if(!CC) continue;
+                    continue;
 		}
             }
             else if (!ss->followPV || !PvNode)
@@ -1350,9 +1378,9 @@ moves_loop:  // When in check, search starts here
                 // Prune moves with negative SEE
                 if (!pos.see_ge(move, -23 * lmrDepth * lmrDepth))
 		{
-		    //CC = bool(nullMoveRefutation);
-                    //if(!CC) continue;
-                    continue;
+		    CC = bool(nullMoveRefutation);
+                    if(!CC) continue;
+                    //continue;
 		}
             }
         }
