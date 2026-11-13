@@ -1181,7 +1181,9 @@ moves_loop:  // When in check, search starts here
         movedPiece = pos.moved_piece(move);
         givesCheck = pos.gives_check(move);
         preventNullMoveRefutation =
-          nullMoveRefutation && move.from_sq() == nullMoveRefutation.to_sq();
+          //nullMoveRefutation && move.to_sq() == nullMoveRefutation.from_sq();
+          //nullMoveRefutation && move.from_sq() == nullMoveRefutation.to_sq();
+          nullMoveRefutation && (Attacks.between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq()) & move.to_sq());
 
         // Calculate new depth for this move
         newDepth = depth - 1;
@@ -1197,6 +1199,8 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 929;
 
+	bool CC = false, C = false;
+	C = preventNullMoveRefutation;
         // Step 15. Pruning at shallow depths.
         // Depth conditions are important for mate finding.
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
@@ -1220,7 +1224,11 @@ moves_loop:  // When in check, search starts here
                                         + PieceValue[capturedPiece] + 134 * captHist / 1024;
 
                     if (futilityValue <= alpha)
+		    {
+		        //CC = bool(nullMoveRefutation);
+                        //if(!CC) continue;
                         continue;
+		    }
                 }
 
                 // SEE based pruning for captures and checks.
@@ -1228,7 +1236,11 @@ moves_loop:  // When in check, search starts here
                 int margin = 177 * depth + captHist * 34 / 1024;
                 if ((alpha >= VALUE_DRAW || pos.non_pawn_material(us) != PieceValue[movedPiece])
                     && !pos.see_ge(move, -margin))
+		{
+		    //CC = bool(nullMoveRefutation);
+                    //if(!CC) continue;
                     continue;
+		}
             }
             else if (!ss->followPV || !PvNode)
             {
@@ -1237,8 +1249,12 @@ moves_loop:  // When in check, search starts here
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
-                if (history < -4136 * depth && !preventNullMoveRefutation)
-                    continue;
+                if (history < -4136 * depth)
+		{
+		    //CC = bool(nullMoveRefutation);
+                    //if(!CC) continue;
+		    continue;
+		}
 
                 history += 69 * mainHistory[us][move.raw()] / 32;
 
@@ -1255,6 +1271,8 @@ moves_loop:  // When in check, search starts here
                     if (bestValue <= futilityValue && !is_decisive(bestValue)
                         && !is_win(futilityValue))
                         bestValue = futilityValue;
+		    //CC = bool(nullMoveRefutation);
+                    //if(!CC) continue;
                     continue;
                 }
 
@@ -1262,7 +1280,11 @@ moves_loop:  // When in check, search starts here
 
                 // Prune moves with negative SEE
                 if (!pos.see_ge(move, -23 * lmrDepth * lmrDepth))
-                    continue;
+		{
+		    CC = bool(nullMoveRefutation);
+                    if(!CC) continue;
+                    //continue;
+		}
             }
         }
 
@@ -1463,6 +1485,13 @@ moves_loop:  // When in check, search starts here
 
         // Step 21. Undo move
         undo_move(pos, move);
+
+	if(CC)
+	{
+		bool T = value > alpha;
+		dbg_hit_on(T, 0);
+		dbg_hit_on(T, 10+C);
+	}
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
