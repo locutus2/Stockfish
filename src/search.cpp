@@ -1226,7 +1226,7 @@ moves_loop:  // When in check, search starts here
                 // Avoid pruning sacrifices of our last piece for stalemate.
                 int margin = 177 * depth + captHist * 34 / 1024;
                 if ((alpha >= VALUE_DRAW || pos.non_pawn_material(us) != PieceValue[movedPiece])
-                    && (!nullMoveRefutation || move.to_sq() != nullMoveRefutation.from_sq())
+                    && (!nullMoveRefutation || move.from_sq() != nullMoveRefutation.to_sq())
                     && !pos.see_ge(move, -margin))
                     continue;
             }
