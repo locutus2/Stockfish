@@ -1184,7 +1184,9 @@ moves_loop:  // When in check, search starts here
           //nullMoveRefutation && move.to_sq() == nullMoveRefutation.from_sq();
           //nullMoveRefutation && move.from_sq() == nullMoveRefutation.to_sq();
           //nullMoveRefutation && (Attacks::between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq()) & move.to_sq());
-          nullMoveRefutation && (Attacks::between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq()) & move.to_sq() & ~square_bb(nullMoveRefutation.from_sq()));
+          //nullMoveRefutation && (Attacks::between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq()) & move.to_sq() & ~square_bb(nullMoveRefutation.from_sq()));
+	  //nullMoveRefutation && givesCheck;
+	  nullMoveRefutation && (ss-1)->currentMove && (ss-1)->currentMove.to_sq() == nullMoveRefutation.from_sq();
 
         // Calculate new depth for this move
         newDepth = depth - 1;
@@ -1212,6 +1214,21 @@ moves_loop:  // When in check, search starts here
 	 * Hit #0: Total 31577 Hits 138 Hit Rate (%) 0.437027
 	 * Hit #10: Total 30572 Hits 136 Hit Rate (%) 0.444851
 	 * Hit #11: Total 1005 Hits 2 Hit Rate (%) 0.199005
+	 *
+	 * non-capture history
+	 * Hit #0: Total 306 Hits 19 Hit Rate (%) 6.20915
+	 * Hit #10: Total 304 Hits 19 Hit Rate (%) 6.25
+	 * Hit #11: Total 2 Hits 0 Hit Rate (%) 0
+	 *
+	 * non-capture futility
+	 * Hit #0: Total 93193 Hits 949 Hit Rate (%) 1.01832
+	 * Hit #10: Total 93109 Hits 948 Hit Rate (%) 1.01816
+	 * Hit #11: Total 84 Hits 1 Hit Rate (%) 1.19048
+	 *
+	 * non-capture see
+	 * Hit #0: Total 215437 Hits 650 Hit Rate (%) 0.301712
+	 * Hit #10: Total 213781 Hits 641 Hit Rate (%) 0.29984
+	 * Hit #11: Total 1656 Hits 9 Hit Rate (%) 0.543478
 	 * ------------------------
 	 *  C=nullMoveRefutation && move.from_sq() == nullMoveRefutation.to_sq()
 	 *
@@ -1295,6 +1312,39 @@ moves_loop:  // When in check, search starts here
 		*  Hit #10: Total 209391 Hits 622 Hit Rate (%) 0.297052
 		*  Hit #11: Total 6046 Hits 28 Hit Rate (%) 0.463116
 		*
+		* ----------------------------------------
+		*  C=nullMoveRefutation && givesCheck
+		*  capture see
+		*  Hit #0: Total 31577 Hits 138 Hit Rate (%) 0.437027
+		*  Hit #10: Total 10209 Hits 39 Hit Rate (%) 0.382016
+		*  Hit #11: Total 21368 Hits 99 Hit Rate (%) 0.46331
+		*  ---------------------------
+		*  C=nullMoveRefutation && (ss-1)->currentMove && (ss-1)->currentMove.to_sq() == nullMoveRefutation.from_sq();
+	 *
+		 *  capture futility
+		 *  Hit #0: Total 660 Hits 11 Hit Rate (%) 1.66667
+		 *  Hit #10: Total 623 Hits 10 Hit Rate (%) 1.60514
+		 *  Hit #11: Total 37 Hits 1 Hit Rate (%) 2.7027
+		 *
+		 *  caputre see
+		 *  Hit #0: Total 31577 Hits 138 Hit Rate (%) 0.437027
+		 *  Hit #10: Total 29163 Hits 131 Hit Rate (%) 0.449199
+		 *  Hit #11: Total 2414 Hits 7 Hit Rate (%) 0.289975
+		 *
+		 *  non-capture history
+		 *  Hit #0: Total 306 Hits 19 Hit Rate (%) 6.20915
+		 *  Hit #10: Total 281 Hits 15 Hit Rate (%) 5.33808
+		 *  Hit #11: Total 25 Hits 4 Hit Rate (%) 16
+		 *
+		 *  non-capture futility
+		 *  Hit #0: Total 93193 Hits 949 Hit Rate (%) 1.01832
+		 *  Hit #10: Total 86231 Hits 851 Hit Rate (%) 0.986884
+		 *  Hit #11: Total 6962 Hits 98 Hit Rate (%) 1.40764
+		 *
+		 *  non-capture see
+		 *  Hit #0: Total 215437 Hits 650 Hit Rate (%) 0.301712
+		 *  Hit #10: Total 195611 Hits 577 Hit Rate (%) 0.294973
+		 *  Hit #11: Total 19826 Hits 73 Hit Rate (%) 0.368203
 	 * */
 	bool CC = false, C = false;
 	C = preventNullMoveRefutation;
