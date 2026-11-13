@@ -1226,7 +1226,6 @@ moves_loop:  // When in check, search starts here
                 // Avoid pruning sacrifices of our last piece for stalemate.
                 int margin = 177 * depth + captHist * 34 / 1024;
                 if ((alpha >= VALUE_DRAW || pos.non_pawn_material(us) != PieceValue[movedPiece])
-                    && (!nullMoveRefutation || move.from_sq() != nullMoveRefutation.to_sq())
                     && !pos.see_ge(move, -margin))
                     continue;
             }
@@ -1250,7 +1249,8 @@ moves_loop:  // When in check, search starts here
 
                 // Futility pruning: parent node
                 // (*Scaler): Generally, more frequent futility pruning scales well
-                if (!ss->inCheck && lmrDepth < 12 && futilityValue <= alpha)
+                if (!ss->inCheck && lmrDepth < 12 && futilityValue <= alpha
+                    && (!nullMoveRefutation || move.from_sq() != nullMoveRefutation.to_sq()))
                 {
                     if (bestValue <= futilityValue && !is_decisive(bestValue)
                         && !is_win(futilityValue))
