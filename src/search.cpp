@@ -773,7 +773,7 @@ Value Search::Worker::search(
     Move  move, excludedMove, bestMove, nullMoveRefutation;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    bool  givesCheck, improving, preventNullMoveRefutation, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
@@ -1153,7 +1153,6 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
-
     // Step 14. Loop through all legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move()) != Move::none())
@@ -1181,6 +1180,8 @@ moves_loop:  // When in check, search starts here
         capture    = pos.capture_stage(move);
         movedPiece = pos.moved_piece(move);
         givesCheck = pos.gives_check(move);
+        preventNullMoveRefutation =
+          nullMoveRefutation && move.from_sq() == nullMoveRefutation.to_sq();
 
         // Calculate new depth for this move
         newDepth = depth - 1;
@@ -1226,7 +1227,6 @@ moves_loop:  // When in check, search starts here
                 // Avoid pruning sacrifices of our last piece for stalemate.
                 int margin = 177 * depth + captHist * 34 / 1024;
                 if ((alpha >= VALUE_DRAW || pos.non_pawn_material(us) != PieceValue[movedPiece])
-                    && (!nullMoveRefutation || move.from_sq() != nullMoveRefutation.to_sq())
                     && !pos.see_ge(move, -margin))
                     continue;
             }
@@ -1237,7 +1237,7 @@ moves_loop:  // When in check, search starts here
                             + sharedHistory.pawn_entry(pos)[movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
-                if (history < -4136 * depth)
+                if (history < -4136 * depth && !preventNullMoveRefutation)
                     continue;
 
                 history += 69 * mainHistory[us][move.raw()] / 32;
