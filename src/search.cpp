@@ -1199,6 +1199,75 @@ moves_loop:  // When in check, search starts here
         if (ss->ttPv)
             r += 929;
 
+	/*
+	 * C=nullMoveRefutation && move.to_sq() == nullMoveRefutation.from_sq()
+	 *
+	 * capture futility (https://tests.stockfishchess.org/tests/view/6af6bf028e7fb2e78bc1d3ad)
+	 * Hit #0: Total 660 Hits 11 Hit Rate (%) 1.66667
+	 * Hit #10: Total 633 Hits 10 Hit Rate (%) 1.57978
+	 * Hit #11: Total 27 Hits 1 Hit Rate (%) 3.7037
+	 *
+	 * caputre see (https://tests.stockfishchess.org/tests/view/6af5f7ab8e7fb2e78bc1d26d)
+	 * Hit #0: Total 31577 Hits 138 Hit Rate (%) 0.437027
+	 * Hit #10: Total 30572 Hits 136 Hit Rate (%) 0.444851
+	 * Hit #11: Total 1005 Hits 2 Hit Rate (%) 0.199005
+	 * ------------------------
+	 *  C=nullMoveRefutation && move.from_sq() == nullMoveRefutation.to_sq()
+	 *
+	 *  capture futility 
+	 *  Hit #0: Total 660 Hits 11 Hit Rate (%) 1.66667
+	 *  Hit #10: Total 634 Hits 10 Hit Rate (%) 1.57729
+	 *  Hit #11: Total 26 Hits 1 Hit Rate (%) 3.84615
+	 *
+	 *  caputre see
+	 *  Hit #0: Total 31577 Hits 138 Hit Rate (%) 0.437027
+	 *  Hit #10: Total 30756 Hits 130 Hit Rate (%) 0.422682
+	 *  Hit #11: Total 821 Hits 8 Hit Rate (%) 0.974421
+	 *
+	 *  non-capture history
+	 *  Hit #0: Total 306 Hits 19 Hit Rate (%) 6.20915
+	 *  Hit #10: Total 296 Hits 18 Hit Rate (%) 6.08108
+	 *  Hit #11: Total 10 Hits 1 Hit Rate (%) 10
+	 *
+	 *  non-capture futility
+	 *  Hit #0: Total 93193 Hits 949 Hit Rate (%) 1.01832
+	 *  Hit #10: Total 91506 Hits 898 Hit Rate (%) 0.981356
+	 *  Hit #11: Total 1687 Hits 51 Hit Rate (%) 3.02312
+	 *
+	 *  non-capture see
+	 *  Hit #0: Total 215437 Hits 650 Hit Rate (%) 0.301712
+	 *  Hit #10: Total 207739 Hits 589 Hit Rate (%) 0.283529
+	 *  Hit #11: Total 7698 Hits 61 Hit Rate (%) 0.792414
+	 *  ------------------------
+	 *  C=nullMoveRefutation && (Attacks::between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq()) & move.to_sq());
+	 *
+	 *  capture futility 
+	 *  Hit #0: Total 660 Hits 11 Hit Rate (%) 1.66667
+	 *  Hit #10: Total 631 Hits 10 Hit Rate (%) 1.58479
+	 *  Hit #11: Total 29 Hits 1 Hit Rate (%) 3.44828
+	 *
+	 *  caputre see
+	 *  Hit #0: Total 31577 Hits 138 Hit Rate (%) 0.437027
+	 *  Hit #10: Total 30295 Hits 132 Hit Rate (%) 0.435715
+	 *  Hit #11: Total 1282 Hits 6 Hit Rate (%) 0.468019
+	 *
+	 *  non-capture history
+	 *  Hit #0: Total 306 Hits 19 Hit Rate (%) 6.20915
+	 *  Hit #10: Total 304 Hits 19 Hit Rate (%) 6.25
+	 *  Hit #11: Total 2 Hits 0 Hit Rate (%) 0
+	 *
+	 *  non-capture futility
+	 *  Hit #0: Total 93193 Hits 949 Hit Rate (%) 1.01832
+	 *  Hit #10: Total 92601 Hits 928 Hit Rate (%) 1.00215
+	 *  Hit #11: Total 592 Hits 21 Hit Rate (%) 3.5473
+	 *
+	 *  non-capture see
+	 *  Hit #0: Total 215437 Hits 650 Hit Rate (%) 0.301712
+	 *  Hit #10: Total 207735 Hits 613 Hit Rate (%) 0.295087
+	 *  Hit #11: Total 7702 Hits 37 Hit Rate (%) 0.480395
+	 *
+	 *
+	 * */
 	bool CC = false, C = false;
 	C = preventNullMoveRefutation;
         // Step 15. Pruning at shallow depths.
@@ -1237,9 +1306,9 @@ moves_loop:  // When in check, search starts here
                 if ((alpha >= VALUE_DRAW || pos.non_pawn_material(us) != PieceValue[movedPiece])
                     && !pos.see_ge(move, -margin))
 		{
-		    //CC = bool(nullMoveRefutation);
-                    //if(!CC) continue;
-                    continue;
+		    CC = bool(nullMoveRefutation);
+                    if(!CC) continue;
+                    //continue;
 		}
             }
             else if (!ss->followPV || !PvNode)
@@ -1281,9 +1350,9 @@ moves_loop:  // When in check, search starts here
                 // Prune moves with negative SEE
                 if (!pos.see_ge(move, -23 * lmrDepth * lmrDepth))
 		{
-		    CC = bool(nullMoveRefutation);
-                    if(!CC) continue;
-                    //continue;
+		    //CC = bool(nullMoveRefutation);
+                    //if(!CC) continue;
+                    continue;
 		}
             }
         }
