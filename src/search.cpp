@@ -1249,8 +1249,7 @@ moves_loop:  // When in check, search starts here
 
                 // Futility pruning: parent node
                 // (*Scaler): Generally, more frequent futility pruning scales well
-                if (!ss->inCheck && lmrDepth < 12 && futilityValue <= alpha
-                    && (!nullMoveRefutation || move.from_sq() != nullMoveRefutation.to_sq()))
+                if (!ss->inCheck && lmrDepth < 12 && futilityValue <= alpha)
                 {
                     if (bestValue <= futilityValue && !is_decisive(bestValue)
                         && !is_win(futilityValue))
@@ -1261,7 +1260,8 @@ moves_loop:  // When in check, search starts here
                 lmrDepth = std::max(lmrDepth, 0);
 
                 // Prune moves with negative SEE
-                if (!pos.see_ge(move, -23 * lmrDepth * lmrDepth))
+                if ((!nullMoveRefutation || move.from_sq() != nullMoveRefutation.to_sq())
+                    && !pos.see_ge(move, -23 * lmrDepth * lmrDepth))
                     continue;
             }
         }
