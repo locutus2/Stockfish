@@ -1183,7 +1183,7 @@ moves_loop:  // When in check, search starts here
         preventNullMoveRefutation =
           //nullMoveRefutation && move.to_sq() == nullMoveRefutation.from_sq();
           //nullMoveRefutation && move.from_sq() == nullMoveRefutation.to_sq();
-          nullMoveRefutation && (Attacks.between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq()) & move.to_sq());
+          nullMoveRefutation && (Attacks::between_bb(nullMoveRefutation.to_sq(), nullMoveRefutation.from_sq()) & move.to_sq());
 
         // Calculate new depth for this move
         newDepth = depth - 1;
