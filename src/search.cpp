@@ -227,8 +227,8 @@ void Search::Worker::start_searching() {
     // Optional CRAM gate: if the CRAM net is confident enough, play its move without searching.
     // Only for plain time-managed games (not pondering, analysis, fixed depth/nodes/mate).
     if (CRAM::gate_percent() > 0 && CRAM::loaded() && limits.use_time_management()
-        && !limits.infinite && !limits.ponderMode && !limits.depth && !limits.nodes
-        && !limits.mate && !limits.movetime)
+        && !limits.infinite && !limits.ponderMode && !limits.depth && !limits.nodes && !limits.mate
+        && !limits.movetime)
     {
         Move  cands[MAX_MOVES], gateMove;
         float conf;

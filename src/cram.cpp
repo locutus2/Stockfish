@@ -193,7 +193,7 @@ std::string report(const Position& pos, bool chess960) {
     if (!g_loaded)
         return "cram: no net loaded (setoption name CRAMFile value <path>)";
 
-    Ctx                                ctx(pos);
+    Ctx                                 ctx(pos);
     std::vector<std::pair<float, Move>> v;
     for (const auto& m : MoveList<ALL>(pos))
         v.emplace_back(ctx.score(m), m);

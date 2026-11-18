@@ -141,28 +141,30 @@ Engine::Engine(std::optional<std::filesystem::path> path) :
 
     // CRAM move prior (experimental). Empty file name = off.
     options.add(  //
-      "CRAMFile", Option("", [this](const Option& o) {
+      "CRAM_File", Option("model0.bin", [this](const Option& o) {
           wait_for_search_finished();
-          return CRAM::load(std::string(o));
+          return CRAM::load(path_from_utf8(std::string(o)));
       }));
 
     options.add(  //
-      "CRAM Weight", Option(256, 0, 4096, [](const Option& o) {
+      "CRAM_Weight", Option(256, 0, 4096, [](const Option& o) {
           CRAM::set_weight(int(o));
           return std::nullopt;
       }));
 
     options.add(  //
-      "CRAM Plies", Option(4, 0, 64, [](const Option& o) {
+      "CRAM_Plies", Option(4, 0, 64, [](const Option& o) {
           CRAM::set_plies(int(o));
           return std::nullopt;
       }));
 
     options.add(  //
-      "CRAM Gate", Option(0, 0, 100, [](const Option& o) {
+      "CRAM_Gate", Option(0, 0, 100, [](const Option& o) {
           CRAM::set_gate(int(o));
           return std::nullopt;
       }));
+
+    CRAM::load(path_from_utf8(std::string(options["CRAM_File"])));
 
     threads.clear();
     threads.ensure_network_replicated();

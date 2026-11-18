@@ -33,13 +33,13 @@ namespace CRAM {
 // File format: u32 magic, u32 parameter count, then NPARAM little-endian IEEE-754 floats.
 constexpr u32 MAGIC = 0x43524d31;  // "1MRC" little-endian bytes: 31 4d 52 43
 
-constexpr int NF     = 768;  // 12 piece kinds (side-to-move relative) x 64 squares
-constexpr int OFF_WF = 0;
-constexpr int OFF_WT = OFF_WF + 64 * NF;
-constexpr int OFF_K  = OFF_WT + 64 * NF;
-constexpr int OFF_BF = OFF_K + 4096;
-constexpr int OFF_BT = OFF_BF + 64;
-constexpr int OFF_P  = OFF_BT + 64;
+constexpr int NF      = 768;  // 12 piece kinds (side-to-move relative) x 64 squares
+constexpr int OFF_WF  = 0;
+constexpr int OFF_WT  = OFF_WF + 64 * NF;
+constexpr int OFF_K   = OFF_WT + 64 * NF;
+constexpr int OFF_BF  = OFF_K + 4096;
+constexpr int OFF_BT  = OFF_BF + 64;
+constexpr int OFF_P   = OFF_BT + 64;
 constexpr int OFF_KMC = OFF_P + 5;
 constexpr int OFF_A   = OFF_KMC + 6 * 7;
 constexpr int OFF_AF  = OFF_A + 6 * 4 * 4;
@@ -51,9 +51,9 @@ std::optional<std::string> load(const std::string& path);  // returns an info me
 void                       unload();
 bool                       loaded();
 
-void set_weight(int w);   // move ordering strength, in history-value units per nat
-void set_plies(int p);    // use the prior at plies < p
-void set_gate(int pct);   // 0 = off; otherwise play the CRAM move at the root if p_max >= pct %
+void set_weight(int w);  // move ordering strength, in history-value units per nat
+void set_plies(int p);   // use the prior at plies < p
+void set_gate(int pct);  // 0 = off; otherwise play the CRAM move at the root if p_max >= pct %
 int  gate_percent();
 
 // Move ordering: true if the prior should be used at this ply.
