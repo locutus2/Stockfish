@@ -30,6 +30,7 @@
 #include <utility>
 #include <vector>
 
+#include "cram.h"
 #include "evaluate.h"
 #include "misc.h"
 #include "nnue/network.h"
@@ -135,6 +136,31 @@ Engine::Engine(std::optional<std::filesystem::path> path) :
     options.add(  //
       "EvalFile", Option(EvalFileDefaultName, [this](const Option& o) {
           load_network(path_from_utf8(std::string(o)));
+          return std::nullopt;
+      }));
+
+    // CRAM move prior (experimental). Empty file name = off.
+    options.add(  //
+      "CRAMFile", Option("", [this](const Option& o) {
+          wait_for_search_finished();
+          return CRAM::load(std::string(o));
+      }));
+
+    options.add(  //
+      "CRAM Weight", Option(256, 0, 4096, [](const Option& o) {
+          CRAM::set_weight(int(o));
+          return std::nullopt;
+      }));
+
+    options.add(  //
+      "CRAM Plies", Option(4, 0, 64, [](const Option& o) {
+          CRAM::set_plies(int(o));
+          return std::nullopt;
+      }));
+
+    options.add(  //
+      "CRAM Gate", Option(0, 0, 100, [](const Option& o) {
+          CRAM::set_gate(int(o));
           return std::nullopt;
       }));
 
@@ -251,6 +277,10 @@ void Engine::resize_threads() {
 void Engine::set_tt_size(usize mb) {
     wait_for_search_finished();
     tt.resize(mb, threads);
+}
+
+void Engine::cram_report() const {
+    sync_cout << CRAM::report(pos, options["UCI_Chess960"]) << sync_endl;
 }
 
 void Engine::set_ponderhit(bool b) { threads.main_manager()->ponder = b; }

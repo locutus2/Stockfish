@@ -102,6 +102,7 @@ class Engine {
     // utility functions
 
     void trace_eval() const;
+    void cram_report() const;
 
     const OptionsMap& get_options() const;
     OptionsMap&       get_options();

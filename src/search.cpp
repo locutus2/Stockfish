@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "bitboard.h"
+#include "cram.h"
 #include "evaluate.h"
 #include "history.h"
 #include "misc.h"
@@ -221,6 +222,27 @@ void Search::Worker::start_searching() {
           {0, {rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW, rootPos}});
         main_manager()->updates.onBestmove(UCIEngine::move(Move::none()), "");
         return;
+    }
+
+    // Optional CRAM gate: if the CRAM net is confident enough, play its move without searching.
+    // Only for plain time-managed games (not pondering, analysis, fixed depth/nodes/mate).
+    if (CRAM::gate_percent() > 0 && CRAM::loaded() && limits.use_time_management()
+        && !limits.infinite && !limits.ponderMode && !limits.depth && !limits.nodes
+        && !limits.mate && !limits.movetime)
+    {
+        Move  cands[MAX_MOVES], gateMove;
+        float conf;
+        int   n = 0;
+        for (const auto& rm : rootMoves)
+            cands[n++] = rm.pv[0];
+
+        if (CRAM::gate_pick(rootPos, cands, n, gateMove, conf)
+            && conf * 100.0f >= float(CRAM::gate_percent()))
+        {
+            main_manager()->updates.onBestmove(UCIEngine::move(gateMove, rootPos.is_chess960()),
+                                               "");
+            return;
+        }
     }
 
     // Main thread starts non-main threads, and begins own search

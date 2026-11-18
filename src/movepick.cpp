@@ -22,6 +22,7 @@
 #include <limits>
 
 #include "bitboard.h"
+#include "cram.h"
 #include "misc.h"
 #include "position.h"
 
@@ -173,7 +174,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
     pos(p),
     captureHistory(cph),
     ttMove(ttm),
-    threshold(th) {
+    threshold(th),
+    ply(MAX_PLY) {
 
     assert(!pos.checkers());
 
@@ -266,6 +268,11 @@ ExtMove* MovePicker::generate_and_score() {
                 m.value = (*mainHist)[m.raw()] + (*ch0)[pc][to];
         }
     }
+
+    // Optional CRAM move prior (off unless a net is loaded and ply < CRAM Plies)
+    if (CRAM::ordering_active(ply))
+        CRAM::add_ordering_bonus(pos, cur, it);
+
     return it;
 }
 

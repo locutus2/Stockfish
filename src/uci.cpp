@@ -127,6 +127,8 @@ void UCIEngine::loop() {
 
         else if (token == "setoption")
             setoption(is);
+        else if (token == "cram")
+            engine.cram_report();
         else if (token == "go")
         {
             // send info strings after the go command is sent for old GUIs and python-chess
