@@ -253,8 +253,8 @@ void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last, int 
     {
         // weight * (score - mean), converted from 2^-FRAC fixed point; truncation toward zero
         const i64 bonus = i64(g_weight) * (sc[i] - mean) / (i64(1) << FRAC);
-        //first[i].value += int(std::clamp<i64>(bonus, -32768, 32768));
-        first[i].value += int(std::clamp<i64>(bonus / std::max(depth, 1), -32768, 32768));
+        first[i].value += int(std::clamp<i64>(bonus, -32768, 32768));
+        //first[i].value += int(std::clamp<i64>(bonus / std::max(depth, 1), -32768, 32768));
     }
 }
 

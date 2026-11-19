@@ -72,7 +72,7 @@ void set_gate(int pct);  // 0 = off; otherwise play the CRAM move at the root if
 int  gate_percent();
 
 // Move ordering: true if the prior should be used at this ply.
-inline bool ordering_active(int ply);
+inline bool ordering_active(int ply, int depth);
 
 // Adds weight * (score - mean score) to the value of every move in [first, last).
 void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last, int depth);
@@ -88,7 +88,7 @@ std::string report(const Position& pos, bool chess960);
 // ---- inline part -------------------------------------------------------------------------
 extern bool g_loaded;
 extern int  g_plies;
-inline bool ordering_active(int ply) { return g_loaded && ply < g_plies; }
+inline bool ordering_active(int ply, int depth) { return g_loaded && ply < g_plies && depth < ply; }
 
 }  // namespace CRAM
 }  // namespace Stockfish
