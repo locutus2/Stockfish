@@ -147,13 +147,13 @@ Engine::Engine(std::optional<std::filesystem::path> path) :
       }));
 
     options.add(  //
-      "CRAM_Weight", Option(256, 0, 4096, [](const Option& o) {
+      "CRAM_Weight", Option(8192, 0, 16384, [](const Option& o) {
           CRAM::set_weight(int(o));
           return std::nullopt;
       }));
 
     options.add(  //
-      "CRAM_Plies", Option(4, 0, 64, [](const Option& o) {
+      "CRAM_Plies", Option(256, 0, 256, [](const Option& o) {
           CRAM::set_plies(int(o));
           return std::nullopt;
       }));

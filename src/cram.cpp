@@ -25,12 +25,12 @@
 namespace Stockfish::CRAM {
 
 bool g_loaded = false;
-int  g_plies  = 4;
+int  g_plies  = 256;
 
 namespace {
 
 std::vector<float> g_w;  // the net, NPARAM floats; only replaced while no search runs
-int                g_weight = 32*256;
+int                g_weight = 8192;
 int                g_gate   = 0;
 
 // Per-position evaluation context. Field scores are computed lazily and shared by all moves
@@ -164,13 +164,7 @@ void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last) {
     mean /= float(n);
 
     for (int i = 0; i < n; ++i)
-    {
         first[i].value += std::clamp(int(g_weight * (sc[i] - mean)), -32768, 32768);
-        //dbg_mean_of((std::clamp(int(g_weight * (sc[i] - mean)), -32768, 32768)), 0);
-        //dbg_mean_of(std::abs(std::clamp(int(g_weight * (sc[i] - mean)), -32768, 32768)), 1);
-        //dbg_stdev_of((std::clamp(int(g_weight * (sc[i] - mean)), -32768, 32768)), 0);
-        //dbg_stdev_of(std::abs(std::clamp(int(g_weight * (sc[i] - mean)), -32768, 32768)), 1);
-    }
 }
 
 bool gate_pick(const Position& pos, const Move* cands, int n, Move& best, float& confidence) {

@@ -72,7 +72,7 @@ std::string report(const Position& pos, bool chess960);
 // ---- inline part -------------------------------------------------------------------------
 extern bool g_loaded;
 extern int  g_plies;
-inline bool ordering_active(int ply) { return g_loaded; } // && ply < g_plies; }
+inline bool ordering_active(int ply) { return g_loaded && ply < g_plies; }
 
 }  // namespace CRAM
 }  // namespace Stockfish
