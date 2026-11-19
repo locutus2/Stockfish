@@ -230,14 +230,14 @@ void Search::Worker::start_searching() {
         && !limits.infinite && !limits.ponderMode && !limits.depth && !limits.nodes && !limits.mate
         && !limits.movetime)
     {
-        Move  cands[MAX_MOVES], gateMove;
-        float conf;
-        int   n = 0;
+        Move cands[MAX_MOVES], gateMove;
+        i64  confPpm;  // softmax probability in millionths, computed with integers only
+        int  n = 0;
         for (const auto& rm : rootMoves)
             cands[n++] = rm.pv[0];
 
-        if (CRAM::gate_pick(rootPos, cands, n, gateMove, conf)
-            && conf * 100.0f >= float(CRAM::gate_percent()))
+        if (CRAM::gate_pick(rootPos, cands, n, gateMove, confPpm)
+            && confPpm >= i64(CRAM::gate_percent()) * 10000)
         {
             main_manager()->updates.onBestmove(UCIEngine::move(gateMove, rootPos.is_chess960()),
                                                "");

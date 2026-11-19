@@ -141,7 +141,7 @@ Engine::Engine(std::optional<std::filesystem::path> path) :
 
     // CRAM move prior (experimental). Empty file name = off.
     options.add(  //
-      "CRAM_File", Option("model0.bin", [this](const Option& o) {
+      "CRAM_File", Option("model-i8.bin", [this](const Option& o) {
           wait_for_search_finished();
           return CRAM::load(path_from_utf8(std::string(o)));
       }));
