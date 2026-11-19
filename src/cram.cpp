@@ -238,7 +238,7 @@ std::optional<std::string> load(const std::string& path) {
     return "CRAM int8 net loaded: " + path;
 }
 
-void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last) {
+void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last, int depth) {
     const int n = int(last - first);
     if (!g_loaded || n <= 1 || g_weight == 0)
         return;
@@ -253,7 +253,8 @@ void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last) {
     {
         // weight * (score - mean), converted from 2^-FRAC fixed point; truncation toward zero
         const i64 bonus = i64(g_weight) * (sc[i] - mean) / (i64(1) << FRAC);
-        first[i].value += int(std::clamp<i64>(bonus, -32768, 32768));
+        //first[i].value += int(std::clamp<i64>(bonus, -32768, 32768));
+        first[i].value += int(std::clamp<i64>(bonus / std::max(depth, 1), -32768, 32768));
     }
 }
 

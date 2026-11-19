@@ -270,8 +270,8 @@ ExtMove* MovePicker::generate_and_score() {
     }
 
     // Optional CRAM move prior (off unless a net is loaded and ply < CRAM Plies)
-    if (!ttMove && CRAM::ordering_active(ply))
-        CRAM::add_ordering_bonus(pos, cur, it);
+    if (CRAM::ordering_active(ply))
+        CRAM::add_ordering_bonus(pos, cur, it, depth);
 
     return it;
 }

@@ -75,7 +75,7 @@ int  gate_percent();
 inline bool ordering_active(int ply);
 
 // Adds weight * (score - mean score) to the value of every move in [first, last).
-void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last);
+void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last, int depth);
 
 // Root gate: scores the candidate moves, returns false if no net is loaded or no candidates.
 // On success 'best' is the most likely move and 'confidencePpm' its softmax probability in
