@@ -12,12 +12,13 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <cstdio>
+#include <fstream>
 #include <memory>
 #include <sstream>
 #include <vector>
 
 #include "bitboard.h"
+#include "misc.h"
 #include "movegen.h"
 #include "position.h"
 #include "uci.h"
@@ -252,20 +253,19 @@ std::optional<std::string> load(const std::string& path) {
         return "CRAM int8 net loaded: embedded " + std::string(DefaultFile);
     }
 
-    std::FILE* f = std::fopen(path.c_str(), "rb");
+    // The option value is UTF-8; path_from_utf8 makes this work with non-ASCII paths on Windows.
+    std::ifstream f(path_from_utf8(path), std::ios::binary);
     if (!f)
         return "CRAM: cannot open " + path;
 
     std::vector<unsigned char> buf;
-    unsigned char              chunk[65536];
-    size_t                     n;
-    while ((n = std::fread(chunk, 1, sizeof(chunk), f)) > 0)
+    char                       chunk[65536];
+    while (f.read(chunk, sizeof(chunk)) || f.gcount() > 0)
     {
-        buf.insert(buf.end(), chunk, chunk + n);
+        buf.insert(buf.end(), chunk, chunk + f.gcount());
         if (buf.size() > (size_t(1) << 26))  // far larger than any valid net
             break;
     }
-    std::fclose(f);
 
     const std::string err = parse_net(buf.data(), buf.size());
     if (!err.empty())
@@ -273,7 +273,7 @@ std::optional<std::string> load(const std::string& path) {
     return "CRAM int8 net loaded: " + path;
 }
 
-void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last, int depth) {
+void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last, int /*depth*/) {
     const int n = int(last - first);
     if (!g_loaded || n <= 1 || g_weight == 0)
         return;

@@ -65,7 +65,8 @@ enum Group { G_WF, G_WT, G_K, G_BF, G_BT, G_P, G_KMC, G_A, G_AF };
 
 // Loading / configuration. These must only be called while no search is running
 // (the UCI option callbacks wait for the search to finish first).
-std::optional<std::string> load(const std::string& path);  // returns an info message
+// Loads a net from a UTF-8 path (or the embedded net for DefaultFile); returns an info message
+std::optional<std::string> load(const std::string& path);
 void                       unload();
 bool                       loaded();
 
@@ -91,7 +92,7 @@ std::string report(const Position& pos, bool chess960);
 // ---- inline part -------------------------------------------------------------------------
 extern bool g_loaded;
 extern int  g_plies;
-inline bool ordering_active(int ply, int depth) { return g_loaded; } // && ply < g_plies && depth > ply; }
+inline bool ordering_active(int /*ply*/, int /*depth*/) { return g_loaded; } // && ply < g_plies && depth > ply; }
 
 }  // namespace CRAM
 }  // namespace Stockfish

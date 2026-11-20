@@ -143,7 +143,7 @@ Engine::Engine(std::optional<std::filesystem::path> path) :
     options.add(  //
       "CRAM_File", Option(CRAM::DefaultFile, [this](const Option& o) {
           wait_for_search_finished();
-          return CRAM::load(path_from_utf8(std::string(o)));
+          return CRAM::load(std::string(o));
       }));
 
     options.add(  //
@@ -164,7 +164,7 @@ Engine::Engine(std::optional<std::filesystem::path> path) :
           return std::nullopt;
       }));
 
-    if (const auto msg = CRAM::load(path_from_utf8(std::string(options["CRAM_File"]))))
+    if (const auto msg = CRAM::load(std::string(options["CRAM_File"])))
         if (!CRAM::loaded())
             sync_cout << "info string " << *msg << sync_endl;
 
