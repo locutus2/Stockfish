@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstring>
 #include <cstdio>
 #include <memory>
 #include <sstream>
@@ -20,6 +21,22 @@
 #include "movegen.h"
 #include "position.h"
 #include "uci.h"
+
+// Embed the default net into the binary (same mechanism as the NNUE net, see network.cpp).
+// MSVC/NNUE_EMBEDDING_OFF builds fall back to loading the file from disk.
+#define INCBIN_SILENCE_BITCODE_WARNING
+#include "incbin/incbin.h"
+
+#if !defined(UNIVERSAL_BINARY) && !defined(_MSC_VER) && !defined(NNUE_EMBEDDING_OFF)
+INCBIN(EmbeddedCRAM, "model-i8.bin");
+#elif defined(UNIVERSAL_BINARY)
+// Provided by universal/cram_embed.cpp
+extern const unsigned char gEmbeddedCRAMData[];
+extern const unsigned int  gEmbeddedCRAMSize;
+#else
+const unsigned char gEmbeddedCRAMData[1] = {0x0};
+const unsigned int  gEmbeddedCRAMSize    = 1;
+#endif
 
 namespace Stockfish::CRAM {
 
@@ -72,9 +89,9 @@ constexpr i32 EXP2_TAB[257] = {
     536870912,
 };
 inline i64 expNeg(i64 d) {
-    if (d >= (i64(32) << FRAC)) return 0;                    // e^-32 ~ 1e-14: unter der Aufloesung
+    if (d >= (i64(32) << FRAC)) return 0;                    // e^-32 ~ 1e-14: below the resolution
     const i64 y  = (d * 1512775) >> FRAC;                    // d * log2(e); 1512775 = round(log2(e) * 2^20)
-    const int     n  = int(y >> FRAC);                           // ganzzahliger Anteil des Exponenten
+    const int     n  = int(y >> FRAC);                           // integer part of the exponent
     const i64 fr = y & ((i64(1) << FRAC) - 1);
     const int     ix = int(fr >> 12);
     const i64 rm = fr & 4095;
@@ -178,6 +195,48 @@ void set_plies(int p) { g_plies = p; }
 void set_gate(int pct) { g_gate = pct; }
 int  gate_percent() { return g_gate; }
 
+namespace {
+
+// Parses a CRM3 net from memory and installs it. Returns an error message, or an empty string.
+std::string parse_net(const unsigned char* data, size_t size) {
+    constexpr size_t HEADER = 4 * sizeof(u32) + NGROUPS * sizeof(i32);
+
+    if (size < 2 * sizeof(u32))
+        return "cannot read header";
+
+    u32 hdr[4] = {0, 0, 0, 0};
+    std::memcpy(hdr, data, 2 * sizeof(u32));  // little-endian host assumed, like the NNUE loader
+    if (hdr[0] == MAGIC_F32 || hdr[0] == MAGIC_Q8F)
+        return "old net with float weights/scales (CRM1/CRM2) is no longer supported; "
+               "retrain with the integer chess_cram";
+    if (size < HEADER)
+        return "wrong file size";
+    std::memcpy(hdr, data, 4 * sizeof(u32));
+    if (hdr[0] != MAGIC || hdr[1] != u32(NPARAM) || hdr[2] != u32(NGROUPS) || hdr[3] != u32(FRAC))
+        return "not a compatible int8 net (bad magic, parameter count, group count or "
+               "fixed-point format; expected "
+             + std::to_string(NPARAM) + " parameters)";
+    if (size != HEADER + size_t(NPARAM))
+        return "wrong file size";
+
+    i32 mult[NGROUPS];
+    std::memcpy(mult, data + 4 * sizeof(u32), sizeof(mult));
+    for (i32 v : mult)
+        if (v < 1 || v > MAX_MULT)
+            return "invalid multiplier";
+
+    const int8_t* w = reinterpret_cast<const int8_t*>(data + HEADER);
+    g_w.assign(w, w + NPARAM);
+    std::copy(mult, mult + NGROUPS, g_mult);
+    g_loaded = true;
+    return "";
+}
+
+}  // namespace
+
+// Loads a net. The default file name selects the net embedded in the binary (like the NNUE
+// net), so that the engine works without any external file, e.g. on Fishtest workers.
+// Any other name is read from disk.
 std::optional<std::string> load(const std::string& path) {
     if (path.empty() || path == "<empty>")
     {
@@ -185,56 +244,32 @@ std::optional<std::string> load(const std::string& path) {
         return "CRAM net unloaded";
     }
 
+    if (path == DefaultFile && gEmbeddedCRAMSize > 1)
+    {
+        const std::string err = parse_net(gEmbeddedCRAMData, gEmbeddedCRAMSize);
+        if (!err.empty())
+            return "CRAM: embedded net is invalid: " + err;
+        return "CRAM int8 net loaded: embedded " + std::string(DefaultFile);
+    }
+
     std::FILE* f = std::fopen(path.c_str(), "rb");
     if (!f)
         return "CRAM: cannot open " + path;
 
-    u32 hdr[4] = {0, 0, 0, 0};
-    if (std::fread(hdr, sizeof(u32), 2, f) != 2)
+    std::vector<unsigned char> buf;
+    unsigned char              chunk[65536];
+    size_t                     n;
+    while ((n = std::fread(chunk, 1, sizeof(chunk), f)) > 0)
     {
-        std::fclose(f);
-        return "CRAM: cannot read header";
+        buf.insert(buf.end(), chunk, chunk + n);
+        if (buf.size() > (size_t(1) << 26))  // far larger than any valid net
+            break;
     }
-    if (hdr[0] == MAGIC_F32 || hdr[0] == MAGIC_Q8F)
-    {
-        std::fclose(f);
-        return "CRAM: old net with float weights/scales (CRM1/CRM2) is no longer supported; "
-               "retrain with the integer chess_cram";
-    }
-    if (hdr[0] != MAGIC || hdr[1] != u32(NPARAM) || std::fread(&hdr[2], sizeof(u32), 2, f) != 2
-        || hdr[2] != u32(NGROUPS) || hdr[3] != u32(FRAC))
-    {
-        std::fclose(f);
-        return "CRAM: not a compatible int8 net (bad magic, parameter count, group count or "
-               "fixed-point format; expected "
-             + std::to_string(NPARAM) + " parameters)";
-    }
-
-    i32 mult[NGROUPS];
-    if (std::fread(mult, sizeof(i32), NGROUPS, f) != size_t(NGROUPS))
-    {
-        std::fclose(f);
-        return "CRAM: wrong file size";
-    }
-    for (i32 v : mult)
-        if (v < 1 || v > MAX_MULT)
-        {
-            std::fclose(f);
-            return "CRAM: invalid multiplier";
-        }
-
-    std::vector<int8_t> w(NPARAM);
-    const size_t        got = std::fread(w.data(), 1, NPARAM, f);
-    unsigned char       extra;
-    const bool          trailing = std::fread(&extra, 1, 1, f) == 1;
     std::fclose(f);
 
-    if (got != size_t(NPARAM) || trailing)
-        return "CRAM: wrong file size";
-
-    g_w = std::move(w);
-    std::copy(mult, mult + NGROUPS, g_mult);
-    g_loaded = true;
+    const std::string err = parse_net(buf.data(), buf.size());
+    if (!err.empty())
+        return "CRAM: " + err;
     return "CRAM int8 net loaded: " + path;
 }
 

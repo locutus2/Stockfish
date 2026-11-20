@@ -141,7 +141,7 @@ Engine::Engine(std::optional<std::filesystem::path> path) :
 
     // CRAM move prior (experimental). Empty file name = off.
     options.add(  //
-      "CRAM_File", Option("model-i8.bin", [this](const Option& o) {
+      "CRAM_File", Option(CRAM::DefaultFile, [this](const Option& o) {
           wait_for_search_finished();
           return CRAM::load(path_from_utf8(std::string(o)));
       }));
@@ -164,7 +164,9 @@ Engine::Engine(std::optional<std::filesystem::path> path) :
           return std::nullopt;
       }));
 
-    CRAM::load(path_from_utf8(std::string(options["CRAM_File"])));
+    if (const auto msg = CRAM::load(path_from_utf8(std::string(options["CRAM_File"]))))
+        if (!CRAM::loaded())
+            sync_cout << "info string " << *msg << sync_endl;
 
     threads.clear();
     threads.ensure_network_replicated();

@@ -20,3 +20,4 @@ tsan.supp
 __pycache__/
 tests/syzygy
 tests/bench_tmp.epd
+src/universal/cram_dump.inc

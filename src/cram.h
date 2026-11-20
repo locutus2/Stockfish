@@ -43,6 +43,9 @@ constexpr u32 MAGIC_F32 = 0x43524d31;  // old float format, recognized only to g
 constexpr int FRAC      = 20;          // fixed-point fraction bits of scores and group multipliers
 constexpr i32 MAX_MULT  = 1 << 24;
 
+// Name of the default net. It is embedded into the binary at build time (see cram.cpp).
+constexpr const char* DefaultFile = "model-i8.bin";
+
 constexpr int NF      = 768;  // 12 piece kinds (side-to-move relative) x 64 squares
 constexpr int OFF_WF  = 0;
 constexpr int OFF_WT  = OFF_WF + 64 * NF;
