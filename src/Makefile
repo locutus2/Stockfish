@@ -83,7 +83,7 @@ SRCS = attacks.cpp benchmark.cpp bitboard.cpp evaluate.cpp main.cpp \
 	nnue/features/k32h3.cpp nnue/features/full_threats.cpp nnue/features/pp_3wide.cpp \
 	engine.cpp score.cpp memory.cpp cram.cpp
 
-OTHER_SRCS = universal/entry_x86.cpp universal/entry_arm64.cpp universal/entry_riscv64.cpp universal/nnue_embed.cpp universal/cram_embed.cpp
+OTHER_SRCS = universal/entry_x86.cpp universal/entry_arm64.cpp universal/entry_riscv64.cpp universal/nnue_embed.cpp
 
 HEADERS = attacks.h benchmark.h bitboard.h evaluate.h misc.h movegen.h movepick.h history.h \
 		nnue/nnue_misc.h nnue/features/k32h3.h nnue/features/full_threats.h \
@@ -1240,7 +1240,7 @@ universalclean:
 # cannot unlink; rmdir unlinks it without following it. No-op elsewhere.
 	@find "$(TEMP_DIR)" -type l -exec rmdir {} + 2>/dev/null || true
 	@rm -rf "$(TEMP_DIR)"
-	@rm -f universal/network_dump.inc universal/cram_dump.inc
+	@rm -f universal/network_dump.inc
 
 # evaluation network (nnue)
 net:
@@ -1378,12 +1378,6 @@ icx-profile-use:
 	EXTRALDFLAGS='-fprofile-use ' \
 	all
 
-# The embedded CRAM net is not tracked by the compiler dependencies. Universal slice builds
-# embed it in universal/cram_embed.cpp instead and run in a directory without the net.
-ifneq ($(UNIVERSAL_SLICE),true)
-cram.o: model-i8.bin
-endif
-
 .depend: $(SRCS)
 	-@$(CXX) $(DEPENDFLAGS) -MM $(SRCS) > $@ 2> /dev/null
 
@@ -1408,7 +1402,7 @@ UNIVERSAL_EXE        := $(EXE)
 ifeq ($(UNIVERSAL_BUILD),true)
 
 UNIVERSAL_SRC_DIR    := universal
-NNUE_EMBED_OBJ       := $(TEMP_DIR)/nnue_embed.o $(TEMP_DIR)/cram_embed.o
+NNUE_EMBED_OBJ       := $(TEMP_DIR)/nnue_embed.o
 NET_SENTINEL         := $(TEMP_DIR)/.net-done
 
 ifeq ($(arch),x86_64)
@@ -1430,7 +1424,7 @@ else
 endif
 
 # Top-level tracked items in src/ (directories and files)
-TRACKED_TOP := $(sort $(foreach f,$(SRCS) $(HEADERS) Makefile incbin,$(firstword $(subst /, ,$(f)))))
+TRACKED_TOP := $(sort $(foreach f,$(SRCS) $(HEADERS) Makefile incbin cram_net.inc,$(firstword $(subst /, ,$(f)))))
 
 # Baseline build must come first in the final link (Windows --allow-multiple-definition
 # uses the first copy of inline duplicates)
@@ -1512,20 +1506,8 @@ $(NET_SENTINEL): | $(TEMP_DIR)
 	@cd "$(CURDIR)" && "$(SHELL)" ../scripts/net.sh $(EMBED_DIR_SUPPORTED)
 	@touch $@
 
-$(TEMP_DIR)/nnue_embed.o: $(UNIVERSAL_SRC_DIR)/nnue_embed.cpp $(NET_SENTINEL) | $(TEMP_DIR)
+$(NNUE_EMBED_OBJ): $(UNIVERSAL_SRC_DIR)/nnue_embed.cpp $(NET_SENTINEL) | $(TEMP_DIR)
 	$(CXX) -O2 -std=c++20 -Wno-c++26-extensions $(SLICE_DEF) $(mac_target_flags) $(EXTRACXXFLAGS) $(EMBED_DIR) -c $< -o $@
-
-# Without #embed support the CRAM net is dumped into a C string literal (like the NNUE net).
-ifneq ($(EMBED_DIR_SUPPORTED),1)
-$(UNIVERSAL_SRC_DIR)/cram_dump.inc: model-i8.bin
-	@printf '"' > $@
-	@hexdump -v -e '"\\" "x" 1/1 "%02X"' model-i8.bin >> $@
-	@printf '"' >> $@
-CRAM_DUMP := $(UNIVERSAL_SRC_DIR)/cram_dump.inc
-endif
-
-$(TEMP_DIR)/cram_embed.o: $(UNIVERSAL_SRC_DIR)/cram_embed.cpp model-i8.bin $(CRAM_DUMP) | $(TEMP_DIR)
-	$(CXX) -O2 -std=c++20 -Wno-c++26-extensions $(mac_target_flags) $(EXTRACXXFLAGS) $(EMBED_DIR) -c $< -o $@
 
 $(UNIVERSAL_ENTRY_OBJ): $(UNIVERSAL_ENTRY_SRC) | $(TEMP_DIR)
 	$(CXX) -O2 -std=c++20 $(mac_target_flags) $(EXTRACXXFLAGS) -c $< -o $@
@@ -1544,7 +1526,7 @@ $(TEMP_DIR)/%/stockfish.o: $(TEMP_DIR)/%/.setup $(NNUE_EMBED_OBJ) $(NET_SENTINEL
 	+ENV_CXXFLAGS='$(ENV_CXXFLAGS) $(call arch-cxxflags,$*)' \
 	    $(MAKE) -C "$(TEMP_DIR)/$*" $(UOBJ_TGT) \
 		        ARCH=$* CXX="$(CXX)" COMP=$(COMP) UNIVERSAL_SLICE=true \
-	        NNUE_EMBED_OBJ='../nnue_embed.o ../cram_embed.o'
+	        NNUE_EMBED_OBJ=../nnue_embed.o
 ifeq ($(TARGET_KERNEL),Darwin)
 # Rename the initializer section
 	ld -r -rename_section __DATA __mod_init_func __DATA $(call arch-mac-section,$*) $@ -o $@.tmp

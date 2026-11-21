@@ -23,23 +23,17 @@
 #include "position.h"
 #include "uci.h"
 
-// Embed the default net into the binary (same mechanism as the NNUE net, see network.cpp).
-// Unlike the NNUE net, this does NOT depend on NNUE_EMBEDDING_OFF: Fishtest workers build with
-// CXXFLAGS=-DNNUE_EMBEDDING_OFF (they copy the NNUE net next to the binary), but they do not
-// provide the CRAM net, so it must always be compiled in. MSVC falls back to loading the file.
-#define INCBIN_SILENCE_BITCODE_WARNING
-#include "incbin/incbin.h"
-
-#if !defined(UNIVERSAL_BINARY) && !defined(_MSC_VER)
-INCBIN(EmbeddedCRAM, "model-i8.bin");
-#elif defined(UNIVERSAL_BINARY)
-// Provided by universal/cram_embed.cpp
-extern const unsigned char gEmbeddedCRAMData[];
-extern const unsigned int  gEmbeddedCRAMSize;
-#else
-const unsigned char gEmbeddedCRAMData[1] = {0x0};
-const unsigned int  gEmbeddedCRAMSize    = 1;
-#endif
+// The default net is compiled into the binary as a plain C++ array, so that no assembler
+// tricks (incbin) or external files are needed and the engine behaves the same on every
+// platform, compiler and build type (also on Fishtest workers, which only get the binary).
+// cram_net.inc is generated from model-i8.bin by scripts/gen_cram_inc.py; regenerate it
+// whenever model-i8.bin changes.
+namespace {
+const unsigned char gEmbeddedCRAMData[] = {
+#include "cram_net.inc"
+};
+const unsigned int gEmbeddedCRAMSize = sizeof(gEmbeddedCRAMData);
+}  // namespace
 
 namespace Stockfish::CRAM {
 
