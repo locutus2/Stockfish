@@ -24,11 +24,13 @@
 #include "uci.h"
 
 // Embed the default net into the binary (same mechanism as the NNUE net, see network.cpp).
-// MSVC/NNUE_EMBEDDING_OFF builds fall back to loading the file from disk.
+// Unlike the NNUE net, this does NOT depend on NNUE_EMBEDDING_OFF: Fishtest workers build with
+// CXXFLAGS=-DNNUE_EMBEDDING_OFF (they copy the NNUE net next to the binary), but they do not
+// provide the CRAM net, so it must always be compiled in. MSVC falls back to loading the file.
 #define INCBIN_SILENCE_BITCODE_WARNING
 #include "incbin/incbin.h"
 
-#if !defined(UNIVERSAL_BINARY) && !defined(_MSC_VER) && !defined(NNUE_EMBEDDING_OFF)
+#if !defined(UNIVERSAL_BINARY) && !defined(_MSC_VER)
 INCBIN(EmbeddedCRAM, "model-i8.bin");
 #elif defined(UNIVERSAL_BINARY)
 // Provided by universal/cram_embed.cpp
