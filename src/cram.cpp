@@ -17,6 +17,14 @@
 #include <sstream>
 #include <vector>
 
+#if defined(USE_AVX2)
+    #include <immintrin.h>
+#elif defined(USE_SSE41)
+    #include <smmintrin.h>
+#elif defined(USE_NEON)
+    #include <arm_neon.h>
+#endif
+
 #include "bitboard.h"
 #include "misc.h"
 #include "movegen.h"
@@ -40,9 +48,22 @@ namespace Stockfish::CRAM {
 bool g_loaded = false;
 int  g_plies  = 256;
 
+// SIMD is used for the piece-square sums where the build supports it. All arithmetic is integer
+// and exact, so every code path (SIMD or scalar) produces bit-identical scores.
+#if defined(USE_AVX2) || defined(USE_SSE41) || defined(USE_NEON)
+    #define CRAM_SIMD 1
+#else
+    #define CRAM_SIMD 0
+#endif
+
 namespace {
 
 std::vector<int8_t> g_w;  // the net, NPARAM int8 weights; only replaced while no search runs
+#if CRAM_SIMD
+// The piece-square weights transposed to [feature][square] (WF block, then WT block), so that
+// adding one active feature updates the sums of all 64 squares with contiguous loads.
+std::vector<int8_t> g_wt;
+#endif
 i32                 g_mult[NGROUPS];   // value of weight i of group g = g_w[i] * g_mult[g] / 2^FRAC
 int                g_weight = 8192;
 int                g_gate   = 0;
@@ -96,11 +117,116 @@ inline i64 expNeg(i64 d) {
     return v >> n;
 }
 
+// Number of attackers (saturated at 3) of every square, kept as three bit planes.
+struct AttackCount {
+    Bitboard c1 = 0, c2 = 0, c3 = 0;  // squares attacked at least once / twice / three times
+
+    void add(Bitboard attacks) {
+        c3 |= c2 & attacks;
+        c2 |= c1 & attacks;
+        c1 |= attacks;
+    }
+    int at(Square s) const { return int(c1 >> s & 1) + int(c2 >> s & 1) + int(c3 >> s & 1); }
+};
+
+// With fewer moves than this, summing only the needed squares is cheaper than summing all 64.
+constexpr int SIMD_MIN_MOVES = 8;
+
+#if CRAM_SIMD
+// sumF[o] / sumT[o] = sum of the int8 weights of all active features for from-square / to-square
+// o. At most 32 features of magnitude <= 127 are active, so the sums (<= 4064) fit into int16.
+inline void piece_square_sums(const u16* fidx, int nfeat, int16_t* sumF, int16_t* sumT) {
+    const int8_t* wf = g_wt.data();
+    const int8_t* wt = wf + size_t(64) * NF;
+    #if defined(USE_AVX2)
+    __m256i f0 = _mm256_setzero_si256(), f1 = f0, f2 = f0, f3 = f0;
+    __m256i t0 = f0, t1 = f0, t2 = f0, t3 = f0;
+    for (int j = 0; j < nfeat; ++j)
+    {
+        const __m128i* rf = reinterpret_cast<const __m128i*>(wf + fidx[j] * 64);
+        const __m128i* rt = reinterpret_cast<const __m128i*>(wt + fidx[j] * 64);
+        f0 = _mm256_add_epi16(f0, _mm256_cvtepi8_epi16(_mm_loadu_si128(rf + 0)));
+        f1 = _mm256_add_epi16(f1, _mm256_cvtepi8_epi16(_mm_loadu_si128(rf + 1)));
+        f2 = _mm256_add_epi16(f2, _mm256_cvtepi8_epi16(_mm_loadu_si128(rf + 2)));
+        f3 = _mm256_add_epi16(f3, _mm256_cvtepi8_epi16(_mm_loadu_si128(rf + 3)));
+        t0 = _mm256_add_epi16(t0, _mm256_cvtepi8_epi16(_mm_loadu_si128(rt + 0)));
+        t1 = _mm256_add_epi16(t1, _mm256_cvtepi8_epi16(_mm_loadu_si128(rt + 1)));
+        t2 = _mm256_add_epi16(t2, _mm256_cvtepi8_epi16(_mm_loadu_si128(rt + 2)));
+        t3 = _mm256_add_epi16(t3, _mm256_cvtepi8_epi16(_mm_loadu_si128(rt + 3)));
+    }
+    _mm256_storeu_si256(reinterpret_cast<__m256i*>(sumF) + 0, f0);
+    _mm256_storeu_si256(reinterpret_cast<__m256i*>(sumF) + 1, f1);
+    _mm256_storeu_si256(reinterpret_cast<__m256i*>(sumF) + 2, f2);
+    _mm256_storeu_si256(reinterpret_cast<__m256i*>(sumF) + 3, f3);
+    _mm256_storeu_si256(reinterpret_cast<__m256i*>(sumT) + 0, t0);
+    _mm256_storeu_si256(reinterpret_cast<__m256i*>(sumT) + 1, t1);
+    _mm256_storeu_si256(reinterpret_cast<__m256i*>(sumT) + 2, t2);
+    _mm256_storeu_si256(reinterpret_cast<__m256i*>(sumT) + 3, t3);
+    #elif defined(USE_SSE41)
+    // 64 int16 sums = 8 SSE registers per table; the two tables are processed one after another.
+    for (int table = 0; table < 2; ++table)
+    {
+        const int8_t* w   = table ? wt : wf;
+        int16_t*      out = table ? sumT : sumF;
+        __m128i       a0 = _mm_setzero_si128(), a1 = a0, a2 = a0, a3 = a0, a4 = a0, a5 = a0,
+                      a6 = a0, a7 = a0;
+        for (int j = 0; j < nfeat; ++j)
+        {
+            const __m128i* r = reinterpret_cast<const __m128i*>(w + fidx[j] * 64);
+            // _mm_cvtepi8_epi16 sign-extends the low 8 bytes of its argument
+            a0 = _mm_add_epi16(a0, _mm_cvtepi8_epi16(_mm_loadu_si128(r + 0)));
+            a1 = _mm_add_epi16(a1, _mm_cvtepi8_epi16(_mm_srli_si128(_mm_loadu_si128(r + 0), 8)));
+            a2 = _mm_add_epi16(a2, _mm_cvtepi8_epi16(_mm_loadu_si128(r + 1)));
+            a3 = _mm_add_epi16(a3, _mm_cvtepi8_epi16(_mm_srli_si128(_mm_loadu_si128(r + 1), 8)));
+            a4 = _mm_add_epi16(a4, _mm_cvtepi8_epi16(_mm_loadu_si128(r + 2)));
+            a5 = _mm_add_epi16(a5, _mm_cvtepi8_epi16(_mm_srli_si128(_mm_loadu_si128(r + 2), 8)));
+            a6 = _mm_add_epi16(a6, _mm_cvtepi8_epi16(_mm_loadu_si128(r + 3)));
+            a7 = _mm_add_epi16(a7, _mm_cvtepi8_epi16(_mm_srli_si128(_mm_loadu_si128(r + 3), 8)));
+        }
+        __m128i* o = reinterpret_cast<__m128i*>(out);
+        _mm_storeu_si128(o + 0, a0);
+        _mm_storeu_si128(o + 1, a1);
+        _mm_storeu_si128(o + 2, a2);
+        _mm_storeu_si128(o + 3, a3);
+        _mm_storeu_si128(o + 4, a4);
+        _mm_storeu_si128(o + 5, a5);
+        _mm_storeu_si128(o + 6, a6);
+        _mm_storeu_si128(o + 7, a7);
+    }
+    #elif defined(USE_NEON)
+    // 64 int16 sums = 8 NEON registers per table; vaddw_s8 adds a sign-extended int8 vector.
+    int16x8_t f[8], t[8];
+    for (int k = 0; k < 8; ++k)
+        f[k] = t[k] = vdupq_n_s16(0);
+    for (int j = 0; j < nfeat; ++j)
+    {
+        const int8_t* rf = wf + fidx[j] * 64;
+        const int8_t* rt = wt + fidx[j] * 64;
+        for (int q = 0; q < 4; ++q)
+        {
+            const int8x16_t vf = vld1q_s8(rf + 16 * q);
+            const int8x16_t vt = vld1q_s8(rt + 16 * q);
+            f[2 * q]           = vaddw_s8(f[2 * q], vget_low_s8(vf));
+            f[2 * q + 1]       = vaddw_s8(f[2 * q + 1], vget_high_s8(vf));
+            t[2 * q]           = vaddw_s8(t[2 * q], vget_low_s8(vt));
+            t[2 * q + 1]       = vaddw_s8(t[2 * q + 1], vget_high_s8(vt));
+        }
+    }
+    for (int k = 0; k < 8; ++k)
+    {
+        vst1q_s16(sumF + 8 * k, f[k]);
+        vst1q_s16(sumT + 8 * k, t[k]);
+    }
+    #endif
+}
+#endif  // CRAM_SIMD
+
 // Per-position evaluation context. Field scores are computed lazily and shared by all moves
-// that start/end on the same square (about 2x fewer dot products than moves).
+// that start/end on the same square (about 2x fewer dot products than moves). With enough moves
+// the piece-square sums of all squares are instead computed at once with SIMD.
 // All scores are i64 fixed-point values in units of 2^-FRAC.
 struct Ctx {
-    Ctx(const Position& p) :
+    Ctx(const Position& p, int numMoves) :
         pos(p),
         us(p.side_to_move()),
         flip(us == BLACK ? 56 : 0) {
@@ -112,16 +238,50 @@ struct Ctx {
             fidx[nfeat++] =
               u16((type_of(pc) - 1 + 6 * (color_of(pc) != us)) * 64 + (int(s) ^ flip));
         }
+
+#if CRAM_SIMD
+        if (numMoves >= SIMD_MIN_MOVES)
+        {
+            piece_square_sums(fidx, nfeat, sumF, sumT);
+            haveSums = true;
+        }
+#else
+        (void) numMoves;
+#endif
+
+        // Attackers of every square (saturated at 3) for the opponent and for us. This equals
+        // popcount(pos.attackers_to(s) & pieces(color)) clamped to 3, but is computed once per
+        // position from the attack sets of all pieces instead of twice per move.
+        const Bitboard occ = pos.pieces();
+        for (Color c : {WHITE, BLACK})
+        {
+            AttackCount&   a     = c == us ? ours : theirs;
+            const Bitboard pawns = pos.pieces(c, PAWN);
+            a.add(shift(pawns, c == WHITE ? NORTH_WEST : SOUTH_WEST));
+            a.add(shift(pawns, c == WHITE ? NORTH_EAST : SOUTH_EAST));
+            for (PieceType pt : {KNIGHT, BISHOP, ROOK, QUEEN})
+            {
+                Bitboard pcs = pos.pieces(c, pt);
+                while (pcs)
+                    a.add(Attacks::attacks_bb(pt, pop_lsb(pcs), occ));
+            }
+            a.add(Attacks::attacks_bb(KING, pos.square<KING>(c), occ));
+        }
     }
 
     // Field score = bias + sum of the piece-square weights: int8 weights are summed exactly in
     // int32 (at most 32 pieces), then each group's integer multiplier is applied once.
-    i64 field(int base, int bias, int gW, int gB, int o) const {
+    i64 field(int base, int bias, int gW, int gB, int o, const int16_t* sums) const {
         const int8_t* w   = g_w.data();
-        const int8_t* row = w + base + o * NF;
         int           acc = 0;
-        for (int j = 0; j < nfeat; ++j)
-            acc += row[fidx[j]];
+        if (haveSums)
+            acc = sums[o];
+        else
+        {
+            const int8_t* row = w + base + o * NF;
+            for (int j = 0; j < nfeat; ++j)
+                acc += row[fidx[j]];
+        }
         return i64(g_mult[gW]) * acc + i64(g_mult[gB]) * w[bias + o];
     }
 
@@ -134,9 +294,9 @@ struct Ctx {
 
         const int of = int(from) ^ flip, ot = int(to) ^ flip;
         if (!(doneF >> of & 1))
-            fF[of] = field(OFF_WF, OFF_BF, G_WF, G_BF, of), doneF |= u64(1) << of;
+            fF[of] = field(OFF_WF, OFF_BF, G_WF, G_BF, of, sumF), doneF |= u64(1) << of;
         if (!(doneT >> ot & 1))
-            fT[ot] = field(OFF_WT, OFF_BT, G_WT, G_BT, ot), doneT |= u64(1) << ot;
+            fT[ot] = field(OFF_WT, OFF_BT, G_WT, G_BT, ot, sumT), doneT |= u64(1) << ot;
 
         const int type = type_of(pos.piece_on(from)) - 1;
         int       cap  = 6;
@@ -149,10 +309,7 @@ struct Ctx {
         }
         const int promo = m.type_of() == PROMOTION ? m.promotion_type() - 1 : 0;
 
-        const Bitboard att = pos.attackers_to(to);
-        const int      eN  = std::min(3, popcount(att & pos.pieces(~us)));
-        const int      oN  = std::min(3, popcount(att & pos.pieces(us)));
-        const int      eF  = std::min(3, popcount(pos.attackers_to(from) & pos.pieces(~us)));
+        const int eN = theirs.at(to), oN = ours.at(to), eF = theirs.at(from);
 
         return fF[of] + fT[ot] + i64(g_mult[G_K]) * w[OFF_K + of * 64 + ot]
              + (promo ? i64(g_mult[G_P]) * w[OFF_P + promo] : 0)
@@ -164,10 +321,18 @@ struct Ctx {
     const Position& pos;
     Color           us;
     int             flip;
+    AttackCount     ours, theirs;
     int             nfeat = 0;
     u16             fidx[32];
     u64             doneF = 0, doneT = 0;
     i64             fF[64], fT[64];
+    bool            haveSums = false;
+#if CRAM_SIMD
+    int16_t sumF[64], sumT[64];
+#else
+    static constexpr const int16_t* sumF = nullptr;
+    static constexpr const int16_t* sumT = nullptr;
+#endif
 };
 
 // Softmax probability of the best move in millionths, integers only.
@@ -185,6 +350,9 @@ bool loaded() { return g_loaded; }
 void unload() {
     g_loaded = false;
     std::vector<int8_t>().swap(g_w);
+#if CRAM_SIMD
+    std::vector<int8_t>().swap(g_wt);
+#endif
 }
 
 void set_weight(int w) { g_weight = w; }
@@ -224,6 +392,15 @@ std::string parse_net(const unsigned char* data, size_t size) {
 
     const int8_t* w = reinterpret_cast<const int8_t*>(data + HEADER);
     g_w.assign(w, w + NPARAM);
+#if CRAM_SIMD
+    g_wt.resize(size_t(2) * 64 * NF);
+    for (int f = 0; f < NF; ++f)
+        for (int o = 0; o < 64; ++o)
+        {
+            g_wt[size_t(f) * 64 + o]                   = w[OFF_WF + o * NF + f];
+            g_wt[size_t(64) * NF + size_t(f) * 64 + o] = w[OFF_WT + o * NF + f];
+        }
+#endif
     std::copy(mult, mult + NGROUPS, g_mult);
     g_loaded = true;
     return "";
@@ -274,7 +451,7 @@ void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last, int 
     if (!g_loaded || n <= 1 || g_weight == 0)
         return;
 
-    Ctx ctx(pos);
+    Ctx ctx(pos, n);
     i64 sc[MAX_MOVES], sum = 0;
     for (int i = 0; i < n; ++i)
         sum += (sc[i] = ctx.score(first[i]));
@@ -293,7 +470,7 @@ bool gate_pick(const Position& pos, const Move* cands, int n, Move& best, i64& c
     if (!g_loaded || n <= 0)
         return false;
 
-    Ctx ctx(pos);
+    Ctx ctx(pos, n);
     i64 sc[MAX_MOVES];
     int b = 0;
     for (int i = 0; i < n; ++i)
@@ -312,7 +489,7 @@ std::string report(const Position& pos, bool chess960) {
     if (!g_loaded)
         return "cram: no net loaded (setoption name CRAMFile value <path>)";
 
-    Ctx                              ctx(pos);
+    Ctx                              ctx(pos, MAX_MOVES);  // not time critical: SIMD path
     std::vector<std::pair<i64, Move>> v;
     for (const auto& m : MoveList<ALL>(pos))
         v.emplace_back(ctx.score(m), m);
