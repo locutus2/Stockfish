@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <initializer_list>
 #include <iostream>
+#include <memory>
 #include <ratio>
 #include <string>
 #include <utility>
@@ -61,7 +62,7 @@ namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
                       const Search::LimitsType&    limits,
-                      Stockfish::Position&         pos,
+                      Stockfish::Position&         root,
                       Stockfish::Search::RootMove& rootMove,
                       Value&                       v,
                       const usize                  multiPV);
@@ -307,9 +308,7 @@ bool Search::Worker::iterative_deepening() {
     Depth       lastBestMoveDepth = 0;
     Value       lastBestMoveScore = -VALUE_INFINITE;
 
-    Value  alpha, beta;
-    Value  bestValue     = -VALUE_INFINITE;
-    Color  us            = rootPos.side_to_move();
+    Value  alpha, beta, bestValue;
     double timeReduction = 1, totBestMoveChanges = 0;
     int    delta, iterIdx                        = 0;
 
@@ -412,10 +411,6 @@ bool Search::Worker::iterative_deepening() {
 
             seekMate = rootMoves[pvIdx].previousScore != -VALUE_INFINITE
                     && std::abs(rootMoves[pvIdx].previousScore) >= seekMateThreshold;
-
-            // Adjust optimism based on root move's averageScore
-            optimism[us]  = 456 * avg / (std::abs(avg) + 85);
-            optimism[~us] = -optimism[us];
 
             // Start with a small aspiration window and, in the case of a fail
             // high/low, enlarge the window progressively.
@@ -1064,7 +1059,8 @@ Value Search::Worker::search(
 
         // Null move dynamic reduction based on depth
         // Odd threads reduce one ply less
-        Depth R = 7 + depth / 3 + std::max((ss->staticEval - beta) / 256, 0) - int(threadIdx & 1);
+        Depth R = 7 + depth / 3 + std::clamp((ss->staticEval - beta) / 256, 0, ss->ply / 2)
+                - int(threadIdx & 1);
         R -= seekMate * R / 2;
         do_null_move(pos, ss);
 
@@ -1947,8 +1943,7 @@ TimePoint Search::Worker::elapsed() const {
 // Evaluate the current position of the game tree, from the point of view of
 // the side to move.
 Value Search::Worker::evaluate(const Position& pos) {
-    return Eval::evaluate(network[numaAccessToken], pos, accumulatorStack, refreshTable,
-                          optimism[pos.side_to_move()]);
+    return Eval::evaluate(network[numaAccessToken], pos, accumulatorStack, refreshTable);
 }
 
 namespace {
@@ -2181,7 +2176,7 @@ void SearchManager::check_time(Search::Worker& worker) {
 // possible continuation (but not a proven mating line).
 void syzygy_extend_pv(const OptionsMap&         options,
                       const Search::LimitsType& limits,
-                      Position&                 pos,
+                      Position&                 root,
                       RootMove&                 rootMove,
                       Value&                    v,
                       const usize               multiPV) {
@@ -2201,6 +2196,13 @@ void syzygy_extend_pv(const OptionsMap&         options,
 
     if (time_abort())
         return;
+
+    // Walk the PV on a copy that is never undone: the PV may exceed the
+    // MAX_HIST states a Position keeps.
+    std::unique_ptr<Position> walker = std::make_unique<Position>();
+    Position&                 pos    = *walker;
+    pos.set(root.fen(), root.is_chess960());
+    pos.copy_state_infos(root);
 
     // Step 0, do the rootMove, no correction allowed, as needed for MultiPV in TB
     pos.do_move(rootMove.pv[0]);
@@ -2298,10 +2300,6 @@ void syzygy_extend_pv(const OptionsMap&         options,
     // will figure it out (e.g. 1kq5/q2r4/5K2/8/8/8/8/7Q w - - 96 1 )
     if (pos.is_draw(0))
         v = VALUE_DRAW;
-
-    // Undo the PV moves
-    for (usize i = rootMove.pv.size(); i > 0; --i)
-        pos.undo_move(rootMove.pv[i - 1]);
 
     // Inform if we couldn't get a full extension in time
     if (time_abort())
