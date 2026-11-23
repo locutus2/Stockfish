@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <memory>
@@ -43,7 +44,9 @@ int  g_plies  = 256;
 namespace {
 
 std::vector<int8_t> g_w;  // the net, NPARAM int8 weights; only replaced while no search runs
-i32                 g_mult[NGROUPS];   // value of weight i of group g = g_w[i] * g_mult[g] / 2^FRAC
+i32                 g_mult[NGROUPS_H]; // value of weight i of group g = g_w[i] * g_mult[g] / 2^FRAC
+bool                g_hidden = false;  // net with hidden layer (CRM4)?
+i64                 g_inv[NZ][64];     // g_inv[k][d] = 2^(ZFRAC+FRAC) / (mass_k + d * 2^FRAC)
 int                g_weight = 8192;
 int                g_gate   = 0;
 
@@ -96,6 +99,32 @@ inline i64 expNeg(i64 d) {
     return v >> n;
 }
 
+// Direction class of a move between oriented squares (must match dirClass() in chess_cram.cpp):
+// 0..7 queen directions, 8 knight jump, 9 stay.
+struct DirTable {
+    uint8_t t[64][64];
+    DirTable() {
+        for (int of = 0; of < 64; ++of)
+            for (int ot = 0; ot < 64; ++ot)
+            {
+                const int df = (ot & 7) - (of & 7), dr = (ot >> 3) - (of >> 3);
+                int       c;
+                if (of == ot)
+                    c = 9;
+                else if ((std::abs(df) == 1 && std::abs(dr) == 2)
+                         || (std::abs(df) == 2 && std::abs(dr) == 1))
+                    c = 8;
+                else
+                {
+                    c = ((df > 0) - (df < 0) + 1) * 3 + ((dr > 0) - (dr < 0) + 1);
+                    c = c < 4 ? c : c - 1;
+                }
+                t[of][ot] = uint8_t(c);
+            }
+    }
+};
+const DirTable g_dir;
+
 // Per-position evaluation context. Field scores are computed lazily and shared by all moves
 // that start/end on the same square (about 2x fewer dot products than moves).
 // All scores are i64 fixed-point values in units of 2^-FRAC.
@@ -112,7 +141,125 @@ struct Ctx {
             fidx[nfeat++] =
               u16((type_of(pc) - 1 + 6 * (color_of(pc) != us)) * 64 + (int(s) ^ flip));
         }
+
+        if (g_hidden)
+            hidden_setup();
     }
+
+    // ---- hidden layer (see chess_cram.cpp, hidInt(), for the specification) ----------------------
+    // Works in real squares for the relaxation (the graph is the same up to relabeling the squares) and
+    // in side-to-move oriented squares (square ^ flip) for the direction classes.
+    void hidden_setup() {
+        const Bitboard occ = pos.pieces();
+        for (Bitboard b = occ; b;)
+        {
+            const Square s  = pop_lsb(b);
+            const Piece  pc = pos.piece_on(s);
+            const Bitboard a = type_of(pc) == PAWN ? Attacks::attacks_bb(PAWN, s, color_of(pc))
+                                                   : Attacks::attacks_bb(type_of(pc), s, occ);
+            adj[s] |= a;
+            for (Bitboard t = a; t;)
+                adj[pop_lsb(t)] |= square_bb(s);
+        }
+        const int goal[NZ] = {int(pos.square<KING>(~us)), int(pos.square<KING>(us))};
+
+        i64 za[NZ][64] = {}, zb[NZ][64];
+        i64(*cur)[64]  = za;
+        i64(*nxt)[64]  = zb;
+        for (int t = 0; t < HT; ++t)
+        {
+            for (int i = 0; i < 64; ++i)
+            {
+                const int d  = popcount(adj[i]);
+                i64       s0 = i == goal[0] ? (i64(1) << ZFRAC) : 0;
+                i64       s1 = i == goal[1] ? (i64(1) << ZFRAC) : 0;
+                for (Bitboard b = adj[i]; b;)
+                {
+                    const Square j = pop_lsb(b);
+                    s0 += cur[0][j];
+                    s1 += cur[1][j];
+                }
+                nxt[0][i] = (s0 * g_inv[0][d]) >> ZFRAC;
+                nxt[1][i] = (s1 * g_inv[1][d]) >> ZFRAC;
+            }
+            std::swap(cur, nxt);
+        }
+        for (int k = 0; k < NZ; ++k)
+        {
+            i64 zmax = 0;
+            for (int i = 0; i < 64; ++i)
+            {
+                z[k][i] = cur[k][i];
+                zmax    = std::max(zmax, z[k][i]);
+            }
+            zrecip[k] = zmax > 0 ? (i64(1) << 62) / zmax : 0;
+        }
+    }
+
+    // zhat = z / max z with 16 fraction bits: (z * rz) >> 46 with rz = 2^62 / max z (one division per field).
+    i64 zhat(int k, int sq) { return (z[k][sq] * zrecip[k]) >> 46; }
+
+    i64 attention_logit(int k, int dir, int sq) {
+        return (i64(g_mult[G_BETA]) * g_w[OFF_BETA + k * NDIR + dir] * zhat(k, sq)) / 65536;
+    }
+
+    // Attention window of the piece on oriented square 'of': "stay", every attacked square, the pawn
+    // pushes and the castling target squares. Computes max logit and 1 / sum(exp) per field.
+    void window(int of) {
+        const Square from = Square(of ^ flip);
+        const Piece  pc   = pos.piece_on(from);
+        const PieceType pt = type_of(pc);
+        Bitboard bb = pt == PAWN ? Attacks::attacks_bb(PAWN, from, us)
+                                 : Attacks::attacks_bb(pt, from, pos.pieces());
+        bb |= square_bb(from);
+        if (pt == PAWN)
+        {
+            const Square push = from + (us == WHITE ? NORTH : SOUTH);
+            bb |= square_bb(push);
+            if (relative_rank(us, from) == RANK_2)
+                bb |= square_bb(push + (us == WHITE ? NORTH : SOUTH));
+        }
+        else if (pt == KING && relative_rank(us, from) == RANK_1)
+            bb |= square_bb(make_square(FILE_G, rank_of(from))) | square_bb(make_square(FILE_C, rank_of(from)));
+
+        i64 a[NZ][32];
+        int n = 0;
+        for (Bitboard b = bb; b; ++n)
+        {
+            const Square s   = pop_lsb(b);
+            const int    dir = g_dir.t[of][int(s) ^ flip];
+            for (int k = 0; k < NZ; ++k)
+                a[k][n] = attention_logit(k, dir, s);
+        }
+        for (int k = 0; k < NZ; ++k)
+        {
+            i64 amax = a[k][0], wsum = 0;
+            for (int u = 1; u < n; ++u)
+                amax = std::max(amax, a[k][u]);
+            for (int u = 0; u < n; ++u)
+                wsum += expNeg(amax - a[k][u]);
+            winAmax[k][of] = amax;
+            winRinv[k][of] = (i64(1) << 60) / wsum;
+        }
+        winDone |= u64(1) << of;
+    }
+
+    // Contribution of the hidden layer to the score of a move of piece type 'type' from oriented square
+    // 'of' to the real square 'to' (units 2^-FRAC).
+    i64 hidden_score(int of, Square to, int type) {
+        if (!(winDone >> of & 1))
+            window(of);
+        const int dir = g_dir.t[of][int(to) ^ flip];
+        i64       r   = 0;
+        for (int k = 0; k < NZ; ++k)
+        {
+            const i64 w     = expNeg(winAmax[k][of] - attention_logit(k, dir, to));
+            const i64 alpha = (w * winRinv[k][of]) >> 30;
+            r += (i64(g_mult[G_KAPPA]) * g_w[OFF_KAPPA + k * 6 + type] * alpha) / (i64(1) << 30);
+        }
+        return r;
+    }
+
 
     // Field score = bias + sum of the piece-square weights: int8 weights are summed exactly in
     // int32 (at most 32 pieces), then each group's integer multiplier is applied once.
@@ -154,7 +301,8 @@ struct Ctx {
         const int      oN  = std::min(3, popcount(att & pos.pieces(us)));
         const int      eF  = std::min(3, popcount(pos.attackers_to(from) & pos.pieces(~us)));
 
-        return fF[of] + fT[ot] + i64(g_mult[G_K]) * w[OFF_K + of * 64 + ot]
+        return (g_hidden ? hidden_score(of, to, type) : 0) + fF[of] + fT[ot]
+             + i64(g_mult[G_K]) * w[OFF_K + of * 64 + ot]
              + (promo ? i64(g_mult[G_P]) * w[OFF_P + promo] : 0)
              + i64(g_mult[G_KMC]) * w[OFF_KMC + type * 7 + cap]
              + i64(g_mult[G_A]) * w[OFF_A + (type * 4 + eN) * 4 + oN]
@@ -168,6 +316,11 @@ struct Ctx {
     u16             fidx[32];
     u64             doneF = 0, doneT = 0;
     i64             fF[64], fT[64];
+    // hidden layer state
+    Bitboard adj[64] = {};         // piece-mobility graph (real squares)
+    i64      z[NZ][64], zrecip[NZ];
+    u64      winDone = 0;
+    i64      winAmax[NZ][64], winRinv[NZ][64];
 };
 
 // Softmax probability of the best move in millionths, integers only.
@@ -181,9 +334,11 @@ i64 confidence_ppm(const i64* sc, int n, int best) {
 }  // namespace
 
 bool loaded() { return g_loaded; }
+bool has_hidden() { return g_loaded && g_hidden; }
 
 void unload() {
     g_loaded = false;
+    g_hidden = false;
     std::vector<int8_t>().swap(g_w);
 }
 
@@ -194,37 +349,63 @@ int  gate_percent() { return g_gate; }
 
 namespace {
 
-// Parses a CRM3 net from memory and installs it. Returns an error message, or an empty string.
+// Parses a CRM3 or CRM4 net from memory and installs it. Returns an error message, or an empty string.
 std::string parse_net(const unsigned char* data, size_t size) {
-    constexpr size_t HEADER = 4 * sizeof(u32) + NGROUPS * sizeof(i32);
-
     if (size < 2 * sizeof(u32))
         return "cannot read header";
 
-    u32 hdr[4] = {0, 0, 0, 0};
-    std::memcpy(hdr, data, 2 * sizeof(u32));  // little-endian host assumed, like the NNUE loader
-    if (hdr[0] == MAGIC_F32 || hdr[0] == MAGIC_Q8F)
+    u32 magic = 0;
+    std::memcpy(&magic, data, sizeof(u32));  // little-endian host assumed, like the NNUE loader
+    if (magic == MAGIC_F32 || magic == MAGIC_Q8F)
         return "old net with float weights/scales (CRM1/CRM2) is no longer supported; "
                "retrain with the integer chess_cram";
+
+    const bool hid = magic == MAGIC_H;
+    if (magic != MAGIC && !hid)
+        return "not a compatible int8 net (bad magic; expected CRM3 or CRM4)";
+
+    const int    np      = hid ? NPARAM_H : NPARAM;
+    const int    ng      = hid ? NGROUPS_H : NGROUPS;
+    const size_t nhdr    = hid ? 6 : 4;
+    const size_t HEADER  = nhdr * sizeof(u32) + ng * sizeof(i32) + (hid ? NZ * sizeof(i32) : 0);
     if (size < HEADER)
         return "wrong file size";
-    std::memcpy(hdr, data, 4 * sizeof(u32));
-    if (hdr[0] != MAGIC || hdr[1] != u32(NPARAM) || hdr[2] != u32(NGROUPS) || hdr[3] != u32(FRAC))
-        return "not a compatible int8 net (bad magic, parameter count, group count or "
-               "fixed-point format; expected "
-             + std::to_string(NPARAM) + " parameters)";
-    if (size != HEADER + size_t(NPARAM))
+
+    u32 hdr[6] = {};
+    std::memcpy(hdr, data, nhdr * sizeof(u32));
+    if (hdr[1] != u32(np) || hdr[2] != u32(ng) || hdr[3] != u32(FRAC)
+        || (hid && (hdr[4] != u32(NZ) || hdr[5] != u32(HT))))
+        return "not a compatible int8 net (bad parameter count, group count, fixed-point format or "
+               "hidden-layer shape; expected "
+             + std::to_string(np) + " parameters)";
+    if (size != HEADER + size_t(np))
         return "wrong file size";
 
-    i32 mult[NGROUPS];
-    std::memcpy(mult, data + 4 * sizeof(u32), sizeof(mult));
-    for (i32 v : mult)
-        if (v < 1 || v > MAX_MULT)
+    i32 mult[NGROUPS_H] = {}, mass[NZ] = {};
+    std::memcpy(mult, data + nhdr * sizeof(u32), ng * sizeof(i32));
+    for (int g = 0; g < ng; ++g)
+        if (mult[g] < 1 || mult[g] > MAX_MULT)
             return "invalid multiplier";
+    if (hid)
+    {
+        std::memcpy(mass, data + nhdr * sizeof(u32) + ng * sizeof(i32), sizeof(mass));
+        for (i32 v : mass)
+            if (v < MASS_MIN_Q || v > MAX_MASS_Q)
+                return "invalid hidden-layer mass";
+    }
 
     const int8_t* w = reinterpret_cast<const int8_t*>(data + HEADER);
-    g_w.assign(w, w + NPARAM);
-    std::copy(mult, mult + NGROUPS, g_mult);
+    g_w.assign(w, w + np);
+    std::fill(g_mult, g_mult + NGROUPS_H, 0);
+    std::copy(mult, mult + ng, g_mult);
+    // A hidden layer whose kappa weights are all zero adds exactly 0 to every score: skip it (same
+    // result, no cost). This also makes a CRM3 net converted with scripts/crm3_to_crm4.py behave
+    // exactly like the original.
+    g_hidden = hid && std::any_of(w + OFF_KAPPA, w + OFF_BETA, [](int8_t v) { return v != 0; });
+    if (g_hidden)
+        for (int k = 0; k < NZ; ++k)
+            for (int d = 0; d < 64; ++d)
+                g_inv[k][d] = (i64(1) << (ZFRAC + FRAC)) / (i64(mass[k]) + (i64(d) << FRAC));
     g_loaded = true;
     return "";
 }
@@ -246,7 +427,7 @@ std::optional<std::string> load(const std::string& path) {
         const std::string err = parse_net(gEmbeddedCRAMData, gEmbeddedCRAMSize);
         if (!err.empty())
             return "CRAM: embedded net is invalid: " + err;
-        return "CRAM int8 net loaded: embedded " + std::string(DefaultFile);
+        return "CRAM int8 net loaded: embedded " + std::string(DefaultFile) + (g_hidden ? " (with hidden layer)" : "");
     }
 
     // The option value is UTF-8; path_from_utf8 makes this work with non-ASCII paths on Windows.
@@ -266,7 +447,7 @@ std::optional<std::string> load(const std::string& path) {
     const std::string err = parse_net(buf.data(), buf.size());
     if (!err.empty())
         return "CRAM: " + err;
-    return "CRAM int8 net loaded: " + path;
+    return "CRAM int8 net loaded: " + path + (g_hidden ? " (with hidden layer)" : "");
 }
 
 void add_ordering_bonus(const Position& pos, ExtMove* first, ExtMove* last, int /*depth*/) {

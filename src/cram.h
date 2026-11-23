@@ -44,7 +44,7 @@ constexpr int FRAC      = 20;          // fixed-point fraction bits of scores an
 constexpr i32 MAX_MULT  = 1 << 24;
 
 // Name of the default net. It is embedded into the binary at build time (see cram.cpp).
-constexpr const char* DefaultFile = "model-i8.bin";
+constexpr const char* DefaultFile = "model-i8-hidden.bin";
 
 constexpr int NF      = 768;  // 12 piece kinds (side-to-move relative) x 64 squares
 constexpr int OFF_WF  = 0;
@@ -63,8 +63,28 @@ constexpr int NGROUPS = 9;
 constexpr int GOFF[NGROUPS + 1] = {OFF_WF, OFF_WT, OFF_K, OFF_BF, OFF_BT, OFF_P, OFF_KMC, OFF_A, OFF_AF, NPARAM};
 enum Group { G_WF, G_WT, G_K, G_BF, G_BT, G_P, G_KMC, G_A, G_AF };
 
+// ---- Hidden layer ("CRAM+z", Appendix F of the paper), optional: file format "CRM4" ---------------
+// A CRM4 net is a CRM3 net plus two hidden fields z (one neuron per square, relaxed for HT steps from the
+// opponent king / from the own king) that every move reads through an attention window. The full
+// specification (and the training code) is in chess_cram.cpp, hidInt(); cram.cpp must stay bit-identical to it.
+// File format "CRM4" (little-endian): u32 magic, u32 NPARAM_H, u32 NGROUPS_H, u32 FRAC, u32 NZ, u32 HT,
+// i32 mult[NGROUPS_H], i32 mass[NZ] (fixed point, 2^-FRAC), int8 w[NPARAM_H].
+constexpr u32 MAGIC_H     = 0x43524d34;  // "4MRC"
+constexpr int NZ          = 2;           // hidden fields
+constexpr int HT          = 3;           // relaxation steps
+constexpr int NDIR        = 10;          // direction classes: 8 queen directions, knight jump, stay
+constexpr int ZFRAC       = 24;          // fraction bits of the hidden field
+constexpr int OFF_KAPPA   = NPARAM;      // kappa[field][piece type]
+constexpr int OFF_BETA    = OFF_KAPPA + NZ * 6;  // beta[field][direction class]
+constexpr int NPARAM_H    = OFF_BETA + NZ * NDIR;
+constexpr int NGROUPS_H   = NGROUPS + 2;
+enum HiddenGroup { G_KAPPA = NGROUPS, G_BETA };
+constexpr i32 MASS_MIN_Q = 1 << (FRAC - 2), MAX_MASS_Q = 1 << 30;  // allowed range of the stored masses
+
 // Loading / configuration. These must only be called while no search is running
 // (the UCI option callbacks wait for the search to finish first).
+// True if the loaded net has the hidden layer.
+bool                       has_hidden();
 // Loads a net from a UTF-8 path (or the embedded net for DefaultFile); returns an info message
 std::optional<std::string> load(const std::string& path);
 void                       unload();
@@ -92,7 +112,7 @@ std::string report(const Position& pos, bool chess960);
 // ---- inline part -------------------------------------------------------------------------
 extern bool g_loaded;
 extern int  g_plies;
-inline bool ordering_active(int /*ply*/, int depth) { return g_loaded && depth <= 1; } // && ply < g_plies && depth > ply; }
+inline bool ordering_active(int /*ply*/, int depth) { return g_loaded && depth <= 3; } // && ply < g_plies && depth > ply; }
 
 }  // namespace CRAM
 }  // namespace Stockfish
