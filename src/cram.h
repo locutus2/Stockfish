@@ -44,7 +44,7 @@ constexpr int FRAC      = 20;          // fixed-point fraction bits of scores an
 constexpr i32 MAX_MULT  = 1 << 24;
 
 // Name of the default net. It is embedded into the binary at build time (see cram.cpp).
-constexpr const char* DefaultFile = "model-i8.bin";
+constexpr const char* DefaultFile = "model2-i8.bin";
 
 constexpr int NF      = 768;  // 12 piece kinds (side-to-move relative) x 64 squares
 constexpr int OFF_WF  = 0;
@@ -92,7 +92,7 @@ std::string report(const Position& pos, bool chess960);
 // ---- inline part -------------------------------------------------------------------------
 extern bool g_loaded;
 extern int  g_plies;
-inline bool ordering_active(int /*ply*/, int depth) { return g_loaded && depth <= 1; } // && ply < g_plies && depth > ply; }
+inline bool ordering_active(int /*ply*/, int depth) { return g_loaded && depth <= 3; } // && ply < g_plies && depth > ply; }
 
 }  // namespace CRAM
 }  // namespace Stockfish

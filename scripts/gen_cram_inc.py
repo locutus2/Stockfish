@@ -3,7 +3,7 @@
 # Usage: python3 scripts/gen_cram_inc.py [model.bin] [out.inc]
 import sys
 
-src = sys.argv[1] if len(sys.argv) > 1 else "src/model-i8.bin"
+src = sys.argv[1] if len(sys.argv) > 1 else "src/model2-i8.bin"
 dst = sys.argv[2] if len(sys.argv) > 2 else "src/cram_net.inc"
 data = open(src, "rb").read()
 with open(dst, "w", newline="\n") as f:
