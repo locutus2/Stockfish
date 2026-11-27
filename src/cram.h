@@ -44,7 +44,7 @@ constexpr int FRAC      = 20;          // fixed-point fraction bits of scores an
 constexpr i32 MAX_MULT  = 1 << 24;
 
 // Name of the default net. It is embedded into the binary at build time (see cram.cpp).
-constexpr const char* DefaultFile = "model-i8-quiets.bin";
+constexpr const char* DefaultFile = "model-i8-quiets2.bin";
 
 constexpr int NF      = 768;  // 12 piece kinds (side-to-move relative) x 64 squares
 constexpr int OFF_WF  = 0;
