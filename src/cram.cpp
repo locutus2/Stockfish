@@ -44,7 +44,7 @@ namespace {
 
 std::vector<int8_t> g_w;  // the net, NPARAM int8 weights; only replaced while no search runs
 i32                 g_mult[NGROUPS];   // value of weight i of group g = g_w[i] * g_mult[g] / 2^FRAC
-int                g_weight = 8192;
+int                g_weight = 4096;
 int                g_gate   = 0;
 
 // Fixed-point exp: e^(-d / 2^FRAC) with 30 fractional bits (1.0 = 2^30), integer arithmetic only (d >= 0).
